@@ -55,6 +55,26 @@ $result_completed = mysqli_query($db->conn, $sql_completed);
 $row_completed = mysqli_fetch_assoc($result_completed);
 $completed_orders = $row_completed['count'] ?? 0;
 
+// Invoice statistics
+$sql_invoices = "SELECT COUNT(DISTINCT iv.tex) as count FROM iv 
+                 WHERE DATE(iv.createdate) >= '$month_start'";
+$result_invoices = mysqli_query($db->conn, $sql_invoices);
+$row_invoices = mysqli_fetch_assoc($result_invoices);
+$total_invoices = $row_invoices['count'] ?? 0;
+
+// Tax Invoice statistics
+$sql_tax_invoices = "SELECT COUNT(DISTINCT iv.texiv) as count FROM iv 
+                     WHERE iv.texiv > 0 AND DATE(iv.texiv_create) >= '$month_start'";
+$result_tax_inv = mysqli_query($db->conn, $sql_tax_invoices);
+$row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
+$total_tax_invoices = $row_tax_inv['count'] ?? 0;
+
+// Recent invoices
+$sql_recent_inv = "SELECT iv.*, company.name_en FROM iv 
+                   LEFT JOIN company ON iv.cus_id = company.id
+                   ORDER BY iv.createdate DESC LIMIT 5";
+$recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
+
 function format_currency($amount) {
     return '฿' . number_format($amount, 2);
 }
@@ -399,6 +419,34 @@ function get_status_badge($status) {
         </div>
     </div>
 
+    <!-- Invoice KPI Cards Row -->
+    <div class="row kpi-row">
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card" style="border-left: 4px solid #4caf50;">
+                <div class="kpi-icon" style="color: #4caf50;">
+                    <i class="fa fa-file-invoice"></i>
+                </div>
+                <div class="kpi-label">Invoices (This Month)</div>
+                <div class="kpi-value"><?php echo $total_invoices; ?></div>
+                <div class="kpi-change">
+                    Customer invoices
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card" style="border-left: 4px solid #2196f3;">
+                <div class="kpi-icon" style="color: #2196f3;">
+                    <i class="fa fa-receipt"></i>
+                </div>
+                <div class="kpi-label">Tax Invoices (This Month)</div>
+                <div class="kpi-value"><?php echo $total_tax_invoices; ?></div>
+                <div class="kpi-change">
+                    Tax documents issued
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Row -->
     <div class="row">
         <!-- Left Column -->
@@ -488,9 +536,105 @@ function get_status_badge($status) {
                     </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Right Column -->
+            <!-- Recent Invoices -->
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-file-invoice"></i> Recent Invoices
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-hover" style="font-size: 12px;">
+                        <thead>
+                            <tr>
+                                <th>Tax ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if($recent_invoices && mysqli_num_rows($recent_invoices) > 0): ?>
+                                <?php while($invoice = mysqli_fetch_assoc($recent_invoices)): ?>
+                                <tr>
+                                    <td><?php echo $invoice['tex'] ?? 'N/A'; ?></td>
+                                    <td><?php echo substr($invoice['name_en'] ?? 'N/A', 0, 18); ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($invoice['createdate'])); ?></td>
+                                    <td>
+                                        <?php 
+                                        $status_text = ($invoice['status_iv'] == 1) ? 'Approved' : 'Pending';
+                                        $status_color = ($invoice['status_iv'] == 1) ? '#28a745' : '#ffc107';
+                                        ?>
+                                        <span class="badge" style="background: <?php echo $status_color; ?>; color: <?php echo ($invoice['status_iv'] == 1) ? 'white' : '#333'; ?>;">
+                                            <?php echo $status_text; ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state">
+                                            <i class="fa fa-file"></i>
+                                            <p>No invoices found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Tax Invoices -->
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-receipt"></i> Tax Invoices Issued
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-hover" style="font-size: 12px;">
+                        <thead>
+                            <tr>
+                                <th>Tax Inv ID</th>
+                                <th>Customer</th>
+                                <th>Created</th>
+                                <th>Mailed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            // Re-query for tax invoices with actual data
+                            $sql_tax_inv_detail = "SELECT iv.*, company.name_en FROM iv 
+                                                  LEFT JOIN company ON iv.cus_id = company.id
+                                                  WHERE iv.texiv > 0 
+                                                  ORDER BY iv.texiv_create DESC LIMIT 5";
+                            $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
+                            ?>
+                            <?php if($tax_inv_results && mysqli_num_rows($tax_inv_results) > 0): ?>
+                                <?php while($tax_inv = mysqli_fetch_assoc($tax_inv_results)): ?>
+                                <tr>
+                                    <td><?php echo $tax_inv['texiv'] ?? 'N/A'; ?></td>
+                                    <td><?php echo substr($tax_inv['name_en'] ?? 'N/A', 0, 18); ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
+                                    <td>
+                                        <?php echo ($tax_inv['countmailtax'] > 0) ? 'Yes (' . $tax_inv['countmailtax'] . ')' : '-'; ?>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state">
+                                            <i class="fa fa-receipt"></i>
+                                            <p>No tax invoices issued yet</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <div class="col-lg-4">
             <!-- Quick Links -->
             <div class="content-card">
