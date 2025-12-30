@@ -1,6 +1,7 @@
 <?php
 ini_set('display_errors', '0');
 ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_STRICT);
+ob_start();
 // session_start();
 // require_once("inc/sys.configs.php");
 // require_once("inc/class.dbconn.php");
@@ -209,7 +210,7 @@ $mpdf= new mPdf('th', 'A4', '0');
 
 $mpdf->WriteHTML($html);
 
-
+ob_clean();
 $mpdf->Output("Tax-".$data['texiv_rw']."-".$customer['name_sh'].".pdf","I");
 $mpdf->Output();
 exit;
