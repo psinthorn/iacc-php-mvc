@@ -80,7 +80,9 @@ if ($user_id) {
                 <?php 
 				$page = $_REQUEST['page'] ?? '';
 				
-				if($page=="company")				
+				if($page=="dashboard")				
+				include_once "dashboard.php";
+				else if($page=="company")				
 				include_once "company-list.php";
 				if($page=="category")				
 				include_once "category-list.php";

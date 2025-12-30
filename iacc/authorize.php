@@ -18,7 +18,7 @@ if($_SESSION['usr_id']!=""){
 		$_SESSION['usr_name']=$_POST['m_user'];
 		$_SESSION['usr_id']=$tmp['usr_id'];
 		$_SESSION['lang']=$tmp['lang'];
-		echo "<script>window.location='../';</script>";
+		echo "<script>window.location='index.php?page=dashboard';</script>";
 	}else { 
 		exit("<script>alert('LOGIN FAIL');history.back();</script>");
 	}
