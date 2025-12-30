@@ -178,6 +178,9 @@
         <nav class="navbar-default navbar-static-side" role="navigation">
             <div class="sidebar-collapse">
                 <ul class="nav" id="side-menu">
+                    <li>
+                        <a href="index.php?page=dashboard"><i class="fa fa-dashboard"></i> Dashboard</a>
+                    </li>
                     <li class="sidebar-search">
                         <div class="input-group custom-search-form"><form action="index.php?page=search"  method="post">
                             <input type="text" class="form-control" placeholder="Search...">
