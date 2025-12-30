@@ -823,7 +823,7 @@ var $innerblocktags;
 // **********************************
 // **********************************
 
-function mPDF($mode='',$format='A4',$default_font_size=0,$default_font='',$mgl=15,$mgr=15,$mgt=16,$mgb=16,$mgh=9,$mgf=9, $orientation='P') {
+function __construct($mode='',$format='A4',$default_font_size=0,$default_font='',$mgl=15,$mgr=15,$mgt=16,$mgb=16,$mgh=9,$mgf=9, $orientation='P') {
 
 /*-- BACKGROUNDS --*/
 		if (!class_exists('grad', false)) { include(_MPDF_PATH.'classes/grad.php'); }
@@ -8875,7 +8875,7 @@ function _putimages()
 {
 	$filter=($this->compress) ? '/Filter /FlateDecode ' : '';
 	reset($this->images);
-	while(list($file,$info)=each($this->images)) {
+	foreach($this->images as $file => $info) {
 		$this->_newobj();
 		$this->images[$file]['n']=$this->n;
 		$this->_out('<</Type /XObject');
@@ -27817,7 +27817,7 @@ function _Uvalue() {
 		for ($i=1; $i<=19; ++$i) {
 			$key = '';
 			for ($j=0; $j<$len; ++$j) {
-				$key .= chr(ord($this->encryption_key{$j}) ^ $i);
+				$key .= chr(ord($this->encryption_key[$j]) ^ $i);
 			}
 			$enc = $this->_RC4($key, $enc);
 		}
@@ -32349,7 +32349,7 @@ function pdf_write_value(&$value) {
 					$this->_don_obj_stack[$cpfn][$value[1]] = array($this->n, $value);
 			}
 			$objid = $this->_don_obj_stack[$cpfn][$value[1]][0];
-			$this->_out("{$objid} 0 R"); //{$value[2]}
+			$this->_out("[$objid] 0 R"); //{$value[2]}
 			break;
 
 		case PDF_TYPE_STRING :
