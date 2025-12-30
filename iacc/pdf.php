@@ -45,7 +45,9 @@ Child: '.$booking[child].'<br>
 //==============================================================
 //==============================================================
 
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 include("MPDF/mpdf.php");
+error_reporting(E_ALL);
 
 $mpdf=new mPDF(); 
 
