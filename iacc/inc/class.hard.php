@@ -1,6 +1,17 @@
 <?PHP 
 class HardClass { 
+	private $conn;
+	
+	function __construct($conn = null) {
+		$this->conn = $conn;
+	}
+	
+	function setConnection($conn) {
+		$this->conn = $conn;
+	}
+	
 	function keeplog($data){
+		$query_string = '';
 		foreach($data as $key => $val)
 		{
 			$query_string .=$key."|".$val.":";
@@ -12,28 +23,30 @@ class HardClass {
 		}
 	function insertDbMax($args){
 		$id=$this->Maxid($args['table']);
-		mysql_query("INSERT INTO ".$args['table']." VALUES ('".$id."',".$args['value'].")") ;
+		mysqli_query($this->conn, "INSERT INTO ".$args['table']." VALUES ('".$id."',".$args['value'].")") ;
 		return $id;
 		}
 	function insertDb($args){
-		mysql_query("INSERT INTO ".$args['table']." VALUES (".$args['value'].")") ;
+		if($this->conn) {
+			mysqli_query($this->conn, "INSERT INTO ".$args['table']." VALUES (".$args['value'].")") ;
+		}
 		//echo "INSERT INTO ".$args['table']." VALUES (".$args['value'].")";
 		}
 	
 	
 	function updateDb($args){
-		mysql_query("UPDATE ".$args['table']." SET ".$args['value']." WHERE ".$args['condition']);
+		mysqli_query($this->conn, "UPDATE ".$args['table']." SET ".$args['value']." WHERE ".$args['condition']);
 	//echo "UPDATE ".$args['table']." SET ".$args['value']." WHERE ".$args['condition'];
 		}
 		
 	function deleteDb($args){
-		mysql_query("Delete FROM ".$args['table']." WHERE ".$args['condition']);
+		mysqli_query($this->conn, "Delete FROM ".$args['table']." WHERE ".$args['condition']);
 		//echo "Delete FROM ".$args['table']." WHERE ".$args['condition'];
 		}	
 	
 	function Maxid($args){
 		//echo "select max(id) as id FROM ".$args;
-		$row=mysql_fetch_array(mysql_query("select max(id) as id FROM ".$args));
+		$row=mysqli_fetch_array(mysqli_query($this->conn, "select max(id) as id FROM ".$args));
 		
 		if($row['id']=="") return 1; else return $row['id']+1;
 		}

@@ -1,6 +1,8 @@
 <?PHP
+// Legacy database connection file - Updated to use mysqli
+// Note: Consider using class.dbconn.php instead which is the primary connection class
 
-if($_SESSION[lang]=="1")$lg="th";else $lg="us";
+if(isset($_SESSION['lang']) && $_SESSION['lang']=="1")$lg="th";else $lg="us";
 $xml=simplexml_load_file("inc/string-".$lg.".xml");
 function decodestatus($num){
 	if($num==1)return "yes";
@@ -16,23 +18,23 @@ function decodenum($num){
 	else if($num==5)return "success";
 	}
 class DbConn{ 
-	var $conn;
+	public $conn;
 	
 	function __construct($config){
-
-		$this->conn = mysql_connect($config['hostname'], $config['username'], $config['password']) or die(mysql_error());
-		mysql_query("SET NAMES utf8");
-		//หากเชื่อมต่อด้วย mysqli_connect ยกเลิกบรรทัดนี้ mysql_select_database เพราะ mysqli_connect ให้กำหนดใน DSN อยู่แล้ว
-		mysql_select_db($config['dbname']) or die(mysql_error());
+		$this->conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config['dbname']) or die(mysqli_connect_error());
+		mysqli_set_charset($this->conn, "utf8");
+		mysqli_query($this->conn, "SET NAMES utf8");
 	}
 	
 	function closeDb() {
-		mysql_close($this->conn);
+		if($this->conn) {
+			mysqli_close($this->conn);
+		}
 	}
 
 	
 	function checkSecurity(){ 
-		if ($_SESSION['usr_id']=="") {
+		if (!isset($_SESSION['usr_id']) || $_SESSION['usr_id']=="") {
 			exit("<script>alert('Please Login');window.location='login.php';</script>");
 		}
 	}

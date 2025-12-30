@@ -6,7 +6,7 @@ require_once("inc/class.hard.php");
 $users=new DbConn($config);
 $users->checkSecurity();
 
-$har=new HardClass();
+$har=new HardClass($users->conn);
 $har->keeplog($_REQUEST);
 switch($_REQUEST['page']){	
 	
