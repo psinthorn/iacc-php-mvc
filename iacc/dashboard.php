@@ -18,9 +18,9 @@ if ($com_id) {
     // Sales Today - from pay table (receipts)
     $sql_today = "SELECT IFNULL(SUM(pay_amount), 0) as total FROM pay 
                    WHERE pay_com_id = '$com_id' AND DATE(pay_date) = '$cur_date'";
-    $result = $db->query($sql_today);
+    $result = mysqli_query($db->conn, $sql_today);
     if ($result) {
-        $row = $result->fetch_assoc();
+        $row = mysqli_fetch_assoc($result);
         $kpi_data['sales_today'] = $row['total'];
     }
     
@@ -28,18 +28,18 @@ if ($com_id) {
     $month_start = date('Y-m-01');
     $sql_month = "SELECT IFNULL(SUM(pay_amount), 0) as total FROM pay 
                    WHERE pay_com_id = '$com_id' AND DATE(pay_date) >= '$month_start' AND DATE(pay_date) <= '$cur_date'";
-    $result = $db->query($sql_month);
+    $result = mysqli_query($db->conn, $sql_month);
     if ($result) {
-        $row = $result->fetch_assoc();
+        $row = mysqli_fetch_assoc($result);
         $kpi_data['sales_month'] = $row['total'];
     }
     
     // Pending Purchase Orders - from po table
     $sql_pending = "SELECT COUNT(*) as count FROM po 
                     WHERE po_com_id = '$com_id' AND po_status != '3'";
-    $result = $db->query($sql_pending);
+    $result = mysqli_query($db->conn, $sql_pending);
     if ($result) {
-        $row = $result->fetch_assoc();
+        $row = mysqli_fetch_assoc($result);
         $kpi_data['pending_orders'] = $row['count'];
     }
     
@@ -48,14 +48,14 @@ if ($com_id) {
                      LEFT JOIN company c ON p.pay_to = c.company_id
                      WHERE p.pay_com_id = '$com_id'
                      ORDER BY p.pay_date DESC LIMIT 5";
-    $recent_receipts = $db->query($sql_receipts);
+    $recent_receipts = mysqli_query($db->conn, $sql_receipts);
     
     // Get pending POs - from po table
     $sql_pos = "SELECT p.*, v.company_name FROM po p
                 LEFT JOIN company v ON p.po_vendor_id = v.company_id
                 WHERE p.po_com_id = '$com_id' AND p.po_status != '3'
                 ORDER BY p.po_date DESC LIMIT 5";
-    $pending_pos = $db->query($sql_pos);
+    $pending_pos = mysqli_query($db->conn, $sql_pos);
 } else {
     $recent_receipts = null;
     $pending_pos = null;
@@ -450,8 +450,8 @@ function get_status_badge($status) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if($recent_receipts && $recent_receipts->num_rows > 0): ?>
-                                <?php while($receipt = $recent_receipts->fetch_assoc()): ?>
+                            <?php if($recent_receipts && mysqli_num_rows($recent_receipts) > 0): ?>
+                                <?php while($receipt = mysqli_fetch_assoc($recent_receipts)): ?>
                                 <tr>
                                     <td><?php echo date('M d, Y', strtotime($receipt['pay_date'])); ?></td>
                                     <td><?php echo substr($receipt['company_name'] ?? 'N/A', 0, 20); ?></td>
@@ -494,8 +494,8 @@ function get_status_badge($status) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if($pending_pos && $pending_pos->num_rows > 0): ?>
-                                <?php while($po = $pending_pos->fetch_assoc()): ?>
+                            <?php if($pending_pos && mysqli_num_rows($pending_pos) > 0): ?>
+                                <?php while($po = mysqli_fetch_assoc($pending_pos)): ?>
                                 <tr>
                                     <td><?php echo $po['po_id']; ?></td>
                                     <td><?php echo substr($po['company_name'] ?? 'N/A', 0, 20); ?></td>
