@@ -192,10 +192,10 @@ $html .= '
 
 //==============================================================
 //==============================================================
-include("MPDF/mpdf.php");
+@include("MPDF/mpdf.php");
 
 
-$mpdf= new mPdf('th', 'A4', '0');
+@$mpdf= new mPdf('th', 'A4', '0');
 $mpdf->WriteHTML($html);
 
 ob_clean();
