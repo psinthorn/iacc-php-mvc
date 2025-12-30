@@ -1,8 +1,8 @@
 <?php
+error_reporting(E_ERROR | E_PARSE);
 ini_set('display_errors', '0');
 set_error_handler(function($errno, $errstr) {
-    if ($errno & (E_DEPRECATED | E_STRICT)) return true;
-    return false;
+    return true;
 });
 ob_start();
 session_start();
