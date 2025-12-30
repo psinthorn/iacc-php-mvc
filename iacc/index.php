@@ -1,12 +1,14 @@
 <?php
 error_reporting(E_ALL & ~E_NOTICE);
 // error_reporting(E_ALL);
+
+// Set charset header FIRST before anything else
+header('Content-Type: text/html; charset=utf-8');
+
 session_start();
 
 // Start output buffering to allow header redirects in included pages
 ob_start();
-
-header('Content-Type: text/html; charset=utf-8');
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $db = new DbConn($config);
@@ -63,9 +65,12 @@ if ($user_id) {
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="th">
 
 <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="js/tooltip.js"></script>
 	<?php include_once "css.php";?>
 </head>

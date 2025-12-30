@@ -1,8 +1,9 @@
 <?PHP
+error_reporting(E_ALL & ~E_NOTICE);
 //error_reporting(E_ALL);
-//error_reporting(E_ALL & ~E_NOTICE);
-if($_SESSION['lang']=="1")$lg="th";else $lg="us";
-$xml=simplexml_load_file("inc/string-".$lg.".xml");
+mb_internal_encoding("UTF-8");
+if(isset($_SESSION['lang']) && $_SESSION['lang']=="1")$lg="th";else $lg="us";
+$xml=simplexml_load_file("inc/string-".$lg.".xml", "SimpleXMLElement", LIBXML_NOCDATA);
 function decodestatus($num){
 	if($num==1)return "yes";
 	else return "no";
@@ -17,34 +18,36 @@ function decodenum($num){
 	else if($num==5)return "success";
 	}
 class DbConn { 
-	var $conn;
+	public $conn;
+	private $config;
 
-	// $conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config["dbname"]) or die(mysql_error());
-	// mysql_query($conn, "SET NAMES utf8");
-	
-	// function DbConn($config) {
 	function __construct($config) {
-		$this->conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config["dbname"]) or die(mysql_error());
-		mysqli_query($this->conn, "SET NAMES utf8");
-
-		////หากเชื่อมต่อด้วย mysqli_connect ยกเลิกบรรทัดนี้ mysql_select_database เพราะ mysqli_connect ให้กำหนดใน DSN อยู่แล้ว
-		//mysql_select_db($config['dbname']) or die(mysql_error());
+		$this->config = $config;
+		$this->conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config["dbname"]) or die(mysqli_error());
 		
+		// Set charset using the proper mysqli function
+		if (!mysqli_set_charset($this->conn, "utf8mb4")) {
+			die("Error: Unable to set utf8mb4 charset: " . mysqli_error($this->conn));
+		}
+		
+		// Also execute SET NAMES as backup
+		mysqli_query($this->conn, "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+		mysqli_query($this->conn, "SET CHARACTER SET utf8mb4");
+		mysqli_query($this->conn, "SET COLLATION_CONNECTION = utf8mb4_unicode_ci");
 	}
 	
 	function closeDb() {
-		mysqli_close($this->conn);
+		if($this->conn) {
+			mysqli_close($this->conn);
+		}
 	}
 
-	
 	function checkSecurity(){ 
-		if ($_SESSION['usr_id']=="") {
+		if (!isset($_SESSION['usr_id']) || $_SESSION['usr_id'] === "") {
 			exit("<script>alert('Please Login');window.location='login.php';</script>");
 		}
 	}
-	
-	
-	}
+}
 	
 
 			
