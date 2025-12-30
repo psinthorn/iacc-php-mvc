@@ -10436,8 +10436,7 @@ function _imageTypeFromString(&$data) {
 
 // Moved outside WMF as also needed for SVG
 function _putformobjects() {
-	reset($this->formobjects);
-	while(list($file,$info)=each($this->formobjects)) {
+	foreach($this->formobjects as $file => $info) {
 		$this->_newobj();
 		$this->formobjects[$file]['n']=$this->n;
 		$this->_out('<</Type /XObject');
@@ -32331,8 +32330,7 @@ function pdf_write_value(&$value) {
 		case PDF_TYPE_DICTIONARY :
 			// A dictionary.
 			$this->_out("<<",false);
-			reset ($value[1]);
-			while (list($k, $v) = each($value[1])) {
+			foreach ($value[1] as $k => $v) {
 				$this->_out($k . " ",false);
 				$this->pdf_write_value($v);
 			}
