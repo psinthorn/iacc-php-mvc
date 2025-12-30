@@ -7,12 +7,12 @@ $db=new DbConn($config);
 $db->checkSecurity();
 
 
- $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis,vat, taxrw as tax2,tax,pr.cus_id as cus_id,payby,des,brandven,valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '')."' and status>'2' and (pr.cus_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."' or ven_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."') and po_id_new=''");
+ $query=mysqli_query($db->conn, "select po.name as name,po.over,pr.ven_id,po.dis,po.vat, iv.taxrw as tax2,po.tax,pr.cus_id as cus_id,pr.payby,pr.des,po.bandven,po.valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(po.deliver_date,'%d-%m-%Y') as deliver_date,po.ref,po.pic,pr.status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '')."' and pr.status>'2' and (pr.cus_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."' or pr.ven_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."')");
  // if (!$dbc || mysqli_num_rows($dbc) == 0)
  if($query && mysqli_num_rows($query) > 0){
 	$data=mysqli_fetch_array($query);
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".mysqli_real_escape_string($db->conn, $data['ven_id'] ?? '')."' and valid_end='0000-00-00'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".mysqli_real_escape_string($db->conn, $data['payby'] ?? '')."' and valid_end='0000-00-00'"));
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".mysqli_real_escape_string($db->conn, $data['ven_id'] ?? '')."' and (valid_end IS NULL OR valid_end='0000-00-00')"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".mysqli_real_escape_string($db->conn, $data['payby'] ?? '')."' and (valid_end IS NULL OR valid_end='0000-00-00')"));
 	
 
 	if($data['brandven']==0){$logo=$vender['logo'] ?? '';}else{
