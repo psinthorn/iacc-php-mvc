@@ -140,97 +140,120 @@
         border: 2px solid rgba(255, 255, 255, 0.5);
     }
 
-    /* ============ Sidebar Styling ============ */
+    /* ============ MINIMAL SIDEBAR STYLING ============ */
     .navbar-static-side {
-        background: #2c3e50;
+        background: #34495e;
         border: none;
+        transition: all 0.3s ease;
+        width: 70px;
+        position: fixed;
+        top: 50px;
+        left: 0;
+        bottom: 0;
+        z-index: 999;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .navbar-static-side.expanded {
+        width: 220px;
     }
 
     .sidebar-collapse {
         padding: 0;
     }
 
+    /* Toggle Button */
+    .sidebar-toggle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 70px;
+        height: 50px;
+        background: #2c3e50;
+        border-bottom: 1px solid #1a252f;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle:hover {
+        background: #1a252f;
+    }
+
+    .sidebar-toggle i {
+        color: #667eea;
+        font-size: 18px;
+    }
+
+    /* Main Menu */
     #side-menu {
         margin-bottom: 0;
         padding: 0;
+        list-style: none;
+    }
+
+    #side-menu > li {
+        border-bottom: 1px solid #2c3e50;
     }
 
     #side-menu > li > a {
-        color: #ecf0f1;
-        padding: 15px 20px;
-        display: block;
-        border-left: 4px solid transparent;
+        color: #bdc3c7;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         transition: all 0.3s ease;
-        font-weight: 500;
+        border-left: 3px solid transparent;
+        text-decoration: none;
+        font-size: 16px;
+        position: relative;
+        cursor: pointer;
     }
 
     #side-menu > li > a:hover {
-        background: #34495e;
-        border-left-color: #667eea;
+        background: #2c3e50;
         color: #667eea;
+        border-left-color: #667eea;
     }
 
-    #side-menu > li > a.active {
-        background: #34495e;
-        border-left-color: #667eea;
+    #side-menu > li.active > a {
+        background: #2c3e50;
         color: #667eea;
+        border-left-color: #667eea;
     }
 
+    /* Icon Styling */
     #side-menu > li > a i {
-        margin-right: 12px;
-        width: 18px;
+        margin: 0;
+        min-width: 24px;
         text-align: center;
     }
 
-    /* Sidebar Search */
-    .sidebar-search {
-        padding: 15px 20px;
-        border-bottom: 1px solid #34495e;
-    }
-
-    .custom-search-form input {
-        border-radius: 4px;
-        border: 1px solid #34495e;
-        background: #34495e;
-        color: #ecf0f1;
-        padding: 10px 12px;
+    /* Text Labels (hidden by default, shown when expanded) */
+    .menu-label {
+        margin-left: 15px;
         font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        max-width: 0;
+        overflow: hidden;
     }
 
-    .custom-search-form input::placeholder {
-        color: #95a5a6;
+    .navbar-static-side.expanded .menu-label {
+        opacity: 1;
+        max-width: 150px;
     }
 
-    .custom-search-form button {
-        background: #667eea;
-        border: none;
-        color: white;
-        padding: 10px 12px;
-        border-radius: 4px;
-        transition: all 0.3s ease;
-    }
-
-    .custom-search-form button:hover {
-        background: #764ba2;
-    }
-
-    /* Menu Groups */
-    .nav-group-title {
-        padding: 12px 20px 8px;
-        color: #95a5a6;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 10px;
-    }
-
-    /* Second Level Menu */
+    /* Submenu */
     #side-menu .nav-second-level {
-        background: #34495e;
+        background: #2c3e50;
         display: none;
         margin: 0;
         padding: 0;
+        list-style: none;
+        border-left: 3px solid #667eea;
     }
 
     #side-menu .nav-second-level.in {
@@ -238,59 +261,156 @@
     }
 
     #side-menu .nav-second-level > li > a {
-        padding: 10px 20px 10px 50px;
-        border-left: none;
+        padding: 12px 15px 12px 20px;
         color: #bdc3c7;
-        font-size: 13px;
+        font-size: 12px;
+        border-left: none;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        transition: all 0.3s ease;
     }
 
     #side-menu .nav-second-level > li > a:hover {
-        background: #2c3e50;
-        border-left-color: transparent;
+        background: #1a252f;
         color: #667eea;
+        padding-left: 25px;
     }
 
     #side-menu .nav-second-level > li.active > a {
         color: #667eea;
+        background: #1a252f;
+    }
+
+    #side-menu .nav-second-level > li > a i {
+        margin-right: 8px;
+        min-width: 14px;
+    }
+
+    /* Hide submenu text when sidebar is collapsed */
+    .navbar-static-side:not(.expanded) #side-menu .nav-second-level {
+        display: none !important;
+    }
+
+    .navbar-static-side:not(.expanded) .menu-label {
+        display: none;
+    }
+
+    /* Tooltip for collapsed state */
+    .sidebar-tooltip {
+        position: absolute;
+        left: 80px;
+        top: 50%;
+        transform: translateY(-50%);
         background: #2c3e50;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-left: 3px solid #667eea;
+        z-index: 1000;
     }
 
-    /* Arrow Icon */
-    .fa.arrow {
-        float: right;
-        margin-top: 2px;
+    .navbar-static-side:not(.expanded) #side-menu > li > a:hover .sidebar-tooltip {
+        opacity: 1;
     }
 
-    .nav-second-level.in > li:first-child > a {
-        border-top: none;
+    /* Adjust main content when sidebar expands */
+    .navbar-static-side.expanded ~ .page-wrapper {
+        margin-left: 150px;
     }
 
     /* Responsive */
     @media (max-width: 768px) {
-        .navbar-top-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
+        .navbar-static-side {
+            width: 70px;
+            top: 50px;
         }
 
-        .lang-selector {
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .lang-btn {
-            font-size: 10px;
-            padding: 4px 8px;
+        .navbar-static-side.expanded {
+            width: 100%;
+            position: fixed;
         }
 
         #side-menu > li > a {
-            font-size: 13px;
-            padding: 12px 15px;
+            padding: 12px;
         }
+    }
 
-        #side-menu .nav-second-level > li > a {
-            padding: 8px 15px 8px 40px;
-        }
+    /* Search box styling */
+    .sidebar-search {
+        padding: 10px 5px;
+        border-bottom: 1px solid #2c3e50;
+        display: none;
+    }
+
+    .navbar-static-side.expanded .sidebar-search {
+        display: block;
+        padding: 10px 10px;
+    }
+
+    .custom-search-form {
+        display: flex;
+        gap: 3px;
+    }
+
+    .custom-search-form input {
+        border-radius: 4px;
+        border: 1px solid #2c3e50;
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 8px 10px;
+        font-size: 12px;
+        flex: 1;
+    }
+
+    .custom-search-form input::placeholder {
+        color: #7f8c8d;
+    }
+
+    .custom-search-form button {
+        background: #667eea;
+        border: none;
+        color: white;
+        padding: 8px 10px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .custom-search-form button:hover {
+        background: #764ba2;
+    }
+
+    /* Section titles in expanded mode */
+    .nav-group-title {
+        padding: 10px 15px;
+        color: #7f8c8d;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+        display: none;
+    }
+
+    .navbar-static-side.expanded .nav-group-title {
+        display: block;
+    }
+
+    /* Arrow styling */
+    .fa.arrow {
+        float: right;
+        transition: transform 0.3s ease;
+        margin-left: 10px;
+    }
+
+    .nav-second-level.in ~ .fa.arrow {
+        transform: rotate(180deg);
     }
 </style>
 
@@ -355,171 +475,190 @@
     </ul>
 </nav>
 
-<!-- ============ SIDEBAR ============ -->
-<nav class="navbar-default navbar-static-side" role="navigation">
+<!-- ============ MINIMAL SIDEBAR ============ -->
+<nav class="navbar-default navbar-static-side" id="sidebar" role="navigation">
     <div class="sidebar-collapse">
+        <!-- Toggle Button -->
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fa fa-bars"></i>
+        </div>
+
+        <!-- Search -->
+        <li class="sidebar-search">
+            <div class="input-group custom-search-form">
+                <form action="index.php?page=search" method="post" style="width: 100%; display: flex; gap: 3px;">
+                    <input type="text" class="form-control" placeholder="Search...">
+                    <button class="btn btn-default" type="button">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </li>
+
         <ul class="nav" id="side-menu">
             <!-- Dashboard -->
             <li>
                 <a href="index.php?page=dashboard">
-                    <i class="fa fa-tachometer-alt"></i> Dashboard
+                    <i class="fa fa-tachometer-alt"></i>
+                    <span class="menu-label">Dashboard</span>
+                    <span class="sidebar-tooltip">Dashboard</span>
                 </a>
             </li>
 
-            <!-- Search -->
-            <li class="sidebar-search">
-                <div class="input-group custom-search-form">
-                    <form action="index.php?page=search" method="post" style="width: 100%; display: flex; gap: 5px;">
-                        <input type="text" class="form-control" placeholder="Search..." style="flex: 1;">
-                        <button class="btn btn-default" type="button" style="padding: 8px 12px;">
-                            <i class="fa fa-search"></i>
-                        </button>
-                    </form>
-                </div>
-            </li>
-
-            <!-- Configuration Section -->
-            <li>
-                <div class="nav-group-title"><i class="fa fa-cogs"></i> Configuration</div>
-            </li>
+            <!-- Configuration -->
+            <div class="nav-group-title">Configuration</div>
             <li>
                 <a href="index.php?page=company">
-                    <i class="fa fa-building"></i> <?=$xml->company?>
+                    <i class="fa fa-building"></i>
+                    <span class="menu-label"><?=$xml->company?></span>
+                    <span class="sidebar-tooltip"><?=$xml->company?></span>
                 </a>
             </li>
             <li>
                 <a href="index.php?page=user">
-                    <i class="fa fa-users"></i> <?=$xml->user?>
+                    <i class="fa fa-users"></i>
+                    <span class="menu-label"><?=$xml->user?></span>
+                    <span class="sidebar-tooltip"><?=$xml->user?></span>
                 </a>
             </li>
             <li>
                 <a href="index.php?page=category">
-                    <i class="fa fa-list"></i> <?=$xml->category?>
+                    <i class="fa fa-list"></i>
+                    <span class="menu-label"><?=$xml->category?></span>
+                    <span class="sidebar-tooltip"><?=$xml->category?></span>
                 </a>
             </li>
             <li>
                 <a href="index.php?page=band">
-                    <i class="fa fa-tag"></i> <?=$xml->brand?>
+                    <i class="fa fa-tag"></i>
+                    <span class="menu-label"><?=$xml->brand?></span>
+                    <span class="sidebar-tooltip"><?=$xml->brand?></span>
                 </a>
             </li>
             <li>
                 <a href="index.php?page=type">
-                    <i class="fa fa-box"></i> <?=$xml->product?>
+                    <i class="fa fa-box"></i>
+                    <span class="menu-label"><?=$xml->product?></span>
+                    <span class="sidebar-tooltip"><?=$xml->product?></span>
                 </a>
             </li>
             <li>
                 <a href="index.php?page=mo_list">
-                    <i class="fa fa-cube"></i> <?=$xml->model?>
+                    <i class="fa fa-cube"></i>
+                    <span class="menu-label"><?=$xml->model?></span>
+                    <span class="sidebar-tooltip"><?=$xml->model?></span>
                 </a>
             </li>
             <?php if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){?>
             <li>
                 <a href="index.php?page=payment">
-                    <i class="fa fa-credit-card"></i> <?=$xml->payment?>
+                    <i class="fa fa-credit-card"></i>
+                    <span class="menu-label"><?=$xml->payment?></span>
+                    <span class="sidebar-tooltip"><?=$xml->payment?></span>
                 </a>
             </li>
             <?php } ?>
 
-            <!-- Purchasing Section -->
+            <!-- Purchasing -->
             <?php if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){?>
+            <div class="nav-group-title">Purchasing</div>
             <li>
-                <div class="nav-group-title"><i class="fa fa-shopping-cart"></i> Purchasing</div>
-            </li>
-            <li>
-                <a href="#" onclick="toggleSubmenu(event)">
-                    <i class="fa fa-pencil-square-o"></i> <?=$xml->purchasingrequest?>
-                    <span class="fa arrow"></span>
+                <a href="#" onclick="toggleSubmenu(event, 'submenu-pr')">
+                    <i class="fa fa-pencil-square-o"></i>
+                    <span class="menu-label"><?=$xml->purchasingrequest?></span>
+                    <span class="sidebar-tooltip"><?=$xml->purchasingrequest?></span>
+                    <i class="fa fa-chevron-right arrow" style="position: absolute; right: 10px;"></i>
                 </a>
                 <ul class="nav nav-second-level" id="submenu-pr">
                     <li>
-                        <a href="index.php?page=pr_list">
-                            <i class="fa fa-list"></i> <?=$xml->listpr?>
-                        </a>
+                        <a href="index.php?page=pr_list"><i class="fa fa-list"></i> <?=$xml->listpr?></a>
                     </li>
                     <li>
-                        <a href="index.php?page=pr_create">
-                            <i class="fa fa-file"></i> <?=$xml->prforvender?>
-                        </a>
+                        <a href="index.php?page=pr_create"><i class="fa fa-file"></i> <?=$xml->prforvender?></a>
                     </li>
                     <li>
-                        <a href="index.php?page=pr_make">
-                            <i class="fa fa-file"></i> <?=$xml->prforcustomer?>
-                        </a>
+                        <a href="index.php?page=pr_make"><i class="fa fa-file"></i> <?=$xml->prforcustomer?></a>
                     </li>
                 </ul>
             </li>
 
             <li>
                 <a href="index.php?page=qa_list">
-                    <i class="fa fa-quote-left"></i> <?=$xml->quotation?>
+                    <i class="fa fa-quote-left"></i>
+                    <span class="menu-label"><?=$xml->quotation?></span>
+                    <span class="sidebar-tooltip"><?=$xml->quotation?></span>
                 </a>
             </li>
 
             <li>
                 <a href="index.php?page=po_list">
-                    <i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder?>
+                    <i class="fa fa-shopping-cart"></i>
+                    <span class="menu-label"><?=$xml->purchasingorder?></span>
+                    <span class="sidebar-tooltip"><?=$xml->purchasingorder?></span>
                 </a>
             </li>
 
-            <!-- Logistics Section -->
-            <li>
-                <div class="nav-group-title"><i class="fa fa-truck"></i> Logistics</div>
-            </li>
-
+            <!-- Logistics -->
+            <div class="nav-group-title">Logistics</div>
             <li>
                 <a href="index.php?page=deliv_list">
-                    <i class="fa fa-truck"></i> <?=$xml->deliverynote?>
+                    <i class="fa fa-truck"></i>
+                    <span class="menu-label"><?=$xml->deliverynote?></span>
+                    <span class="sidebar-tooltip"><?=$xml->deliverynote?></span>
                 </a>
             </li>
 
-            <!-- Finance Section -->
-            <li>
-                <div class="nav-group-title"><i class="fa fa-money"></i> Finance</div>
-            </li>
-
+            <!-- Finance -->
+            <div class="nav-group-title">Finance</div>
             <li>
                 <a href="index.php?page=voucher_list">
-                    <i class="fa fa-ticket"></i> <?=$xml->voucher?>
+                    <i class="fa fa-ticket"></i>
+                    <span class="menu-label"><?=$xml->voucher?></span>
+                    <span class="sidebar-tooltip"><?=$xml->voucher?></span>
                 </a>
             </li>
 
             <li>
                 <a href="index.php?page=receipt_list">
-                    <i class="fa fa-receipt"></i> <?=$xml->receipt?>
+                    <i class="fa fa-receipt"></i>
+                    <span class="menu-label"><?=$xml->receipt?></span>
+                    <span class="sidebar-tooltip"><?=$xml->receipt?></span>
                 </a>
             </li>
 
             <li>
                 <a href="index.php?page=billing">
-                    <i class="fa fa-calendar"></i> <?=$xml->billingnote?>
+                    <i class="fa fa-calendar"></i>
+                    <span class="menu-label"><?=$xml->billingnote?></span>
+                    <span class="sidebar-tooltip"><?=$xml->billingnote?></span>
                 </a>
             </li>
 
-            <!-- Documents Section -->
-            <li>
-                <div class="nav-group-title"><i class="fa fa-file-alt"></i> Documents</div>
-            </li>
-
+            <!-- Documents -->
+            <div class="nav-group-title">Documents</div>
             <li>
                 <a href="index.php?page=compl_list">
-                    <i class="fa fa-receipt"></i> <?=$xml->invoice?>
+                    <i class="fa fa-receipt"></i>
+                    <span class="menu-label"><?=$xml->invoice?></span>
+                    <span class="sidebar-tooltip"><?=$xml->invoice?></span>
                 </a>
             </li>
 
             <li>
                 <a href="index.php?page=compl_list2">
-                    <i class="fa fa-file-invoice-dollar"></i> <?=$xml->taxinvoice?>
+                    <i class="fa fa-file-invoice-dollar"></i>
+                    <span class="menu-label"><?=$xml->taxinvoice?></span>
+                    <span class="sidebar-tooltip"><?=$xml->taxinvoice?></span>
                 </a>
             </li>
 
-            <!-- Reports Section -->
-            <li>
-                <div class="nav-group-title"><i class="fa fa-chart-bar"></i> Reports</div>
-            </li>
-
+            <!-- Reports -->
+            <div class="nav-group-title">Reports</div>
             <li>
                 <a href="index.php?page=report">
-                    <i class="fa fa-book"></i> <?=$xml->report?>
+                    <i class="fa fa-book"></i>
+                    <span class="menu-label"><?=$xml->report?></span>
+                    <span class="sidebar-tooltip"><?=$xml->report?></span>
                 </a>
             </li>
 
@@ -529,36 +668,38 @@
 </nav>
 
 <script>
-    function toggleSubmenu(event) {
-        event.preventDefault();
-        const parentLi = event.target.closest('li');
-        const submenu = parentLi.querySelector('.nav-second-level');
-        const arrow = parentLi.querySelector('.fa.arrow');
-        
-        if (submenu) {
-            submenu.classList.toggle('in');
-            if (arrow) {
-                arrow.style.transform = submenu.classList.contains('in') ? 'rotate(180deg)' : 'rotate(0deg)';
-                arrow.style.transition = 'transform 0.3s ease';
-            }
-        }
+    // Toggle Sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('expanded');
+        localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
     }
 
-    // Highlight active menu item
+    // Toggle Submenu
+    function toggleSubmenu(event, submenuId) {
+        event.preventDefault();
+        const submenu = document.getElementById(submenuId);
+        submenu.classList.toggle('in');
+    }
+
+    // Restore sidebar state
     document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const isExpanded = localStorage.getItem('sidebarExpanded') === 'true';
+        if (isExpanded) {
+            sidebar.classList.add('expanded');
+        }
+
+        // Highlight active menu item
         const currentPage = new URLSearchParams(window.location.search).get('page');
         if (currentPage) {
             document.querySelectorAll('#side-menu a').forEach(link => {
                 if (link.href.includes('page=' + currentPage)) {
                     link.closest('li').classList.add('active');
-                    // Also show parent submenu if exists
+                    // Show parent submenu if exists
                     const parent = link.closest('.nav-second-level');
                     if (parent) {
                         parent.classList.add('in');
-                        const arrow = parent.closest('li').querySelector('.fa.arrow');
-                        if (arrow) {
-                            arrow.style.transform = 'rotate(180deg)';
-                        }
                     }
                 }
             });
