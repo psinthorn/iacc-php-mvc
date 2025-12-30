@@ -1,6 +1,9 @@
 <?php
 ini_set('display_errors', '0');
-ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_STRICT);
+set_error_handler(function($errno, $errstr) {
+    if ($errno & (E_DEPRECATED | E_STRICT)) return true;
+    return false;
+});
 ob_start();
 // session_start();
 // require_once("inc/sys.configs.php");
