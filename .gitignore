@@ -1,0 +1,73 @@
+# Docker volumes and build artifacts
+.docker/
+docker-volumes/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Docker and Container files
+.dockerignore
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+error_log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if any)
+node_modules/
+npm-debug.log
+
+# Composer (if added later)
+vendor/
+composer.lock
+
+# IDE workspace
+*.workspace
+
+# OS specific
+Thumbs.db
+.directory
+
+# Backup files
+*.bak
+*.backup
+*.sql.bak
+*.tar.gz
+
+# PHP specific
+.php_cs.cache
+.phpunit.result.cache
+
+# Generated files
+.env.production.local
+database.sqlite
+
+# Keep but ignore content of these directories
+upload/*
+!upload/.gitkeep
+file/*
+!file/.gitkeep
+
+# Keep Docker configuration
+!docker/
+!docker/**

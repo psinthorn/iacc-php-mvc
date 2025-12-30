@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # PHP-FPM Service
+  php:
+    build: .
+    container_name: iacc_php
+    working_dir: /var/www/html
+    ports:
+      - "9000:9000"
+    volumes:
+      # Mount the iacc application directory
+      - ./iacc:/var/www/html
+      # Mount resources directory for classes and helpers
+      - ./resources:/var/www/html/resources
+      # Upload and file directories - for persistence
+      - php_uploads:/var/www/html/upload
+      - php_files:/var/www/html/file
+    environment:
+      # Pass environment variables if needed
+      - PHP_MAX_EXECUTION_TIME=300
+      - PHP_MEMORY_LIMIT=256M
+    depends_on:
+      - mysql
+    networks:
+      - iacc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MySQL Service (Development/Testing with existing online database reference)
+  mysql:
+    image: mysql:5.7
+    container_name: iacc_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: iacc
+      MYSQL_ROOT_HOST: '%'
+      TZ: Asia/Bangkok
+    volumes:
+      # Database persistent storage
+      - mysql_data:/var/lib/mysql
+      # Initialize database with production backup (exported from current running system)
+      - ./iacc/theiconn_cms.sql:/docker-entrypoint-initdb.d/01-init.sql
+      # MySQL configuration
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - iacc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: iacc_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Application code
+      - ./iacc:/var/www/html
+      # Upload and file directories
+      - php_uploads:/var/www/html/upload
+      - php_files:/var/www/html/file
+      # Nginx configuration
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - iacc-network
+    restart: unless-stopped
+
+  # PhpMyAdmin for Database Management (optional)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: iacc_phpmyadmin
+    ports:
+      - "8083:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+      PMA_DATABASE: iacc
+    depends_on:
+      - mysql
+    networks:
+      - iacc-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+  php_uploads:
+    driver: local
+  php_files:
+    driver: local
+
+networks:
+  iacc-network:
+    driver: bridge
