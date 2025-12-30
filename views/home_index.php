@@ -279,7 +279,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="ms-auto user-menu">
-                    <span><i class="fas fa-user-circle"></i> Welcome Admin</span>
+                    <span><i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($user_name); ?></span>
                 </div>
             </div>
         </div>
