@@ -14,9 +14,21 @@ if(mysqli_num_rows($query)=="1"){
 	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' and valid_end='0000-00-00'"));
 	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $data['payby']) . "' and valid_end='0000-00-00'"));
 	
-$logoPath = (isset($vender['logo']) && !empty($vender['logo'])) ? realpath(dirname(__FILE__) . '/upload/' . $vender['logo']) : '';
+$logo_path = '';
+if (isset($vender['logo']) && !empty($vender['logo'])) {
+	$logo_path = dirname(__FILE__) . '/upload/' . $vender['logo'];
+	if (!file_exists($logo_path)) {
+		$logo_path = '';
+	}
+}
+
+$logo_img = '';
+if (!empty($logo_path)) {
+	$logo_img = '<img src="'.$logo_path.'" height="60" />';
+}
+
 $html = '
-<div style="width:20%; float:left;">' . ($logoPath && file_exists($logoPath) ? '<img src="' . $logoPath . '"  height="60" >' : '') . '</div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
+<div style="width:20%; float:left;">'.$logo_img.'</div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
 <small><br>'.$vender['adr_tax'].'<br>'.$vender['city_tax'].' '.$vender['district_tax'].' '.$vender['province_tax'].' '.$vender['zip_tax'].'<br>Tel : '.$vender['phone'].'  Fax : '.$vender['fax'].' Email: '.$vender['email'].'<br>Tax: '.$vender['tax'].'</small></div>
 
 
