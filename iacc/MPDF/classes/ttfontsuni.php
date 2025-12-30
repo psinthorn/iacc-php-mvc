@@ -1911,7 +1911,7 @@ var $kerninfo;
 				$name = substr($opost,$ptr,$len);
 				$gid = $glyphNameIndex[$i+258];
 				// Select uni0600.xxx(x) - uni06FF.xxx(x)
-				if (preg_match('/^uni(06[0-9a-f]{2})\.(fina|medi|init|fin|med|ini)$/i',$name,$m)) {
+				if (preg_match('/^uni(06[0-9a-f][2])\.(fina|medi|init|fin|med|ini)$/i',$name,$m)) {
 				  if (!isset($glyphToChar[$gid]) || (isset($glyphToChar[$gid]) && is_array($glyphToChar[$gid]) && count($glyphToChar[$gid])==1 && $glyphToChar[$gid][0]>57343 && $glyphToChar[$gid][0]<63489)) {	// if set in PUA private use area E000-F8FF, or NOT Unicode mapped
 					$uni = hexdec($m[1]);
 					$form = strtoupper(substr($m[2],0,1));

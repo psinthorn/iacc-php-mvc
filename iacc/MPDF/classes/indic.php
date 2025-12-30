@@ -40,9 +40,9 @@ function substituteIndic($earr, $lang, $font) {
 		$prebasedvowels = "(093F)";
 		$nukta = "093C";
 		$halant = "094D";
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT  ==  VIRAMA
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT  ==  VIRAMA
 	}
 
 	// BENGALI vowels [09BF 09C7 09C8]
@@ -59,9 +59,9 @@ function substituteIndic($earr, $lang, $font) {
 		$halant = "09CD";
 		// mPDF 5.0.044
 		$bnfullcons = "0995|0996|0997|0998|0999|099A|099B|099C|099D|099F|09A0|09A1|09A2|09A3|09A4|09A5|09A6|09A7|09A8|09AA|09AB|09AC|09AD|09AE|09AF|09B0|09B2|09B6|09B7|09B8|09B9|09DC|09DD|09DF";
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
 		// mPDF 5.0.044
 		// .. and shifting left-based vowel further to the left in case 3 consonants together.
 		$vstr = preg_replace('/('.$bnfullcons.') '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);
@@ -81,9 +81,9 @@ function substituteIndic($earr, $lang, $font) {
 		$prebasedvowels = "(0ABF)";
 		$nukta = "0ABC";
 		$halant = "0ACD";
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
 	}
 
 	// GURMUKHI/PUNJABI pre-based vowel [0ABF]
@@ -91,9 +91,9 @@ function substituteIndic($earr, $lang, $font) {
 		$prebasedvowels = "(0A3F)";
 		$nukta = "0A3C";
 		$halant = "0A4D";
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA 
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.' '.$nukta.'/','\\2 \\1 '.$nukta, $vstr);	// before NUKTA 
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$prebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
 	}
 
 	// TAMIL pre-based vowel [0ABF]
@@ -108,7 +108,7 @@ function substituteIndic($earr, $lang, $font) {
 		$prebasedvowels = "(0BC6|0BC7|0BC8)";
 		// No nukta
 		$halant = "0BCD";	// Doesn't seem to move most in front of halanted consonants
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$prebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
 		// ? Only for special case KSS (already moved to left of 0BB7)
 		$vstr = preg_replace('/0B95 '.$halant.' '.$prebasedvowels.' 0BB7/','\\1 0B95 '.$halant.' 0BB7', $vstr);
 	}
@@ -122,9 +122,9 @@ function substituteIndic($earr, $lang, $font) {
 		$orprebasedvowels = "(0B47)";
 		// No nukta
 		$halant = "0B4D";	
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$orprebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$orprebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$orprebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
+		$vstr = preg_replace('/([A-F0-9][4]) '.$orprebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$orprebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$orprebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
 	}
 
 	// MALAYALAM
@@ -161,8 +161,8 @@ function substituteIndic($earr, $lang, $font) {
 		$mlprebasedvowels = "(0D46|0D47|0D48)";
 		// No nukta
 		$halant = "0D4D";	
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$mlprebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$mlprebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
+		$vstr = preg_replace('/([A-F0-9][4]) '.$mlprebasedvowels.'/','\\2 \\1', $vstr);	// vowel sign pre-based shift left
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$mlprebasedvowels.'/','\\2 \\1 '.$halant, $vstr);	// before CHAR HALANT
 	}
 
 	// TELUGU 
@@ -207,7 +207,7 @@ function substituteIndic($earr, $lang, $font) {
 
 	// TELUGU Ra Halant <Consonant> Halant => halfRa Halant<Consonant> Halant 
 	if ($lang=='te') {
-		$vstr = preg_replace('/0C30 0C4D ([A-F0-9]{4}) 0C4D/','E021 0C4D \\1 0C4D', $vstr);	
+		$vstr = preg_replace('/0C30 0C4D ([A-F0-9][4]) 0C4D/','E021 0C4D \\1 0C4D', $vstr);	
 	}
 
 	// KANNADA 
@@ -359,8 +359,8 @@ function substituteIndic($earr, $lang, $font) {
 	// MALAYALAM Shift Reph to LEFT [E00E] (mlylmRaVattu)
 	else if ($lang=='ml') {
 		$halant = "0D4D";	
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' 0D30/','E00E \\1', $vstr);	// 0D30 = Ra
-		$vstr = preg_replace('/([A-F0-9]{4}) '.$halant.' '.$mlprebasedvowels .' 0D30/','\\2 E00E \\1', $vstr);	// 0D30 = Ra
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' 0D30/','E00E \\1', $vstr);	// 0D30 = Ra
+		$vstr = preg_replace('/([A-F0-9][4]) '.$halant.' '.$mlprebasedvowels .' 0D30/','\\2 E00E \\1', $vstr);	// 0D30 = Ra
 
 		$mlfullforms = "0D15|0D16|0D17|0D18|0D19|0D1A|0D1B|0D1C|0D1D|0D1E|0D1F|0D20|0D21|0D22|0D23|0D24|0D25|0D26|0D27|0D28|0D2A|0D2B|0D2C|0D2D|0D2E|0D2F|0D30|0D31|0D32|0D33|0D34|0D35|0D36|0D37|0D38|0D39"
 		."|E010|E011|E012|E013|E014|E015|E016|E017|E018|E019|E01A|E01B|E01C|E01D|E01E|E01F|E020|E021|E022|E023|E024|E025|E026|E027|E028|E029|E02A|E02B|E02C|E02D|E02E|E02F|E030|E031|E032|E033|E034|E035|E036|E037|E038|E039|E03A|E03B|E03C|E03D|E03E|E03F|E040|E041|E042|E043|E044|E045|E046|E047|E048|E049|E04A|E04B|E04C|E04D|E04E|E04F|E050|E051|E052|E053|E054|E055|E056|E057|E058|E059|E05A|E05B|E05C|E05D|E05E|E05F|E060|E061|E062|E063|E064|E065|E066|E067|E068|E069|E06A|E06B|E06C|E06D|E06E|E06F|E070|E071|E072|E073|E074|E075|E076|E077|E078|E079|E07A|E07B|E07C|E07D";

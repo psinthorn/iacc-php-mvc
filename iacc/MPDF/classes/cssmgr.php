@@ -684,7 +684,7 @@ function fixCSS($prop) {
 		}
 		// mPDF 5.6.13
 		else if ($k == 'TEXT-ALIGN') {
-			if (preg_match('/["\'](.){1}["\']/i',$v,$m)) { 
+			if (preg_match('/["\'](.)[1]["\']/i',$v,$m)) { 
 				$d = array_search($m[1],$this->mpdf->decimal_align);
 				if ($d !== false) { $newprop['TEXT-ALIGN'] = $d; }
 				if (preg_match('/(center|left|right)/i',$v,$m)) { $newprop['TEXT-ALIGN'] .= strtoupper(substr($m[1],0,1)); }
