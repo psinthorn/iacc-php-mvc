@@ -20,21 +20,8 @@ if(mysqli_num_rows($query)==1){
 		
 		}
 
-$logo_path = '';
-if (!empty($logo)) {
-	$logo_path = dirname(__FILE__) . '/upload/' . $logo;
-	if (!file_exists($logo_path)) {
-		$logo_path = '';
-	}
-}
-
-$logo_img = '';
-if (!empty($logo_path)) {
-	$logo_img = '<img src="'.$logo_path.'" height="60" />';
-}
-
 $html = '
-<div style="width:20%; float:left;">'.$logo_img.'</div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
+<div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
 <small><br>'.$vender['adr_tax'].'<br>'.$vender['city_tax'].' '.$vender['district_tax'].' '.$vender['province_tax'].' '.$vender['zip_tax'].'<br>Tel : '.$vender['phone'].'  Fax : '.$vender['fax'].' Email: '.$vender['email'].'<br>Tax: '.$vender['tax'].'</small></div>
 
 <div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
