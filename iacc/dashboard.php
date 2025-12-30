@@ -1,6 +1,81 @@
 <?php
-// Dashboard page for iacc system
-// This displays the modern dashboard with KPI cards and metrics
+// Dashboard page for iacc system - WITH REAL DATA INTEGRATION
+// This displays the modern dashboard with actual data from database
+
+// Get company ID from session
+$com_id = $_SESSION['com_id'] ?? null;
+$cur_date = date('Y-m-d');
+
+// ============ FETCH KPI DATA ============
+$kpi_data = [
+    'sales_today' => 0,
+    'sales_month' => 0,
+    'pending_orders' => 0,
+    'low_stock' => 0
+];
+
+if ($com_id) {
+    // Sales Today - from pay table (receipts)
+    $sql_today = "SELECT IFNULL(SUM(pay_amount), 0) as total FROM pay 
+                   WHERE pay_com_id = '$com_id' AND DATE(pay_date) = '$cur_date'";
+    $result = $db->query($sql_today);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $kpi_data['sales_today'] = $row['total'];
+    }
+    
+    // Sales This Month - from pay table
+    $month_start = date('Y-m-01');
+    $sql_month = "SELECT IFNULL(SUM(pay_amount), 0) as total FROM pay 
+                   WHERE pay_com_id = '$com_id' AND DATE(pay_date) >= '$month_start' AND DATE(pay_date) <= '$cur_date'";
+    $result = $db->query($sql_month);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $kpi_data['sales_month'] = $row['total'];
+    }
+    
+    // Pending Purchase Orders - from po table
+    $sql_pending = "SELECT COUNT(*) as count FROM po 
+                    WHERE po_com_id = '$com_id' AND po_status != '3'";
+    $result = $db->query($sql_pending);
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $kpi_data['pending_orders'] = $row['count'];
+    }
+    
+    // Get recent receipts/invoices - from pay table
+    $sql_receipts = "SELECT p.*, c.company_name FROM pay p
+                     LEFT JOIN company c ON p.pay_to = c.company_id
+                     WHERE p.pay_com_id = '$com_id'
+                     ORDER BY p.pay_date DESC LIMIT 5";
+    $recent_receipts = $db->query($sql_receipts);
+    
+    // Get pending POs - from po table
+    $sql_pos = "SELECT p.*, v.company_name FROM po p
+                LEFT JOIN company v ON p.po_vendor_id = v.company_id
+                WHERE p.po_com_id = '$com_id' AND p.po_status != '3'
+                ORDER BY p.po_date DESC LIMIT 5";
+    $pending_pos = $db->query($sql_pos);
+} else {
+    $recent_receipts = null;
+    $pending_pos = null;
+}
+
+// Function to format currency
+function format_currency($amount) {
+    return '฿' . number_format($amount, 2);
+}
+
+// Function to get status badge
+function get_status_badge($status) {
+    switch($status) {
+        case '0': return '<span class="badge" style="background: #ffc107; color: black;">Pending</span>';
+        case '1': return '<span class="badge" style="background: #17a2b8; color: white;">Processing</span>';
+        case '2': return '<span class="badge" style="background: #28a745; color: white;">Completed</span>';
+        case '3': return '<span class="badge" style="background: #6c757d; color: white;">Cancelled</span>';
+        default: return '<span class="badge" style="background: #6c757d; color: white;">Unknown</span>';
+    }
+}
 ?>
 
 <style>
@@ -256,6 +331,34 @@
         background-color: #ff6b6b;
         color: white;
     }
+
+    .action-btn {
+        padding: 4px 8px;
+        margin: 0 2px;
+        font-size: 11px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: #764ba2;
+    }
+
+    .btn-edit {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #138496;
+    }
 </style>
 
 <div class="dashboard-wrapper">
@@ -278,7 +381,7 @@
                     <i class="fa fa-dollar-sign"></i>
                 </div>
                 <div class="kpi-label">Sales Today</div>
-                <div class="kpi-value">฿0.00</div>
+                <div class="kpi-value"><?php echo format_currency($kpi_data['sales_today']); ?></div>
                 <div class="kpi-change">
                     <i class="fa fa-arrow-up"></i> Last 24 hours
                 </div>
@@ -290,7 +393,7 @@
                     <i class="fa fa-chart-line"></i>
                 </div>
                 <div class="kpi-label">Month Sales</div>
-                <div class="kpi-value">฿0.00</div>
+                <div class="kpi-value"><?php echo format_currency($kpi_data['sales_month']); ?></div>
                 <div class="kpi-change">
                     Current month
                 </div>
@@ -302,9 +405,13 @@
                     <i class="fa fa-hourglass-half"></i>
                 </div>
                 <div class="kpi-label">Pending Orders</div>
-                <div class="kpi-value">0</div>
+                <div class="kpi-value"><?php echo $kpi_data['pending_orders']; ?></div>
                 <div class="kpi-change">
-                    <span class="badge badge-warning">Action needed</span>
+                    <?php if($kpi_data['pending_orders'] > 0): ?>
+                        <span class="badge badge-warning">Action needed</span>
+                    <?php else: ?>
+                        <span class="badge badge-success">All clear</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -313,10 +420,10 @@
                 <div class="kpi-icon danger">
                     <i class="fa fa-exclamation-triangle"></i>
                 </div>
-                <div class="kpi-label">Low Stock Items</div>
-                <div class="kpi-value">0</div>
+                <div class="kpi-label">Active POs</div>
+                <div class="kpi-value"><?php echo $kpi_data['pending_orders']; ?></div>
                 <div class="kpi-change">
-                    Need attention
+                    Processing
                 </div>
             </div>
         </div>
@@ -329,28 +436,42 @@
             <!-- Recent Receipts -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-receipt"></i> Recent Receipts
+                    <i class="fa fa-receipt"></i> Recent Receipts / Payments
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Receipt #</th>
                                 <th>Date</th>
+                                <th>From/To</th>
                                 <th>Amount</th>
-                                <th>Status</th>
+                                <th>Method</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="5">
-                                    <div class="empty-state">
-                                        <i class="fa fa-inbox"></i>
-                                        <p>No receipts found</p>
-                                    </div>
-                                </td>
-                            </tr>
+                            <?php if($recent_receipts && $recent_receipts->num_rows > 0): ?>
+                                <?php while($receipt = $recent_receipts->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?php echo date('M d, Y', strtotime($receipt['pay_date'])); ?></td>
+                                    <td><?php echo substr($receipt['company_name'] ?? 'N/A', 0, 20); ?></td>
+                                    <td><?php echo format_currency($receipt['pay_amount']); ?></td>
+                                    <td><?php echo ucfirst($receipt['pay_method'] ?? 'Cash'); ?></td>
+                                    <td>
+                                        <button class="action-btn btn-view">View</button>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="fa fa-inbox"></i>
+                                            <p>No payments recorded yet</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -368,19 +489,34 @@
                                 <th>PO #</th>
                                 <th>Vendor</th>
                                 <th>Amount</th>
-                                <th>Due Date</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="5">
-                                    <div class="empty-state">
-                                        <i class="fa fa-check-circle"></i>
-                                        <p>✓ All orders processed!</p>
-                                    </div>
-                                </td>
-                            </tr>
+                            <?php if($pending_pos && $pending_pos->num_rows > 0): ?>
+                                <?php while($po = $pending_pos->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?php echo $po['po_id']; ?></td>
+                                    <td><?php echo substr($po['company_name'] ?? 'N/A', 0, 20); ?></td>
+                                    <td><?php echo format_currency($po['po_total'] ?? 0); ?></td>
+                                    <td><?php echo get_status_badge($po['po_status']); ?></td>
+                                    <td>
+                                        <button class="action-btn btn-view">View</button>
+                                        <button class="action-btn btn-edit">Edit</button>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="fa fa-check-circle"></i>
+                                            <p>✓ No pending orders</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -394,29 +530,24 @@
                 <h5 class="card-title">
                     <i class="fa fa-bolt"></i> Quick Links
                 </h5>
-                <a href="index.php?page=rec" class="quick-link">
+                <a href="index.php?page=receipt_list" class="quick-link">
                     <i class="fa fa-receipt"></i>
-                    <span class="quick-link-text">Receipts</span>
-                    <i class="fa fa-chevron-right quick-link-arrow"></i>
-                </a>
-                <a href="index.php?page=pr_list" class="quick-link">
-                    <i class="fa fa-clipboard-list"></i>
-                    <span class="quick-link-text">Purchase Requests</span>
+                    <span class="quick-link-text">All Receipts</span>
                     <i class="fa fa-chevron-right quick-link-arrow"></i>
                 </a>
                 <a href="index.php?page=po_list" class="quick-link">
-                    <i class="fa fa-shopping-bag"></i>
+                    <i class="fa fa-shopping-cart"></i>
                     <span class="quick-link-text">Purchase Orders</span>
-                    <i class="fa fa-chevron-right quick-link-arrow"></i>
-                </a>
-                <a href="index.php?page=vou_list" class="quick-link">
-                    <i class="fa fa-file-invoice"></i>
-                    <span class="quick-link-text">Vouchers</span>
                     <i class="fa fa-chevron-right quick-link-arrow"></i>
                 </a>
                 <a href="index.php?page=deliv_list" class="quick-link">
                     <i class="fa fa-truck"></i>
                     <span class="quick-link-text">Deliveries</span>
+                    <i class="fa fa-chevron-right quick-link-arrow"></i>
+                </a>
+                <a href="index.php?page=report" class="quick-link">
+                    <i class="fa fa-chart-bar"></i>
+                    <span class="quick-link-text">Reports</span>
                     <i class="fa fa-chevron-right quick-link-arrow"></i>
                 </a>
             </div>
@@ -428,12 +559,12 @@
                 </h5>
                 <div style="font-size: 13px;">
                     <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
-                        <span><strong>Date:</strong></span>
-                        <span><?php echo date('M d, Y'); ?></span>
+                        <span><strong>Company:</strong></span>
+                        <span><?php echo $_SESSION['com_name'] ?? 'N/A'; ?></span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
-                        <span><strong>Time:</strong></span>
-                        <span><?php echo date('H:i:s'); ?></span>
+                        <span><strong>Date:</strong></span>
+                        <span><?php echo date('M d, Y'); ?></span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 10px 0;">
                         <span><strong>Status:</strong></span>
@@ -441,39 +572,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Quick Stats -->
-            <div class="content-card">
-                <h5 class="card-title">
-                    <i class="fa fa-bar-chart"></i> Quick Stats
-                </h5>
-                <div class="row" style="margin: 0;">
-                    <div class="col-md-6">
-                        <div class="stat-box">
-                            <div class="stat-label">Total Invoices</div>
-                            <div class="stat-value">0</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="stat-box" style="background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);">
-                            <div class="stat-label">Completed</div>
-                            <div class="stat-value">0</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
-
-<script>
-    // Add some interactivity
-    document.querySelectorAll('.kpi-card').forEach(card => {
-        card.addEventListener('click', function() {
-            this.style.transform = 'scale(0.98)';
-            setTimeout(() => {
-                this.style.transform = 'translateY(-3px)';
-            }, 100);
-        });
-    });
-</script>
