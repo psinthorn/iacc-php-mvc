@@ -1,43 +1,71 @@
 <?php
-// Dashboard page for iacc system
-// Simplified version with mock data for now
+// Dashboard page for iacc system - REAL DATA WIRED
+// Pulls actual data from database tables
 
-$com_id = $_SESSION['com_id'] ?? null;
 $cur_date = date('Y-m-d');
+$month_start = date('Y-m-01');
 
-// Initialize KPI data with mock values
-$kpi_data = [
-    'sales_today' => 15500.00,
-    'sales_month' => 125800.50,
-    'pending_orders' => 3,
-    'low_stock' => 2
-];
+// ============ FETCH KPI DATA FROM DATABASE ============
 
-// Mock recent receipts
-$recent_receipts_data = [
-    ['date' => '2025-12-30', 'company' => 'ABC Company', 'amount' => 5000, 'method' => 'Cash'],
-    ['date' => '2025-12-29', 'company' => 'XYZ Corp', 'amount' => 3500, 'method' => 'Bank Transfer'],
-    ['date' => '2025-12-28', 'company' => 'DEF Ltd', 'amount' => 7000, 'method' => 'Check'],
-];
+// Sales Today - from pay table (payment volume)
+$sql_today = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay 
+              WHERE DATE(pay.date) = '$cur_date'";
+$result_today = mysqli_query($db->conn, $sql_today);
+$row_today = mysqli_fetch_assoc($result_today);
+$sales_today = $row_today['total'] ?? 0;
 
-// Mock pending POs
-$pending_pos_data = [
-    ['id' => 'PO-001', 'vendor' => 'Supplier A', 'amount' => 12000, 'status' => '0'],
-    ['id' => 'PO-002', 'vendor' => 'Supplier B', 'amount' => 8500, 'status' => '1'],
-];
+// Sales This Month - from pay table
+$sql_month = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay 
+              WHERE DATE(pay.date) >= '$month_start' AND DATE(pay.date) <= '$cur_date'";
+$result_month = mysqli_query($db->conn, $sql_month);
+$row_month = mysqli_fetch_assoc($result_month);
+$sales_month = $row_month['total'] ?? 0;
+
+// Pending Purchase Orders - from po table (assuming status checking)
+$sql_pending = "SELECT COUNT(po.id) as count FROM po WHERE po.over = 0";
+$result_pending = mysqli_query($db->conn, $sql_pending);
+$row_pending = mysqli_fetch_assoc($result_pending);
+$pending_orders = $row_pending['count'] ?? 0;
+
+// Total PO count
+$sql_total_po = "SELECT COUNT(po.id) as count FROM po";
+$result_total = mysqli_query($db->conn, $sql_total_po);
+$row_total = mysqli_fetch_assoc($result_total);
+$total_orders = $row_total['count'] ?? 0;
+
+// Recent payments - from pay table
+$sql_recent_pay = "SELECT pay.*, po.name, po.tax 
+                   FROM pay 
+                   LEFT JOIN po ON pay.po_id = po.id 
+                   ORDER BY pay.date DESC LIMIT 5";
+$recent_payments = mysqli_query($db->conn, $sql_recent_pay);
+
+// Pending POs - from po table where over = 0
+$sql_pending_po = "SELECT po.*, 
+                   (SELECT SUM(volumn) FROM pay WHERE po_id = po.id) as paid_amount
+                   FROM po 
+                   WHERE po.over = 0 
+                   ORDER BY po.date DESC LIMIT 5";
+$pending_pos = mysqli_query($db->conn, $sql_pending_po);
+
+// Completed orders this month
+$sql_completed = "SELECT COUNT(po.id) as count FROM po 
+                  WHERE po.over = 1 AND DATE(po.date) >= '$month_start'";
+$result_completed = mysqli_query($db->conn, $sql_completed);
+$row_completed = mysqli_fetch_assoc($result_completed);
+$completed_orders = $row_completed['count'] ?? 0;
 
 function format_currency($amount) {
     return '฿' . number_format($amount, 2);
 }
 
 function get_status_badge($status) {
-    $badges = [
-        '0' => '<span class="badge" style="background: #ffc107; color: black;">Pending</span>',
-        '1' => '<span class="badge" style="background: #17a2b8; color: white;">Processing</span>',
-        '2' => '<span class="badge" style="background: #28a745; color: white;">Completed</span>',
-        '3' => '<span class="badge" style="background: #6c757d; color: white;">Cancelled</span>'
-    ];
-    return $badges[$status] ?? '<span class="badge" style="background: #6c757d; color: white;">Unknown</span>';
+    if ($status == 0) {
+        return '<span class="badge" style="background: #ffc107; color: black;">Active</span>';
+    } else if ($status == 1) {
+        return '<span class="badge" style="background: #28a745; color: white;">Completed</span>';
+    }
+    return '<span class="badge" style="background: #6c757d; color: white;">Unknown</span>';
 }
 ?>
 
@@ -282,7 +310,7 @@ function get_status_badge($status) {
     }
 
     .badge-warning {
-        background-color: #ffd43b;
+        background-color: #ffc107;
         color: #333;
     }
 
@@ -323,7 +351,7 @@ function get_status_badge($status) {
                     <i class="fa fa-dollar-sign"></i>
                 </div>
                 <div class="kpi-label">Sales Today</div>
-                <div class="kpi-value"><?php echo format_currency($kpi_data['sales_today']); ?></div>
+                <div class="kpi-value"><?php echo format_currency($sales_today); ?></div>
                 <div class="kpi-change">
                     <i class="fa fa-arrow-up"></i> Last 24 hours
                 </div>
@@ -335,7 +363,7 @@ function get_status_badge($status) {
                     <i class="fa fa-chart-line"></i>
                 </div>
                 <div class="kpi-label">Month Sales</div>
-                <div class="kpi-value"><?php echo format_currency($kpi_data['sales_month']); ?></div>
+                <div class="kpi-value"><?php echo format_currency($sales_month); ?></div>
                 <div class="kpi-change">
                     Current month
                 </div>
@@ -347,21 +375,25 @@ function get_status_badge($status) {
                     <i class="fa fa-hourglass-half"></i>
                 </div>
                 <div class="kpi-label">Pending Orders</div>
-                <div class="kpi-value"><?php echo $kpi_data['pending_orders']; ?></div>
+                <div class="kpi-value"><?php echo $pending_orders; ?></div>
                 <div class="kpi-change">
-                    <span class="badge badge-warning">Action needed</span>
+                    <?php if($pending_orders > 0): ?>
+                        <span class="badge badge-warning">Action needed</span>
+                    <?php else: ?>
+                        <span class="badge badge-success">All clear</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card alert">
                 <div class="kpi-icon danger">
-                    <i class="fa fa-exclamation-triangle"></i>
+                    <i class="fa fa-shopping-cart"></i>
                 </div>
-                <div class="kpi-label">Low Stock Items</div>
-                <div class="kpi-value"><?php echo $kpi_data['low_stock']; ?></div>
+                <div class="kpi-label">Total Orders</div>
+                <div class="kpi-value"><?php echo $total_orders; ?></div>
                 <div class="kpi-change">
-                    Need attention
+                    All-time
                 </div>
             </div>
         </div>
@@ -371,67 +403,87 @@ function get_status_badge($status) {
     <div class="row">
         <!-- Left Column -->
         <div class="col-lg-8">
-            <!-- Recent Receipts -->
+            <!-- Recent Payments -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-receipt"></i> Recent Receipts
+                    <i class="fa fa-receipt"></i> Recent Payments
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Company</th>
+                                <th>PO #</th>
                                 <th>Amount</th>
                                 <th>Method</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($recent_receipts_data as $receipt): ?>
-                            <tr>
-                                <td><?php echo date('M d, Y', strtotime($receipt['date'])); ?></td>
-                                <td><?php echo $receipt['company']; ?></td>
-                                <td><?php echo format_currency($receipt['amount']); ?></td>
-                                <td><?php echo $receipt['method']; ?></td>
-                                <td>
-                                    <button class="action-btn">View</button>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
+                            <?php if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
+                                <?php while($payment = mysqli_fetch_assoc($recent_payments)): ?>
+                                <tr>
+                                    <td><?php echo date('M d, Y', strtotime($payment['date'])); ?></td>
+                                    <td><?php echo $payment['po_id'] . ' - ' . substr($payment['name'] ?? 'N/A', 0, 15); ?></td>
+                                    <td><?php echo format_currency($payment['volumn']); ?></td>
+                                    <td><?php echo $payment['value'] ?? 'Direct'; ?></td>
+                                    <td>
+                                        <button class="action-btn">View</button>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="fa fa-inbox"></i>
+                                            <p>No payments recorded yet</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Pending Purchase Orders -->
+            <!-- Purchase Orders -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-shopping-cart"></i> Pending Purchase Orders
+                    <i class="fa fa-shopping-cart"></i> Active Purchase Orders
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>PO #</th>
-                                <th>Vendor</th>
-                                <th>Amount</th>
+                                <th>PO ID</th>
+                                <th>Name</th>
+                                <th>Tax ID</th>
+                                <th>Date</th>
                                 <th>Status</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($pending_pos_data as $po): ?>
-                            <tr>
-                                <td><?php echo $po['id']; ?></td>
-                                <td><?php echo $po['vendor']; ?></td>
-                                <td><?php echo format_currency($po['amount']); ?></td>
-                                <td><?php echo get_status_badge($po['status']); ?></td>
-                                <td>
-                                    <button class="action-btn">View</button>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
+                            <?php if($pending_pos && mysqli_num_rows($pending_pos) > 0): ?>
+                                <?php while($po = mysqli_fetch_assoc($pending_pos)): ?>
+                                <tr>
+                                    <td><?php echo $po['po_id_new'] ?? $po['id']; ?></td>
+                                    <td><?php echo substr($po['name'], 0, 20); ?></td>
+                                    <td><?php echo $po['tax']; ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($po['date'])); ?></td>
+                                    <td><?php echo get_status_badge($po['over']); ?></td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="fa fa-check-circle"></i>
+                                            <p>✓ All orders completed</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -447,7 +499,7 @@ function get_status_badge($status) {
                 </h5>
                 <a href="index.php?page=rec" class="quick-link">
                     <i class="fa fa-receipt"></i>
-                    <span class="quick-link-text">Receipts</span>
+                    <span class="quick-link-text">Payments</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
                 <a href="index.php?page=po_list" class="quick-link">
@@ -455,9 +507,9 @@ function get_status_badge($status) {
                     <span class="quick-link-text">Purchase Orders</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
-                <a href="index.php?page=deliv_list" class="quick-link">
-                    <i class="fa fa-truck"></i>
-                    <span class="quick-link-text">Deliveries</span>
+                <a href="index.php?page=pr_list" class="quick-link">
+                    <i class="fa fa-clipboard-list"></i>
+                    <span class="quick-link-text">Requests</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
                 <a href="index.php?page=report" class="quick-link">
@@ -470,40 +522,40 @@ function get_status_badge($status) {
             <!-- System Info -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-info-circle"></i> System Info
+                    <i class="fa fa-info-circle"></i> System Stats
                 </h5>
                 <div style="font-size: 13px;">
                     <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
-                        <span><strong>Company:</strong></span>
-                        <span><?php echo $_SESSION['com_name'] ?? 'N/A'; ?></span>
+                        <span><strong>Total Orders:</strong></span>
+                        <span><?php echo $total_orders; ?></span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
-                        <span><strong>Date:</strong></span>
-                        <span><?php echo date('M d, Y'); ?></span>
+                        <span><strong>Completed:</strong></span>
+                        <span><?php echo $completed_orders; ?></span>
                     </div>
                     <div style="display: flex; justify-content: space-between; padding: 10px 0;">
-                        <span><strong>Status:</strong></span>
-                        <span><span class="badge badge-success">Connected</span></span>
+                        <span><strong>Updated:</strong></span>
+                        <span><?php echo date('H:i:s'); ?></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Stats -->
+            <!-- Order Stats -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-bar-chart"></i> Quick Stats
+                    <i class="fa fa-chart-pie"></i> This Month
                 </h5>
                 <div class="row" style="margin: 0;">
                     <div class="col-md-6">
                         <div class="stat-box">
-                            <div class="stat-label">Total Orders</div>
-                            <div class="stat-value">12</div>
+                            <div class="stat-label">Completed</div>
+                            <div class="stat-value"><?php echo $completed_orders; ?></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="stat-box" style="background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);">
-                            <div class="stat-label">Completed</div>
-                            <div class="stat-value">9</div>
+                            <div class="stat-label">Pending</div>
+                            <div class="stat-value"><?php echo $pending_orders; ?></div>
                         </div>
                     </div>
                 </div>
