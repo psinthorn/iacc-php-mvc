@@ -21,8 +21,9 @@ if(mysql_num_rows($query)=="1"){
 		$logo=$bandlogo[logo];
 		
 		}
+$logoPath = (!empty($logo)) ? realpath(dirname(__FILE__) . '/upload/' . $logo) : '';
 $html = '
-<div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
+<div style="width:20%; float:left;">' . ($logoPath && file_exists($logoPath) ? '<img src="' . $logoPath . '"  height="60" >' : '') . '</div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
 <small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
 
 
