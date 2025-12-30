@@ -1,7 +1,7 @@
 <?PHP 
 class HardClass { 
 	function keeplog($data){
-		while(list($key, $val) = each($data))
+		foreach($data as $key => $val)
 		{
 			$query_string .=$key."|".$val.":";
 		}

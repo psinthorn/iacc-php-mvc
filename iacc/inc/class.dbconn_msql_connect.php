@@ -18,7 +18,7 @@ function decodenum($num){
 class DbConn{ 
 	var $conn;
 	
-	function DbConn($config){
+	function __construct($config){
 
 		$this->conn = mysql_connect($config['hostname'], $config['username'], $config['password']) or die(mysql_error());
 		mysql_query("SET NAMES utf8");
