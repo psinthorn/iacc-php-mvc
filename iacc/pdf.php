@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', '0');
+ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_STRICT);
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
@@ -45,11 +47,7 @@ Child: '.$booking[child].'<br>
 //==============================================================
 //==============================================================
 
-ini_set('display_errors', '0');
-ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_STRICT);
 include("MPDF/mpdf.php");
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', '1');
 
 $mpdf=new mPDF(); 
 
