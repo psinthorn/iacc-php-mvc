@@ -77,7 +77,7 @@ case "type" : {
 	
 	$args['value']="'".htmlspecialchars($_REQUEST['type_name'])."','".$_REQUEST['des']."','".$_REQUEST['cat_id']."'";
 	$max_id=$har->insertDbMax($args);	
-	while(list($key, $val) = each($_POST))
+	foreach($_POST as $key => $val)
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
 			mysql_query("insert into map_type_to_brand values('','".$max_id."','".$key."')");
@@ -92,7 +92,7 @@ case "type" : {
 	else if($_REQUEST['method']=="E"){
 		
 		mysql_query("delete from map_type_to_brand where type_id='".$_POST[id]."'");
-		while(list($key, $val) = each($_POST))
+		foreach($_POST as $key => $val)
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
 			mysql_query("insert into map_type_to_brand values('','".$_POST[id]."','".$key."')");
