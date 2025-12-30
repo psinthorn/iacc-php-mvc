@@ -1,9 +1,4 @@
 <?php
-error_reporting(E_ERROR | E_PARSE);
-ini_set('display_errors', '0');
-set_error_handler(function($errno, $errstr) {
-    return true;
-});
 ob_start();
 // session_start();
 // require_once("inc/sys.configs.php");
