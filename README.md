@@ -243,31 +243,48 @@ iacc-php-mvc/
 
 ## Known Issues (Documented for Reference)
 
-### Security Issues
-- ❌ MD5 password hashing (insecure)
-- ❌ No CSRF protection
-- ❌ Basic session handling
-- ⚠️ SQL injection vulnerable code possible
-- ⚠️ No input validation framework
+> **📋 Comprehensive Improvement Plan Available**: See [IMPROVEMENTS_PLAN.md](IMPROVEMENTS_PLAN.md) for detailed analysis, remediation strategies, implementation roadmap, and resource estimation.
 
-### Architecture Issues
-- ⚠️ Tightly coupled code
-- ⚠️ Mixed business logic and presentation
-- ⚠️ No API layer
-- ⚠️ No dependency injection
-- ⚠️ No unit tests
+### Critical Security Issues (P1)
+- ❌ MD5 password hashing (insecure) - **CRITICAL**
+- ❌ No CSRF protection - **CRITICAL**
+- ⚠️ SQL injection vulnerable code possible - **HIGH**
+- ⚠️ Basic session handling - **HIGH**
+- ⚠️ No input validation framework - **HIGH**
 
-### Database Issues
-- ❌ No foreign key constraints
-- ❌ Inconsistent naming conventions
-- ⚠️ Missing timestamps (created_at, updated_at)
-- ⚠️ No audit trail
-- ⚠️ Invalid date handling ('0000-00-00')
+**Remediation**: Phase 1 (Months 1-3) - ~120 hours
 
-### Performance Issues
-- ⚠️ No database indexing strategy documented
-- ⚠️ N+1 query problems likely
-- ⚠️ No caching layer
+### Architecture Issues (P2)
+- ⚠️ Tightly coupled code - **MEDIUM**
+- ⚠️ Mixed business logic and presentation - **MEDIUM**
+- ⚠️ No API layer - **MEDIUM**
+- ⚠️ No dependency injection - **MEDIUM**
+- ⚠️ No unit tests - **MEDIUM**
+
+**Remediation**: Phase 3 (Months 3-8) - ~200 hours
+
+### Database Issues (P2)
+- ❌ No foreign key constraints - **MEDIUM**
+- ❌ Inconsistent naming conventions - **LOW-MEDIUM**
+- ⚠️ Missing timestamps (created_at, updated_at) - **LOW-MEDIUM**
+- ⚠️ No audit trail - **LOW-MEDIUM**
+- ⚠️ Invalid date handling ('0000-00-00') - **LOW-MEDIUM**
+
+**Remediation**: Phase 2 (Months 2-5) - ~80 hours
+
+### Performance Issues (P3)
+- ⚠️ No database indexing strategy documented - **LOW**
+- ⚠️ N+1 query problems likely - **LOW**
+- ⚠️ No caching layer - **LOW**
+
+**Remediation**: Phase 4 (Months 4-10) - ~60 hours
+
+### Summary
+- **Total Issues**: 18 known issues
+- **Critical**: 2 | **High**: 3 | **Medium**: 8 | **Low-Medium**: 5
+- **Estimated Effort**: 610 hours over 6-12 months
+- **Recommended Team**: 2-3 developers
+- **Status**: Planning phase complete, ready for implementation
 
 ## Docker Configuration (Current)
 
