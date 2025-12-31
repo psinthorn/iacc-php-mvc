@@ -7,7 +7,7 @@ $db->checkSecurity();
 <tr><td colspan="6"><?=$xml->purchasingorder?> - <?=$xml->out?></td></tr>
 <tr><th><?=$xml->customer?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id,cancel, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='2' order by cancel,po.id desc");
+$query=mysqli_query($db->conn, "select purchase_order.id as id,cancel, purchase_order.name as name, purchase_order.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.customer_id=company.id where po_id_new='' and vendor_id='".$_SESSION['company_id']."' and status='2' order by cancel,purchase_order.id desc");
 
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
@@ -30,7 +30,7 @@ echo "<td><font color='red'>".$xml->$var."</font></td><td><!--<a href='index.php
  
 <tr><th><?=$xml->vender?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,cancel, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$_SESSION['com_id']."' and status='2' order by cancel,po.id desc ");
+$query=mysqli_query($db->conn, "select purchase_order.id as id, purchase_order.name as name, purchase_order.tax as tax,cancel, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.vendor_id=company.id where po_id_new='' and customer_id='".$_SESSION['company_id']."' and status='2' order by cancel,purchase_order.id desc ");
 
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";

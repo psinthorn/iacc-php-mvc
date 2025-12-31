@@ -19,14 +19,14 @@ alert('Hello ThaiCreate.Com');
 <body>
 <body><h2><i class="fa fa-truck"></i> <?=$xml->address?></h2>
 <?php
-$query=mysql_query("select * from company_addr where com_id='".$_REQUEST[id]."' and valid_end='0000-00-00'");
+$query=mysql_query("select * from company_addr where company_id='".$_REQUEST[id]."' and valid_end='0000-00-00'");
 if(mysql_num_rows($query)=="1"){
 $method="A2";
 $data=mysql_fetch_array($query);?>
 <form action="core-function.php" methord="post" id="myform">
 	<div id="box">
-		<lable for="adr_tax"><?=$xml->raddress?></lable>
-		<input id="adr_tax" name="adr_tax" class="form-control" type="text" value="<?php echo $data[adr_tax];?>">
+		<lable for="address_tax"><?=$xml->raddress?></lable>
+		<input id="address_tax" name="address_tax" class="form-control" type="text" value="<?php echo $data[address_tax];?>">
 	</div>
 	<div id="box">
 		<lable for="city_tax"><?=$xml->rdistrict?></lable>
@@ -48,8 +48,8 @@ $data=mysql_fetch_array($query);?>
     
     <div class="clearfix"></div>
 	<div id="box">
-		<lable for="adr_tax"><?=$xml->baddress?></lable>
-		<input id="adr_bil" name="adr_bil" class="form-control" type="text"  value="<?php echo $data[adr_bil];?>">
+		<lable for="address_tax"><?=$xml->baddress?></lable>
+		<input id="address_billing" name="address_billing" class="form-control" type="text"  value="<?php echo $data[address_billing];?>">
 	</div>
 	<div id="box">
 		<lable for="city_bil"><?=$xml->bdistrict?></lable>
@@ -69,7 +69,7 @@ $data=mysql_fetch_array($query);?>
 	</div>
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="company">
-    <input type="hidden" name="com_id" value="<?php echo $data[com_id];?>">
+    <input type="hidden" name="company_id" value="<?php echo $data[company_id];?>">
 	<input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
 	<div id="box" style="padding-top:25px;">
 	<input type="submit" value="<?=$xml->save?>" class="btn btn-primary"></div>

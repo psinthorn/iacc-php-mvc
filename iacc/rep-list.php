@@ -7,7 +7,7 @@ $db->checkSecurity();
 <tr><td colspan="7"><?=$xml->receipt?> - <?=$xml->out?></td></tr>
 <tr><th><?=$xml->customer?></th><th><?=$xml->email?></th><th><?=$xml->phone?></th><th><?=$xml->receiptno?></th><th><?=$xml->createdate?></th><th width="120"></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select id,name,email,phone, DATE_FORMAT(createdate,'%d-%m-%Y') as createdate, description,rep_rw,brand,vender from receipt  where  vender='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' order by id desc");
+$query=mysqli_query($db->conn, "select id,name,email,phone, DATE_FORMAT(createdate,'%d-%m-%Y') as createdate, description,rep_rw,brand,vender from receipt  where  vender='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' order by id desc");
 
  while($data=mysqli_fetch_array($query)){
 	 if((isset($data['status']) ? $data['status'] : 0)==2)$pg="po_deliv";else $pg="po_edit";

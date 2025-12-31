@@ -57,8 +57,8 @@ totalsum+=parseFloat(document.getElementById('total'+i).value);
 	</div>
     <div id="box">
 		<lable for="name"><?=$xml->vender?></lable>
-		<select id="ven_id" name="ven_id" class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where vender='1' and id !='".$_SESSION['com_id']."' ");
+		<select id="vendor_id" name="vendor_id" class="form-control">
+			<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where vender='1' and id !='".$_SESSION['company_id']."' ");
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
@@ -109,7 +109,7 @@ totalsum+=parseFloat(document.getElementById('total'+i).value);
 	
 	<input type="hidden" name="method" value="A">
 	<input type="hidden" name="page" value="pr_list">
-	<input type="hidden" name="cus_id" value="<?php echo $_SESSION['com_id'];?>">
+	<input type="hidden" name="customer_id" value="<?php echo $_SESSION['company_id'];?>">
 	<input type="submit" value="<?=$xml->request?>" class="btn btn-primary"></div>
 </form>
 

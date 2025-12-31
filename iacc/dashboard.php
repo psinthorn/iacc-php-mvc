@@ -21,58 +21,58 @@ $result_month = mysqli_query($db->conn, $sql_month);
 $row_month = mysqli_fetch_assoc($result_month);
 $sales_month = $row_month['total'] ?? 0;
 
-// Pending Purchase Orders - from po table (assuming status checking)
-$sql_pending = "SELECT COUNT(po.id) as count FROM po WHERE po.over = 0";
+// Pending Purchase Orders - from purchase_order table (assuming status checking)
+$sql_pending = "SELECT COUNT(purchase_order.id) as count FROM purchase_order WHERE purchase_order.over = 0";
 $result_pending = mysqli_query($db->conn, $sql_pending);
 $row_pending = mysqli_fetch_assoc($result_pending);
 $pending_orders = $row_pending['count'] ?? 0;
 
 // Total PO count
-$sql_total_po = "SELECT COUNT(po.id) as count FROM po";
+$sql_total_po = "SELECT COUNT(purchase_order.id) as count FROM purchase_order";
 $result_total = mysqli_query($db->conn, $sql_total_po);
 $row_total = mysqli_fetch_assoc($result_total);
 $total_orders = $row_total['count'] ?? 0;
 
 // Recent payments - from pay table
-$sql_recent_pay = "SELECT pay.*, po.name, po.tax 
+$sql_recent_pay = "SELECT pay.*, purchase_order.name, purchase_order.tax 
                    FROM pay 
-                   LEFT JOIN po ON pay.po_id = po.id 
+                   LEFT JOIN purchase_order ON pay.purchase_order_id = purchase_order.id 
                    ORDER BY pay.date DESC LIMIT 5";
 $recent_payments = mysqli_query($db->conn, $sql_recent_pay);
 
-// Pending POs - from po table where over = 0
-$sql_pending_po = "SELECT po.*, 
-                   (SELECT SUM(volumn) FROM pay WHERE po_id = po.id) as paid_amount
-                   FROM po 
-                   WHERE po.over = 0 
-                   ORDER BY po.date DESC LIMIT 5";
+// Pending POs - from purchase_order table where over = 0
+$sql_pending_po = "SELECT purchase_order.*, 
+                   (SELECT SUM(volumn) FROM pay WHERE purchase_order_id = purchase_order.id) as paid_amount
+                   FROM purchase_order 
+                   WHERE purchase_order.over = 0 
+                   ORDER BY purchase_order.date DESC LIMIT 5";
 $pending_pos = mysqli_query($db->conn, $sql_pending_po);
 
 // Completed orders this month
-$sql_completed = "SELECT COUNT(po.id) as count FROM po 
-                  WHERE po.over = 1 AND DATE(po.date) >= '$month_start'";
+$sql_completed = "SELECT COUNT(purchase_order.id) as count FROM purchase_order 
+                  WHERE purchase_order.over = 1 AND DATE(purchase_order.date) >= '$month_start'";
 $result_completed = mysqli_query($db->conn, $sql_completed);
 $row_completed = mysqli_fetch_assoc($result_completed);
 $completed_orders = $row_completed['count'] ?? 0;
 
 // Invoice statistics
-$sql_invoices = "SELECT COUNT(DISTINCT iv.tex) as count FROM iv 
-                 WHERE DATE(iv.createdate) >= '$month_start'";
+$sql_invoices = "SELECT COUNT(DISTINCT invoice.tex) as count FROM invoice 
+                 WHERE DATE(invoice.createdate) >= '$month_start'";
 $result_invoices = mysqli_query($db->conn, $sql_invoices);
 $row_invoices = mysqli_fetch_assoc($result_invoices);
 $total_invoices = $row_invoices['count'] ?? 0;
 
 // Tax Invoice statistics
-$sql_tax_invoices = "SELECT COUNT(DISTINCT iv.texiv) as count FROM iv 
-                     WHERE iv.texiv > 0 AND DATE(iv.texiv_create) >= '$month_start'";
+$sql_tax_invoices = "SELECT COUNT(DISTINCT invoice.texiv) as count FROM invoice 
+                     WHERE invoice.texiv > 0 AND DATE(invoice.texiv_create) >= '$month_start'";
 $result_tax_inv = mysqli_query($db->conn, $sql_tax_invoices);
 $row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
 $total_tax_invoices = $row_tax_inv['count'] ?? 0;
 
 // Recent invoices
-$sql_recent_inv = "SELECT iv.*, company.name_en FROM iv 
-                   LEFT JOIN company ON iv.cus_id = company.id
-                   ORDER BY iv.createdate DESC LIMIT 5";
+$sql_recent_inv = "SELECT invoice.*, company.name_en FROM invoice 
+                   LEFT JOIN company ON invoice.customer_id = company.id
+                   ORDER BY invoice.createdate DESC LIMIT 5";
 $recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
 
 function format_currency($amount) {
@@ -472,7 +472,7 @@ function get_status_badge($status) {
                                 <?php while($payment = mysqli_fetch_assoc($recent_payments)): ?>
                                 <tr>
                                     <td><?php echo date('M d, Y', strtotime($payment['date'])); ?></td>
-                                    <td><?php echo $payment['po_id'] . ' - ' . substr($payment['name'] ?? 'N/A', 0, 15); ?></td>
+                                    <td><?php echo $payment['purchase_order_id'] . ' - ' . substr($payment['name'] ?? 'N/A', 0, 15); ?></td>
                                     <td><?php echo format_currency($payment['volumn']); ?></td>
                                     <td><?php echo $payment['value'] ?? 'Direct'; ?></td>
                                     <td>
@@ -603,10 +603,10 @@ function get_status_badge($status) {
                         <tbody>
                             <?php 
                             // Re-query for tax invoices with actual data
-                            $sql_tax_inv_detail = "SELECT iv.*, company.name_en FROM iv 
-                                                  LEFT JOIN company ON iv.cus_id = company.id
-                                                  WHERE iv.texiv > 0 
-                                                  ORDER BY iv.texiv_create DESC LIMIT 5";
+                            $sql_tax_inv_detail = "SELECT invoice.*, company.name_en FROM invoice 
+                                                  LEFT JOIN company ON invoice.customer_id = company.id
+                                                  WHERE invoice.texiv > 0 
+                                                  ORDER BY invoice.texiv_create DESC LIMIT 5";
                             $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
                             ?>
                             <?php if($tax_inv_results && mysqli_num_rows($tax_inv_results) > 0): ?>

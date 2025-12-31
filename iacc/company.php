@@ -67,8 +67,8 @@ $data=mysql_fetch_array($query);
         <div style="width:100%;"><h2><?=$xml->registeraddress?></h2></div>
     
     <div id="box">
-		<lable for="adr_tax"><?=$xml->raddress?><</lable>
-		<input id="adr_tax" name="adr_tax" class="form-control" type="text" value="<?php echo $data['adr_tax'];?>">
+		<lable for="address_tax"><?=$xml->raddress?><</lable>
+		<input id="address_tax" name="address_tax" class="form-control" type="text" value="<?php echo $data['address_tax'];?>">
 	</div>
 	<div id="box">
 		<lable for="city_tax"><?=$xml->rcity?>/lable>
@@ -92,8 +92,8 @@ $data=mysql_fetch_array($query);
       <div style="width:100%;"><h2><?=$xml->exitingaddress?></h2></div>
   
 	<div id="box">
-		<lable for="adr_tax"><?=$xml->baddress?></lable>
-		<input id="adr_bil" name="adr_bil" placeholder="<?=$xml->nullforsave?>" class="form-control" type="text" value="<?php echo $data['adr_bil'];?>">
+		<lable for="address_tax"><?=$xml->baddress?></lable>
+		<input id="address_billing" name="address_billing" placeholder="<?=$xml->nullforsave?>" class="form-control" type="text" value="<?php echo $data['address_billing'];?>">
 	</div>
 	<div id="box">
 		<lable for="city_bil"><?=$xml->bcity?></lable>

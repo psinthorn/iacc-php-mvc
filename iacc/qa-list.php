@@ -11,10 +11,10 @@
 <tr><th width="30%"><?=$xml->customer?></th><th width="15%"><?=$xml->quono?></th><th width="15%"><?=$xml->price?></th><th width="13%"><?=$xml->duedate?></th><th width="27%" colspan="2"><?=$xml->status?></th></tr></thead>
 <tbody>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1'  order by cancel,po.id  desc ");
+$query=mysqli_query($db->conn, "select purchase_order.id as id, purchase_order.name as name, purchase_order.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.customer_id=company.id where po_id_new='' and vendor_id='".$_SESSION['company_id']."' and status='1'  order by cancel,purchase_order.id  desc ");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	 	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data['id']."'");
+	 	$que_pro=mysqli_query($db->conn, "select product.des as des,product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$data['id']."'");
 	 	$summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 		if($cklabour['cklabour']==1){	
@@ -53,10 +53,10 @@ echo "<td><font color='red'>".$xml->$var."</font></td><td><a href='index.php?pag
  
 <tr><th><?=$xml->vender?></th><th><?=$xml->quono?></th><th><?=$xml->price?></th><th><?=$xml->duedate?></th><th width="30%" colspan="2"><?=$xml->status?></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$_SESSION['com_id']."' and status='1'  order by cancel,po.id desc ");
+$query=mysqli_query($db->conn, "select purchase_order.id as id, purchase_order.name as name, purchase_order.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.vendor_id=company.id where po_id_new='' and customer_id='".$_SESSION['company_id']."' and status='1'  order by cancel,purchase_order.id desc ");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	  	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data['id']."'");
+	  	$que_pro=mysqli_query($db->conn, "select product.des as des,product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$data['id']."'");
 		$summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 		if($cklabour['cklabour']==1){	

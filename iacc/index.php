@@ -17,7 +17,7 @@ $db = new DbConn($config);
 require_once("core-function.php");
 set_audit_context();
 // Check security - redirect to login if not authenticated
-if (!isset($_SESSION['usr_id']) || $_SESSION['usr_id'] === "") {
+if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] === "") {
     header("Location: login.php");
     exit;
 }
@@ -44,7 +44,7 @@ require_once("resources/views/middleware/authorization.php");
 require_once("resources/views/helpers.php");
 
 // Initialize Authorization instance (global)
-$user_id = $_SESSION['usr_id'] ?? null;
+$user_id = $_SESSION['user_id'] ?? null;
 if ($user_id) {
     $authorization = new Authorization($db, $user_id);
     // Make available globally - both as $authorization and $auth

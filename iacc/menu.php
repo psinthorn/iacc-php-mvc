@@ -219,12 +219,12 @@
                                 <a href="index.php?page=mo_list"><?=$xml->model?></a>
                             </li>
                             
-                               <?php if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){?>   <li>
+                               <?php if(isset($_SESSION['company_id']) && $_SESSION['company_id']!=""){?>   <li>
                                 <a href="index.php?page=payment"><?=$xml->payment?></a>
                             </li> <?php } ?>
                    </ul>
                     </li>
-                  <?php if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){?> 
+                  <?php if(isset($_SESSION['company_id']) && $_SESSION['company_id']!=""){?> 
                   <li>
                     <a href="#"><i class="fa fa-pencil-square-o"></i> <?=$xml->purchasingrequest?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">

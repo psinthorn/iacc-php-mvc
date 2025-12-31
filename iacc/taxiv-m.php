@@ -8,17 +8,17 @@ $db=new DbConn($config);
 $db->checkSecurity();
 
 
- $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis, taxrw as tax2,tax,countmailtax,pr.cus_id as cus_id,payby,des,vat,DATE_FORMAT(texiv_create,'%d-%m-%Y') as date,texiv_rw,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and status='5' and (pr.cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' or ven_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "') and po_id_new=''");
+ $query=mysqli_query($db->conn, "select purchase_order.name as name,over,vendor_id,dis, taxrw as tax2,tax,countmailtax,purchase_request.customer_id as customer_id,payby,des,vat,DATE_FORMAT(texiv_create,'%d-%m-%Y') as date,texiv_rw,ref,pic,status from pr join purchase_order on purchase_request.id=purchase_order.ref  join invoice on purchase_order.id=invoice.tex where purchase_order.id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and status='5' and (purchase_request.customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' or vendor_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "') and po_id_new=''");
 if(mysqli_num_rows($query)==1){
 	$data=mysqli_fetch_array($query);
 	$ct=(isset($data['countmailtax']) ? $data['countmailtax'] : 0)+1;
-	mysqli_query($db->conn, "update iv set countmailtax='" . mysqli_real_escape_string($db->conn, $ct) . "' where tex='" . mysqli_real_escape_string($db->conn, $_POST['id'] ?? '') . "' and cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "'");
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' and valid_end='0000-00-00'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $data['payby']) . "' and valid_end='0000-00-00'"));
+	mysqli_query($db->conn, "update iv set countmailtax='" . mysqli_real_escape_string($db->conn, $ct) . "' where tex='" . mysqli_real_escape_string($db->conn, $_POST['id'] ?? '') . "' and customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "'");
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,address_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.company_id where company.id='" . mysqli_real_escape_string($db->conn, $data['vendor_id']) . "' and valid_end='0000-00-00'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,address_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.company_id where company.id='" . mysqli_real_escape_string($db->conn, $data['payby']) . "' and valid_end='0000-00-00'"));
 	
 $html = '
 <div style="width:20%; float:left;"><img src="upload/'.(isset($vender['logo']) ? $vender['logo'] : '').'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.(isset($vender['name_en']) ? $vender['name_en'] : '').'</b>
-<small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
+<small><br>'.$vender[address_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
 
 
 <div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
@@ -31,7 +31,7 @@ $html = '
 
 
 <div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer[adr_tax].'</div>
+<div style="width:54%; float:left;">'.$customer[address_tax].'</div>
 
 <div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Tex No.</div>
 <div style="width:20%; float:left; ">Tax-'.$data[texiv_rw].'</div>
@@ -75,7 +75,7 @@ $html = '
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>
 ';
-$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=product_type.id where purchase_order_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "'"));
 if((isset($cklabour['cklabour']) ? $cklabour['cklabour'] : 0)==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -97,7 +97,7 @@ $html .= '
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
 
-$que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,product.des as des,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,product.des as des,activelabour,valuelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "'");$summary=0;
 $cot=1;
 	while($data_pro=mysqli_fetch_array($que_pro)){
 

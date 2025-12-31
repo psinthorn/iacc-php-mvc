@@ -34,7 +34,7 @@ $db -> checkSecurity();
   while($datacat=mysqli_fetch_array($querycat)){
     echo '
     <li '.$configs.'><a href="#'.$datacat['id'].'" data-toggle="tab">'.$datacat['cat_name'].'</a></li>';
-    $query_type=mysqli_query($db->conn, "select * from type where cat_id='".$datacat['id']."'");
+    $query_type=mysqli_query($db->conn, "select * from type where category_id='".$datacat['id']."'");
     $dataall="";
   while($datatype=mysqli_fetch_array($query_type)){
     $sql = "select sum(price)/sum(quantity) as net from product where type='".$datatype['id']."'";

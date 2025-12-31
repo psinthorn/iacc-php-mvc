@@ -7,7 +7,7 @@ $db->checkSecurity();
 <tr><td colspan="7"><?=$xml->voucher?> - <?=$xml->out?></td></tr>
 <tr><th><?=$xml->customer?></th><th><?=$xml->email?></th><th><?=$xml->phone?></th><th><?=$xml->voucherno?></th><th><?=$xml->createdate?></th><th width="120"></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select voucher.id as id,voucher.name as name, voucher.email as email,phone, DATE_FORMAT(createdate,'%d-%m-%Y') as createdate, voucher.description as description,vou_rw,voucher.brand as brand,voucher.vender as vender from voucher  where  voucher.vender='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' order by voucher.id desc");
+$query=mysqli_query($db->conn, "select voucher.id as id,voucher.name as name, voucher.email as email,phone, DATE_FORMAT(createdate,'%d-%m-%Y') as createdate, voucher.description as description,vou_rw,voucher.brand as brand,voucher.vender as vender from voucher  where  voucher.vender='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' order by voucher.id desc");
 
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";

@@ -24,9 +24,9 @@ require_once("inc/class.security.php");
 $db = new DbConn($config);
 
 // Check if user is already logged in
-if (!empty($_SESSION['usr_id'])) {
+if (!empty($_SESSION['user_id'])) {
     // User attempting logout
-    logActivity($_SESSION['usr_id'], 'LOGOUT', 'User logged out');
+    logActivity($_SESSION['user_id'], 'LOGOUT', 'User logged out');
     session_destroy();
     echo "<script>alert('Logout Success');window.location='login.php';</script>";
     exit;
@@ -54,10 +54,10 @@ $username_safe = SecurityHelper::sanitizeInput($username);
 
 // Query user account
 $query = $db->conn->prepare("
-    SELECT usr_id, usr_name, usr_pass, password_algorithm, password_requires_reset, 
+    SELECT user_id, user_name, user_password, password_algorithm, password_requires_reset, 
            account_locked_until, failed_login_attempts, level, lang 
     FROM authorize 
-    WHERE usr_name = ?
+    WHERE user_name = ?
 ");
 
 if (!$query) {
@@ -91,16 +91,16 @@ if (!empty($user['account_locked_until'])) {
     
     if ($now < $lockUntil) {
         $minutesRemaining = ceil(($lockUntil - $now) / 60);
-        logActivity($user['usr_id'], 'LOGIN_BLOCKED', "Account locked. {$minutesRemaining} minutes remaining");
+        logActivity($user['user_id'], 'LOGIN_BLOCKED', "Account locked. {$minutesRemaining} minutes remaining");
         exit("<script>alert('Account temporarily locked. Try again in {$minutesRemaining} minutes.');history.back();</script>");
     } else {
         // Unlock the account
         $unlockQuery = $db->conn->prepare("
             UPDATE authorize 
             SET account_locked_until = NULL, failed_login_attempts = 0 
-            WHERE usr_id = ?
+            WHERE user_id = ?
         ");
-        $unlockQuery->bind_param("i", $user['usr_id']);
+        $unlockQuery->bind_param("i", $user['user_id']);
         $unlockQuery->execute();
         $unlockQuery->close();
         
@@ -116,27 +116,27 @@ $passwordAlgorithm = $user['password_algorithm'] ?? 'md5';
 
 if ($passwordAlgorithm === 'bcrypt') {
     // Use bcrypt verification
-    $passwordValid = SecurityHelper::verifyPassword($password, $user['usr_pass']);
+    $passwordValid = SecurityHelper::verifyPassword($password, $user['user_password']);
 } else if ($passwordAlgorithm === 'md5' || empty($passwordAlgorithm)) {
     // Legacy MD5 verification
-    $passwordValid = (md5($password) === $user['usr_pass']);
+    $passwordValid = (md5($password) === $user['user_password']);
     
     if ($passwordValid) {
         // Password is valid, but migrate to bcrypt on successful login
         $newHash = SecurityHelper::hashPassword($password);
         $migrateQuery = $db->conn->prepare("
             UPDATE authorize 
-            SET usr_pass = ?, 
+            SET user_password = ?, 
                 password_algorithm = 'bcrypt', 
                 password_hash_cost = 12,
                 password_last_changed = NOW(),
                 password_requires_reset = 0
-            WHERE usr_id = ?
+            WHERE user_id = ?
         ");
-        $migrateQuery->bind_param("si", $newHash, $user['usr_id']);
+        $migrateQuery->bind_param("si", $newHash, $user['user_id']);
         
         if ($migrateQuery->execute()) {
-            logActivity($user['usr_id'], 'PASSWORD_MIGRATED', 'Password migrated from MD5 to bcrypt');
+            logActivity($user['user_id'], 'PASSWORD_MIGRATED', 'Password migrated from MD5 to bcrypt');
         }
         $migrateQuery->close();
     }
@@ -154,26 +154,26 @@ if (!$passwordValid) {
         $updateQuery = $db->conn->prepare("
             UPDATE authorize 
             SET failed_login_attempts = ?, account_locked_until = ? 
-            WHERE usr_id = ?
+            WHERE user_id = ?
         ");
-        $updateQuery->bind_param("isi", $newFailureCount, $lockUntil, $user['usr_id']);
+        $updateQuery->bind_param("isi", $newFailureCount, $lockUntil, $user['user_id']);
         $updateQuery->execute();
         $updateQuery->close();
         
-        logActivity($user['usr_id'], 'ACCOUNT_LOCKED', "Account locked due to {$maxAttempts} failed attempts");
+        logActivity($user['user_id'], 'ACCOUNT_LOCKED', "Account locked due to {$maxAttempts} failed attempts");
         exit("<script>alert('Too many failed attempts. Account locked for {$lockoutMinutes} minutes.');history.back();</script>");
     } else {
         // Record failed attempt
         $updateQuery = $db->conn->prepare("
             UPDATE authorize 
             SET failed_login_attempts = ? 
-            WHERE usr_id = ?
+            WHERE user_id = ?
         ");
-        $updateQuery->bind_param("ii", $newFailureCount, $user['usr_id']);
+        $updateQuery->bind_param("ii", $newFailureCount, $user['user_id']);
         $updateQuery->execute();
         $updateQuery->close();
         
-        logActivity($user['usr_id'], 'LOGIN_FAILURE', "Failed login attempt ({$newFailureCount}/{$maxAttempts})");
+        logActivity($user['user_id'], 'LOGIN_FAILURE', "Failed login attempt ({$newFailureCount}/{$maxAttempts})");
         exit("<script>alert('Invalid username or password');history.back();</script>");
     }
 }
@@ -185,19 +185,19 @@ $resetQuery = $db->conn->prepare("
     SET failed_login_attempts = 0, 
         account_locked_until = NULL,
         last_login = NOW()
-    WHERE usr_id = ?
+    WHERE user_id = ?
 ");
-$resetQuery->bind_param("i", $user['usr_id']);
+$resetQuery->bind_param("i", $user['user_id']);
 $resetQuery->execute();
 $resetQuery->close();
 
 // Check if password reset is required
 if (!empty($user['password_requires_reset'])) {
-    $_SESSION['usr_id'] = $user['usr_id'];
-    $_SESSION['usr_name'] = $user['usr_name'];
+    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['user_name'] = $user['user_name'];
     $_SESSION['require_password_reset'] = true;
     
-    logActivity($user['usr_id'], 'LOGIN_SUCCESS', 'Login successful - password reset required');
+    logActivity($user['user_id'], 'LOGIN_SUCCESS', 'Login successful - password reset required');
     echo "<script>window.location='change-password.php';</script>";
     exit;
 }
@@ -206,13 +206,13 @@ if (!empty($user['password_requires_reset'])) {
 session_regenerate_id(true);
 
 // Set session variables
-$_SESSION['usr_name'] = $user['usr_name'];
-$_SESSION['usr_id'] = $user['usr_id'];
+$_SESSION['user_name'] = $user['user_name'];
+$_SESSION['user_id'] = $user['user_id'];
 $_SESSION['lang'] = $user['lang'] ?? 'en';
 $_SESSION['login_time'] = time();
 $_SESSION['csrf_token'] = SecurityHelper::generateCsrfToken();
 
-logActivity($user['usr_id'], 'LOGIN_SUCCESS', 'User logged in successfully');
+logActivity($user['user_id'], 'LOGIN_SUCCESS', 'User logged in successfully');
 
 echo "<script>window.location='index.php?page=dashboard';</script>";
 exit;
@@ -230,7 +230,7 @@ function recordFailedLoginAttempt($username) {
     global $db;
     
     // Try to find user by username first
-    $query = $db->conn->prepare("SELECT usr_id FROM authorize WHERE usr_name = ?");
+    $query = $db->conn->prepare("SELECT user_id FROM authorize WHERE user_name = ?");
     $query->bind_param("s", $username);
     $query->execute();
     $result = $query->get_result();
@@ -242,9 +242,9 @@ function recordFailedLoginAttempt($username) {
         $updateQuery = $db->conn->prepare("
             UPDATE authorize 
             SET failed_login_attempts = failed_login_attempts + 1 
-            WHERE usr_id = ?
+            WHERE user_id = ?
         ");
-        $updateQuery->bind_param("i", $user['usr_id']);
+        $updateQuery->bind_param("i", $user['user_id']);
         $updateQuery->execute();
         $updateQuery->close();
     }
@@ -268,13 +268,13 @@ function logActivity($userId, $action, $details) {
     $createTableSql = "
         CREATE TABLE IF NOT EXISTS `auth_activity_log` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `usr_id` INT,
+            `user_id` INT,
             `action` VARCHAR(50),
             `ip_address` VARCHAR(45),
             `user_agent` VARCHAR(500),
             `details` TEXT,
             `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX `idx_usr_id` (`usr_id`),
+            INDEX `idx_usr_id` (`user_id`),
             INDEX `idx_action` (`action`),
             INDEX `idx_timestamp` (`timestamp`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -284,7 +284,7 @@ function logActivity($userId, $action, $details) {
     
     // Insert log entry
     $sql = "
-        INSERT INTO auth_activity_log (usr_id, action, ip_address, user_agent, details)
+        INSERT INTO auth_activity_log (user_id, action, ip_address, user_agent, details)
         VALUES (?, ?, ?, ?, ?)
     ";
     

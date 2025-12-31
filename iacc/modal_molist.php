@@ -5,7 +5,7 @@ require_once("inc/class.dbconn.php");
 $users=new DbConn($config);
 $users->checkSecurity();
 
-$query=mysql_query("select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$_REQUEST[p_id]."'");
+$query=mysql_query("select model.id as id,price,model_name,product_type.name as type,model.des as des,brand.brand_name as brand from model join type on model.product_type_id=product_type.id join brand on model.brand_id=brand.id where model.id='".$_REQUEST[p_id]."'");
 	 if(mysql_num_rows($query)>0){
 		 $data=mysql_fetch_array($query);
 		 

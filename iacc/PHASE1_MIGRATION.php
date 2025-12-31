@@ -10,7 +10,7 @@
 
 $migrations = [
     // Add new columns to authorize table if they don't exist
-    "ALTER TABLE `authorize` ADD COLUMN `password_algorithm` VARCHAR(20) DEFAULT 'md5' COMMENT 'Password hashing algorithm: md5 (legacy), bcrypt (current)' AFTER `usr_pass`" => true,
+    "ALTER TABLE `authorize` ADD COLUMN `password_algorithm` VARCHAR(20) DEFAULT 'md5' COMMENT 'Password hashing algorithm: md5 (legacy), bcrypt (current)' AFTER `user_password`" => true,
     
     "ALTER TABLE `authorize` ADD COLUMN `password_hash_cost` INT DEFAULT 10 COMMENT 'Bcrypt cost factor (10-12)' AFTER `password_algorithm`" => true,
     
@@ -29,17 +29,17 @@ $migrations = [
 $auditTableSql = "
 CREATE TABLE IF NOT EXISTS `password_migration_log` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `usr_id` INT NOT NULL COMMENT 'User ID',
-  `usr_name` VARCHAR(50) NOT NULL COMMENT 'Username',
+  `user_id` INT NOT NULL COMMENT 'User ID',
+  `user_name` VARCHAR(50) NOT NULL COMMENT 'Username',
   `action` VARCHAR(50) NOT NULL COMMENT 'migrate_md5_to_bcrypt, force_reset, password_change, etc.',
   `old_algorithm` VARCHAR(20) COMMENT 'Previous algorithm',
   `new_algorithm` VARCHAR(20) COMMENT 'New algorithm',
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `admin_notes` TEXT COMMENT 'Admin notes about the migration',
-  INDEX `idx_usr_id` (`usr_id`),
+  INDEX `idx_usr_id` (`user_id`),
   INDEX `idx_timestamp` (`timestamp`),
   INDEX `idx_action` (`action`),
-  FOREIGN KEY (`usr_id`) REFERENCES `authorize`(`usr_id`) ON DELETE CASCADE
+  FOREIGN KEY (`user_id`) REFERENCES `authorize`(`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ";
 

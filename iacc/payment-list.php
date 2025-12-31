@@ -1,7 +1,7 @@
 <h2><i class="fa fa-money"></i> <?=$xml->payment?></h2><?php
 $db->checkSecurity();?>
 <?php
-$query=mysqli_query($db->conn, "select id, payment_name,payment_des from payment where  com_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."' order by id desc");?>
+$query=mysqli_query($db->conn, "select id, payment_name,payment_des from payment where  company_id='".mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '')."' order by id desc");?>
 
 <div id="fetch_state"></div>
 <table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->description?></th><th width="120"><a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'payment.php', true);"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create?></a></th></tr>

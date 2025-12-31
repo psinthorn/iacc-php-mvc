@@ -25,7 +25,7 @@
 	<tr>
 		<th  width="20%"><?=$xml->customer?></th><th width="40%"><?=$xml->description?></th><th  width="10%"><?=$xml->name?></th><th  width="10%"><?=$xml->date?></th><th  width="10%"><?=$xml->status?></th><th  width="10%"></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ven_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' ".$condition." order by cancel,id desc");
+$query=mysqli_query($db->conn, "select purchase_request.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on purchase_request.customer_id=company.id where vendor_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' ".$condition." order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>".$data['name_en']."</td><td>".$data['des']."</td><td>".$data['name']."</td><td>".$data['date']."</td>";
@@ -43,7 +43,7 @@ echo "</td>
 	}
 	
 	 if($status=="5"){
-		$query= mysqli_query($db->conn, "select * from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where ven_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and deliver.id in (select deliver_id from receive)");
+		$query= mysqli_query($db->conn, "select * from send_out_item join deliver on send_out_item.id=deliver.output_id join company on send_out_item.customer_id=company.id where vendor_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and deliver.id in (select deliver_id from receive)");
 		 
 		 while($data=mysqli_fetch_array($query)){
 echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td><td>".$data['deliver_date']."</td><td>Success</td><td><a onClick='return Conf(this)' title='Cancel' href='#'><span class=\"glyphicon glyphicon-trash\"></span></a></td>
@@ -57,7 +57,7 @@ echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td
  
  <tr><th><?=$xml->vender?></th><th><?=$xml->description?></th><th><?=$xml->name?></th><th><?=$xml->date?></th><th><?=$xml->status?></th><th></th></tr>
 <?php
-$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' ".$condition." order by cancel,id desc");
+$query=mysqli_query($db->conn,"select purchase_request.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on purchase_request.vendor_id=company.id where customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' ".$condition." order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>".$data['name_en']."</td><td>".$data['des']."</td><td>".$data['name']."</td><td>".$data['date']."</td>";
@@ -76,7 +76,7 @@ echo "</td>
 	
 	}
 	 if($status=="5"){
-		$query= mysqli_query($db->conn, "select * from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.ven_id=company.id where cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and deliver.id in (select deliver_id from receive)");
+		$query= mysqli_query($db->conn, "select * from send_out_item join deliver on send_out_item.id=deliver.output_id join company on send_out_item.vendor_id=company.id where customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and deliver.id in (select deliver_id from receive)");
 		 
 		 while($data=mysqli_fetch_array($query)){
 echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td><td>".$data['deliver_date']."</td><td>Success</td><td><a onClick='return Conf(this)' title='Cancel' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td>

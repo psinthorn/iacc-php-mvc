@@ -8,8 +8,8 @@
 
 <h2><i class="fa fa-home fa-fw"></i> <?=$xml->company?></h2>
 <?php
-$owner = ""; $other = ""; if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){
-	$sql="select id, name_en, contact,vender,customer, email, phone from company where id='".$_SESSION['com_id']."'";
+$owner = ""; $other = ""; if(isset($_SESSION['company_id']) && $_SESSION['company_id']!=""){
+	$sql="select id, name_en, contact,vender,customer, email, phone from company where id='".$_SESSION['company_id']."'";
 }else {
 	$sql="select id, name_en,vender,customer, contact, email, phone from company order by id desc";
 }
@@ -19,7 +19,7 @@ $query = mysqli_query($db->conn, $sql);
 
 <div id="fetch_state"></div>
 <table width="100%" class="table table-hover"><tr><th><?=$xml->name?></th><th><?=$xml->contact?></th><th><?=$xml->email?></th><th><?=$xml->phone?></th><th width="150">
-<?php if(!isset($_SESSION['com_id']) || $_SESSION['com_id']==""){?>
+<?php if(!isset($_SESSION['company_id']) || $_SESSION['company_id']==""){?>
 <a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'company.php', true);"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create?></a><?php }?></th></tr>
 <?php while($data=mysqli_fetch_array($query)){
 	if(($data['vender']=="1")&&($data['customer']=="1")){
@@ -27,12 +27,12 @@ $query = mysqli_query($db->conn, $sql);
 <td>".$data['contact']."</td>	
 <td>".$data['email']."</td>	
 <td>".$data['phone']."</td>
-<td>";if(!isset($_SESSION['com_id']) || $_SESSION['com_id']==""){ $owner.="<a href='remoteuser.php?id=".$data['id']."'><i class=\"fa fa-share-square\"></i></a>&nbsp;&nbsp;&nbsp;";} $owner.="<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company.php?id=".$data['id']."', true);\"><i class=\"glyphicon glyphicon-pencil\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company-addr.php?id=".$data['id']."', true);\"><i class=\"fa fa-truck\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'credit-list.php?id=".$data['id']."', true);\"><i class=\"fa fa-credit-card\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";	
+<td>";if(!isset($_SESSION['company_id']) || $_SESSION['company_id']==""){ $owner.="<a href='remoteuser.php?id=".$data['id']."'><i class=\"fa fa-share-square\"></i></a>&nbsp;&nbsp;&nbsp;";} $owner.="<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company.php?id=".$data['id']."', true);\"><i class=\"glyphicon glyphicon-pencil\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company-addr.php?id=".$data['id']."', true);\"><i class=\"fa fa-truck\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'credit-list.php?id=".$data['id']."', true);\"><i class=\"fa fa-credit-card\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";	
 		}else{$other.="<tr><td>".$data['name_en']."</td>
 <td>".$data['contact']."</td>	
 <td>".$data['email']."</td>	
 <td>".$data['phone']."</td>
-<td>";if(!isset($_SESSION['com_id']) || $_SESSION['com_id']==""){ $other.="<a href='remoteuser.php?id=".$data['id']."'><i class=\"fa fa-share-square\"></i></a>&nbsp;&nbsp;&nbsp;";} $other.="<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company.php?id=".$data['id']."', true);\"><i class=\"glyphicon glyphicon-pencil\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company-addr.php?id=".$data['id']."', true);\"><i class=\"fa fa-truck\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'credit-list.php?id=".$data['id']."', true);\"><i class=\"fa fa-credit-card\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";	}
+<td>";if(!isset($_SESSION['company_id']) || $_SESSION['company_id']==""){ $other.="<a href='remoteuser.php?id=".$data['id']."'><i class=\"fa fa-share-square\"></i></a>&nbsp;&nbsp;&nbsp;";} $other.="<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company.php?id=".$data['id']."', true);\"><i class=\"glyphicon glyphicon-pencil\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'company-addr.php?id=".$data['id']."', true);\"><i class=\"fa fa-truck\"></i></a>&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'credit-list.php?id=".$data['id']."', true);\"><i class=\"fa fa-credit-card\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";	}
 
 	
 	}?>
