@@ -19,8 +19,8 @@ $data=mysqli_fetch_array($query);
 }else $method="A";?>
 <form action="core-function.php" method="post" enctype="multipart/form-data" id="myform">
 	<div id="box">
-		<lable for="band_name"><?=$xml->name?></lable>
-		<input id="band_name" name="band_name" class="form-control" required type="text" value="<?php echo (isset($data['band_name']) ? $data['band_name'] : '');?>">
+		<lable for="name"><?=$xml->name?></lable>
+		<input id="name" name="name" class="form-control" required type="text" value="<?php echo (isset($data['name']) ? $data['name'] : '');?>">
 	</div>
     <div id="box">
 		<lable for="des"><?=$xml->description?></lable>
@@ -29,7 +29,7 @@ $data=mysqli_fetch_array($query);
     <div id="box">
     <lable for="des"><?=$xml->owner?></lable>
 		
-    <select id="ven_id" name="ven_id" class="form-control">
+    <select id="company_id" name="company_id" class="form-control">
     
 			<?php 
 			echo "<option value='0' >Non Owner</option>";
@@ -38,7 +38,7 @@ $data=mysqli_fetch_array($query);
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($fetch_customer['id']==(isset($data['ven_id']) ? $data['ven_id'] : 0))
+					if($fetch_customer['id']==(isset($data['company_id']) ? $data['company_id'] : 0))
 					echo "<option selected value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>"; else 	echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";
 				}?>
 		</select>

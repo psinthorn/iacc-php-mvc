@@ -15,8 +15,8 @@ if(mysql_num_rows($query)=="1"){
 	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[cus_id]."' and valid_end='0000-00-00'"));
 	
 	
-	if($data[brandven]==0){$logo=$vender[logo];}else{
-		$bandlogo=mysql_fetch_array(mysql_query("select logo from brand where id='".$data[brandven]."'"));
+	if($data[brand_id]==0){$logo=$vender[logo];}else{
+		$bandlogo=mysql_fetch_array(mysql_query("select logo from brand where id='".$data[brand_id]."'"));
 		$logo=$bandlogo[logo];
 		
 		}

@@ -12,13 +12,13 @@ $db->checkSecurity();?>
 <table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->description?></th><th width="120"><a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'band.php', true);"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create?></a></th></tr>
 
 <?php 
-	$sql = "select id, brand_name, des from brand order by id desc";
+	$sql = "select id, name, des from brand order by id desc";
 	$query=mysqli_query($db->conn,$sql);
 	if(!$query){
 		echo "<tr><td colspan='3'>Error: " . mysqli_error($db->conn) . "</td></tr>";
 	} else if (mysqli_num_rows($query) > 0) {
 		while($data=mysqli_fetch_array($query)){
-			echo "<tr><td>".(isset($data['brand_name']) ? $data['brand_name'] : '')."</td><td>".(isset($data['des']) ? $data['des'] : '')."</td>
+			echo "<tr><td>".(isset($data['name']) ? $data['name'] : '')."</td><td>".(isset($data['des']) ? $data['des'] : '')."</td>
 <td><a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'band.php?id=".$data['id']."', true);\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"core-function.php?method=D&id=".$data['id']."&page=band\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";		
 		}
 	} else {

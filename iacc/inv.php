@@ -7,7 +7,7 @@ $db=new DbConn($config);
 $db->checkSecurity();
 
 
- $query=mysqli_query($db->conn, "select po.name as name,po.over,pr.ven_id,po.dis,po.vat, iv.taxrw as tax2,po.tax,pr.cus_id as cus_id,pr.payby,pr.des,po.bandven,po.valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(po.deliver_date,'%d-%m-%Y') as deliver_date,po.ref,po.pic,pr.status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '')."' and pr.status>'2' and (pr.cus_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."' or pr.ven_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."')");
+ $query=mysqli_query($db->conn, "select po.name as name,po.over,pr.ven_id,po.dis,po.vat, iv.taxrw as tax2,po.tax,pr.cus_id as cus_id,pr.payby,pr.des,po.brand_id,po.valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(po.deliver_date,'%d-%m-%Y') as deliver_date,po.ref,po.pic,pr.status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '')."' and pr.status>'2' and (pr.cus_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."' or pr.ven_id='".mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '')."')");
  // if (!$dbc || mysqli_num_rows($dbc) == 0)
  if($query && mysqli_num_rows($query) > 0){
 	$data=mysqli_fetch_array($query);

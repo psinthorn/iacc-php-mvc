@@ -173,11 +173,11 @@ while($data_fetitem=mysql_fetch_array($qeurytmpitem)){?>
 				}?>
 		</select></div>
      <div id="box"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysql_query("select band_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_fetitem[type]."'");
+<?php $querycustomer=mysql_query("select name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_fetitem[type]."'");
 echo "<option value='' >-------Please Select Band--------</option>";
 while($fetch_customer=mysql_fetch_array($querycustomer)){
-					
-									if($fetch_customer[id]== $data_fetitem[ban_id]){	echo "<option value='".$fetch_customer[id]."' selected >".$fetch_customer[band_name]."</option>";
+				
+								if($fetch_customer[id]== $data_fetitem[ban_id]){	echo "<option value='".$fetch_customer[id]."' selected >".$fetch_customer[name]."</option>";
 				}else{	echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[band_name]."</option>";
 				}
 				}?>
