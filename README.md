@@ -2,7 +2,9 @@
 
 **Project**: iACC - Accounting Management System (PHP MVC)  
 **Status**: Production-ready with Docker support  
-**Last Updated**: December 31, 2025
+**Last Updated**: December 31, 2025  
+**Repository**: https://github.com/psinthorn/iacc-php-mvc  
+**Git Auth**: SSH ED25519 key
 
 ## Docker Quick Start
 
@@ -190,13 +192,18 @@ iacc-php-mvc/
 - jqBootstrapValidation - Form validation
 - Font Awesome - Icon library
 
-## System Architecture (Legacy)
+## System Architecture (Current - Docker)
 
 ```
 ┌─────────────────────────────────────────┐
 │          Web Browser                    │
 └────────────────┬────────────────────────┘
-                 │ HTTP Requests
+                 │ HTTP Requests (Port 80)
+┌────────────────▼────────────────────────┐
+│      Nginx Web Server (Alpine)          │
+│      Reverse Proxy & Static Files       │
+└────────────────┬────────────────────────┘
+                 │ FastCGI Protocol (9000)
 ┌────────────────▼────────────────────────┐
 │      Apache Web Server                  │
 │      (Port 8089 in Docker)              │
@@ -262,21 +269,29 @@ iacc-php-mvc/
 - ⚠️ N+1 query problems likely
 - ⚠️ No caching layer
 
-## Docker Configuration (Legacy)
+## Docker Configuration (Current)
 
-### Docker Compose Setup
+### Services Overview
+All services defined in `docker-compose.yml`:
+
 ```yaml
 Services:
-  - f2xiacc (PHP Application) - Port 8089
-  - db_mysql (MariaDB) - Port 3366
-  - phpmyadmin (MySQL Management) - Port 8085
+  - iacc_php (PHP-FPM 7.4) - Internal port 9000
+  - iacc_nginx (Nginx Alpine) - Port 80, 443
+  - iacc_mysql (MySQL 5.7) - Port 3306
+  - iacc_phpmyadmin (PhpMyAdmin) - Port 8083
+  - iacc_mailhog_server (MailHog) - Ports 1025, 8025
 ```
 
-**Start Command**: `docker compose up -d`  
-**Stop Command**: `docker compose down`
+**Commands**:
+- Start: `docker compose up -d`
+- Stop: `docker compose down`
+- View logs: `docker compose logs -f [service]`
+- Rebuild: `docker compose build --no-cache && docker compose up -d`
 
-### Environment
-- PHP 5.6 or 7.2 (configurable)
+### Container Sizes
+- PHP-FPM container: 169 MB (optimized, removed duplicates)
+- Total project: 320 MB (41% reduction from original 543 MB)
 ## Technology Stack
 
 - **Language**: PHP 7.4
@@ -331,6 +346,42 @@ docker-compose logs mysql
 docker-compose restart mysql
 ```
 
+### Git & SSH Authentication
+
+**SSH Key Setup** (if needed on new machine)
+```bash
+# Generate ED25519 key
+ssh-keygen -t ed25519 -C "your-email@example.com"
+
+# Add to GitHub: https://github.com/settings/keys
+# Copy your public key
+cat ~/.ssh/id_ed25519.pub
+
+# Set remote to SSH (if using HTTPS)
+git remote set-url origin git@github.com:psinthorn/iacc-php-mvc.git
+
+# Verify connection
+ssh -T git@github.com
+```
+
+**Clone with SSH**
+```bash
+git clone git@github.com:psinthorn/iacc-php-mvc.git
+```
+
+**Push/Pull Errors**
+```bash
+# If you get "Permission denied (publickey)"
+# 1. Verify SSH key is added to GitHub settings
+# 2. Test SSH connection: ssh -T git@github.com
+# 3. Check SSH key permissions: chmod 600 ~/.ssh/id_ed25519
+
+# If you get "HTTP 400 Bad Request"
+# 1. Ensure using SSH remote (not HTTPS)
+# 2. Verify SSH key is in GitHub settings
+# 3. Try: git push origin main -v (for verbose output)
+```
+
 ### Email Testing with MailHog
 
 All email sent by the application is automatically captured and available at:
@@ -340,17 +391,33 @@ All email sent by the application is automatically captured and available at:
 
 ## Repository Info
 
-**Size**: 320 MB (after cleanup on Dec 31, 2025)
-- Original: 543 MB
-- Cleanup removed: 223 MB (41% reduction)
-  - `php-source/` duplicate: 190 MB
-  - `iacc/MPDF57-7/` obsolete: 31 MB  
-  - Old backup SQL: 2.2 MB
+### Size & Cleanup (December 31, 2025)
+**Final Size**: 320 MB (41% reduction)
+- Original size: 543 MB
+- Total cleanup: 223 MB removed
+- Docker container: 169 MB (cleaned)
 
-**Git History**: 
-- Latest commit: f1accc4 (Docker + DB fixes)
-- Cleanup commit: a076720 (Removed duplicates)
-- Deployment tag: before-cleanup-v1
+**Cleanup Details**:
+- `php-source/` (190 MB) - Duplicate removed
+- `iacc/MPDF57-7/` (31 MB) - Obsolete library
+- Old backup SQL files (2.2 MB)
+- Large SQL files removed from git: 307+ MB
+  - `iacc/theiconn_angthong.sql` (249+ MB) - Exceeded GitHub limits
+  - `iacc/f2coth_iacc.sql` (20+ MB)
+  - Added to `.gitignore` to prevent re-adding
+
+### Git History (December 31, 2025)
+
+| Commit | Message |
+|--------|----------|
+| `aa5d857` | Remove large SQL files and add to .gitignore |
+| `eb0eb98` | Update README with Docker setup instructions |
+| `a076720` | Conservative cleanup (223 MB removed) |
+| `f1accc4` | Add Dockerfile and docker-compose |
+
+**Current Branch**: main  
+**Remote**: git@github.com:psinthorn/iacc-php-mvc.git (SSH)  
+**Status**: All commits pushed to GitHub ✅
 
 ## Future Migration
 
@@ -406,6 +473,36 @@ For new system development, refer to project root documentation:
 
 ---
 
-**Last Updated**: December 4, 2025  
-**Status**: Legacy system preserved for reference  
+## Recent Updates (December 31, 2025)
+
+✅ **Docker Infrastructure**
+- Added Dockerfile with PHP 7.4-FPM
+- Configured docker-compose.yml with 5 services
+- Nginx reverse proxy (Alpine Linux)
+- MySQL 5.7 with persistent data volume
+- PhpMyAdmin for database management
+- MailHog for email testing in development
+
+✅ **Repository Cleanup**
+- Removed 223 MB of duplicate and obsolete files
+- Removed 307+ MB of large SQL files from git history
+- Optimized container size to 169 MB
+- Added comprehensive .gitignore
+
+✅ **Documentation**
+- Updated README with Docker quick start
+- Added troubleshooting section
+- Documented all services and ports
+- Added deployment guide (DEPLOYMENT_README.md)
+
+✅ **Git & Deployment**
+- SSH ED25519 key authentication configured
+- All commits pushed to GitHub successfully
+- Remote tracking set up (origin/main)
+- Clean git history
+
+---
+
+**Last Updated**: December 31, 2025  
+**Status**: Production-ready with Docker support  
 **Next Phase**: Frontend and Backend development
