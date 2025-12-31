@@ -92,12 +92,7 @@ if ($user_id) {
 				if($page=="category")				
 				include_once "category-list.php";
 				if($page=="brand")				
-				include_once "band-list.php";
-				
-				if($page=="type")				
-				include_once "type-list.php";
-				
-				if($page=="receipt_list")				
+			include_once "brand-list.php";
 				include_once "rep-list.php";
 				if($page=="rep_make")				
 				include_once "rep-make.php";

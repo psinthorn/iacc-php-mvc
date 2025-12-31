@@ -33,7 +33,7 @@ DESCRIBE po;
 
 ### PHP Files Updated
 
-1. **band-list.php** ✅
+1. **brand-list.php** ✅
    - Updated query: `SELECT id, name, des FROM brand`
    - Updated field reference: `$data['name']`
 
@@ -90,7 +90,7 @@ The following are now standardized for future work:
 ### Files Modified
 
 ```
-iacc/band-list.php
+iacc/brand-list.php
 iacc/band.php
 iacc/core-function.php
 iacc/deliv-edit.php

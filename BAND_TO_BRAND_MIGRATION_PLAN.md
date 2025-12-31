@@ -27,7 +27,7 @@
 ## Files to Update
 
 ### PHP Files Using Band Table:
-1. `band-list.php` - List brands
+1. `brand-list.php` - List brands
 2. `band.php` - Brand management
 3. `core-function.php` - Core functions
 4. `deliv-edit.php` - Delivery editing

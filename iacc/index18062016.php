@@ -35,7 +35,7 @@ $users->checkSecurity();?>
 				if($_REQUEST[page]=="rep_make")				
 				include_once "rep-make.php";
 				if($_REQUEST[page]=="brand")				
-				include_once "band-list.php";
+			include_once "brand-list.php";
 				if($_REQUEST[page]=="pr_list")				
 				include_once "pr-list.php";
 				if($_REQUEST[page]=="pr_create")				
