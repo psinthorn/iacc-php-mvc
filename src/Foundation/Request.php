@@ -64,6 +64,12 @@ class Request
     protected $cookies;
 
     /**
+     * Authenticated user
+     * @var array|null
+     */
+    protected $user;
+
+    /**
      * Constructor
      * 
      * @param array $server $_SERVER
@@ -343,6 +349,37 @@ class Request
     public function userAgent()
     {
         return $_SERVER['HTTP_USER_AGENT'] ?? '';
+    }
+
+    /**
+     * Set authenticated user
+     * 
+     * @param array $user
+     * @return void
+     */
+    public function setUser(array $user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * Get authenticated user
+     * 
+     * @return array|null
+     */
+    public function user()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Check if request is authenticated
+     * 
+     * @return bool
+     */
+    public function isAuthenticated()
+    {
+        return $this->user !== null;
     }
 }
 
