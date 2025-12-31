@@ -23,7 +23,7 @@ class DbConn {
 
 	function __construct($config) {
 		$this->config = $config;
-		$this->conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config["dbname"]) or die(mysqli_error());
+		$this->conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config["dbname"]) or die("Database Connection Error: " . mysqli_connect_error());
 		
 		// Set charset using the proper mysqli function
 		if (!mysqli_set_charset($this->conn, "utf8mb4")) {
