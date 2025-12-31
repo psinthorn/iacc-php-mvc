@@ -4,6 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/class.hard.php");
 $users=new DbConn($config);
+DbConn::setGlobalConnection($users->conn);
 $users->checkSecurity();
 
 $har=new HardClass($users->conn);

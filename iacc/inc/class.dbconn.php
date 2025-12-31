@@ -47,7 +47,33 @@ class DbConn {
 			exit("<script>alert('Please Login');window.location='login.php';</script>");
 		}
 	}
+	
+	// Static query helpers for backward compatibility
+	public static $globalConn = null;
+	
+	public static function setGlobalConnection($conn) {
+		self::$globalConn = $conn;
+	}
+	
+	public static function query($sql) {
+		if(!self::$globalConn) return false;
+		return mysqli_query(self::$globalConn, $sql);
+	}
+	
+	public static function fetch_array($result) {
+		return mysqli_fetch_array($result);
+	}
+	
+	public static function num_rows($result) {
+		return mysqli_num_rows($result);
+	}
+	
+	public static function error() {
+		if(!self::$globalConn) return '';
+		return mysqli_error(self::$globalConn);
+	}
 }
+
 	
 
 			
