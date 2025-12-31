@@ -721,4 +721,192 @@ $maxno=mysql_fetch_array(mysql_query("select max(no) as maxno from store join pr
 
 }break;
 }
+
+// =====================================================================
+// AUDIT TRAIL HELPER FUNCTIONS - Phase 3 Step 4
+// =====================================================================
+
+/**
+ * Set audit context before database operations
+ * Call this at the start of each request to track user and IP
+ */
+function set_audit_context() {
+    global $users;
+    
+    $user_id = isset($_SESSION['id']) ? $_SESSION['id'] : 0;
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    
+    // Set MySQL session variables that triggers will use
+    try {
+        mysqli_query(DbConn::getGlobalConnection(), "SET @audit_user_id = $user_id;");
+        mysqli_query(DbConn::getGlobalConnection(), "SET @audit_ip_address = '$ip_address';");
+    } catch (Exception $e) {
+        error_log("Error setting audit context: " . $e->getMessage());
+    }
+}
+
+/**
+ * Get audit history for a specific record
+ * 
+ * @param string $table_name - Table being audited
+ * @param int $record_id - ID of the record
+ * @param int $limit - Max records to return
+ * @return array - Audit log entries
+ */
+function get_audit_history($table_name, $record_id, $limit = 50) {
+    $conn = DbConn::getGlobalConnection();
+    $table_name = mysqli_real_escape_string($conn, $table_name);
+    $record_id = (int)$record_id;
+    
+    $sql = "SELECT * FROM audit_log 
+            WHERE table_name = '$table_name' AND record_id = $record_id 
+            ORDER BY created_at DESC LIMIT $limit";
+    
+    $result = mysqli_query($conn, $sql);
+    $history = array();
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        $history[] = $row;
+    }
+    
+    return $history;
+}
+
+/**
+ * Get audit log for a specific table
+ * 
+ * @param string $table_name - Table name to filter by
+ * @param int $limit - Max records to return
+ * @return array - Audit log entries
+ */
+function get_table_audit_log($table_name, $limit = 100) {
+    $conn = DbConn::getGlobalConnection();
+    $table_name = mysqli_real_escape_string($conn, $table_name);
+    
+    $sql = "SELECT * FROM audit_log 
+            WHERE table_name = '$table_name' 
+            ORDER BY created_at DESC LIMIT $limit";
+    
+    $result = mysqli_query($conn, $sql);
+    $logs = array();
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        $logs[] = $row;
+    }
+    
+    return $logs;
+}
+
+/**
+ * Get audit log for a specific user
+ * 
+ * @param int $user_id - User ID to filter by
+ * @param int $limit - Max records to return
+ * @return array - Audit log entries
+ */
+function get_user_audit_log($user_id, $limit = 100) {
+    $conn = DbConn::getGlobalConnection();
+    $user_id = (int)$user_id;
+    
+    $sql = "SELECT * FROM audit_log 
+            WHERE user_id = $user_id 
+            ORDER BY created_at DESC LIMIT $limit";
+    
+    $result = mysqli_query($conn, $sql);
+    $logs = array();
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        $logs[] = $row;
+    }
+    
+    return $logs;
+}
+
+/**
+ * Get recent audit log entries
+ * 
+ * @param int $hours - Get entries from last N hours
+ * @param int $limit - Max records to return
+ * @return array - Audit log entries
+ */
+function get_recent_audit_log($hours = 24, $limit = 100) {
+    $conn = DbConn::getGlobalConnection();
+    $hours = (int)$hours;
+    
+    $sql = "SELECT * FROM audit_log 
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL $hours HOUR)
+            ORDER BY created_at DESC LIMIT $limit";
+    
+    $result = mysqli_query($conn, $sql);
+    $logs = array();
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        $logs[] = $row;
+    }
+    
+    return $logs;
+}
+
+/**
+ * Get audit statistics for dashboard
+ * 
+ * @return array - Statistics including counts by operation and table
+ */
+function get_audit_statistics() {
+    $conn = DbConn::getGlobalConnection();
+    
+    $stats = array();
+    
+    // Total audit entries
+    $result = mysqli_query($conn, "SELECT COUNT(*) as total FROM audit_log");
+    $row = mysqli_fetch_assoc($result);
+    $stats['total_entries'] = $row['total'];
+    
+    // By operation
+    $result = mysqli_query($conn, "SELECT operation, COUNT(*) as count FROM audit_log GROUP BY operation");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $stats['by_operation'][$row['operation']] = $row['count'];
+    }
+    
+    // By table
+    $result = mysqli_query($conn, "SELECT table_name, COUNT(*) as count FROM audit_log GROUP BY table_name ORDER BY count DESC LIMIT 10");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $stats['by_table'][$row['table_name']] = $row['count'];
+    }
+    
+    // Last 24 hours
+    $result = mysqli_query($conn, "SELECT COUNT(*) as count FROM audit_log WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+    $row = mysqli_fetch_assoc($result);
+    $stats['last_24_hours'] = $row['count'];
+    
+    return $stats;
+}
+
+/**
+ * Format audit log entry for display
+ * 
+ * @param array $entry - Audit log entry from database
+ * @return string - Formatted HTML for display
+ */
+function format_audit_entry($entry) {
+    $timestamp = date('Y-m-d H:i:s', strtotime($entry['created_at']));
+    $table = htmlspecialchars($entry['table_name']);
+    $operation = htmlspecialchars($entry['operation']);
+    $description = htmlspecialchars($entry['description']);
+    $user_id = $entry['user_id'] ? "User ID: {$entry['user_id']}" : 'System';
+    $ip = htmlspecialchars($entry['ip_address']);
+    
+    return "
+        <tr>
+            <td>$timestamp</td>
+            <td>$table</td>
+            <td><span class='label label-{$operation}'>{$operation}</span></td>
+            <td>#{$entry['record_id']}</td>
+            <td>$description</td>
+            <td>$user_id</td>
+            <td>$ip</td>
+        </tr>
+    ";
+}
+
 ?>

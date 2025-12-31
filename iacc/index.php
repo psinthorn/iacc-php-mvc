@@ -13,6 +13,9 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $db = new DbConn($config);
 
+// Set audit context for all database operations
+require_once("core-function.php");
+set_audit_context();
 // Check security - redirect to login if not authenticated
 if (!isset($_SESSION['usr_id']) || $_SESSION['usr_id'] === "") {
     header("Location: login.php");
