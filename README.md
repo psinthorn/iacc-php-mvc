@@ -1,53 +1,101 @@
-# Legacy PHP Source Code Backup
+# iACC - Accounting Management System
 
-**Date Backed Up**: December 4, 2025  
-**Project**: iACC - Accounting Management System  
-**Status**: Legacy system (being migrated to Next.js + Node.js)
+**Project**: iACC - Accounting Management System (PHP MVC)  
+**Status**: Production-ready with Docker support  
+**Last Updated**: December 31, 2025
+
+## Docker Quick Start
+
+This project includes complete Docker support for local development and deployment.
+
+### Prerequisites
+- Docker & Docker Compose installed
+- 5 available ports: 80 (Nginx), 8083 (PhpMyAdmin), 8025 (MailHog), 3306 (MySQL)
+
+### Getting Started
+
+```bash
+# 1. Clone/navigate to the project
+cd /path/to/iAcc-PHP-MVC
+
+# 2. Start all services (PHP-FPM, MySQL, Nginx, PhpMyAdmin, MailHog)
+docker-compose up -d
+
+# 3. Access the application
+- Application: http://localhost
+- PhpMyAdmin: http://localhost:8083
+- MailHog (Email): http://localhost:8025
+```
+
+### Services
+
+| Service | Port | Container Name | Purpose |
+|---------|------|------------------|---------|
+| Nginx | 80, 443 | iacc_nginx | Web server / reverse proxy |
+| PHP-FPM | 9000 | iacc_php | PHP application runtime |
+| MySQL | 3306 | iacc_mysql | Database server |
+| PhpMyAdmin | 8083 | iacc_phpmyadmin | Database management UI |
+| MailHog | 1025, 8025 | iacc_mailhog_server | Email testing |
+
+### Database Configuration
+
+- **Host**: mysql (Docker service name)
+- **Port**: 3306
+- **Database**: iacc
+- **User**: root
+- **Password**: root
+- **Charset**: utf8mb4
+
+**Note**: For production, change the root password in `docker-compose.yml` and `iacc/inc/sys.configs.php`
+
+---
 
 ## Directory Structure
 
 ```
-old-version-backup/
-├── php-source/                 # Complete PHP source code backup
+iacc-php-mvc/
+├── iacc/                       # Main application directory (168 MB)
 │   ├── inc/                    # Core PHP classes and configuration
-│   ├── js/                     # JavaScript files (jQuery, Bootstrap, plugins)
-│   ├── css/                    # CSS files and stylesheets
+│   │   ├── sys.configs.php     # Database and app configuration
+│   │   ├── class.dbconn.php    # Database connection class
+│   │   ├── class.hard.php      # Helper functions
+│   │   ├── class.current.php   # Session/user management
+│   │   ├── string-th.xml       # Thai language strings
+│   │   └── string-us.xml       # English language strings
+│   ├── js/                     # JavaScript (jQuery, Bootstrap)
+│   ├── css/                    # Stylesheets
 │   ├── MPDF/                   # PDF generation library
-│   ├── MPDF57-7/              # Additional PDF library
-│   ├── PHPMailer/             # Email library
-│   ├── TableFilter/           # Data table filtering library
-│   ├── upload/                # File uploads directory
-│   ├── file/                  # File storage
-│   ├── images/                # Image assets
-│   ├── font-awesome/          # Font Awesome icons
-│   ├── fonts/                 # Font files
-│   └── *.php files            # Main application files
+│   ├── PHPMailer/              # Email library
+│   ├── TableFilter/            # Data table utilities
+│   ├── upload/                 # User file uploads
+│   ├── file/                   # File storage
+│   ├── images/                 # Image assets
+│   ├── font-awesome/           # Icon fonts
+│   └── *.php files             # Application pages
 │
-├── iacc/                       # Original backup (unchanged)
-├── index.php                   # Original index file
-├── src/                        # Source code directory
-└── views/                      # View templates
-
+├── docker-compose.yml          # Docker services configuration
+├── Dockerfile                  # PHP-FPM container definition
+├── README.md                   # This file
+└── DEPLOYMENT_README.md        # Deployment guide
 ```
 
 ## Main Application Files
 
-### Configuration
-- `inc/sys.configs.php` - Database configuration
-- `inc/class.dbconn.php` - Database connection class
-- `inc/class.hard.php` - Core helper functions
-- `inc/class.current.php` - Session and current user management
-- `inc/string-th.xml` - Thai language strings
-- `inc/string-us.xml` - English language strings
+### Core Configuration & Database
+- `iacc/inc/sys.configs.php` - Database and application configuration
+- `iacc/inc/class.dbconn.php` - Database connection management (MySQLi)
+- `iacc/inc/class.hard.php` - Core helper functions and utilities
+- `iacc/inc/class.current.php` - Session management and current user info
 
 ### Authentication & User Management
-- `authorize.php` - User authentication/login handling
-- `login.php` - Login page
-- `remoteuser.php` - Remote user handling
+- `iacc/authorize.php` - User authentication/login handling
+- `iacc/login.php` - Login page interface
 
-### Company/Vendor Management
-- `company.php` - Add/edit company
-- `company-list.php` - List companies
+### Core Business Operations
+- `iacc/company.php` / `iacc/company-list.php` - Company/vendor management
+- `iacc/category.php` / `iacc/category-list.php` - Product categories
+- `iacc/product-list.php` - Product inventory management
+- `iacc/band.php` / `iacc/band-list.php` - Band/department management
 - `company-addr.php` - Manage company addresses
 - `company-credit.php` - Company credit information
 
@@ -229,34 +277,91 @@ Services:
 
 ### Environment
 - PHP 5.6 or 7.2 (configurable)
-- MariaDB 10.4.13
-- Apache 2.4
+## Technology Stack
 
-## Migration to New Stack
+- **Language**: PHP 7.4
+- **Web Server**: Nginx (Alpine Linux)
+- **Database**: MySQL 5.7
+- **Runtime**: PHP-FPM
+- **Libraries**: 
+  - MySQLi (Database)
+  - MPDF (PDF generation)
+  - PHPMailer (Email)
+  - jQuery + Bootstrap 3 (Frontend)
 
-This code is being migrated to:
+## Environment & Deployment
+
+### Development (Docker)
+1. All services configured in `docker-compose.yml`
+2. Environment variables in docker-compose.yml
+3. Volume mounts:
+   - `./iacc` → `/var/www/html` (application code)
+   - `mysql_data` → `/var/lib/mysql` (database persistence)
+
+### Production Deployment
+See [DEPLOYMENT_README.md](DEPLOYMENT_README.md) for production setup instructions.
+
+## Troubleshooting
+
+### Common Issues
+
+**Database Connection Error**
+```
+Error: mysqli_error(): expects exactly 1 parameter, 0 given
+```
+- ✅ Fixed in commit f1accc4 (uses `mysqli_connect_error()` for connection phase)
+
+**Containers won't start**
+```bash
+# Check container logs
+docker-compose logs -f [service-name]
+
+# Verify ports are available
+lsof -i :80    # Nginx
+lsof -i :3306  # MySQL
+lsof -i :8083  # PhpMyAdmin
+```
+
+**MySQL connection refused**
+```bash
+# Wait for MySQL to be ready (takes 10-15 seconds)
+docker-compose logs mysql
+
+# Restart MySQL service
+docker-compose restart mysql
+```
+
+### Email Testing with MailHog
+
+All email sent by the application is automatically captured and available at:
+- **MailHog Web UI**: http://localhost:8025
+- **SMTP Server**: mailhog:1025 (Docker network)
+- No email leaves the system in development
+
+## Repository Info
+
+**Size**: 320 MB (after cleanup on Dec 31, 2025)
+- Original: 543 MB
+- Cleanup removed: 223 MB (41% reduction)
+  - `php-source/` duplicate: 190 MB
+  - `iacc/MPDF57-7/` obsolete: 31 MB  
+  - Old backup SQL: 2.2 MB
+
+**Git History**: 
+- Latest commit: f1accc4 (Docker + DB fixes)
+- Cleanup commit: a076720 (Removed duplicates)
+- Deployment tag: before-cleanup-v1
+
+## Future Migration
+
+This codebase is being migrated to:
 
 ```
-Frontend:  Next.js 14 + TypeScript + Tailwind CSS + shadcn/ui
+Frontend:  Next.js 14 + TypeScript + Tailwind CSS
 Backend:   Node.js + Express + TypeScript + Prisma
-Database:  PostgreSQL (Neon.tech)
+Database:  PostgreSQL
 Auth:      JWT + bcrypt + RBAC
 ```
-
-### Migration Status
-- 📋 Database analysis: ✅ Complete
-- 🔧 Schema design: 🔄 In Progress
-- 🎨 Frontend setup: ⏳ Pending
-- ⚙️ Backend setup: ⏳ Pending
-- 🔐 Authentication: ⏳ Pending
-- 📊 Feature migration: ⏳ Pending
-
-## How to Use This Backup
-
-### 1. Reference Original Code
-```bash
-cd old-version-backup/php-source/
-grep -r "function_name" .  # Find specific functions
 cat company-list.php       # Review specific features
 ```
 
