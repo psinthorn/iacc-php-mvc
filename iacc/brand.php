@@ -19,17 +19,17 @@ $data=mysqli_fetch_array($query);
 }else $method="A";?>
 <form action="core-function.php" method="post" enctype="multipart/form-data" id="myform">
 	<div id="box">
-		<lable for="brand_name"><?=$xml->name?></lable>
-		<input id="brand_name" name="brand_name" class="form-control" required type="text" value="<?php echo $data[brand_name];?>">
+		<lable for="name"><?=$xml->name?></lable>
+		<input id="name" name="name" class="form-control" required type="text" value="<?php echo (isset($data['name']) ? $data['name'] : '');?>">
 	</div>
     <div id="box">
 		<lable for="des"><?=$xml->description?></lable>
-		<input id="des" name="des" class="form-control" required type="text" value="<?php echo $data[des];?>">
+		<input id="des" name="des" class="form-control" required type="text" value="<?php echo (isset($data['des']) ? $data['des'] : '');?>">
 	</div>
     <div id="box">
     <lable for="des"><?=$xml->owner?></lable>
 		
-    <select id="ven_id" name="ven_id" class="form-control">
+    <select id="company_id" name="company_id" class="form-control">
     
 			<?php 
 			echo "<option value='0' >Non Owner</option>";
@@ -38,7 +38,7 @@ $data=mysqli_fetch_array($query);
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($fetch_customer['id']==$data['ven_id'])
+					if($fetch_customer['id']==(isset($data['company_id']) ? $data['company_id'] : 0))
 					echo "<option selected value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>"; else 	echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";
 				}?>
 		</select>
@@ -49,7 +49,7 @@ $data=mysqli_fetch_array($query);
         <input id="logo" name="logo" class="form-control" type="file" value=""></div>
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="brand">
-	<input type="hidden" name="id" value="<?php echo isset($_REQUEST['id']) ? $_REQUEST['id'] : '';?>"><div class="clearfix"
+	<input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>"><div class="clearfix"
 ></div>	<div id="box" style="padding-top:25px;"><input type="submit" value="<?php if($method=="E")echo $xml->save;else echo $xml->add;?>" class="btn btn-primary"></div>
 </form>
 

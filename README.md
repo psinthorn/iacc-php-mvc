@@ -97,12 +97,12 @@ iacc-php-mvc/
 - `iacc/company.php` / `iacc/company-list.php` - Company/vendor management
 - `iacc/category.php` / `iacc/category-list.php` - Product categories
 - `iacc/product-list.php` - Product inventory management
-- `iacc/band.php` / `iacc/brand-list.php` - Band/department management
+- `iacc/brand.php` / `iacc/brand-list.php` - Brand/department management
 - `company-addr.php` - Manage company addresses
 - `company-credit.php` - Company credit information
 
 ### Product Management
-- `band.php` - Brand management
+- `brand.php` - Brand management
 - `brand-list.php` - List brands
 - `category.php` - Category management
 - `category-list.php` - List categories

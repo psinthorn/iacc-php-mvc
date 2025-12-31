@@ -9,7 +9,7 @@
 $db->checkSecurity();?>
 
 <div id="fetch_state"></div>
-<table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->description?></th><th width="120"><a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'band.php', true);"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create?></a></th></tr>
+<table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->description?></th><th width="120"><a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'brand.php', true);"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create?></a></th></tr>
 
 <?php 
 	$sql = "select id, name, des from brand order by id desc";
@@ -19,7 +19,7 @@ $db->checkSecurity();?>
 	} else if (mysqli_num_rows($query) > 0) {
 		while($data=mysqli_fetch_array($query)){
 			echo "<tr><td>".(isset($data['name']) ? $data['name'] : '')."</td><td>".(isset($data['des']) ? $data['des'] : '')."</td>
-<td><a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'band.php?id=".$data['id']."', true);\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"core-function.php?method=D&id=".$data['id']."&page=brand\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";		
+<td><a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state', 'brand.php?id=".$data['id']."', true);\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' href=\"core-function.php?method=D&id=".$data['id']."&page=brand\"><span class=\"glyphicon glyphicon-trash\"></span></a></td></tr>";		
 		}
 	} else {
 		echo "<tr><td colspan='3'>No brands found</td></tr>";

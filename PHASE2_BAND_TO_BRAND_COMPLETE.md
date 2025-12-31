@@ -37,7 +37,7 @@ DESCRIBE po;
    - Updated query: `SELECT id, name, des FROM brand`
    - Updated field reference: `$data['name']`
 
-2. **band.php** ✅
+2. **brand.php** ✅
    - Updated field input: `id="name"` (was `id="band_name"`)
    - Updated dropdown: `id="company_id"` (was `id="ven_id"`)
    - Updated data binding: `$data['name']` and `$data['company_id']`
@@ -91,7 +91,7 @@ The following are now standardized for future work:
 
 ```
 iacc/brand-list.php
-iacc/band.php
+iacc/brand.php
 iacc/core-function.php
 iacc/deliv-edit.php
 iacc/deliv-make.php

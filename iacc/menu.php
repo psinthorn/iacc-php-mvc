@@ -210,7 +210,7 @@
                                 <a href="index.php?page=category"><?=$xml->category?></a>
                             </li>
                              <li>
-                                <a href="index.php?page=band"><?=$xml->brand?></a>
+                                <a href="index.php?page=brand"><?=$xml->brand?></a>
                             </li>
                               <li>
                                 <a href="index.php?page=type"><?=$xml->product?></a>
