@@ -20,10 +20,16 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "tests/helpers.php"
+        ]
     },
     "scripts": {
         "test": "phpunit",
+        "test:unit": "phpunit --testsuite Unit",
+        "test:feature": "phpunit --testsuite Feature",
+        "test:integration": "phpunit --testsuite Integration",
         "test:coverage": "phpunit --coverage-html coverage",
         "analyze": "phpstan analyze src --level=5",
         "serve": "php -S localhost:8000 -t public"
