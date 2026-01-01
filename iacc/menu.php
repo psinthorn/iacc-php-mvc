@@ -149,7 +149,7 @@
                     </ul>
                 </li>-->
                 <!-- /.dropdown -->
-                  <li><form action="lang.php" method="post"><button name="chlang" value="0" class="btn btn-default <?php if($lg=="us") echo "active";?>"><img src="images/us.jpg"> English</button>&nbsp;<button name="chlang" value="1" class="btn btn-default <?php if($lg=="th") echo "active";?>"><img src="images/th.jpg">  ภาษาไทย</button></form></li>
+                  <li><form action="lang.php" method="post"><button name="chlang" value="0" class="btn btn-default <?php $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0; if($current_lang == 0) echo "active";?>"><img src="images/us.jpg"> English</button>&nbsp;<button name="chlang" value="1" class="btn btn-default <?php if($current_lang == 1) echo "active";?>"><img src="images/th.jpg">  ภาษาไทย</button></form></li>
               
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
