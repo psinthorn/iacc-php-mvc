@@ -239,9 +239,10 @@ $html = '
     
     /* Signatures */
     .sigs { margin-top: 30px; }
-    .sigs td { width: 50%; text-align: center; padding: 0 25px; vertical-align: bottom; }
-    .sig-name { font-size: 9px; color: #666; margin-bottom: 40px; }
-    .sig-line { border-top: 1px solid #333; padding-top: 5px; font-size: 10px; font-weight: bold; }
+    .sigs td { width: 50%; text-align: center; padding: 0 10px; vertical-align: bottom; }
+    .sig-space { height: 40px; }
+    .sig-line { font-size: 10px; font-weight: bold; padding-top: 5px; border-top: 1px solid #333; }
+    .sig-name { font-size: 9px; color: #666; margin-top: 3px; }
     .sig-date { font-size: 9px; color: #888; margin-top: 3px; }
 </style>
 
@@ -396,13 +397,15 @@ $html .= '
 <table class="sigs" width="100%">
     <tr>
         <td>
-            <div class="sig-name">' . e($customer['name_en'] ?? '') . '</div>
+            <div class="sig-space"></div>
             <div class="sig-line">Authorized Signature</div>
+            <div class="sig-name">' . e($customer['name_en'] ?? '') . '</div>
             <div class="sig-date">Date: ____/____/________</div>
         </td>
         <td>
-            <div class="sig-name">' . e($vender['name_en'] ?? '') . '</div>
+            <div class="sig-space"></div>
             <div class="sig-line">Authorized Signature</div>
+            <div class="sig-name">' . e($vender['name_en'] ?? '') . '</div>
             <div class="sig-date">Date: ____/____/________</div>
         </td>
     </tr>
