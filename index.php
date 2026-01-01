@@ -1,11 +1,78 @@
 <?php
-// error_reporting(E_ALL & ~E_NOTICE);
+/**
+ * iAcc Main Entry Point
+ * Refactored with array-based routing
+ */
+
+// Error handling
 error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
 session_start();
+
+// Load core files
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
+
+// Initialize database and check authentication
 $db = new DbConn($config);
-$db->checkSecurity();?>
+$db->checkSecurity();
+
+// Page routing configuration - maps page parameter to file
+$routes = [
+    // Dashboard
+    'dashboard'     => 'dashboard.php',
+    
+    // Master Data
+    'company'       => 'company-list.php',
+    'category'      => 'category-list.php',
+    'type'          => 'type-list.php',
+    'brand'         => 'band-list.php',
+    
+    // Purchase Requisition
+    'pr_list'       => 'pr-list.php',
+    'pr_create'     => 'pr-create.php',
+    'pr_make'       => 'pr-make.php',
+    
+    // Purchase Order
+    'po_make'       => 'po-make.php',
+    'po_list'       => 'po-list.php',
+    'po_edit'       => 'po-edit.php',
+    'po_view'       => 'po-view.php',
+    'po_deliv'      => 'po-deliv.php',
+    
+    // Voucher
+    'voucher_list'  => 'vou-list.php',
+    'voc_make'      => 'voc-make.php',
+    
+    // Delivery
+    'deliv_list'    => 'deliv-list.php',
+    'deliv_view'    => 'deliv-view.php',
+    'deliv_make'    => 'deliv-make.php',
+    'deliv_edit'    => 'deliv-edit.php',
+    
+    // Complaint / QA
+    'compl_list'    => 'compl-list.php',
+    'compl_list2'   => 'compl-list2.php',
+    'compl_view'    => 'compl-view.php',
+    'qa_list'       => 'qa-list.php',
+    
+    // Payment & Reports
+    'payment'       => 'payment-list.php',
+    'mo_list'       => 'mo-list.php',
+    'report'        => 'report.php',
+    'receipt_list'  => 'rep-list.php',
+    'rep_make'      => 'rep-make.php',
+];
+
+// Get requested page (sanitized)
+$page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : 'dashboard';
+
+// Determine which file to include
+$pageFile = isset($routes[$page]) ? $routes[$page] : null;
+?>
 <!DOCTYPE html>
 <html>
 
@@ -22,67 +89,19 @@ $db->checkSecurity();?>
         <div id="page-wrapper">
             <div class="row">
                 <?php 
-				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 'dashboard';
-				
-				if($page=="dashboard")				
-				include_once "dashboard.php";
-				else if($page=="company")				
-				include_once "company-list.php";
-				else if($page=="category")				
-				include_once "category-list.php";
-				
-				if($_REQUEST['page']=="type")				
-				include_once "type-list.php";
-				
-				if($_REQUEST['page']=="receipt_list")				
-				include_once "rep-list.php";
-				if($_REQUEST['page']=="rep_make")				
-				include_once "rep-make.php";
-				if($_REQUEST['page']=="brand")				
-				include_once "band-list.php";
-				if($_REQUEST['page']=="pr_list")				
-				include_once "pr-list.php";
-				if($_REQUEST['page']=="pr_create")				
-				include_once "pr-create.php";
-				if($_REQUEST['page']=="pr_make")				
-				include_once "pr-make.php";
-				if($_REQUEST['page']=="po_make")				
-				include_once "po-make.php";
-				if($_REQUEST['page']=="po_list")				
-				include_once "po-list.php";
-				if($_REQUEST['page']=="voucher_list")				
-				include_once "vou-list.php";
-				if($_REQUEST['page']=="voc_make")				
-				include_once "voc-make.php";
-				if($_REQUEST['page']=="po_edit")				
-				include_once "po-edit.php";
-					if($_REQUEST['page']=="po_view")				
-				include_once "po-view.php";
-					if($_REQUEST['page']=="po_deliv")				
-				include_once "po-deliv.php";
-				if($_REQUEST['page']=="deliv_list")				
-				include_once "deliv-list.php";
-				if($_REQUEST['page']=="deliv_view")				
-				include_once "deliv-view.php";
-				if($_REQUEST['page']=="deliv_make")				
-				include_once "deliv-make.php";
-				if($_REQUEST['page']=="deliv_edit")				
-				include_once "deliv-edit.php";
-				if($_REQUEST['page']=="compl_list")				
-				include_once "compl-list.php";
-				if($_REQUEST['page']=="payment")				
-				include_once "payment-list.php";
-				if($_REQUEST['page']=="compl_view")				
-				include_once "compl-view.php";
-				if($_REQUEST['page']=="compl_list2")				
-				include_once "compl-list2.php";
-				if($_REQUEST['page']=="qa_list")				
-				include_once "qa-list.php";
-				if($_REQUEST['page']=="mo_list")				
-				include_once "mo-list.php";
-				if($_REQUEST['page']=="report")				
-				include_once "report.php";
-				
+                // Include the page file if route exists
+                if ($pageFile && file_exists($pageFile)) {
+                    include_once $pageFile;
+                } else {
+                    // 404 - Page not found
+                    echo '<div class="col-lg-12">';
+                    echo '<div class="alert alert-warning">';
+                    echo '<h4><i class="fa fa-exclamation-triangle"></i> Page Not Found</h4>';
+                    echo '<p>The requested page "' . e($page) . '" does not exist.</p>';
+                    echo '<a href="index.php" class="btn btn-primary">Go to Dashboard</a>';
+                    echo '</div>';
+                    echo '</div>';
+                }
 				?>
                 <!-- /.col-lg-12 -->
             </div>
