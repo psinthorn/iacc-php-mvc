@@ -718,9 +718,10 @@ $maxno=mysql_fetch_array(mysql_query("select max(no) as maxno from store join pr
 	}else {exit("<script>alert('window.location = 'index.php?page=".$_REQUEST['page']."'</script>");
     }
 
-}break;
+}
 
 
-}exit("<script>window.location = 'index.php?page=".$_REQUEST['page']."'</script>");break;
+}
+exit("<script>window.location = 'index.php?page=".$_REQUEST['page']."'</script>");
 
 ?>

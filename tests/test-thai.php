@@ -3,6 +3,7 @@ header('Content-Type: text/html; charset=utf-8');
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $db = new DbConn($config);
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -57,6 +58,7 @@ $db = new DbConn($config);
                     echo "</tr>";
                 }
             }
+            ?>
         </tbody>
     </table>
     

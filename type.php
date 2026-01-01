@@ -52,7 +52,7 @@ if(mysqli_num_rows($query)==1){
 		
 			while($fet_additional=mysql_fetch_array($query_additional)){?>
 			<input type="checkbox" name="<?=$fet_additional['id']?>" id="<?=$fet_additional['id']?>" class="checkbox" />
-			<label style="padding:7px;cursor:pointer !important"  for="<?=$fet_additional['id']?>"><?=$fet_additional['name]?></label><?php }?>
+			<label style="padding:7px;cursor:pointer !important"  for="<?=$fet_additional['id']?>"><?=$fet_additional['name']?></label><?php }?>
 		</div>
 		<div class="clearfix"></div> 
 

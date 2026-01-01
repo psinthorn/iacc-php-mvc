@@ -11,6 +11,7 @@ if (!isset($_SESSION['usr_id'])) {
 }
 
 $lang = $_SESSION['lang'] ?? 0;
+?>
 <!DOCTYPE html>
 <html>
 <head>
