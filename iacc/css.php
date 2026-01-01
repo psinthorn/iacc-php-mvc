@@ -13,7 +13,18 @@
 
     <!-- SB Admin CSS - Include with every page -->
     <link href="css/sb-admin.css" rel="stylesheet">
-      <script src="js/jquery-1.10.2.js"></script>
+
+    <!-- UX/UI Improvements - Foundation CSS Files -->
+    <link href="css/theme-variables.css" rel="stylesheet">
+    <link href="css/typography-improvements.css" rel="stylesheet">
+    <link href="css/form-improvements.css" rel="stylesheet">
+    <link href="css/button-improvements.css" rel="stylesheet">
+    <link href="css/table-improvements.css" rel="stylesheet">
+    <link href="css/modal-improvements.css" rel="stylesheet">
+    <link href="css/sidebar-improvements.css" rel="stylesheet">
+    <link href="css/card-component.css" rel="stylesheet">
+
+    <script src="js/jquery-1.10.2.js"></script>
 	<script src="js/ajaxpagefetcher.js"></script>
     
     
