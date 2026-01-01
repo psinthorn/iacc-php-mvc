@@ -21,68 +21,63 @@ $db->checkSecurity();
 		
 		}
 
-// Build absolute path for logo image for mPDF
-$logo_path = '';
+// Build absolute file path for logo image for mPDF
+$logo_img = '';
 if (!empty($logo)) {
-	$logo_path = dirname(__FILE__) . '/upload/' . $logo;
-	// Check if file exists, otherwise use empty
-	if (!file_exists($logo_path)) {
-		$logo_path = '';
+	$logo_path = __DIR__ . '/upload/' . $logo;
+	if (file_exists($logo_path)) {
+		$logo_img = '<img src="' . $logo_path . '" height="60" />';
 	}
 }
 
-$logo_img = '';
-if (!empty($logo_path)) {
-	$logo_img = '<img src="'.$logo_path.'" height="60" />';
-}
-
 $html = '
-<div style="width:20%; float:left;">'.$logo_img.'</div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
-<small><br>'.$vender['adr_tax'].'<br>'.$vender['city_tax'].' '.$vender['district_tax'].' '.$vender['province_tax'].' '.$vender['zip_tax'].'<br>Tel : '.$vender['phone'].'  Fax : '.$vender['fax'].' Email: '.$vender['email'].'<br>Tax: '.$vender['tax'].'</small></div>
+<!-- Header with logo and company info in 2 columns -->
+<table style="width:100%; border-collapse:collapse; background-color:#f8f9fa; margin-bottom:8px; border-bottom:3px solid #34495e;">
+<tr>
+  <td style="width:22%; padding:12px; vertical-align:top; border:none;">'.$logo_img.'</td>
+  <td style="width:78%; padding:12px; vertical-align:top; border:none;">
+    <div style="font-size:18px; font-weight:700; color:#1a1a1a; margin-bottom:2px; letter-spacing:0.5px;">'.$vender['name_en'].'</div>
+    <div style="font-size:10px; color:#555; line-height:1.6; margin-bottom:6px;">
+      '.$vender['adr_tax'].' | '.$vender['city_tax'].', '.$vender['district_tax'].', '.$vender['province_tax'].' '.$vender['zip_tax'].'
+    </div>
+    <div style="font-size:9px; color:#666; border-top:1px solid #ddd; padding-top:4px;">
+      <span style="margin-right:15px;"><span style="font-weight:600;">Tel:</span> '.$vender['phone'].'</span>
+      <span style="margin-right:15px;"><span style="font-weight:600;">Fax:</span> '.$vender['fax'].'</span>
+      <span><span style="font-weight:600;">Email:</span> '.$vender['email'].'</span><br>
+      <span style="font-weight:600;">Tax ID:</span> '.$vender['tax'].'
+    </div>
+  </td>
+</tr>
+</table>
 
+<!-- Invoice Title -->
+<div style="width:100%; background-color:#34495e; color:white; padding:10px; text-align:center; font-size:18px; font-weight:700; margin:0 0 8px 0; letter-spacing:2px;">INVOICE</div>
 
-<div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
-<div style="width:100%; margin-top:10px; margin-bottom:5px; padding:5px;background-color:#000; text-align:center; font-weight:bold; color:#FFF;font-size:18px;">INVOICE</div>
+<!-- Clean 3-Column Invoice Details Grid -->
+<table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:8px;">
+<tr style="background-color:#f5f5f5;">
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #ddd;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Customer</span><br><span style="color:#222; font-weight:500;">'.$customer['name_en'].'</span></td>
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #ddd;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Address</span><br><span style="color:#222; font-size:8px; line-height:1.3;">'.$customer['adr_tax'].'<br>'.$customer['city_tax'].', '.$customer['district_tax'].' '.$customer['zip_tax'].'</span></td>
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #ddd;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Invoice No.</span><br><span style="color:#222; font-weight:700; font-size:11px;">INV-'.$data['tax2'].'</span></td>
+</tr>
+<tr style="background-color:#fff;">
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #e8e8e8;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Tax ID</span><br><span style="color:#222; font-weight:500;">'.$customer['tax'].'</span></td>
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #e8e8e8;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Email</span><br><span style="color:#222; font-size:8px;">'.$customer['email'].'</span></td>
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #e8e8e8;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Create Date</span><br><span style="color:#222;">'.$data['date'].'</span></td>
+</tr>
+<tr style="background-color:#f5f5f5;">
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #ddd;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Tel/Fax</span><br><span style="color:#222; font-size:8px;">'.$customer['phone'].'<br>'.$customer['fax'].'</span></td>
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #ddd;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Delivery Date</span><br><span style="color:#222;">'.$data['deliver_date'].'</span></td>
+  <td style="width:33.33%; padding:5px; border-bottom:1px solid #ddd;"><span style="color:#555; font-weight:600; font-size:8px; text-transform:uppercase;">Ref-Doc (PO)</span><br><span style="color:#222; font-weight:700; font-size:11px;">PO-'.$data['tax'].'</span></td>
+</tr>
+</table>
 
-
-<div style="width:10%; float:left; font-weight:bold;">Customer</div>
-<div style="width:54%; float:left;">'.$customer['name_en'].'</div>
-<div style="width:14%; float:left; text-align:left; padding-left:3px; font-weight:bold;">Create Date</div>
-<div style="width:20%; float:left; text-align:left;">'.$data['date'].'</div>
-
-
-<div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer['adr_tax'].'</div>
-<div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Invoice No.</div>
-<div style="width:20%; float:left; ">INV-'.$data['tax2'].'</div>
-
-
-
-<div style="width:10%; height:5px; float:left; font-weight:bold;"></div>
-<div style="width:54%; float:left;">'.$customer['city_tax'].' '.$customer['district_tax'].' '.$customer['province_tax'].' '.$customer['zip_tax'].'</div>
-<div style="width:14%; float:left;  padding-left:3px; font-weight:bold;">Ref-Doc</div>
-<div style="width:20%; float:left;">PO-'.$data['tax'].'</div>
-
-
-<div style="width:10%; float:left; font-weight:bold;">Tax ID</div>
-<div style="width:90%; float:left;">'.$customer['tax'].'</div>
-
-<div style="width:10%; float:left; font-weight:bold;">Email</div>
-<div style="width:90%; float:left;">'.$customer['email'].'</div>
-
-<div style="width:10%; float:left; font-weight:bold;">Tel.</div>
-<div style="width:22%; float:left;">'.$customer['phone'].'</div>
-<div style="width:10%; float:left; font-weight:bold;">Fax.</div>
-<div style="width:22%; float:left;">'.$customer['fax'].'</div>
-
-
-
-</div>
+<div id="all_font2" style="font-size:12px; margin-bottom:10px;">
 
 <div id="all_font" style="font-size:14px; height:410px;">
 
 
-<div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
+<div style="width:100%; background-color:#34495e; color:white; padding:6px 5px; font-weight:bold; font-size:9px; letter-spacing:0.5px; text-transform:uppercase;">
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>
 ';
@@ -117,9 +112,7 @@ $labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
 $labour=$labour1*$data_pro['quantity'];
 $total=$equip+$labour;
 $summary+=$total;
-if($cot%2)
-$html .= '<div style="background-color:#eeeeee">';
-else $html .= '<div style="background-color:#ffffff">';
+$html .= '<div style="background-color:transparent;">';
 $html .= '
 <div style="width:4%; float:left;">'.$cot.'</div>
 <div style="width:15%; float:left;">'.$data_pro['model'].'</div>
@@ -140,9 +133,7 @@ $html .= '
 $total=$data_pro['price']*$data_pro['quantity'];
 
 $summary+=$total;
-if($cot%2)
-$html .= '<div style="background-color:#eeeeee">';
-else $html .= '<div style="background-color:#ffffff">';
+$html .= '<div style="background-color:transparent;">';
 $html .= '
 <div style="width:4%; float:left;">'.$cot.'</div>
 <div style="width:15%; float:left;">'.$data_pro['model'].'</div>

@@ -1,11 +1,11 @@
 <?php
 ob_start();
-// session_start();
-// require_once("inc/sys.configs.php");
-// require_once("inc/class.dbconn.php");
-// require_once("inc/class.current.php");
-// $db=new DbConn($config);
-// $db->checkSecurity();
+session_start();
+require_once("inc/sys.configs.php");
+require_once("inc/class.dbconn.php");
+require_once("inc/class.current.php");
+$db=new DbConn($config);
+$db->checkSecurity();
 
 
  $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis, taxrw as tax2,tax,pr.cus_id as cus_id,payby,des,vat,DATE_FORMAT(texiv_create,'%d-%m-%Y') as date,texiv_rw,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$_REQUEST['id']."' and status='5' and (pr.cus_id='".$_SESSION['com_id']."' or ven_id='".$_SESSION['com_id']."') and po_id_new=''");
