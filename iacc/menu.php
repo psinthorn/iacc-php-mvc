@@ -149,7 +149,16 @@
                     </ul>
                 </li>-->
                 <!-- /.dropdown -->
-                  <li><form action="lang.php" method="post"><button name="chlang" value="0" class="btn btn-default <?php $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0; if($current_lang == 0) echo "active";?>"><img src="images/us.jpg"> English</button>&nbsp;<button name="chlang" value="1" class="btn btn-default <?php if($current_lang == 1) echo "active";?>"><img src="images/th.jpg">  ภาษาไทย</button></form></li>
+                  <li>
+                    <form action="lang.php" method="post" id="langForm" style="display: inline;" onsubmit="console.log('Submitting language form with value: ' + event.submitter.value);">
+                      <button type="submit" name="chlang" value="0" class="btn btn-default <?php $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0; if($current_lang == 0) echo "active";?>" style="padding: 5px 10px;" title="Switch to English">
+                        <img src="images/us.jpg" alt="English" style="height: 20px;"> English
+                      </button>
+                      <button type="submit" name="chlang" value="1" class="btn btn-default <?php if($current_lang == 1) echo "active";?>" style="padding: 5px 10px; margin-left: 5px;" title="Switch to Thai">
+                        <img src="images/th.jpg" alt="Thai" style="height: 20px;"> ภาษาไทย
+                      </button>
+                    </form>
+                  </li>
               
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
