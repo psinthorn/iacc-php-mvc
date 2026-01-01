@@ -7,13 +7,13 @@ $users=new DbConn($config);
 $users->checkSecurity();
 
 
- $query=mysql_query("select purchase_order.name as name,over,vendor_id,dis,vat,countmailinv, taxrw as tax2,tax,purchase_request.customer_id as customer_id,payby,des,brandven,valid_pay, DATE_FORMAT(invoice.createdate,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join purchase_order on purchase_request.id=purchase_order.ref  join invoice on purchase_order.id=invoice.tex where purchase_order.id='".$_POST[id]."' and status>'2' and vendor_id='".$_SESSION[company_id]."' and po_id_new=''");
+ $query=mysql_query("select po.name as name,over,ven_id,dis,vat,countmailinv, taxrw as tax2,tax,pr.cus_id as cus_id,payby,des,brandven,valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$_POST[id]."' and status>'2' and ven_id='".$_SESSION[com_id]."' and po_id_new=''");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$ct=$data[countmailinv]+1;
-	mysql_query("update iv set countmailinv='".$ct."' where tex='".$_POST[id]."' and customer_id='".$_SESSION[company_id]."'");
-	$vender=mysql_fetch_array(mysql_query("select name_en,address_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.company_id where company.id='".$data[vendor_id]."' and valid_end='0000-00-00'"));
-	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,address_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.company_id where company.id='".$data[payby]."' and valid_end='0000-00-00'"));
+	mysql_query("update iv set countmailinv='".$ct."' where tex='".$_POST[id]."' and cus_id='".$_SESSION[com_id]."'");
+	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
+	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[payby]."' and valid_end='0000-00-00'"));
 	
 
 	if($data[brandven]==0){$logo=$vender[logo];}else{
@@ -24,7 +24,7 @@ if(mysql_num_rows($query)=="1"){
 
 $html = '
 <div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
-<small><br>'.$vender[address_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
+<small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
 
 
 <div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
@@ -38,7 +38,7 @@ $html = '
 
 
 <div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer[address_tax].'</div>
+<div style="width:54%; float:left;">'.$customer[adr_tax].'</div>
 <div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Invoice No.</div>
 <div style="width:20%; float:left; ">INV-'.$data[tax2].'</div>
 
@@ -72,7 +72,7 @@ $html = '
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>
 ';
-$cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=product_type.id where purchase_order_id='".$_POST[id]."'"));
+$cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_POST[id]."'"));
 if($cklabour[cklabour]==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -93,7 +93,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysql_query("select product_type.name as name,product.price as price,product.des as des,valuelabour,activelabour,discount,model.model_name as model,quantity,pack_quantity from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$_POST[id]."'");$summary=0;
+$que_pro=mysql_query("select type.name as name,product.price as price,product.des as des,valuelabour,activelabour,discount,model.model_name as model,quantity,pack_quantity from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_POST[id]."'");$summary=0;
 $cot=1;
 	while($data_pro=mysql_fetch_array($que_pro)){
 
@@ -254,4 +254,4 @@ $mail->AddAttachment("file/INV-".$data[tax2]."-".$customer[name_sh].".pdf", "INV
     }
 	
 	
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

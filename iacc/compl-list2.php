@@ -1,15 +1,12 @@
 
 <script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script> <h2><i class="fa fa-thumbs-up"></i> <?=$xml->taxinvoice?></h2><?php
 // $users->checkSecurity();
-
-?>
-
 <table width="100%" id="table1" class="table table-hover">
 
 <tr><th><?=$xml->customer?></th><th><?=$xml->taxno?></th><th><?=$xml->name?></th><th width="100"><?=$xml->createdate?></th><th colspan="2"><?=$xml->status?></th></tr>
 <?php
 
-$query=mysqli_query($db->conn, "select purchase_order.id as id,countmailtax, purchase_order.name as name,texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.customer_id=company.id join invoice on purchase_order.id=invoice.tex where po_id_new='' and vendor_id='".$_SESSION['company_id']."' and status='5' and status_iv='1' order by texiv_rw desc");
+$query=mysqli_query($db->conn, "select po.id as id,countmailtax, po.name as name,texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id join iv on po.id=iv.tex where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='5' and status_iv='1' order by texiv_rw desc");
 $cot=0;
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
@@ -24,7 +21,7 @@ echo "<tr ".$color."><td>".$data['name_en']."</td><td>TAX-".str_pad($data['texiv
  
 <tr><th><?=$xml->vender?></th><th><?=$xml->taxno?></th><th><?=$xml->name?></th><th><?=$xml->createdate?></th><th colspan="2"><?=$xml->status?></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select purchase_order.id as id, purchase_order.name as name, invoice.id as tax, texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.vendor_id=company.id  join invoice on purchase_order.id=invoice.tex  where  po_id_new='' and purchase_request.customer_id='".$_SESSION['company_id']."' and status='5' and status_iv='1' order by texiv_rw desc ");
+$query=mysqli_query($db->conn, "select po.id as id, po.name as name, iv.id as tax, texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id  join iv on po.id=iv.tex  where  po_id_new='' and pr.cus_id='".$_SESSION['com_id']."' and status='5' and status_iv='1' order by texiv_rw desc ");
 $cot=0;
  while($data=mysqli_fetch_array($query)){
 	  $cot++;

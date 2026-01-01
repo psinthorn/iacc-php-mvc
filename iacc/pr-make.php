@@ -4,7 +4,6 @@
 // require_once("inc/class.dbconn.php");
 // $users=new DbConn($config);
 // $users->checkSecurity();
-?>
 <!DOCTYPE html>
 <html>
 
@@ -52,8 +51,8 @@ function sumall() {
 	</div>
     <div id="box">
 		<lable for="name"><?=$xml->customer?></lable>
-		<select id="customer_id" name="customer_id" class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where customer='1' and id !='".$_SESSION['company_id'] ."' order by name_en ");
+		<select id="cus_id" name="cus_id" class="form-control">
+			<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where customer='1' and id !='".$_SESSION['com_id'] ."' order by name_en ");
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
@@ -101,7 +100,7 @@ function sumall() {
 	
 	<input type="hidden" name="method" value="A">
 	<input type="hidden" name="page" value="pr_list">
-    <input type="hidden" name="vendor_id" value="<?php echo $_SESSION['company_id'];?>">
+    <input type="hidden" name="ven_id" value="<?php echo $_SESSION['com_id'];?>">
 	
 	<input type="submit" value="<?=$xml->request?>" class="btn btn-primary"></div>
 </form>

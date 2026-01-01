@@ -9,16 +9,16 @@ $users->checkSecurity();
 
 
 if($_REQUEST[modep]=="ad"){
-	$query=mysql_query("select send_out_item.id as id,send_out_item.tmp as des,vendor_id,customer_id,name_sh,output_id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from send_out_item join deliver on send_out_item.id=deliver.output_id join company on send_out_item.customer_id=company.id where deliver.id='".$_REQUEST[id]."' and (customer_id='".$_SESSION[company_id]."' or vendor_id='".$_SESSION[company_id]."') and deliver.id not in (select deliver_id from receive) ");
+	$query=mysql_query("select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,out_id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$_REQUEST[id]."' and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and deliver.id not in (select deliver_id from receive) ");
 	}else{
  
  
- $query=mysql_query("select purchase_order.name as name,vendor_id,dis,tax,customer_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.purchase_order_id as purchase_order_id,brandven,purchase_order.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join purchase_order on purchase_request.id=purchase_order.ref  JOIN deliver on deliver.purchase_order_id=purchase_order.id where deliver.id='".$_REQUEST[id]."' and  status>'2'  and (customer_id='".$_SESSION[company_id]."' or vendor_id='".$_SESSION[company_id]."') and po_id_new=''");
+ $query=mysql_query("select po.name as name,ven_id,dis,tax,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,brandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$_REQUEST[id]."' and  status>'2'  and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
  }
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
-	$vender=mysql_fetch_array(mysql_query("select name_en,address_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.company_id where company.id='".$data[vendor_id]."' and valid_end='0000-00-00'"));
-	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,address_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.company_id where company.id='".$data[customer_id]."' and valid_end='0000-00-00'"));
+	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
+	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[cus_id]."' and valid_end='0000-00-00'"));
 	
 if($data[brandven]==0){$logo=$vender[logo];}else{
 		$bandlogo=mysql_fetch_array(mysql_query("select logo from brand where id='".$data[brandven]."'"));
@@ -28,7 +28,7 @@ if($data[brandven]==0){$logo=$vender[logo];}else{
 
 $html = '
 <div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
-<small><br>'.$vender[address_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
+<small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
 
 <div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
 <div style="width:100%; margin-top:10px; margin-bottom:5px; padding:5px;background-color:#000; text-align:center; font-weight:bold; color:#FFF;font-size:18px;">DELIVERY NOTE
@@ -41,7 +41,7 @@ $html = '
 
 
 <div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer[address_tax].'</div>
+<div style="width:54%; float:left;">'.$customer[adr_tax].'</div>
 <div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">No.</div>
 ';
 
@@ -104,8 +104,8 @@ $html.='
 </div>
 ';
 
-if($_REQUEST[modep]=="ad"){$que_pro=mysql_query("select product_type.name as name,model.model_name as model,s_n,DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty,product.des as des, quantity from product join type on product.type=product_type.id  join store on product.product_id=store.product_id join store_sale on store.id=store_sale.store_id join model on product.model=model.id where send_out_id='".$data[output_id]."'");}else{
-$que_pro=mysql_query("select product_type.name as name,model.model_name as model,quantity,s_n,product.des as des,DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty from product join type on product.type=product_type.id  join store on product.product_id=store.product_id join store_sale on store.id=store_sale.store_id join model on product.model=model.id where purchase_order_id='".$data[purchase_order_id]."'");}$summary=0;
+if($_REQUEST[modep]=="ad"){$que_pro=mysql_query("select type.name as name,model.model_name as model,s_n,DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty,product.des as des, quantity from product join type on product.type=type.id  join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id join model on product.model=model.id where so_id='".$data[out_id]."'");}else{
+$que_pro=mysql_query("select type.name as name,model.model_name as model,quantity,s_n,product.des as des,DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty from product join type on product.type=type.id  join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id join model on product.model=model.id where po_id='".$data[po_id]."'");}$summary=0;
 $cot=1;
 	while($data_pro=mysql_fetch_array($que_pro)){
 $total=$data_pro[price]-$data_pro[discount];
@@ -156,4 +156,4 @@ exit;
 //==============================================================
 //==============================================================
 
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

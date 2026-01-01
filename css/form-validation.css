@@ -1,0 +1,474 @@
+/* ============================================
+   Form Validation Styling
+   ============================================ */
+
+/* ========== Form Group with Validation ========== */
+.form-group {
+  position: relative;
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-fast);
+}
+
+.form-group.has-error {
+  color: var(--danger-color);
+}
+
+.form-group.has-success {
+  color: var(--success-color);
+}
+
+.form-group.has-warning {
+  color: var(--warning-color);
+}
+
+.form-group.has-info {
+  color: var(--info-color);
+}
+
+/* ========== Input Validation States ========== */
+.form-control.is-invalid {
+  border-color: var(--danger-color);
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath fill='%23dc3545' d='M8 4a.5.5 0 0 0-.854-.354L6.854 4.293 5.854 3.293a.5.5 0 0 0-.708.708l1 1-1 1a.5.5 0 0 0 .708.708l1-1 1 1a.5.5 0 0 0 .708-.708l-1-1 .854-.854A.5.5 0 0 0 8 4z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px 20px;
+}
+
+.form-control.is-invalid:focus {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.form-control.is-valid {
+  border-color: var(--success-color);
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2328a745' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath fill='%2328a745' d='M10.97 3.97a.75.75 0 0 1 1.07 1.05l-5.5 5.5a.75.75 0 0 1-1.08.02L3.97 8.28a.75.75 0 0 1 1.06-1.06l1.94 1.94 4.94-4.94z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px 20px;
+}
+
+.form-control.is-valid:focus {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.form-control.is-warning {
+  border-color: var(--warning-color);
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23ffc107' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='M6 3.5a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 1 0V4a.5.5 0 0 0-.5-.5zM6.5 8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px 20px;
+}
+
+.form-control.is-warning:focus {
+  border-color: var(--warning-color);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+/* ========== Validation Messages ========== */
+.invalid-feedback,
+.invalid-tooltip {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 12px;
+  color: var(--danger-color);
+  animation: validationFadeIn var(--transition-fast) ease-out;
+}
+
+@keyframes validationFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-group.has-error .invalid-feedback,
+.form-control.is-invalid ~ .invalid-feedback,
+.form-control.is-invalid ~ .invalid-tooltip {
+  display: block;
+}
+
+.valid-feedback,
+.valid-tooltip {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 12px;
+  color: var(--success-color);
+  animation: validationFadeIn var(--transition-fast) ease-out;
+}
+
+.form-group.has-success .valid-feedback,
+.form-control.is-valid ~ .valid-feedback,
+.form-control.is-valid ~ .valid-tooltip {
+  display: block;
+}
+
+.warning-feedback,
+.warning-tooltip {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 12px;
+  color: var(--warning-color);
+  animation: validationFadeIn var(--transition-fast) ease-out;
+}
+
+.form-group.has-warning .warning-feedback,
+.form-control.is-warning ~ .warning-feedback,
+.form-control.is-warning ~ .warning-tooltip {
+  display: block;
+}
+
+.info-feedback,
+.info-tooltip {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 12px;
+  color: var(--info-color);
+  animation: validationFadeIn var(--transition-fast) ease-out;
+}
+
+.form-group.has-info .info-feedback,
+.form-control.is-info ~ .info-feedback,
+.form-control.is-info ~ .info-tooltip {
+  display: block;
+}
+
+/* ========== Tooltip Feedback ========== */
+.invalid-tooltip,
+.valid-tooltip,
+.warning-tooltip,
+.info-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: var(--z-index-tooltip);
+  max-width: 100%;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.1rem;
+  font-size: 11px;
+  border-radius: 3px;
+  background-color: rgba(220, 53, 69, 0.8);
+}
+
+.valid-tooltip {
+  background-color: rgba(40, 167, 69, 0.8);
+}
+
+.warning-tooltip {
+  background-color: rgba(255, 193, 7, 0.8);
+  color: #fff;
+}
+
+.info-tooltip {
+  background-color: rgba(23, 162, 184, 0.8);
+}
+
+/* ========== Help Text ========== */
+.form-text,
+.help-block {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 12px;
+  color: var(--gray-medium);
+  transition: color var(--transition-fast);
+}
+
+.form-group.has-error .form-text,
+.form-group.has-error .help-block {
+  color: var(--danger-color);
+}
+
+.form-group.has-success .form-text,
+.form-group.has-success .help-block {
+  color: var(--success-color);
+}
+
+.form-group.has-warning .form-text,
+.form-group.has-warning .help-block {
+  color: var(--warning-color);
+}
+
+.form-group.has-info .form-text,
+.form-group.has-info .help-block {
+  color: var(--info-color);
+}
+
+/* ========== Input Required Indicator ========== */
+.required::after {
+  content: ' *';
+  color: var(--danger-color);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ========== Input Group Validation ========== */
+.input-group.has-error .form-control,
+.input-group.has-error .input-group-addon {
+  border-color: var(--danger-color);
+}
+
+.input-group.has-success .form-control,
+.input-group.has-success .input-group-addon {
+  border-color: var(--success-color);
+}
+
+.input-group.has-warning .form-control,
+.input-group.has-warning .input-group-addon {
+  border-color: var(--warning-color);
+}
+
+/* ========== Checkbox and Radio Validation ========== */
+.form-check-input.is-invalid {
+  border-color: var(--danger-color);
+}
+
+.form-check-input.is-invalid:checked {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.form-check-input.is-invalid:focus {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.form-check-input.is-valid {
+  border-color: var(--success-color);
+}
+
+.form-check-input.is-valid:checked {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.form-check-input.is-valid:focus {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+/* ========== Form Inline Validation ========== */
+.form-inline .form-group {
+  display: inline-block;
+  margin-right: var(--spacing-lg);
+  margin-bottom: 0;
+}
+
+.form-inline .form-group .invalid-feedback {
+  margin-left: var(--spacing-md);
+  display: inline-block;
+  width: auto;
+}
+
+/* ========== Character Counter ========== */
+.char-counter {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--gray-medium);
+  margin-top: 2px;
+  transition: color var(--transition-fast);
+}
+
+.char-counter.warning {
+  color: var(--warning-color);
+}
+
+.char-counter.danger {
+  color: var(--danger-color);
+}
+
+textarea ~ .char-counter {
+  margin-top: 4px;
+}
+
+/* ========== Validation Summary ========== */
+.validation-summary {
+  padding: var(--spacing-md);
+  background-color: rgba(220, 53, 69, 0.1);
+  border-left: 4px solid var(--danger-color);
+  border-radius: 3px;
+  margin-bottom: var(--spacing-lg);
+  animation: validationFadeIn var(--transition-normal) ease-out;
+}
+
+.validation-summary.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-left-color: var(--success-color);
+}
+
+.validation-summary.warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left-color: var(--warning-color);
+}
+
+.validation-summary.info {
+  background-color: rgba(23, 162, 184, 0.1);
+  border-left-color: var(--info-color);
+}
+
+.validation-summary h4 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  color: var(--danger-color);
+  font-weight: var(--font-weight-bold);
+}
+
+.validation-summary.success h4 {
+  color: var(--success-color);
+}
+
+.validation-summary.warning h4 {
+  color: var(--warning-color);
+}
+
+.validation-summary.info h4 {
+  color: var(--info-color);
+}
+
+.validation-summary ul {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+}
+
+.validation-summary li {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+/* ========== Password Strength ========== */
+.password-strength {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background-color: var(--gray-lighter);
+  overflow: hidden;
+}
+
+.password-strength-bar {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  transition: width var(--transition-normal), background-color var(--transition-normal);
+  background-color: var(--danger-color);
+}
+
+.password-strength-bar.weak {
+  width: 33%;
+  background-color: var(--danger-color);
+}
+
+.password-strength-bar.fair {
+  width: 66%;
+  background-color: var(--warning-color);
+}
+
+.password-strength-bar.good {
+  width: 100%;
+  background-color: var(--success-color);
+}
+
+.password-strength-text {
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--danger-color);
+}
+
+.password-strength-text.fair {
+  color: var(--warning-color);
+}
+
+.password-strength-text.good {
+  color: var(--success-color);
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  .invalid-feedback,
+  .valid-feedback,
+  .warning-feedback,
+  .info-feedback,
+  .validation-summary,
+  .password-strength-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ========== Dark Mode ========== */
+@media (prefers-color-scheme: dark) {
+  .form-text,
+  .help-block {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .invalid-tooltip,
+  .valid-tooltip,
+  .warning-tooltip,
+  .info-tooltip {
+    background-color: rgba(220, 53, 69, 0.9);
+  }
+
+  .valid-tooltip {
+    background-color: rgba(40, 167, 69, 0.9);
+  }
+
+  .warning-tooltip {
+    background-color: rgba(255, 193, 7, 0.9);
+  }
+
+  .info-tooltip {
+    background-color: rgba(23, 162, 184, 0.9);
+  }
+
+  .validation-summary {
+    background-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .validation-summary.success {
+    background-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .validation-summary.warning {
+    background-color: rgba(255, 193, 7, 0.2);
+  }
+
+  .validation-summary.info {
+    background-color: rgba(23, 162, 184, 0.2);
+  }
+
+  .password-strength {
+    background-color: #2d3748;
+  }
+}
+
+/* ========== Mobile Responsiveness ========== */
+@media (max-width: 576px) {
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .invalid-feedback,
+  .valid-feedback,
+  .warning-feedback,
+  .info-feedback,
+  .form-text {
+    font-size: 11px;
+  }
+
+  .form-inline .form-group {
+    display: block;
+    margin-right: 0;
+    margin-bottom: var(--spacing-md);
+  }
+}

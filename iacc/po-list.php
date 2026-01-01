@@ -1,8 +1,5 @@
 <h2><i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder?></h2><?php
 $db->checkSecurity();
-
-?>
-
 <table width="100%" class="table table-hover">
 <tr><td colspan="6"><?=$xml->purchasingorder?> - <?=$xml->out?></td></tr>
 <tr><th><?=$xml->customer?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>

@@ -26,7 +26,7 @@ case "1": $referField = "1";
 				$optionValueField = "id";
 				$optionTextField = "name";			
 				break;
-case "2":$referField = "product_type_id";
+case "2":$referField = "type_id";
 				$dataTable = "band join map_type_to_brand on brand.id=map_type_to_brand.brand_id";
 				$order = "band_name";
 				$optionValueField = "id";
@@ -61,4 +61,3 @@ echo "<option value=\"$row[$optionValueField]\">$row[$optionTextField]</option>"
 echo "</select>";
 
 
-?>

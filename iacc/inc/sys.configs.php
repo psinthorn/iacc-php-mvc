@@ -1,5 +1,8 @@
 <?PHP
-// SERVER : MYSQL Cnfiguration
+// Load error handler first to suppress deprecated PHP warnings
+require_once(dirname(__FILE__) . "/error-handler.php");
+
+// SERVER : MYSQL Configuration
 $config["hostname"] = "mysql";
 $config["username"] = "root";
 //$config["username"] = "theiconn_cms";

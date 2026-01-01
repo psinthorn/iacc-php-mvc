@@ -13,11 +13,8 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $db = new DbConn($config);
 
-// Set audit context for all database operations
-require_once("core-function.php");
-set_audit_context();
 // Check security - redirect to login if not authenticated
-if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] === "") {
+if (!isset($_SESSION['usr_id']) || $_SESSION['usr_id'] === "") {
     header("Location: login.php");
     exit;
 }
@@ -32,6 +29,10 @@ if (file_exists($lang_file)) {
     $xml = new SimpleXMLElement('<?xml version="1.0"?><note></note>');
 }
 
+// Make xml available globally so menu.php can access the current language
+$GLOBALS['xml'] = $xml;
+$GLOBALS['lang'] = $lang;
+
 // ============================================
 // PHASE 3: AUTHORIZATION & AUDIT LOGGING
 // ============================================
@@ -44,7 +45,7 @@ require_once("resources/views/middleware/authorization.php");
 require_once("resources/views/helpers.php");
 
 // Initialize Authorization instance (global)
-$user_id = $_SESSION['user_id'] ?? null;
+$user_id = $_SESSION['usr_id'] ?? null;
 if ($user_id) {
     $authorization = new Authorization($db, $user_id);
     // Make available globally - both as $authorization and $auth
@@ -86,7 +87,7 @@ if ($user_id) {
         <div id="page-wrapper">
             <div class="row">
                 <?php 
-				$page = $_REQUEST['page'] ?? '';
+				$page = $_REQUEST['page'] ?? 'dashboard';  // Default to dashboard if no page specified
 				
 				if($page=="dashboard")				
 				include_once "dashboard.php";
@@ -95,8 +96,12 @@ if ($user_id) {
 				else if($page=="category")				
 				include_once "category-list.php";
 				else if($page=="brand")				
-				include_once "brand-list.php";
-				else if($page=="rep_list")				
+				include_once "band-list.php";
+				
+				if($page=="type")				
+				include_once "type-list.php";
+				
+				else if($page=="receipt_list")				
 				include_once "rep-list.php";
 				else if($page=="rep_make")				
 				include_once "rep-make.php";
@@ -139,13 +144,7 @@ if ($user_id) {
 				else if($page=="qa_list")				
 				include_once "qa-list.php";
 				else if($page=="mo_list")				
-				include_once "mo-list.php";
-				else {
-					// Default to dashboard if no valid page specified
-					include_once "dashboard.php";
-				}
-				?>
-                <!-- /.col-lg-12 -->
+				include_once "mo-list.php";			?>                <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
           
@@ -171,4 +170,3 @@ if ($user_id) {
 <?php
 // Flush output buffer (allows header redirects in included pages to work)
 ob_end_flush();
-?>

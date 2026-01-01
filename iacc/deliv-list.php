@@ -1,13 +1,10 @@
 <h2><i class="fa fa-truck"></i> <?=$xml->deliverynote?><div style="float:right; font-size:20px; padding-top:7px;"><a href="?page=deliv_make" style="text-decoration:none;"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create." ".$xml->deliverynote;?></a></div></h2><?php
 $db->checkSecurity();
-
-?>
-
 <table width="100%" class="table table-hover">
 
 <tr><th><?=$xml->customer?></th><th><?=$xml->dnno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th><?=$xml->status?></th><th></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select deliver.id as id2,purchase_order.id as id, purchase_order.name as name,  DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.customer_id=company.id join deliver on purchase_order.id=deliver.purchase_order_id  where po_id_new='' and vendor_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and status='3' order by deliver.id desc ");
+$query=mysqli_query($db->conn, "select deliver.id as id2,po.id as id, po.name as name,  DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id join deliver on po.id=deliver.po_id  where po_id_new='' and ven_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and status='3' order by deliver.id desc ");
 
  while($data=mysqli_fetch_array($query)){
 
@@ -23,7 +20,7 @@ echo "<tr><td>".$data['name_en']."</td><td>DN-".str_pad($data['id2'], 8, "0", ST
     
     
     <?php
-$query=mysqli_query($db->conn, "select send_out_item.id as id2,deliver.id as id,send_out_item.tmp as des,name_en,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from send_out_item join deliver on send_out_item.id=deliver.output_id join company on send_out_item.customer_id=company.id where vendor_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and deliver.id not in (select deliver_id from receive) order by deliver.id desc ");
+$query=mysqli_query($db->conn, "select sendoutitem.id as id2,deliver.id as id,sendoutitem.tmp as des,name_en,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where ven_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and deliver.id not in (select deliver_id from receive) order by deliver.id desc ");
 
  while($data=mysqli_fetch_array($query)){
 
@@ -35,7 +32,7 @@ echo "<tr><td>".$data['name_en']."</td><td>DN-".str_pad($data['id'], 8, "0", STR
  
 <tr><th><?=$xml->vender?></th><th><?=$xml->dnno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th><?=$xml->status?></th><th></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select deliver.id as id2,purchase_order.id as id, purchase_order.name as name, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, status from purchase_order join purchase_request on purchase_order.ref=purchase_request.id join company on purchase_request.vendor_id=company.id join deliver on purchase_order.id=deliver.purchase_order_id where po_id_new='' and purchase_request.customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and status='3' order by deliver.id desc");
+$query=mysqli_query($db->conn, "select deliver.id as id2,po.id as id, po.name as name, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id join deliver on po.id=deliver.po_id where po_id_new='' and pr.cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and status='3' order by deliver.id desc");
 
  while($data=mysqli_fetch_array($query)){
 	$var=decodenum($data['status']);
@@ -44,7 +41,7 @@ echo "<tr><td>".$data['name_en']."</td><td>DN-".str_pad($data['id2'], 8, "0", ST
 	
 	}?>
       <?php
-$query=mysqli_query($db->conn, "select send_out_item.id as id2,deliver.id as id,send_out_item.tmp as des,name_en,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from send_out_item join deliver on send_out_item.id=deliver.output_id join company on send_out_item.vendor_id=company.id where customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and deliver.id not in (select deliver_id from receive) order by deliver.id desc");
+$query=mysqli_query($db->conn, "select sendoutitem.id as id2,deliver.id as id,sendoutitem.tmp as des,name_en,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.ven_id=company.id where cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and deliver.id not in (select deliver_id from receive) order by deliver.id desc");
 
  while($data=mysqli_fetch_array($query)){
 

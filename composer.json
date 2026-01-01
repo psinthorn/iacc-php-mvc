@@ -1,37 +1,45 @@
 {
-    "name": "iacc/application",
-    "description": "iAcc PHP MVC Application - Modern Architecture",
+    "name": "iacc/php-mvc",
+    "description": "iAcc PHP MVC Application - Inventory and Accounting System",
     "type": "project",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "iAcc Team",
+            "email": "admin@iacc.co.th"
+        }
+    ],
+    "minimum-stability": "stable",
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "ext-mysqli": "*",
+        "ext-mbstring": "*",
+        "ext-gd": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "phpstan/phpstan": "^1.0"
+        "phpunit/phpunit": "^9.0"
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "src/",
+            "Inc\\": "inc/"
         },
         "files": [
-            "bootstrap/helpers.php"
+            "inc/security.php",
+            "inc/error-logger.php"
         ]
     },
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        },
-        "files": [
-            "tests/helpers.php"
-        ]
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
     },
     "scripts": {
         "test": "phpunit",
-        "test:unit": "phpunit --testsuite Unit",
-        "test:feature": "phpunit --testsuite Feature",
-        "test:integration": "phpunit --testsuite Integration",
-        "test:coverage": "phpunit --coverage-html coverage",
-        "analyze": "phpstan analyze src --level=5",
-        "serve": "php -S localhost:8000 -t public"
+        "lint": "php -l *.php inc/*.php"
     }
 }

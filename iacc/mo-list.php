@@ -4,7 +4,6 @@
 // require_once("inc/class.dbconn.php");
 // $db=new DbConn($config);
 // $db->checkSecurity();
-?>
 <h2><i class="fa fa-ticket"></i> <?=$xml->model?></h2>
 <script type="text/javascript">
 
@@ -39,8 +38,6 @@ function fetbrand(str) {
   }else{
     $method="A";
   }
-?>
-
 <form action="core-function.php" method="post" name="myform" id="myform">
 	<div id="box">
 		<lable for="model_name"><?=$xml->model?></lable>
@@ -87,8 +84,11 @@ function fetbrand(str) {
 </form>
 
 <?php
-$query=mysqli_query($db->conn, "select model.id as id,model_name,product_type.name as type,brand.brand_name as brand,price from model join type on model.product_type_id=product_type.id join brand on model.brand_id=brand.id order by model.id desc");?>
+$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,band.band_name as brand,price from model join type on model.type_id=type.id join band on model.brand_id=band.id order by model.id desc");
 
+if(!$query) {
+	die("Query Error: " . mysqli_error($db->conn));
+}
 <div id="fetch_state"></div>
 <table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->type?></th><th><?=$xml->brand?></th><th><?=$xml->price?></th><th width="120"></th></tr>
 <?php while($data=mysqli_fetch_array($query)){

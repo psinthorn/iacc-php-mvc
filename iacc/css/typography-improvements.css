@@ -1,0 +1,243 @@
+/* ============================================
+   Typography Improvements
+   ============================================ */
+
+/* ========== Base Typography ========== */
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== Headings ========== */
+h1, .h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-lg);
+  margin-top: 0;
+  color: var(--gray-darkest);
+  line-height: var(--line-height-tight);
+}
+
+h2, .h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  color: var(--gray-darkest);
+  line-height: var(--line-height-tight);
+}
+
+h3, .h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  color: var(--gray-darkest);
+  line-height: var(--line-height-tight);
+}
+
+h4, .h4 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  color: var(--gray-darkest);
+  line-height: var(--line-height-tight);
+}
+
+h5, .h5 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  color: var(--gray-darkest);
+}
+
+h6, .h6 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  color: var(--gray-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ========== Paragraphs ========== */
+p {
+  margin-bottom: var(--spacing-md);
+  margin-top: 0;
+  line-height: var(--line-height-loose);
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+/* ========== Lists ========== */
+ul, ol {
+  margin-bottom: var(--spacing-md);
+  margin-left: var(--spacing-lg);
+  padding-left: 0;
+}
+
+li {
+  margin-bottom: var(--spacing-sm);
+}
+
+li > ul,
+li > ol {
+  margin-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+dl {
+  margin-bottom: var(--spacing-md);
+}
+
+dt {
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--spacing-md);
+}
+
+dd {
+  margin-bottom: var(--spacing-sm);
+  margin-left: var(--spacing-lg);
+}
+
+/* ========== Links ========== */
+a {
+  color: var(--info-color);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  word-wrap: break-word;
+}
+
+a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+a:active {
+  color: var(--primary-dark);
+}
+
+a:focus {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ========== Emphasis ========== */
+strong, .font-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+em, .font-italic {
+  font-style: italic;
+}
+
+mark {
+  background-color: #fff3cd;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+small, .font-small {
+  font-size: var(--font-size-sm);
+  color: var(--gray-medium);
+}
+
+code, pre {
+  font-family: var(--font-family-mono);
+  background-color: var(--gray-lightest);
+  padding: 2px 4px;
+  border-radius: 2px;
+  color: var(--danger-color);
+  font-size: var(--font-size-sm);
+}
+
+pre {
+  background-color: var(--gray-lighter);
+  padding: var(--spacing-md);
+  border-left: 4px solid var(--info-color);
+  overflow-x: auto;
+  margin-bottom: var(--spacing-md);
+}
+
+pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ========== Blockquotes ========== */
+blockquote {
+  border-left: 4px solid var(--gray-light);
+  color: var(--gray-medium);
+  margin: var(--spacing-lg) 0;
+  padding-left: var(--spacing-md);
+  font-style: italic;
+}
+
+blockquote p {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ========== Text Utilities ========== */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.text-justify { text-align: justify; }
+
+.text-uppercase { text-transform: uppercase; }
+.text-lowercase { text-transform: lowercase; }
+.text-capitalize { text-transform: capitalize; }
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-break {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ========== Line Heights ========== */
+.leading-tight { line-height: var(--line-height-tight); }
+.leading-normal { line-height: var(--line-height-base); }
+.leading-loose { line-height: var(--line-height-loose); }
+
+/* ========== Font Weights ========== */
+.font-light { font-weight: 300; }
+.font-normal { font-weight: var(--font-weight-normal); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+
+/* ========== Letter Spacing ========== */
+.tracking-tight { letter-spacing: -0.02em; }
+.tracking-normal { letter-spacing: 0; }
+.tracking-wide { letter-spacing: 0.05em; }
+.tracking-wider { letter-spacing: 0.1em; }
+
+/* ========== Responsive Typography ========== */
+@media (max-width: 768px) {
+  h1, .h1 { font-size: var(--font-size-xl); }
+  h2, .h2 { font-size: var(--font-size-lg); }
+  h3, .h3 { font-size: var(--font-size-md); }
+}
+
+@media (max-width: 480px) {
+  body { font-size: 13px; }
+  h1, .h1 { font-size: var(--font-size-lg); }
+  h2, .h2 { font-size: var(--font-size-md); }
+}

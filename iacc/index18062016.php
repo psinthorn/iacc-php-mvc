@@ -35,7 +35,7 @@ $users->checkSecurity();?>
 				if($_REQUEST[page]=="rep_make")				
 				include_once "rep-make.php";
 				if($_REQUEST[page]=="brand")				
-			include_once "brand-list.php";
+				include_once "band-list.php";
 				if($_REQUEST[page]=="pr_list")				
 				include_once "pr-list.php";
 				if($_REQUEST[page]=="pr_create")				
@@ -78,8 +78,6 @@ $users->checkSecurity();?>
 				include_once "mo-list.php";
 				if($_REQUEST[page]=="report")				
 				include_once "report.php";
-				
-				?>
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->

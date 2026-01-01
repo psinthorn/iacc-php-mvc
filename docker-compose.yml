@@ -9,10 +9,8 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      # Mount the iacc application directory
-      - ./iacc:/var/www/html
-      # Mount resources directory for classes and helpers
-      - ./resources:/var/www/html/resources
+      # Mount the root application directory
+      - .:/var/www/html
       # Upload and file directories - for persistence
       - php_uploads:/var/www/html/upload
       - php_files:/var/www/html/file
@@ -46,7 +44,7 @@ services:
     volumes:
       # Database persistent storage
       - mysql_data:/var/lib/mysql
-      # Initialize database with production backup (exported from current running system)
+      # Initialize database with production backup
       - ./iacc/theiconn_cms.sql:/docker-entrypoint-initdb.d/01-init.sql
       # MySQL configuration
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf

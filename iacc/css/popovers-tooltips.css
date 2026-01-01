@@ -1,0 +1,528 @@
+/* ============================================
+   Popovers and Tooltips Improvements
+   ============================================ */
+
+/* ========== Popover Container ========== */
+.popover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--z-index-popover);
+  display: none;
+  max-width: 276px;
+  padding: 1px;
+  margin-top: 10px;
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+  line-height: 1.42857143;
+  text-align: left;
+  white-space: normal;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  animation: popoverFadeIn var(--transition-fast) ease-out;
+  transform-origin: center;
+}
+
+.popover.in {
+  display: block;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========== Popover Sizing ========== */
+.popover.popover-sm {
+  max-width: 200px;
+}
+
+.popover.popover-md {
+  max-width: 350px;
+}
+
+.popover.popover-lg {
+  max-width: 500px;
+}
+
+/* ========== Popover Arrow ========== */
+.popover > .arrow {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.popover > .arrow::after {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  content: '';
+}
+
+/* Arrow positioning - Top */
+.popover.top > .arrow {
+  bottom: -10px;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 10px 10px 0;
+  border-top-color: var(--border-color);
+}
+
+.popover.top > .arrow::after {
+  bottom: 1px;
+  margin-left: -9px;
+  border-width: 9px 9px 0;
+  border-top-color: #fff;
+}
+
+/* Arrow positioning - Right */
+.popover.right > .arrow {
+  top: 50%;
+  left: -10px;
+  margin-top: -10px;
+  border-width: 10px 10px 10px 0;
+  border-right-color: var(--border-color);
+}
+
+.popover.right > .arrow::after {
+  bottom: -9px;
+  left: 1px;
+  border-width: 10px 10px 10px 0;
+  border-right-color: #fff;
+}
+
+/* Arrow positioning - Bottom */
+.popover.bottom > .arrow {
+  top: -10px;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 0 10px 10px;
+  border-bottom-color: var(--border-color);
+}
+
+.popover.bottom > .arrow::after {
+  top: 1px;
+  margin-left: -9px;
+  border-width: 0 9px 9px;
+  border-bottom-color: #fff;
+}
+
+/* Arrow positioning - Left */
+.popover.left > .arrow {
+  top: 50%;
+  right: -10px;
+  margin-top: -10px;
+  border-width: 10px 0 10px 10px;
+  border-left-color: var(--border-color);
+}
+
+.popover.left > .arrow::after {
+  right: 1px;
+  bottom: -9px;
+  border-width: 10px 0 10px 10px;
+  border-left-color: #fff;
+}
+
+/* ========== Popover Title ========== */
+.popover-title {
+  padding: 8px 14px;
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--gray-darkest);
+  background-color: var(--gray-lightest);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.popover-title:empty {
+  display: none;
+}
+
+/* ========== Popover Content ========== */
+.popover-content {
+  padding: 9px 14px;
+  color: var(--gray-dark);
+}
+
+.popover-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ========== Tooltip ========== */
+.tooltip {
+  position: absolute;
+  z-index: var(--z-index-tooltip);
+  display: none;
+  visibility: visible;
+  max-width: 250px;
+  padding: 5px 8px;
+  margin-top: 8px;
+  font-size: var(--font-size-xs);
+  font-weight: normal;
+  line-height: 1.4;
+  text-align: center;
+  color: #fff;
+  text-decoration: none;
+  background-color: var(--gray-darkest);
+  border-radius: 4px;
+  opacity: 0;
+  animation: tooltipFadeIn var(--transition-fast) ease-out forwards;
+}
+
+.tooltip.in {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== Tooltip Arrow ========== */
+.tooltip > .tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+/* Tooltip positioning - Top */
+.tooltip.top {
+  margin-top: -3px;
+  padding: 5px 0;
+}
+
+.tooltip.top > .tooltip-arrow {
+  bottom: 0;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px 5px 0;
+  border-top-color: var(--gray-darkest);
+}
+
+/* Tooltip positioning - Right */
+.tooltip.right {
+  margin-left: 3px;
+  padding: 0 5px;
+}
+
+.tooltip.right > .tooltip-arrow {
+  top: 50%;
+  left: 0;
+  margin-top: -5px;
+  border-width: 5px 5px 5px 0;
+  border-right-color: var(--gray-darkest);
+}
+
+/* Tooltip positioning - Bottom */
+.tooltip.bottom {
+  margin-top: 3px;
+  padding: 5px 0;
+}
+
+.tooltip.bottom > .tooltip-arrow {
+  top: 0;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 0 5px 5px;
+  border-bottom-color: var(--gray-darkest);
+}
+
+/* Tooltip positioning - Left */
+.tooltip.left {
+  margin-left: -3px;
+  padding: 0 5px;
+}
+
+.tooltip.left > .tooltip-arrow {
+  top: 50%;
+  right: 0;
+  margin-top: -5px;
+  border-width: 5px 0 5px 5px;
+  border-left-color: var(--gray-darkest);
+}
+
+/* ========== Tooltip Themes ========== */
+.tooltip.tooltip-primary {
+  background-color: var(--primary-color);
+}
+
+.tooltip.tooltip-primary > .tooltip-arrow {
+  border-top-color: var(--primary-color);
+  border-right-color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  border-left-color: var(--primary-color);
+}
+
+.tooltip.tooltip-success {
+  background-color: var(--success-color);
+}
+
+.tooltip.tooltip-success > .tooltip-arrow {
+  border-top-color: var(--success-color);
+  border-right-color: var(--success-color);
+  border-bottom-color: var(--success-color);
+  border-left-color: var(--success-color);
+}
+
+.tooltip.tooltip-danger {
+  background-color: var(--danger-color);
+}
+
+.tooltip.tooltip-danger > .tooltip-arrow {
+  border-top-color: var(--danger-color);
+  border-right-color: var(--danger-color);
+  border-bottom-color: var(--danger-color);
+  border-left-color: var(--danger-color);
+}
+
+.tooltip.tooltip-warning {
+  background-color: var(--warning-color);
+}
+
+.tooltip.tooltip-warning > .tooltip-arrow {
+  border-top-color: var(--warning-color);
+  border-right-color: var(--warning-color);
+  border-bottom-color: var(--warning-color);
+  border-left-color: var(--warning-color);
+}
+
+.tooltip.tooltip-info {
+  background-color: var(--info-color);
+}
+
+.tooltip.tooltip-info > .tooltip-arrow {
+  border-top-color: var(--info-color);
+  border-right-color: var(--info-color);
+  border-bottom-color: var(--info-color);
+  border-left-color: var(--info-color);
+}
+
+.tooltip.tooltip-light {
+  background-color: #fff;
+  color: var(--gray-darkest);
+  border: 1px solid var(--border-color);
+}
+
+.tooltip.tooltip-light > .tooltip-arrow {
+  border-top-color: #fff;
+  border-right-color: #fff;
+  border-bottom-color: #fff;
+  border-left-color: #fff;
+}
+
+/* ========== Popover Themes ========== */
+.popover.popover-primary .popover-title {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-bottom-color: var(--primary-darker);
+}
+
+.popover.popover-primary > .arrow::after {
+  border-top-color: var(--primary-color);
+  border-right-color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  border-left-color: var(--primary-color);
+}
+
+.popover.popover-success .popover-title {
+  background-color: var(--success-color);
+  color: #fff;
+  border-bottom-color: var(--success-dark);
+}
+
+.popover.popover-danger .popover-title {
+  background-color: var(--danger-color);
+  color: #fff;
+  border-bottom-color: var(--danger-dark);
+}
+
+.popover.popover-warning .popover-title {
+  background-color: var(--warning-color);
+  color: #fff;
+  border-bottom-color: var(--warning-dark);
+}
+
+.popover.popover-info .popover-title {
+  background-color: var(--info-color);
+  color: #fff;
+  border-bottom-color: var(--info-dark);
+}
+
+/* ========== Popover Animations ========== */
+.popover.animate-bounce {
+  animation: popoverBounce var(--transition-normal) ease-out;
+}
+
+@keyframes popoverBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popover.animate-flip {
+  animation: popoverFlip var(--transition-normal) ease-out;
+}
+
+@keyframes popoverFlip {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0);
+  }
+}
+
+/* ========== Tooltip Animations ========== */
+.tooltip.animate-bounce {
+  animation: tooltipBounce var(--transition-fast) ease-out forwards;
+}
+
+@keyframes tooltipBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-10px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ========== Tooltip Slide Animations ========== */
+.tooltip.animate-slide-up {
+  animation: tooltipSlideUp var(--transition-fast) ease-out forwards;
+}
+
+@keyframes tooltipSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltip.animate-slide-down {
+  animation: tooltipSlideDown var(--transition-fast) ease-out forwards;
+}
+
+@keyframes tooltipSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== Popover Accessibility ========== */
+.popover[role="tooltip"],
+.tooltip[role="tooltip"] {
+  visibility: visible;
+}
+
+.popover:focus,
+.tooltip:focus {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  .popover,
+  .tooltip {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ========== Dark Mode ========== */
+@media (prefers-color-scheme: dark) {
+  .popover {
+    background-color: var(--gray-darker);
+    border-color: var(--gray-dark);
+  }
+
+  .popover > .arrow::after {
+    border-top-color: var(--gray-darker);
+    border-right-color: var(--gray-darker);
+    border-bottom-color: var(--gray-darker);
+    border-left-color: var(--gray-darker);
+  }
+
+  .popover-title {
+    background-color: #2d3748;
+    color: #fff;
+    border-bottom-color: var(--gray-dark);
+  }
+
+  .popover-content {
+    color: #f0f0f0;
+  }
+
+  .tooltip {
+    background-color: #4a5568;
+  }
+
+  .tooltip > .tooltip-arrow {
+    border-top-color: #4a5568;
+    border-right-color: #4a5568;
+    border-bottom-color: #4a5568;
+    border-left-color: #4a5568;
+  }
+}
+
+/* ========== Mobile Responsiveness ========== */
+@media (max-width: 576px) {
+  .popover {
+    max-width: calc(100vw - 20px);
+    margin: 0 10px;
+  }
+
+  .tooltip {
+    max-width: calc(100vw - 20px);
+  }
+}

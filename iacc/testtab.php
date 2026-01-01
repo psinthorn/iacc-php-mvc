@@ -17,5 +17,4 @@
     $('#myTab a:last').tab('show')
   })
 </script>
-	<?php include_once "script.php";?>
-
+	<?php include_once "script.php";

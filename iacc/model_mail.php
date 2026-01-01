@@ -5,9 +5,6 @@ require_once("inc/class.dbconn.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
 $users->checkSecurity();
-
-
-?>	
 	<!DOCTYPE html>
 <html>
 <head>
@@ -25,8 +22,8 @@ $users->checkSecurity();
  switch($_REQUEST[page]){
 	case "exp" : {
 		
- $fetmail=mysql_fetch_array(mysql_query("select email,purchase_order.tax as tax,vat,dis,over,name_sh,name_en from pr join purchase_order on purchase_request.id=purchase_order.ref join company on purchase_request.customer_id=company.id where purchase_order.id='".$_REQUEST[id]."' and status>'0' and vendor_id='".$_SESSION[company_id]."' and po_id_new=''"));
-  $que_pro=mysql_query("select product.des as des,product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$_REQUEST[id]."'");
+ $fetmail=mysql_fetch_array(mysql_query("select email,po.tax as tax,vat,dis,over,name_sh,name_en from pr join po on pr.id=po.ref join company on pr.cus_id=company.id where po.id='".$_REQUEST[id]."' and status>'0' and ven_id='".$_SESSION[com_id]."' and po_id_new=''"));
+  $que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");
 	 $summary=$total=0;
 	 while($data_pro=mysql_fetch_array($que_pro)){
 
@@ -46,7 +43,7 @@ $total=$equip+$labour;
  $total=$stotal+$vat;
 	 
  
- $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$_SESSION[company_id]."'"));
+ $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$_SESSION[com_id]."'"));
  $subject='QUO-'.$fetmail[tax]."-".$fetmail[name_sh];
  $page="exp-m.php";
  $message = "Dear ".$fetmail[name_en]."
@@ -60,8 +57,8 @@ Thank you for your business, we appreciate it very much.
  }break;
  case "inv" : {
 		
- $fetmail=mysql_fetch_array(mysql_query("select email,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join purchase_order on purchase_request.id=purchase_order.ref  join invoice on purchase_order.id=invoice.tex join company on purchase_request.customer_id=company.id where purchase_order.id='".$_REQUEST[id]."' and status>'2' and  vendor_id='".$_SESSION[company_id]."' and po_id_new=''"));
-  $que_pro=mysql_query("select product.des as des,product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$_REQUEST[id]."'");
+ $fetmail=mysql_fetch_array(mysql_query("select email,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$_REQUEST[id]."' and status>'2' and  ven_id='".$_SESSION[com_id]."' and po_id_new=''"));
+  $que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");
   $summary=$total=0;
 	 while($data_pro=mysql_fetch_array($que_pro)){
 
@@ -81,7 +78,7 @@ $total=$equip+$labour;
  $total=$stotal+$vat;
 	 
  
- $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$_SESSION[company_id]."'"));
+ $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$_SESSION[com_id]."'"));
  $subject="INV-".$fetmail[tax2]."-".$fetmail[name_sh];
  $page="inv-m.php";
   $message = "Dear ".$fetmail[name_en]."
@@ -95,8 +92,8 @@ Thank you for your business, we appreciate it very much.
  }break;
   case "tax" : {
 		
- $fetmail=mysql_fetch_array(mysql_query("select email,texiv_rw,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join purchase_order on purchase_request.id=purchase_order.ref  join invoice on purchase_order.id=invoice.tex join company on purchase_request.customer_id=company.id where purchase_order.id='".$_REQUEST[id]."' and status>'2' and  vendor_id='".$_SESSION[company_id]."' and po_id_new=''"));
- $que_pro=mysql_query("select product.des as des,product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$_REQUEST[id]."'");
+ $fetmail=mysql_fetch_array(mysql_query("select email,texiv_rw,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$_REQUEST[id]."' and status>'2' and  ven_id='".$_SESSION[com_id]."' and po_id_new=''"));
+ $que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");
   $summary=$total=0;
 	 while($data_pro=mysql_fetch_array($que_pro)){
 
@@ -117,7 +114,7 @@ $total=$equip+$labour;
  $total=$stotal+$vat;
 	 
  
- $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$_SESSION[company_id]."'"));
+ $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$_SESSION[com_id]."'"));
  $subject="Tax-".$fetmail[texiv_rw]."-".$fetmail[name_sh];
  $page="taxiv-m.php";
   $message = "Dear ".$fetmail[name_en]."
@@ -135,8 +132,6 @@ Thank you for your business, we appreciate it very much.
 	 
 	 
 	 }
-
-?>
 <form action="<?=$page?>"  method="post">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>

@@ -15,21 +15,14 @@ $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
 					$year = $_date[2];
-				
-		
-
-?>
 <div style="float:left; width:auto"><h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2></div><form action="index.php?page=qa_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
-<?php  $query=mysql_query("select purchase_order.name as name,vendor_id,customer_id,vat,des,over,dis,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join purchase_order on purchase_request.id=purchase_order.ref where purchase_order.id='".$_REQUEST[id]."' and (status='1' or status='2')  and (customer_id='".$_SESSION[company_id]."' or vendor_id='".$_SESSION[company_id]."') and po_id_new=''");
+<?php  $query=mysql_query("select po.name as name,ven_id,cus_id,vat,des,over,dis,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_REQUEST[id]."' and (status='1' or status='2')  and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
-	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[vendor_id]."'"));
-	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[customer_id]."'"));
-	
-	
-	?>
+	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
+	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
     <div class="clearfix"></div>
 <form action="core-function.php" method="post" id="company-form" enctype="multipart/form-data">
 
@@ -63,7 +56,7 @@ if(mysql_num_rows($query)=="1"){
 	</div>
 <div class="clearfix"></div><br><table class="table" width="100%"><tr>
 
-<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=product_type.id where purchase_order_id='".$_REQUEST[id]."'"));
+<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_REQUEST[id]."'"));
 if($cklabour[cklabour]==1){
 ?><th width="17%"><?=$xml->model?></th><th><?=$xml->product?></th>
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
@@ -74,7 +67,7 @@ if($cklabour[cklabour]==1){
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
 <th style='text-align:center' width="8%"><?=$xml->price?></th>
 <th style='text-align:right' width="8%"><?=$xml->amount?></th><?php }?></tr>
-	<?php $que_pro=mysql_query("select product_type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='".$_REQUEST[id]."'");$summary=0;
+	<?php $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");$summary=0;
 
 	while($data_pro=mysql_fetch_array($que_pro)){
 		if($cklabour[cklabour]==1){
@@ -104,7 +97,6 @@ echo "<tr><td>".$data_pro[model]."</td>
 	$subt=$summary-$disc;
 	$vat=$subt*$data[vat]/100;
 	$totalnet=$subt+$vat;
-	?>
   <tr><td colspan="4" rowspan="7"></td>
   <th colspan="2"><?=$xml->total?></th><td  colspan="2" align='right' ><?php echo number_format($summary,2);?></td></tr>
   <tr><th colspan="2"><?=$xml->discount?> <?php echo $data[dis];?>%</th><td colspan="2" align='right'>- <?php echo number_format($disc,2);?></td></tr>
@@ -112,8 +104,6 @@ echo "<tr><td>".$data_pro[model]."</td>
      <?php if($data[over]>0){
 		 $overh= $subt*$data[over]/100;
 		 $subt=$subt+$overh;
-	
-		 ?>
       <tr>
       <th colspan="2"><?=$xml->overhead?> <?php echo $data[over];?>%</th><td colspan="2" align='right'>+ <?php echo number_format($overh,2);?></td></tr>
     <tr><th colspan="2"><?=$xml->total?></th><td colspan="2" align='right'><?php  echo number_format($subt,2);?></td></tr>  <?php }
@@ -121,8 +111,6 @@ echo "<tr><td>".$data_pro[model]."</td>
 	
 	$vat=$subt*$data[vat]/100;
 	$totalnet=$subt+$vat;
-		 ?>
-    
      <tr><th colspan="2"><?=$xml->vat?> <?php echo $data[vat];?>%</th><td colspan="2" align='right'>+ <?php echo number_format($vat,2);?></td></tr>
     
     <tr><th colspan="2"><?=$xml->grandtotal?></th><td colspan="2" align='right'><?php echo number_format($totalnet,2);?></td></tr>

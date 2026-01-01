@@ -1,0 +1,496 @@
+/* ============================================
+   Accessibility and Focus Management
+   ============================================ */
+
+/* ========== Focus Visible Styles ========== */
+:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Skip to Content Link ========== */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary-color);
+  color: #fff;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: var(--z-index-skip-link);
+  border-radius: 0 0 4px 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.skip-to-content:focus {
+  top: 0;
+  outline: 3px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Focus Outline Utilities ========== */
+.focus-outline {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+.focus-outline-none {
+  outline: none;
+}
+
+.focus-outline-primary:focus,
+.focus-outline-primary:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* ========== Tab Index Management ========== */
+[tabindex="-1"] {
+  outline: none;
+}
+
+[tabindex]:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Keyboard Navigation Indicators ========== */
+.keyboard-focus:focus {
+  box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+}
+
+.keyboard-focus:focus-visible {
+  box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+  outline: 2px solid var(--info-color);
+}
+
+/* ========== Screen Reader Only Content ========== */
+.sr-only,
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:active,
+.sr-only-focusable:focus,
+.visually-hidden-focusable:active,
+.visually-hidden-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ========== ARIA Live Regions ========== */
+[aria-live] {
+  position: relative;
+}
+
+[aria-live="polite"] {
+  position: relative;
+}
+
+[aria-live="assertive"] {
+  position: relative;
+  z-index: var(--z-index-alert);
+}
+
+/* ========== ARIA Announcements ========== */
+.aria-announcement {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ========== Error and Alert Messaging ========== */
+[role="alert"],
+[role="status"],
+.alert,
+.error-message {
+  position: relative;
+}
+
+[role="alert"]:focus-visible,
+.alert:focus-visible,
+.error-message:focus-visible {
+  outline: 2px solid var(--danger-color);
+  outline-offset: 2px;
+}
+
+/* ========== Button Accessibility ========== */
+button:disabled,
+button[aria-disabled="true"],
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+button:disabled:focus-visible,
+button[aria-disabled="true"]:focus-visible {
+  outline: 2px dashed var(--gray-medium);
+  outline-offset: 2px;
+}
+
+/* ========== Link Accessibility ========== */
+a {
+  position: relative;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+/* ========== Form Control Accessibility ========== */
+label {
+  position: relative;
+}
+
+label:focus-within {
+  color: var(--primary-color);
+}
+
+input:required::after,
+textarea:required::after,
+select:required::after {
+  /* Indicator for required fields */
+}
+
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--danger-color);
+}
+
+input[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+  border-color: var(--danger-color);
+}
+
+input[aria-invalid="false"],
+textarea[aria-invalid="false"],
+select[aria-invalid="false"] {
+  border-color: var(--success-color);
+}
+
+input[aria-invalid="false"]:focus,
+textarea[aria-invalid="false"]:focus,
+select[aria-invalid="false"]:focus {
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  border-color: var(--success-color);
+}
+
+/* ========== Checkbox and Radio Accessibility ========== */
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ========== Modal Accessibility ========== */
+[role="dialog"]:focus-visible {
+  outline: none; /* Focus should be on interactive elements within modal */
+}
+
+[role="dialog"] {
+  outline: 2px solid transparent;
+}
+
+/* ========== Menu and Navigation Accessibility ========== */
+[role="menuitem"]:focus-visible,
+[role="menuitemcheckbox"]:focus-visible,
+[role="menuitemradio"]:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: -2px;
+  background-color: var(--gray-lightest);
+}
+
+[role="menu"] [role="menuitem"][aria-disabled="true"] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ========== Tab List Accessibility ========== */
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: -2px;
+}
+
+[role="tab"][aria-selected="true"] {
+  font-weight: var(--font-weight-bold);
+}
+
+[role="tab"][aria-disabled="true"] {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========== Slider/Range Input Accessibility ========== */
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Tooltip Accessibility ========== */
+[role="tooltip"] {
+  position: relative;
+  background-color: var(--gray-darkest);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: var(--font-size-sm);
+  z-index: var(--z-index-tooltip);
+  pointer-events: none;
+}
+
+[role="tooltip"][aria-hidden="true"] {
+  display: none;
+}
+
+/* ========== Landmark Regions ========== */
+[role="navigation"] {
+  outline: 1px solid transparent; /* For focus management */
+}
+
+[role="main"] {
+  outline: 1px solid transparent;
+}
+
+[role="contentinfo"] {
+  outline: 1px solid transparent;
+}
+
+/* ========== Semantic HTML Enhancements ========== */
+main {
+  outline: 1px solid transparent;
+}
+
+nav {
+  outline: 1px solid transparent;
+}
+
+footer {
+  outline: 1px solid transparent;
+}
+
+/* ========== Heading Accessibility ========== */
+h1, h2, h3, h4, h5, h6 {
+  outline: 1px solid transparent;
+}
+
+h1:focus-visible, h2:focus-visible, h3:focus-visible,
+h4:focus-visible, h5:focus-visible, h6:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== List Accessibility ========== */
+li:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Image Accessibility ========== */
+img[alt=""],
+img[alt] {
+  max-width: 100%;
+  height: auto;
+}
+
+img[role="presentation"],
+img[aria-hidden="true"] {
+  /* Decorative images */
+}
+
+/* ========== Table Accessibility ========== */
+table {
+  outline: 1px solid transparent;
+}
+
+thead {
+  background-color: var(--gray-lightest);
+}
+
+th {
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  padding: 10px;
+}
+
+td, th {
+  border: 1px solid var(--border-color);
+}
+
+th:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: -2px;
+}
+
+/* ========== Loading Indicator Accessibility ========== */
+[role="progressbar"] {
+  position: relative;
+}
+
+[role="progressbar"]:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* ========== Focus Visible for All Interactive Elements ========== */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[role="link"],
+[role="tab"],
+[role="menuitem"] {
+  transition: outline var(--transition-fast);
+}
+
+/* ========== Reduced Motion Support ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========== High Contrast Mode Support ========== */
+@media (prefers-contrast: more) {
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    border-width: 2px;
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* ========== Dark Mode Accessibility ========== */
+@media (prefers-color-scheme: dark) {
+  :focus-visible {
+    outline-color: #fff;
+  }
+
+  .skip-to-content:focus {
+    outline-color: var(--gray-lightest);
+  }
+}
+
+/* ========== Mobile/Touch Accessibility ========== */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  [role="link"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 16px;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* ========== Zoom and Text Scaling Support ========== */
+body {
+  /* Support up to 200% zoom */
+  overflow-x: hidden;
+}
+
+/* ========== Color Contrast Helpers ========== */
+.high-contrast {
+  color: var(--gray-darkest);
+  background-color: var(--white);
+  border: 2px solid var(--gray-darkest);
+}
+
+.high-contrast a {
+  color: var(--primary-dark);
+  text-decoration: underline;
+  font-weight: var(--font-weight-bold);
+}
+
+/* ========== Announcement Styles ========== */
+.screen-reader-text {
+  position: absolute;
+  left: -9999px;
+  z-index: -999;
+}
+
+.invisible-announce {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ========== Error Prevention ========== */
+[aria-label*="Delete"],
+[aria-label*="Remove"],
+[aria-label*="Confirm"] {
+  /* Ensure adequate spacing and clear labeling */
+}
+
+/* ========== Consistent Focus Behavior ========== */
+*:focus {
+  outline: transparent;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}

@@ -13,8 +13,60 @@
 
     <!-- SB Admin CSS - Include with every page -->
     <link href="css/sb-admin.css" rel="stylesheet">
-      <script src="js/jquery-1.10.2.js"></script>
-	<script src="js/ajaxpagefetcher.js"></script>
+
+    <!-- UX/UI Improvements - Foundation CSS Files -->
+    <link href="css/theme-variables.css" rel="stylesheet">
+    <link href="css/typography-improvements.css" rel="stylesheet">
+    <link href="css/form-improvements.css" rel="stylesheet">
+    <link href="css/button-improvements.css" rel="stylesheet">
+    <link href="css/table-improvements.css" rel="stylesheet">
+    <link href="css/modal-improvements.css" rel="stylesheet">
+    <link href="css/sidebar-improvements.css" rel="stylesheet">
+    <link href="css/card-component.css" rel="stylesheet">
+
+    <!-- UX/UI Improvements - Interactivity CSS Files -->
+    <link href="css/toast.css" rel="stylesheet">
+
+    <!-- UX/UI Improvements - Content and Layout CSS Files -->
+    <link href="css/breadcrumbs.css" rel="stylesheet">
+    <link href="css/dashboard-improvements.css" rel="stylesheet">
+    <link href="css/form-labels-hints.css" rel="stylesheet">
+    <link href="css/content-utilities.css" rel="stylesheet">
+
+    <!-- UX/UI Improvements - Accessibility and Polish CSS Files -->
+    <link href="css/accessibility.css" rel="stylesheet">
+    <link href="css/animations.css" rel="stylesheet">
+    <link href="css/print-styles.css" rel="stylesheet">
+    <link href="css/responsive-media.css" rel="stylesheet">
+    <link href="css/polish.css" rel="stylesheet">
+
+    <!-- UX/UI Improvements - Advanced Components CSS Files -->
+    <link href="css/modals-improvements.css" rel="stylesheet">
+    <link href="css/popovers-tooltips.css" rel="stylesheet">
+    <link href="css/dropdowns-improvements.css" rel="stylesheet">
+    <link href="css/carousels-sliders.css" rel="stylesheet">
+    <link href="css/tabs-accordions.css" rel="stylesheet">
+
+    <!-- UX/UI Improvements - Refinements CSS Files -->
+    <link href="css/states-transitions.css" rel="stylesheet">
+    <link href="css/micro-interactions.css" rel="stylesheet">
+    <link href="css/progress-loaders.css" rel="stylesheet">
+    <link href="css/status-indicators.css" rel="stylesheet">
+    <link href="css/form-validation.css" rel="stylesheet">
+
+    <!-- UX/UI Improvements - Final Polish CSS Files (Week 4) -->
+    <link href="css/utility-helpers.css" rel="stylesheet">
+    <link href="css/component-optimization.css" rel="stylesheet">
+    <link href="css/browser-compatibility.css" rel="stylesheet">
+    <link href="css/performance-optimization.css" rel="stylesheet">
+    <link href="css/final-polish.css" rel="stylesheet">
+
+    <script src="js/jquery-1.10.2.js"></script>
+    <script src="js/ajaxpagefetcher.js"></script>
+    
+    <!-- UX/UI Improvements - JavaScript Enhancements -->
+    <script src="js/toast-notifications.js"></script>
+    <script src="js/form-loader.js"></script>
     
     
     <style type="text/css">

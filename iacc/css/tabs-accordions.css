@@ -1,0 +1,510 @@
+/* ============================================
+   Tabs and Accordions Improvements
+   ============================================ */
+
+/* ========== Tabs Navigation ========== */
+.nav-tabs {
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: 0;
+  list-style: none;
+  margin-bottom: var(--spacing-lg);
+}
+
+.nav-tabs > li {
+  margin-bottom: -2px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.nav-tabs > li > a {
+  display: block;
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--gray-dark);
+  background-color: transparent;
+  border: 2px solid transparent;
+  border-bottom: none;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.nav-tabs > li > a:hover {
+  color: var(--primary-color);
+  background-color: var(--gray-lightest);
+  border-color: var(--border-color);
+  border-bottom-color: transparent;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: var(--primary-color);
+  background-color: #fff;
+  border: 2px solid var(--border-color);
+  border-bottom-color: #fff;
+  font-weight: var(--font-weight-bold);
+}
+
+/* ========== Tabs Variants ========== */
+.nav-tabs.nav-tabs-vertical {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: 2px solid var(--border-color);
+  gap: 0;
+}
+
+.nav-tabs.nav-tabs-vertical > li > a {
+  margin-right: -2px;
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+.nav-tabs.nav-tabs-vertical > li.active > a {
+  border-right-color: #fff;
+  border-bottom-color: var(--border-color);
+}
+
+/* Pill tabs */
+.nav-tabs.nav-tabs-pills {
+  border-bottom: none;
+  gap: var(--spacing-md);
+}
+
+.nav-tabs.nav-tabs-pills > li > a {
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  background-color: var(--gray-lightest);
+}
+
+.nav-tabs.nav-tabs-pills > li.active > a {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+/* ========== Tab Content ========== */
+.tab-content {
+  animation: tabFadeIn var(--transition-fast) ease-out;
+}
+
+.tab-pane {
+  display: none;
+  animation: tabSlideIn var(--transition-fast) ease-out;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tabSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== Tab Pane Variants ========== */
+.tab-pane.animate-bounce {
+  animation: tabBounce var(--transition-normal) ease-out;
+}
+
+@keyframes tabBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tab-pane.animate-flip {
+  animation: tabFlip var(--transition-normal) ease-out;
+}
+
+@keyframes tabFlip {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateY(0deg);
+  }
+}
+
+/* ========== Accordion ========== */
+.panel-group {
+  margin-bottom: var(--spacing-lg);
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.panel-group .panel {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-group .panel:last-child {
+  border-bottom: none;
+}
+
+.panel {
+  margin-bottom: var(--spacing-lg);
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-fast);
+}
+
+.panel:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== Panel Variants ========== */
+.panel-primary {
+  border-color: var(--primary-color);
+  border-top: 3px solid var(--primary-color);
+}
+
+.panel-primary > .panel-heading {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.panel-success {
+  border-color: var(--success-color);
+  border-top: 3px solid var(--success-color);
+}
+
+.panel-success > .panel-heading {
+  background-color: var(--success-color);
+  color: #fff;
+  border-color: var(--success-color);
+}
+
+.panel-danger {
+  border-color: var(--danger-color);
+  border-top: 3px solid var(--danger-color);
+}
+
+.panel-danger > .panel-heading {
+  background-color: var(--danger-color);
+  color: #fff;
+  border-color: var(--danger-color);
+}
+
+.panel-warning {
+  border-color: var(--warning-color);
+  border-top: 3px solid var(--warning-color);
+}
+
+.panel-warning > .panel-heading {
+  background-color: var(--warning-color);
+  color: #fff;
+  border-color: var(--warning-color);
+}
+
+.panel-info {
+  border-color: var(--info-color);
+  border-top: 3px solid var(--info-color);
+}
+
+.panel-info > .panel-heading {
+  background-color: var(--info-color);
+  color: #fff;
+  border-color: var(--info-color);
+}
+
+/* ========== Panel Heading ========== */
+.panel-heading {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--gray-lightest);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.panel-heading:hover {
+  background-color: var(--gray-lighter);
+}
+
+.panel-heading h4,
+.panel-heading h5,
+.panel-heading h6 {
+  margin: 0;
+  padding: 0;
+  font-weight: var(--font-weight-bold);
+  color: var(--gray-darkest);
+}
+
+/* ========== Panel Title ========== */
+.panel-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.panel-title > a {
+  display: block;
+  color: var(--primary-color);
+  text-decoration: none;
+  padding: var(--spacing-md) 0;
+}
+
+.panel-title > a:hover {
+  text-decoration: underline;
+}
+
+/* ========== Panel Body ========== */
+.panel-body {
+  padding: var(--spacing-lg);
+  color: var(--gray-dark);
+  animation: panelSlideDown var(--transition-fast) ease-out;
+}
+
+@keyframes panelSlideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding: 0 var(--spacing-lg);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    padding: var(--spacing-lg);
+  }
+}
+
+.panel-body:empty {
+  padding: 0;
+}
+
+/* ========== Panel Collapse Arrow ========== */
+.panel-heading::after {
+  content: '\f078';
+  font-family: 'FontAwesome';
+  float: right;
+  transition: transform var(--transition-fast);
+  transform: rotate(0deg);
+}
+
+.panel.collapsed .panel-heading::after {
+  transform: rotate(180deg);
+}
+
+/* ========== Accordion Collapse Animation ========== */
+.panel.collapse {
+  max-height: 0;
+  overflow: hidden;
+}
+
+.panel.collapse.in,
+.panel.in {
+  max-height: 1000px;
+}
+
+.panel-collapse {
+  display: none;
+  animation: accordionFadeIn var(--transition-fast) ease-out;
+}
+
+.panel-collapse.in {
+  display: block;
+}
+
+@keyframes accordionFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========== Accordion Nested ========== */
+.panel-group .panel-group {
+  margin: var(--spacing-lg) 0 0 0;
+  border: none;
+  box-shadow: none;
+}
+
+/* ========== Accessibility ========== */
+.nav-tabs > li > a:focus {
+  outline: 2px solid var(--info-color);
+  outline-offset: -2px;
+}
+
+.panel-heading:focus {
+  outline: 2px solid var(--info-color);
+  outline-offset: -2px;
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  .nav-tabs > li > a,
+  .tab-content,
+  .tab-pane,
+  .panel,
+  .panel-heading,
+  .panel-body {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ========== Dark Mode ========== */
+@media (prefers-color-scheme: dark) {
+  .nav-tabs {
+    border-bottom-color: var(--gray-dark);
+    background-color: var(--gray-darker);
+  }
+
+  .nav-tabs > li > a {
+    color: #f0f0f0;
+  }
+
+  .nav-tabs > li > a:hover {
+    background-color: #2d3748;
+    border-color: var(--gray-dark);
+  }
+
+  .nav-tabs > li.active > a,
+  .nav-tabs > li.active > a:hover {
+    background-color: var(--gray-darker);
+    color: var(--primary-color);
+    border-color: var(--gray-dark);
+  }
+
+  .tab-content {
+    background-color: var(--gray-darker);
+  }
+
+  .nav-tabs.nav-tabs-pills > li > a {
+    border-color: var(--gray-dark);
+    background-color: #2d3748;
+    color: #f0f0f0;
+  }
+
+  .panel-group,
+  .panel {
+    background-color: var(--gray-darker);
+    border-color: var(--gray-dark);
+  }
+
+  .panel-heading {
+    background-color: #2d3748;
+    border-bottom-color: var(--gray-dark);
+  }
+
+  .panel-heading:hover {
+    background-color: #3a4556;
+  }
+
+  .panel-heading h4,
+  .panel-heading h5,
+  .panel-heading h6 {
+    color: #fff;
+  }
+
+  .panel-body {
+    color: #f0f0f0;
+  }
+}
+
+/* ========== Mobile Responsiveness ========== */
+@media (max-width: 768px) {
+  .nav-tabs.nav-tabs-vertical {
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .nav-tabs.nav-tabs-vertical > li > a {
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    margin-right: 0;
+    margin-bottom: -2px;
+  }
+
+  .nav-tabs.nav-tabs-vertical > li.active > a {
+    border-right-color: var(--border-color);
+    border-bottom-color: #fff;
+  }
+
+  .nav-tabs > li > a {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .panel-heading {
+    padding: var(--spacing-md);
+  }
+
+  .panel-body {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-tabs {
+    flex-direction: column;
+    border-bottom: none;
+    border-left: 2px solid var(--border-color);
+  }
+
+  .nav-tabs > li {
+    margin-bottom: 0;
+    margin-left: -2px;
+  }
+
+  .nav-tabs > li > a {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    border-left-color: transparent;
+    margin-left: -2px;
+  }
+
+  .nav-tabs > li.active > a {
+    border-left-color: #fff;
+    border-bottom-color: var(--border-color);
+  }
+
+  .nav-tabs > li > a {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+}

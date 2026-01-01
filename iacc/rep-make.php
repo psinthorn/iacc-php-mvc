@@ -77,7 +77,7 @@ $(function(){
 			echo "<option value='' >Please Select Product</option>";
 			while($fetch_customer=mysql_fetch_array($querycustomer)){
 				
-			echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name]."</option>";}?></select></div><div id='box' style='width:18%'><div id='slotbrand["+indexthis+"]'><select id='brand_id["+indexthis+"]' name='brand_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:18%'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:14%'><div class='input-group'><input type='number' class='form-control' name='quantity["+indexthis+"]' id='quantity["+indexthis+"]' required placeholder='Quantity' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity["+indexthis+"]' id='pack_quantity["+indexthis+"]' required placeholder='<?=$xml->unit?>' /><div id='box2'  style='width:15%'><div class='input-group'><input type='text' class='form-control' placeholder='<?=$xml->price?>' required name='price["+indexthis+"]' id='price["+indexthis+"]' /><span class='input-group-addon'><?=$xml->baht?></span></div></div><div id='box' style='width:12%'><input type='text' name='warranty["+indexthis+"]' id='warranty["+indexthis+"]' value='<?=date("d-m-Y")?>' class='form-control'></div></div><div id='box' style='width:5%'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div><div id='box' style='width:100%'><textarea name='des["+indexthis+"]' id='des["+indexthis+"]' placeholder='<?=$xml->notes?>' class='form-control'></textarea></div></td></tr>";
+			echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name]."</option>";}?></select></div><div id='box' style='width:18%'><div id='slotbrand["+indexthis+"]'><select id='ban_id["+indexthis+"]' name='ban_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:18%'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:14%'><div class='input-group'><input type='number' class='form-control' name='quantity["+indexthis+"]' id='quantity["+indexthis+"]' required placeholder='Quantity' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity["+indexthis+"]' id='pack_quantity["+indexthis+"]' required placeholder='<?=$xml->unit?>' /><div id='box2'  style='width:15%'><div class='input-group'><input type='text' class='form-control' placeholder='<?=$xml->price?>' required name='price["+indexthis+"]' id='price["+indexthis+"]' /><span class='input-group-addon'><?=$xml->baht?></span></div></div><div id='box' style='width:12%'><input type='text' name='warranty["+indexthis+"]' id='warranty["+indexthis+"]' value='<?=date("d-m-Y")?>' class='form-control'></div></div><div id='box' style='width:5%'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div><div id='box' style='width:100%'><textarea name='des["+indexthis+"]' id='des["+indexthis+"]' placeholder='<?=$xml->notes?>' class='form-control'></textarea></div></td></tr>";
 		//$("#myTbl").append($("#firstTr").clone());
 		$("#myTbl").append($(NR));
 	});
@@ -110,13 +110,10 @@ function del_id(id)
 
 <body><?Php 
 
-$queryvou=mysql_query("select * from receipt where id='".$_REQUEST[id]."' and vender='".$_SESSION[company_id]."'");
+$queryvou=mysql_query("select * from receipt where id='".$_REQUEST[id]."' and vender='".$_SESSION[com_id]."'");
 if(mysql_num_rows($queryvou)==1){$mode="E";
 $fetvou=mysql_fetch_array($queryvou);
 }else{$mode="A";}
-		
-
-?>
 <div style="float:left; width:auto"><h2><i class="glyphicon glyphicon-usd"></i> <?=$xml->receipt?></h2></div><form action="index.php?page=voucher_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 <div class="clearfix"></div>
 
@@ -144,7 +141,7 @@ $fetvou=mysql_fetch_array($queryvou);
 			else
 			echo "<option value='0' >Use Default</option>";
 			
-			$querycustomer=mysql_query("select brand_name,id from brand where vendor_id='".$_SESSION[company_id]."' ");
+			$querycustomer=mysql_query("select brand_name,id from brand where ven_id='".$_SESSION[com_id]."' ");
 			
 			
 				while($fetch_customer=mysql_fetch_array($querycustomer)){
@@ -192,11 +189,11 @@ if($mode=="A"){?>
 					
 					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[name]."</option>";
 				}?>
-   </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="brand_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="brand_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where product_type_id='".$data_pro[type]."'");
+   </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
+<?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro[type]."'");
 echo "<option value='' >Please Select Band</option>";
 while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
-					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[brand_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
+					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[ban_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
 					
 					<?php
 				}?>                
@@ -205,7 +202,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
   
         
           <div id="box" style="width:18%"><div id="slotmodel[<?=$i?>]"><select id="model[<?=$i?>]" name="model[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysql_query("select model_name,id from model where brand_id='".$data_pro[brand_id]."' and product_type_id='".$data_pro[type]."'");
+			<?php $querycustomer=mysql_query("select model_name,id from model where brand_id='".$data_pro[ban_id]."' and type_id='".$data_pro[type]."'");
 			if(mysql_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
 			else
 			echo "<option value=''>Please Select Model</option>";
@@ -233,7 +230,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
 
   <?php $i++;}else
 if($mode=="E"){
-	$query_pro=mysql_query("select product_id,price,type,brand_id,model,quantity,pack_quantity,des,voucher_id,DATE_FORMAT(vo_warranty,'%d-%m-%Y') as vo_warranty from product where receipt_id='".$_REQUEST[id]."'");$i=0;
+	$query_pro=mysql_query("select pro_id,price,type,ban_id,model,quantity,pack_quantity,des,vo_id,DATE_FORMAT(vo_warranty,'%d-%m-%Y') as vo_warranty from product where re_id='".$_REQUEST[id]."'");$i=0;
 
 while($data_pro=mysql_fetch_array($query_pro)){?>
 <tr id="fr[<?=$i?>] <?php if($i==0) echo 'firstTr'?>">
@@ -248,11 +245,11 @@ while($data_pro=mysql_fetch_array($query_pro)){?>
 					
 					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[name]."</option>";
 				}?>
-   </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="brand_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="brand_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where product_type_id='".$data_pro[type]."'");
+   </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
+<?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro[type]."'");
 echo "<option value='' >Please Select Band</option>";
 while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
-					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[brand_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
+					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[ban_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
 					
 					<?php
 				}?>                
@@ -261,7 +258,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
   
         
           <div id="box" style="width:18%"><div id="slotmodel[<?=$i?>]"><select id="model[<?=$i?>]" name="model[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysql_query("select model_name,id from model where brand_id='".$data_pro[brand_id]."' and product_type_id='".$data_pro[type]."'");
+			<?php $querycustomer=mysql_query("select model_name,id from model where brand_id='".$data_pro[ban_id]."' and type_id='".$data_pro[type]."'");
 			if(mysql_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
 			else
 			echo "<option value=''>Please Select Model</option>";

@@ -8,10 +8,10 @@ $db=new DbConn($config);
 $db->checkSecurity();
 
 
- $query=mysqli_query($db->conn, "select * from voucher where id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and vender='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "'");
+ $query=mysqli_query($db->conn, "select * from voucher where id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and vender='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "'");
 if(mysqli_num_rows($query)==1){
 	$data=mysqli_fetch_array($query);
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,address_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.company_id where company.id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' and valid_end='0000-00-00'"));
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' and valid_end='0000-00-00'"));
 	
 	
 	if($data['brandven']==0){$logo=$vender['logo'];}else{
@@ -22,7 +22,7 @@ if(mysqli_num_rows($query)==1){
 
 $html = '
 <div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
-<small><br>'.$vender['address_tax'].'<br>'.$vender['city_tax'].' '.$vender['district_tax'].' '.$vender['province_tax'].' '.$vender['zip_tax'].'<br>Tel : '.$vender['phone'].'  Fax : '.$vender['fax'].' Email: '.$vender['email'].'<br>Tax: '.$vender['tax'].'</small></div>
+<small><br>'.$vender['adr_tax'].'<br>'.$vender['city_tax'].' '.$vender['district_tax'].' '.$vender['province_tax'].' '.$vender['zip_tax'].'<br>Tel : '.$vender['phone'].'  Fax : '.$vender['fax'].' Email: '.$vender['email'].'<br>Tax: '.$vender['tax'].'</small></div>
 
 <div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
 <div style="width:100%; margin-top:10px; margin-bottom:5px; padding:5px; background-color:#000; text-align:center; font-weight:bold; color:#FFF;font-size:18px;">VOUCHER</div>
@@ -63,7 +63,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysqli_query($db->conn, "select product_type.name as name,quantity,product.price as price,product.des as des from product join type on product.type=product_type.id where voucher_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and purchase_order_id='0' and send_out_id='0' ");$summary=0;
+$que_pro=mysqli_query($db->conn, "select type.name as name,quantity,product.price as price,product.des as des from product join type on product.type=type.id where vo_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and po_id='0' and so_id='0' ");$summary=0;
 $cot=1;
 while($data_pro=mysqli_fetch_array($que_pro))
 	{
@@ -157,4 +157,4 @@ exit;
 //==============================================================
 //==============================================================
 
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

@@ -1,0 +1,51 @@
+# iAcc PHP MVC - Security Configuration
+# =============================================
+
+# Deny access to sensitive directories and files
+<FilesMatch "\.(sql|log|bak|backup|sh|git)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Block access to inc/ directory files directly
+<FilesMatch "^(class\.dbconn|sys\.configs|config)\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes
+
+# Prevent access to hidden files (starting with .)
+<FilesMatch "^\.">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Security Headers
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Enable XSS Protection
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Prevent clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Referrer Policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable server signature
+ServerSignature Off
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# PHP settings (if mod_php is used)
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log logs/php_errors.log
+</IfModule>

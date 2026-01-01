@@ -153,8 +153,8 @@
         </thead>
         <tbody>
 <?php
-$company_id = isset($_SESSION['company_id']) ? mysqli_real_escape_string($db->conn, $_SESSION['company_id']) : '';
-$querycom = mysqli_query($db->conn, "SELECT name_en, id FROM company WHERE company.id != '".$company_id."' AND customer='1'");
+$com_id = isset($_SESSION['com_id']) ? mysqli_real_escape_string($db->conn, $_SESSION['com_id']) : '';
+$querycom = mysqli_query($db->conn, "SELECT name_en, id FROM company WHERE company.id != '".$com_id."' AND customer='1'");
 
 if (!$querycom) {
     echo '<tr><td colspan="6" class="report-empty"><i class="glyphicon glyphicon-exclamation-sign"></i><p>Error retrieving data</p></td></tr>';
@@ -163,18 +163,17 @@ if (!$querycom) {
     while($fetcom = mysqli_fetch_array($querycom)) {
         $has_rows = true;
         
-        $pr = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM purchase_request WHERE vendor_id='".$company_id."' AND customer_id='".$fetcom['id']."'"));
-        $qa = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM purchase_request WHERE vendor_id='".$company_id."' AND customer_id='".$fetcom['id']."' AND status>='1'"));
-        $po = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM purchase_request WHERE vendor_id='".$company_id."' AND customer_id='".$fetcom['id']."' AND status>='2'"));
-        $iv = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM purchase_request WHERE vendor_id='".$company_id."' AND customer_id='".$fetcom['id']."' AND status>='4'"));
-        $tx = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM purchase_request WHERE vendor_id='".$company_id."' AND customer_id='".$fetcom['id']."' AND status>='5'"));
+        $pr = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."'"));
+        $qa = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='1'"));
+        $po = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='2'"));
+        $iv = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='4'"));
+        $tx = mysqli_fetch_array(mysqli_query($db->conn, "SELECT COUNT(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='5'"));
         
         $prs = (isset($prs) ? $prs : 0) + (isset($pr['ct']) ? $pr['ct'] : 0);
         $qas = (isset($qas) ? $qas : 0) + (isset($qa['ct']) ? $qa['ct'] : 0);
         $pos = (isset($pos) ? $pos : 0) + (isset($po['ct']) ? $po['ct'] : 0);
         $ivs = (isset($ivs) ? $ivs : 0) + (isset($iv['ct']) ? $iv['ct'] : 0);
         $txs = (isset($txs) ? $txs : 0) + (isset($tx['ct']) ? $tx['ct'] : 0);
-?>
             <tr>
                 <th><?=$fetcom['name_en']?></th>
                 <td style="text-align: center;"><span class="stat-badge"><?=isset($pr['ct']) ? $pr['ct'] : 0?></span></td>
@@ -190,7 +189,6 @@ if (!$querycom) {
         echo '<tr><td colspan="6" class="report-empty"><p>' . $xml->nodata . '</p></td></tr>';
     }
 }
-?>
         </tbody>
         <tfoot>
             <tr>

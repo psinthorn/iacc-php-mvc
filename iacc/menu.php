@@ -149,7 +149,16 @@
                     </ul>
                 </li>-->
                 <!-- /.dropdown -->
-                  <li><form action="lang.php" method="post"><button name="chlang" value="0" class="btn btn-default <?php if($lg=="us") echo "active";?>"><img src="images/us.jpg"> English</button>&nbsp;<button name="chlang" value="1" class="btn btn-default <?php if($lg=="th") echo "active";?>"><img src="images/th.jpg">  ภาษาไทย</button></form></li>
+                  <li>
+                    <form action="lang.php" method="post" id="langForm" style="display: inline;" onsubmit="console.log('Submitting language form with value: ' + event.submitter.value);">
+                      <button type="submit" name="chlang" value="0" class="btn btn-default <?php $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0; if($current_lang == 0) echo "active";?>" style="padding: 5px 10px;" title="Switch to English">
+                        <img src="images/us.jpg" alt="English" style="height: 20px;"> English
+                      </button>
+                      <button type="submit" name="chlang" value="1" class="btn btn-default <?php if($current_lang == 1) echo "active";?>" style="padding: 5px 10px; margin-left: 5px;" title="Switch to Thai">
+                        <img src="images/th.jpg" alt="Thai" style="height: 20px;"> ภาษาไทย
+                      </button>
+                    </form>
+                  </li>
               
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -210,7 +219,7 @@
                                 <a href="index.php?page=category"><?=$xml->category?></a>
                             </li>
                              <li>
-                                <a href="index.php?page=brand"><?=$xml->brand?></a>
+                                <a href="index.php?page=band"><?=$xml->brand?></a>
                             </li>
                               <li>
                                 <a href="index.php?page=type"><?=$xml->product?></a>
@@ -219,12 +228,12 @@
                                 <a href="index.php?page=mo_list"><?=$xml->model?></a>
                             </li>
                             
-                               <?php if(isset($_SESSION['company_id']) && $_SESSION['company_id']!=""){?>   <li>
+                               <?php if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){?>   <li>
                                 <a href="index.php?page=payment"><?=$xml->payment?></a>
                             </li> <?php } ?>
                    </ul>
                     </li>
-                  <?php if(isset($_SESSION['company_id']) && $_SESSION['company_id']!=""){?> 
+                  <?php if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){?> 
                   <li>
                     <a href="#"><i class="fa fa-pencil-square-o"></i> <?=$xml->purchasingrequest?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">

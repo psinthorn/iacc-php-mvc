@@ -8,11 +8,11 @@ $db=new DbConn($config);
 $db->checkSecurity();
 
 
- $query=mysqli_query($db->conn, "select purchase_order.name as name,volumn,pay.id as pay_id,pay.purchase_order_id as purchase_order_id,vendor_id,dis,vat, taxrw as tax2,tax,purchase_request.customer_id as customer_id,des,brandven,valid_pay,purchase_order.date as date,deliver_date,ref,pic,status from pr join purchase_order on purchase_request.id=purchase_order.ref  join invoice on purchase_order.id=invoice.tex join pay on purchase_order.id=pay.purchase_order_id  where pay.id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and status>='4' and (purchase_request.customer_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "' or vendor_id='" . mysqli_real_escape_string($db->conn, $_SESSION['company_id'] ?? '') . "') and po_id_new=''");
+ $query=mysqli_query($db->conn, "select po.name as name,volumn,pay.id as pay_id,pay.po_id as po_id,ven_id,dis,vat, taxrw as tax2,tax,pr.cus_id as cus_id,des,brandven,valid_pay,po.date as date,deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join pay on po.id=pay.po_id  where pay.id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "' and status>='4' and (pr.cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' or ven_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "') and po_id_new=''");
 if(mysqli_num_rows($query)==1){
 	$data=mysqli_fetch_array($query);
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,address_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.company_id where company.id='" . mysqli_real_escape_string($db->conn, $data['vendor_id']) . "' and valid_end='0000-00-00'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,address_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.company_id where company.id='" . mysqli_real_escape_string($db->conn, $data['customer_id']) . "' and valid_end='0000-00-00'"));
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' and valid_end='0000-00-00'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='" . mysqli_real_escape_string($db->conn, $data['cus_id']) . "' and valid_end='0000-00-00'"));
 	
 
 	if((isset($data['brandven']) ? $data['brandven'] : 0)==0){$logo=(isset($vender['logo']) ? $vender['logo'] : '');}else{
@@ -23,7 +23,7 @@ if(mysqli_num_rows($query)==1){
 
 $html = '
 <div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
-<small><br>'.$vender[address_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
+<small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
 
 
 <div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
@@ -37,7 +37,7 @@ $html = '
 
 
 <div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer[address_tax].'</div>
+<div style="width:54%; float:left;">'.$customer[adr_tax].'</div>
 <div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Invoice No.</div>
 <div style="width:20%; float:left; ">INV-'.str_pad($data[tax2], 8, "0", STR_PAD_LEFT).'</div>
 
@@ -71,7 +71,7 @@ $html = '
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>
 ';
-$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=product_type.id where purchase_order_id='" . mysqli_real_escape_string($db->conn, $data['purchase_order_id']) . "'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='" . mysqli_real_escape_string($db->conn, $data['po_id']) . "'"));
 if($cklabour[cklabour]==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -92,7 +92,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysqli_query($db->conn, "select product_type.name as name,price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=product_type.id join model on product.model=model.id where purchase_order_id='" . mysqli_real_escape_string($db->conn, $data['purchase_order_id']) . "'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select type.name as name,price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='" . mysqli_real_escape_string($db->conn, $data['po_id']) . "'");$summary=0;
 $cot=1;
 	while($data_pro=mysqli_fetch_array($que_pro)){
 
@@ -203,4 +203,4 @@ exit;
 //==============================================================
 //==============================================================
 
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

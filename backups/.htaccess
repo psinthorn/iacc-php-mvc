@@ -1,0 +1,3 @@
+# Deny all access to backups directory
+Order Allow,Deny
+Deny from all
