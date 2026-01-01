@@ -1,215 +1,187 @@
 <?php
-// session_start();
-// require_once("inc/sys.configs.php");
-// require_once("inc/class.dbconn.php");
-// require_once("inc/class.current.php");
-// $db=new DbConn($config);
-// $db->checkSecurity();
+/**
+ * Tax Invoice PDF Generator
+ * Uses shared PDF template
+ */
+session_start();
+require_once("inc/sys.configs.php");
+require_once("inc/class.dbconn.php");
+require_once("inc/class.current.php");
+require_once("inc/security.php");
+require_once("inc/pdf-template.php");
 
+$db = new DbConn($config);
+$db->checkSecurity();
 
- $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis, taxrw as tax2,tax,pr.cus_id as cus_id,payby,des,vat,DATE_FORMAT(texiv_create,'%d-%m-%Y') as date,texiv_rw,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$_REQUEST['id']."' and status='5' and (pr.cus_id='".$_SESSION['com_id']."' or ven_id='".$_SESSION['com_id']."') and po_id_new=''");
-if(mysqli_num_rows($query)=="1"){
-	$data=mysqli_fetch_array($query);
-	$vender=mysqil_fetch_array(mysql_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".$data['ven_id']."' and valid_end='0000-00-00'"));
-	$customer=mysqli_fetch_array(mysql_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data['payby']."' and valid_end='0000-00-00'"));
-	
+// Validate and sanitize input
+$id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
+if ($id <= 0) {
+    die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Invalid Request</h2></div>');
+}
 
-$html = '
-<div style="width:20%; float:left;"><img src="upload/'.$vender['logo'].'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender['name_en'].'</b>
-<small><br>'.$vender['adr_tax'].'<br>'.$vender['city_tax'].' '.$vender['district_tax'].' '.$vender['province_tax'].' '.$vender['zip_tax'].'<br>Tel : '.$vender['phone'].'  Fax : '.$vender['fax'].' Email: '.$vender['email'].'<br>Tax: '.$vender['tax'].'</small></div>
+$id_safe = mysqli_real_escape_string($db->conn, $id);
+$session_com_id = mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? 0);
 
+// Fetch tax invoice data
+$sql = "
+    SELECT 
+        po.name as name, po.over, pr.ven_id, po.dis, 
+        iv.taxrw as tax2, po.tax, pr.cus_id as cus_id, pr.payby, pr.des, po.vat,
+        DATE_FORMAT(iv.texiv_create,'%d/%m/%Y') as date,
+        iv.texiv_rw, po.ref, po.pic, pr.status, po.bandven
+    FROM pr 
+    JOIN po ON pr.id = po.ref  
+    JOIN iv ON po.id = iv.tex 
+    WHERE po.id = '{$id_safe}' 
+    AND pr.status = '5' 
+    AND (pr.cus_id = '{$session_com_id}' OR pr.ven_id = '{$session_com_id}') 
+    AND po.po_id_new = ''
+";
 
-<div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
-<div style="width:100%; margin-top:10px; margin-bottom:5px; padding:5px;background-color:#000; text-align:center; font-weight:bold; color:#FFF;font-size:18px;">Tax Invoice / Receipt</div>
+$query = mysqli_query($db->conn, $sql);
 
-<div style="width:10%; float:left; font-weight:bold;">Customer</div>
-<div style="width:54%; float:left;">'.$customer['name_en'].'</div>
-<div style="width:14%; float:left; text-align:left; padding-left:3px; font-weight:bold;">Create Date</div>
-<div style="width:20%; float:left; text-align:left;">'.$data['date'].'</div>
+if (!$query || mysqli_num_rows($query) != 1) {
+    die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Tax Invoice Not Found</h2><p>The requested tax invoice does not exist or you do not have permission to view it.</p></div>');
+}
 
+$data = mysqli_fetch_array($query);
 
-<div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer['adr_tax'].'</div>
+// Fetch vendor info
+$vender = mysqli_fetch_array(mysqli_query($db->conn, "
+    SELECT name_en, adr_tax, city_tax, district_tax, tax, province_tax, zip_tax, fax, phone, email, term, logo 
+    FROM company 
+    JOIN company_addr ON company.id = company_addr.com_id 
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' 
+    AND valid_end = '0000-00-00'
+"));
 
-<div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Tex No.</div>
-<div style="width:20%; float:left; ">Tax-'.$data['texiv_rw'].'</div>
+// Fetch customer info
+$customer = mysqli_fetch_array(mysqli_query($db->conn, "
+    SELECT name_en, name_sh, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email 
+    FROM company 
+    JOIN company_addr ON company.id = company_addr.com_id 
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['payby']) . "' 
+    AND valid_end = '0000-00-00'
+"));
 
+// Get logo
+if ($data['bandven'] == 0) {
+    $logo = $vender['logo'] ?? '';
+} else {
+    $bandlogo = mysqli_fetch_array(mysqli_query($db->conn, "
+        SELECT logo FROM brand WHERE id = '" . mysqli_real_escape_string($db->conn, $data['bandven']) . "'
+    "));
+    $logo = $bandlogo['logo'] ?? '';
+}
 
-<div style="width:10%; height:5px; float:left; font-weight:bold;"></div>
-<div style="width:54%; float:left;">'.$customer['city_tax'].' '.$customer['district_tax'].' '.$customer['province_tax'].' '.$customer['zip_tax'].'</div>
+// Check if labour columns needed
+$cklabour = mysqli_fetch_array(mysqli_query($db->conn, "
+    SELECT MAX(activelabour) as cklabour 
+    FROM product 
+    JOIN type ON product.type = type.id 
+    WHERE po_id = '{$id_safe}'
+"));
+$hasLabour = ($cklabour['cklabour'] == 1);
 
+// Fetch products
+$que_pro = mysqli_query($db->conn, "
+    SELECT 
+        type.name as name, product.price as price, product.des as des,
+        valuelabour, activelabour, discount, model.model_name as model,
+        quantity, pack_quantity 
+    FROM product 
+    JOIN type ON product.type = type.id 
+    JOIN model ON product.model = model.id 
+    WHERE po_id = '{$id_safe}'
+");
 
+// Build product rows and calculate totals
+$products = [];
+$summary = 0;
 
-<div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Invoice No.</div>
-<div style="width:20%; float:left; ">INV-'.str_pad($data['tax2'], 8, "0", STR_PAD_LEFT).'</div>
+while ($data_pro = mysqli_fetch_array($que_pro)) {
+    $qty = intval($data_pro['quantity']);
+    $price = floatval($data_pro['price']);
+    
+    if ($hasLabour) {
+        $equip = $price * $qty;
+        $labour1 = floatval($data_pro['valuelabour']) * intval($data_pro['activelabour']);
+        $labour = $labour1 * $qty;
+        $total = $equip + $labour;
+    } else {
+        $equip = 0;
+        $labour1 = 0;
+        $labour = 0;
+        $total = $price * $qty;
+    }
+    
+    $summary += $total;
+    
+    $products[] = [
+        'model' => $data_pro['model'],
+        'name' => $data_pro['name'],
+        'des' => $data_pro['des'],
+        'quantity' => $qty,
+        'price' => $price,
+        'equip' => $equip,
+        'labour1' => $labour1,
+        'labour' => $labour,
+        'total' => $total
+    ];
+}
 
+// Calculate totals
+$disco = $summary * floatval($data['dis']) / 100;
+$stotal = $summary - $disco;
 
+$overh = 0;
+if ($data['over'] > 0) {
+    $overh = $stotal * floatval($data['over']) / 100;
+    $stotal = $stotal + $overh;
+}
 
-<div style="width:10%; float:left; font-weight:bold;">Tax ID</div>
+$vat = $stotal * floatval($data['vat']) / 100;
+$grandTotal = round($stotal, 2) + round($vat, 2);
 
+// Fetch payment methods for vendor
+$paymentMethods = [];
+$pm_query = mysqli_query($db->conn, "
+    SELECT method_type, method_name, account_name, account_number, branch, qr_image 
+    FROM payment_methods 
+    WHERE com_id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' 
+    AND is_active = 1 
+    ORDER BY is_default DESC, sort_order ASC
+");
+if ($pm_query) {
+    while ($pm = mysqli_fetch_array($pm_query)) {
+        $paymentMethods[] = $pm;
+    }
+}
 
-<div style="width:54%; float:left;">'.$customer['tax'].'</div>
+// Prepare totals array
+$totals = [
+    'summary' => $summary,
+    'disco' => $disco,
+    'overh' => $overh,
+    'stotal' => $stotal,
+    'vat' => $vat,
+    'grandTotal' => $grandTotal
+];
 
-<div style="width:14%; float:left;  padding-left:3px; font-weight:bold;">Ref-Doc</div>
-<div style="width:20%; float:left;">PO-'.$data['tax'].'</div>
+// Generate PDF HTML using shared template
+$html = generatePdfHtml(
+    'TAX INVOICE / RECEIPT',  // docType
+    'TAX',                     // docPrefix
+    $data['texiv_rw'],         // docNumber (tax invoice number)
+    $data,                     // data
+    $vender,                   // vender
+    $customer,                 // customer
+    $products,                 // products
+    $logo,                     // logo
+    $paymentMethods,           // paymentMethods
+    $totals,                   // totals
+    $hasLabour                 // hasLabour
+);
 
-
-<div style="width:10%; float:left; font-weight :bold;">Email</div>
-<div style="width:90%; float:left;">'.$customer['email'].'</div>
-
-<div style="width:10%; float:left; font-weight:bold;">Tel.</div>
-<div style="width:22%; float:left;">'.$customer['phone'].'</div>
-<div style="width:10%; float:left; font-weight:bold;">Fax.</div>
-<div style="width:22%; float:left;">'.$customer['fax'].'</div>
-
-
-
-</div>
-
-<div id="all_font" style="font-size:12px; height:410px;">
-
-
-<div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
-<div style="width:4%; float:left;">No.</div>
-<div style="width:15%; float:left;">Model</div>
-';
-$cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_REQUEST['id']."'"));
-if($cklabour['cklabour']==1){
-$html .= '
-<div style="width:22%;float:left;">Product Name</div>
-<div style="width:5%; float:left;text-align:center;">QTY</div>
-<div style="width:11%; float:left;text-align:right;">Price</div>
-<div style="width:11%; float:left;text-align:right;">Total</div>
-<div style="width:9%; float:left;text-align:right;">Labour</div>
-<div style="width:11%; float:left;text-align:right;">Total</div>
-<div style="width:11%; float:left;text-align:right;">Amount</div>';}else{
-$html .= '
-<div style="width:53%;float:left;">Product Name</div>
-<div style="width:5%; float:left;text-align:center;">QTY</div>
-<div style="width:11%; float:left;text-align:right;">Price</div>
-<div style="width:11%; float:left;text-align:right;">Amount</div>';}
-
-$html .= '
-</div>
-';
-
-$html .= '<div class="clearfix" style="height:10px;"></div>';
-
-$que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,product.des as des,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST['id']."'");$summary=0;
-$cot=1;
-	while($data_pro=mysql_fetch_array($que_pro)){
-
-if($cklabour['cklabour']==1){	
-$equip=$data_pro['price']*$data_pro['quantity'];
-$labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
-$labour=$labour1*$data_pro['quantity'];
-$total=$equip+$labour;
-$summary+=$total;
-$html .= '
-<div style="width:4%; float:left;">'.$cot.'</div>
-<div style="width:15%; float:left;">'.$data_pro['model'].'</div>
-<div style="width:22%;float:left;">'.$data_pro['name'].'</div>
-<div style="width:5%; float:left;text-align:center;">'.($data_pro['quantity']).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($data_pro['price'],2).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($equip,2).'</div>
-<div style="width:9%; float:left;text-align:right;">'.number_format($labour1,2).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($labour,2).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($total,2).'</div>';
-	if($data_pro['des']!="")$html .= '
-<div style="width:98%; margin-left:2%;font-size:10px;"># '.$data_pro['des'].'</div>';	
-	}else{
-$total=$data_pro['price']*$data_pro['quantity'];
-
-$summary+=$total;
-$html .= '
-<div style="width:4%; float:left;">'.$cot.'</div>
-<div style="width:15%; float:left;">'.$data_pro['model'].'</div>
-<div style="width:53%;float:left;">'.$data_pro['name'].'</div>
-<div style="width:5%; float:left;text-align:right;">'.($data_pro['quantity']).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($data_pro['price'],2).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($total,2).'</div>';
-	
-	
-	if($data_pro['des']!="")$html .= '
-<div style="width:98%; margin-left:2%;font-size:10px;"># '.$data_pro['des'].'</div>';	
-	
-	}
-$cot++;
- }
- $disco=$summary*$data['dis']/100;
- $stotal=$summary-$disco;
-$html .= '</div>
-<hr>
-
-<div id="all_font" style="font-size:12px;">
-
-
-<div style="width:12%; float:right;text-align:right;">'.number_format($summary,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Total</div>
-<br>
-
-<div style="width:12%; float:right;text-align:right;">- '.number_format($disco,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Discount '.$data['dis'].'%</div>
-<br>
-
-
-<div style="width:12%; float:right;text-align:right;">'.number_format($stotal,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Sub Total</div>
-<br>';
-
-if($data['over']>0){
-	$overh=$stotal*$data['over']/100;
-	$stotal=$stotal+$overh;
-$html .= '
-<div style="width:12%; float:right;text-align:right;">+ '.number_format($overh,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Overhead '.$data['over'].'%</div>
-<br>
-
-
-<div style="width:12%; float:right;text-align:right;">'.number_format($stotal,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Total</div>
-<br>';}
-
-
- $vat=$stotal*$data['vat']/100;
- $total=round($stotal,2)+round($vat,2);
-
-
-$html .= '
-<div style="width:12%; float:right;text-align:right;">+ '.number_format($vat,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Vat '.$data['vat'].'%</div>
-<br>
-
-
-<div style="width:70%; float:left;text-align:left;">('.bahtEng($total).')</div>
-<div style="width:12%; float:right;text-align:right;">'.number_format($total,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Grand Total</div>
-<br>
-<hr>
-<b>Term & Condition</b><br>'.$vender['term'].'<br>
-<hr>
-<div style="width:49%; height:100px; float:left; border-right: solid thin #cccccc; text-align:center;"></div>
-<div style="width:49%; height:100px; float:left; text-align:center;"><div style="text-align:left;">&nbsp;&nbsp;&nbsp;&nbsp;'.$vender['name_en'].'</div><br><br><br><br>____________________________<br>Authorize Signature<BR>Date _______/_______/________</div>
-</div>
-
-
-';	
-
-
-//==============================================================
-//==============================================================
-include("MPDF/mpdf.php");
-
-$mpdf= new mPdf('th', 'A4', '0');
-
-
-$mpdf->WriteHTML($html);
-
-
-$mpdf->Output("Tax-".$data['texiv_rw']."-".$customer['name_sh'].".pdf","I");
-$mpdf->Output();
-exit;
-//==============================================================
-//==============================================================
-
-}else echo "<center>ERROR</center>";?>
+// Output PDF
+outputPdf($html, "TAX-" . $data['texiv_rw'] . "-" . ($customer['name_sh'] ?? 'taxinvoice') . ".pdf");
