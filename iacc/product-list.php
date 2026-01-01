@@ -4,7 +4,6 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $db = new DbConn($config);
 $db -> checkSecurity();
-?>
 <!DOCTYPE html>
 <html>
 

@@ -3,7 +3,6 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $db=new DbConn($config);
 $db->checkSecurity();
-?>
 	<h2><i class="fa fa-ticket"></i> <?=$xml->product?></h2>
 
 	<?php

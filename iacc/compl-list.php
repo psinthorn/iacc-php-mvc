@@ -2,7 +2,6 @@
 	// require_once("inc/sys.configs.php");
 	// require_once("inc/class.dbconn.php");
 	// $dbconn = new DbConn($config);
-?>
 
 <script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>  <h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2>
 <?php

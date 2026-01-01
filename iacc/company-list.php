@@ -4,7 +4,6 @@
 	// require_once("inc/class.dbconn.php");
 	// $db = new DbConn($config);
 	// $users->checkSecurity();
-?>
 
 <h2><i class="fa fa-home fa-fw"></i> <?=$xml->company?></h2>
 <?php

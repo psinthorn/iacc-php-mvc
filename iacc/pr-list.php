@@ -8,7 +8,6 @@
 	else if($status=="5") $condition="and status='5'";
 	else if($status=="6") $condition="";
 	else $condition="and status='0'";
-?>
 <div style="float:left; width:auto"><h2><i class="glyphicon glyphicon-pencil"></i>  <?=$xml->purchasingrequest?></h2></div><form action="index.php?page=pr_list" style="float:right; margin-top:15px;" method="post"><select id="status" name="status" style="width:160px; float:left;" class="form-control">
 <option value='0' <?php if(($status=="")||($status=="0"))echo "selected";?> ><?=$xml->processpr?></option>
 <option value='1' <?php if($status=="1")echo "selected";?> ><?=$xml->processquo?></option>
