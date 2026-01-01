@@ -1,103 +1,190 @@
 # iAcc - Accounting Management System
 
 **Project**: iACC - Comprehensive Accounting & Procurement Management  
-**Version**: 2.0 (2026 Modernization)  
-**Status**: Planning Complete - Ready for Execution  
-**Last Updated**: January 1, 2026
+**Version**: 2.1 (PDF Template Update)  
+**Status**: Active Development  
+**Last Updated**: January 2, 2026
 
 ---
 
-## 🔴 PRIORITY 1: IMMEDIATE DEPLOYMENT TO cPANEL
+## 🚀 Quick Start
 
-**CRITICAL FIRST STEP** - Before starting the 4-phase modernization plan:
+### Start Docker Services
+```bash
+cd /Volumes/Data/Projects/iAcc-PHP-MVC
+docker-compose up -d
+```
 
-1. **Get current system UP and RUNNING** as it should be ✅ IN PROGRESS
-2. **Deploy to cPanel production** so team can use it regularly
-3. **THEN execute the 4-phase improvement plan** for system modernization
+### Access Application
+| URL | Description |
+|-----|-------------|
+| http://localhost/ | Main entry |
+| http://localhost/iacc/ | Application |
+| http://localhost/inv.php?id=1923 | Invoice PDF |
+| http://localhost/exp.php?id={id} | Quotation PDF |
+| http://localhost/taxiv.php?id={id} | Tax Invoice PDF |
 
-**Current Status**: iAcc currently runs on development environment (Docker). System diagnostics completed - see [SYSTEM_TEST_REPORT_20260101.md](SYSTEM_TEST_REPORT_20260101.md) for details.
-
-**RBAC Tables Created**: ✅ Completed
-- `roles` table - Admin, Manager, User roles defined
-- `permissions` table - 7 core permissions defined
-- `user_roles` table - Current users assigned to Admin role
-- `role_permissions` table - Admin role has all permissions
-
-**Next Actions** (Do This First):
-- [ ] Test application in browser to verify RBAC working
-- [ ] Review [SYSTEM_TEST_REPORT_20260101.md](SYSTEM_TEST_REPORT_20260101.md) for findings
-- [ ] Prepare cPanel hosting environment (PHP version, MySQL settings)
-- [ ] Create cPanel deployment checklist
-- [ ] Test database export/import for cPanel
-- [ ] Deploy to cPanel with zero downtime
-- [ ] Test all core functions in production
-- [ ] Once stable in production → begin Phase 1 improvements
-
-**Database Backups**:
-- `BACKUP_BEFORE_IMPORT_20260101_105745.sql` - Before RBAC setup
-- `BACKUP_WITH_RBAC_20260101_111500.sql` - After RBAC tables created
+### Database Access
+```bash
+docker exec -it iacc-mysql mysql -u root -piacc iacc
+```
 
 ---
 
-## 🎯 PROJECT STATUS OVERVIEW
+## 📊 Current System Status
 
-### Current System State
-- **Language**: PHP 8.3 (modernized ✓)
-- **Database**: MySQL 5.7 → 8.0 (upgrade ready)
-- **Architecture**: Monolithic MVC (production-ready)
-- **Deployment**: Docker (dev) → cPanel (target)
-- **Security**: Legacy → Modern (plan ready)
+### Technology Stack
+| Component | Version | Status |
+|-----------|---------|--------|
+| PHP | 7.4.33 FPM | ✅ Running |
+| MySQL | 5.7 | ✅ Running |
+| Nginx | Latest | ✅ Running |
+| mPDF | 5.7 | ✅ Working |
+| Bootstrap | 3.3.7 | ✅ Active |
+| jQuery | 1.10.2 | ✅ Active |
 
-### 2026 Modernization Goals
-
-| Objective | Status | Target | Timeline |
-|-----------|--------|--------|----------|
-| Improve Tech Stack to Stable Version | 📋 Planned | PHP 8.3 + MySQL 8.0 | Week 1 (Jan 1-7) |
-| Improve Database for Production | 📋 Planned | Full audit trail + backups | Weeks 2-3 (Jan 8-21) |
-| Improve Authentication & Security | 📋 Planned | Bcrypt + RBAC + OWASP | Week 4 (Jan 22-Feb 4) |
-| Deploy to cPanel | 📋 Planned | Zero-downtime Blue-Green | Week 5 (Feb 5-18) |
+### Docker Services
+- **nginx** - Web server (port 80)
+- **php-fpm** - PHP processor
+- **mysql** - Database (port 3306)
 
 ---
 
-## 📚 COMPREHENSIVE DOCUMENTATION
+## 📂 Project Structure
 
-### 🚀 START HERE (New Planning Documents)
+```
+iAcc-PHP-MVC/
+├── docker-compose.yml          # Docker configuration
+├── index.php                   # Main router
+├── SYSTEM_SUMMARY.md           # Detailed system summary
+│
+├── iacc/                       # Main application
+│   ├── inc/                    # Core includes
+│   │   ├── class.dbconn.php    # MySQLi connection
+│   │   ├── sys.configs.php     # System settings
+│   │   ├── security.php        # Security functions (NEW)
+│   │   └── pdf-template.php    # Shared PDF template (NEW)
+│   │
+│   ├── inv.php                 # Invoice PDF generator
+│   ├── exp.php                 # Quotation PDF generator
+│   ├── taxiv.php               # Tax Invoice PDF generator
+│   ├── po-*.php                # Purchase order files
+│   ├── deliv-*.php             # Delivery files
+│   ├── company*.php            # Company management
+│   └── ...
+│
+├── MPDF/                       # PDF library
+├── migrations/                 # SQL migration files
+├── backups/                    # Backup files
+├── php-source/                 # Original PHP backup
+└── logs/                       # Application logs
+```
 
-**6 comprehensive planning documents created** (3,313 lines of detailed planning):
+---
 
-1. **[PLANNING_COMPLETE_SUMMARY.md](PLANNING_COMPLETE_SUMMARY.md)**
-   - Overview of all planning work
-   - How to use the documentation
-   - Immediate next steps
-   - Success definition
+## 🆕 Recent Updates (January 2, 2026)
 
-2. **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)**
-   - Project status at a glance
-   - Document roadmap by phase
-   - Critical files and locations
-   - Phase completion checklists
+### PDF Template System
+Created modern, minimal PDF templates for all documents:
 
-3. **[PROJECT_ROADMAP_2026.md](PROJECT_ROADMAP_2026.md)** ⭐ **MAIN PLAN**
-   - Complete 4-phase implementation
-   - Detailed task breakdown
-   - Success metrics and deliverables
-   - Risk assessment and contingencies
+- **Shared Template**: `iacc/inc/pdf-template.php`
+- **Invoice**: `iacc/inv.php` (redesigned)
+- **Quotation**: `iacc/exp.php` (uses shared template)
+- **Tax Invoice**: `iacc/taxiv.php` (uses shared template)
 
-4. **[IMPLEMENTATION_TIMELINE.md](IMPLEMENTATION_TIMELINE.md)**
-   - Day-by-day execution schedule
-   - Week-by-week breakdown
-   - Time allocation by role
-   - Go/No-Go gates
+Features:
+- Centered header with company logo
+- Modern minimal styling
+- Payment info section with bank details
+- Clean signature section
 
-5. **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)**
-   - Printable one-page reference card
-   - Keep at your desk
-   - Quick Q&A section
+### Security Enhancements
+**File**: `iacc/inc/security.php`
 
-6. **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)**
-   - Master index of all documents
-   - Navigation guide
-   - Reading recommendations
+```php
+csrf_token()           // Generate CSRF token
+verify_csrf_token()    // Validate CSRF token
+e($string)             // XSS escape (htmlspecialchars)
+sanitize_input()       // Input sanitization
+validate_int()         // Integer validation
+validate_email()       // Email validation
+```
+
+### New Database Table
+**Table**: `payment_methods`
+
+```sql
+CREATE TABLE payment_methods (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    com_id INT NOT NULL,
+    method_type ENUM('bank_transfer', 'credit_card', 'qr_code', 'cash', 'check', 'other'),
+    bank_name VARCHAR(100),
+    account_name VARCHAR(200),
+    account_number VARCHAR(50),
+    branch VARCHAR(100),
+    swift_code VARCHAR(20),
+    is_default TINYINT(1) DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (com_id) REFERENCES company(id)
+);
+```
+
+---
+
+## 🔧 Database Configuration
+
+**File**: `iacc/inc/class.dbconn.php`
+
+```php
+$host = "mysql";      // Docker service name
+$user = "root";
+$pass = "iacc";
+$db   = "iacc";
+```
+
+### Key Tables
+| Table | Description |
+|-------|-------------|
+| `company` | Customers/Vendors |
+| `product` | Products catalog |
+| `category` | Product categories |
+| `brand` | Product brands |
+| `invno` | Invoices |
+| `inv_desc` | Invoice line items |
+| `payment_methods` | Bank/payment info |
+
+---
+
+## 📝 Git Information
+
+**Repository**: `github.com:psinthorn/iacc-php-mvc.git`  
+**Branch**: `main`
+
+### Recent Commits
+```
+b0be717 Add system summary for development continuity
+4f57e47 Merge pdf-template branch into main
+1389519 Fix signature section styling in PDF templates
+56a97cf Create shared PDF template for Invoice, Quotation, Tax Invoice
+```
+
+---
+
+## 📋 Development Notes
+
+### For Detailed System Information
+See [SYSTEM_SUMMARY.md](SYSTEM_SUMMARY.md) for:
+- Complete file reference
+- Function documentation
+- Testing URLs
+- Known issues and TODO
+
+### Backup Locations
+- `php-source/` - Original PHP files backup
+- `backups/` - File backups with timestamps
+- `*.backup` files - Individual file backups
+
+---
 
 ---
 
