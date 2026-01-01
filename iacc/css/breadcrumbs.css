@@ -1,0 +1,324 @@
+/* ============================================
+   Breadcrumb Navigation Styling
+   ============================================ */
+
+/* ========== Breadcrumb Container ========== */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  margin-bottom: var(--spacing-lg);
+  list-style: none;
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  gap: 8px;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+/* ========== Breadcrumb Item ========== */
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: '/';
+  display: inline-block;
+  padding: 0 4px;
+  color: var(--gray-medium);
+}
+
+.breadcrumb-item a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-item a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.breadcrumb-item a:focus {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.breadcrumb-item a i,
+.breadcrumb-item a .icon {
+  font-size: inherit;
+}
+
+/* ========== Active Breadcrumb Item ========== */
+.breadcrumb-item.active {
+  color: var(--gray-medium);
+  cursor: default;
+  font-weight: var(--font-weight-medium);
+}
+
+.breadcrumb-item.active a {
+  color: var(--gray-medium);
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ========== Breadcrumb Separator Variants ========== */
+.breadcrumb.breadcrumb-separator-arrow .breadcrumb-item + .breadcrumb-item::before {
+  content: '→';
+  padding: 0 6px;
+}
+
+.breadcrumb.breadcrumb-separator-dot .breadcrumb-item + .breadcrumb-item::before {
+  content: '•';
+  padding: 0 6px;
+}
+
+.breadcrumb.breadcrumb-separator-pipe .breadcrumb-item + .breadcrumb-item::before {
+  content: '|';
+  padding: 0 6px;
+}
+
+.breadcrumb.breadcrumb-separator-gt .breadcrumb-item + .breadcrumb-item::before {
+  content: '>';
+  padding: 0 4px;
+  font-weight: var(--font-weight-bold);
+}
+
+.breadcrumb.breadcrumb-separator-none .breadcrumb-item + .breadcrumb-item::before {
+  content: '';
+  padding: 0;
+}
+
+/* ========== Breadcrumb with Icons ========== */
+.breadcrumb-item.has-icon a::before,
+.breadcrumb-item.has-icon::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+
+/* ========== Breadcrumb Sizes ========== */
+.breadcrumb.breadcrumb-sm {
+  font-size: 11px;
+  padding: 6px 0;
+  margin-bottom: var(--spacing-md);
+}
+
+.breadcrumb.breadcrumb-lg {
+  font-size: var(--font-size-base);
+  padding: 12px 0;
+  margin-bottom: var(--spacing-xl);
+}
+
+/* ========== Breadcrumb Colors ========== */
+.breadcrumb.breadcrumb-light {
+  background-color: var(--gray-lightest);
+  padding: 12px 15px;
+  border-radius: var(--border-radius);
+}
+
+.breadcrumb.breadcrumb-dark {
+  background-color: var(--gray-darkest);
+  padding: 12px 15px;
+  border-radius: var(--border-radius);
+}
+
+.breadcrumb.breadcrumb-dark .breadcrumb-item a {
+  color: #fff;
+}
+
+.breadcrumb.breadcrumb-dark .breadcrumb-item a:hover {
+  color: var(--primary-color);
+}
+
+.breadcrumb.breadcrumb-dark .breadcrumb-item + .breadcrumb-item::before,
+.breadcrumb.breadcrumb-dark .breadcrumb-item.active {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ========== Breadcrumb with Badge ========== */
+.breadcrumb-item .badge {
+  margin-left: 6px;
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+/* ========== Breadcrumb with Custom Separators ========== */
+.breadcrumb.breadcrumb-custom-sep .breadcrumb-item + .breadcrumb-item::before {
+  content: attr(data-separator);
+}
+
+/* ========== Breadcrumb Link States ========== */
+.breadcrumb-item a:visited {
+  color: var(--primary-color);
+}
+
+.breadcrumb-item a:active {
+  color: var(--primary-dark);
+}
+
+.breadcrumb-item:disabled,
+.breadcrumb-item.disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.breadcrumb-item:disabled a,
+.breadcrumb-item.disabled a {
+  color: var(--gray-medium);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========== Breadcrumb Loading State ========== */
+.breadcrumb-item.is-loading a {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.breadcrumb-item.is-loading a::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: breadcrumb-spin 0.6s linear infinite;
+}
+
+@keyframes breadcrumb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== Breadcrumb with Dropdown ========== */
+.breadcrumb-item.has-dropdown {
+  position: relative;
+}
+
+.breadcrumb-item.has-dropdown > a::after {
+  content: '▼';
+  display: inline-block;
+  font-size: 8px;
+  margin-left: 4px;
+}
+
+.breadcrumb-item.has-dropdown .breadcrumb-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 6px 0;
+  min-width: 150px;
+  z-index: var(--z-index-dropdown);
+  display: none;
+  list-style: none;
+  margin: 0;
+}
+
+.breadcrumb-item.has-dropdown:hover .breadcrumb-dropdown {
+  display: block;
+}
+
+.breadcrumb-item.has-dropdown .breadcrumb-dropdown li a {
+  display: block;
+  padding: 8px 12px;
+  color: var(--gray-darkest);
+  border: none;
+  transition: background-color var(--transition-fast);
+}
+
+.breadcrumb-item.has-dropdown .breadcrumb-dropdown li a:hover {
+  background-color: var(--gray-lightest);
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+/* ========== Breadcrumb with Truncation ========== */
+.breadcrumb.breadcrumb-truncate .breadcrumb-item:not(.active):not(:last-child) {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========== Responsive Breadcrumb ========== */
+@media (max-width: 768px) {
+  .breadcrumb {
+    font-size: 11px;
+    padding: 8px 0;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .breadcrumb-item + .breadcrumb-item::before {
+    padding: 0 3px;
+  }
+
+  /* Hide middle breadcrumb items on mobile */
+  .breadcrumb.breadcrumb-responsive .breadcrumb-item:not(:first-child):not(:last-child) {
+    display: none;
+  }
+
+  .breadcrumb.breadcrumb-responsive .breadcrumb-item:first-child + .breadcrumb-item {
+    margin-left: 0;
+  }
+
+  .breadcrumb.breadcrumb-responsive .breadcrumb-item:not(:first-child):not(:last-child) + .breadcrumb-item::before {
+    content: '...';
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .breadcrumb-item + .breadcrumb-item::before {
+    padding: 0 2px;
+  }
+
+  .breadcrumb-item a {
+    gap: 2px;
+  }
+
+  .breadcrumb.breadcrumb-light,
+  .breadcrumb.breadcrumb-dark {
+    padding: 8px 10px;
+  }
+}
+
+/* ========== Breadcrumb Accessibility ========== */
+.breadcrumb-item a:focus,
+.breadcrumb-item a:focus-visible {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}
+
+/* Semantic breadcrumb nav */
+nav.breadcrumb-nav {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Skip link compatibility */
+a.skip-to-content:focus {
+  outline: 2px solid var(--info-color);
+  outline-offset: 2px;
+}

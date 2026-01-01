@@ -27,6 +27,12 @@
     <!-- UX/UI Improvements - Interactivity CSS Files -->
     <link href="css/toast.css" rel="stylesheet">
 
+    <!-- UX/UI Improvements - Content and Layout CSS Files -->
+    <link href="css/breadcrumbs.css" rel="stylesheet">
+    <link href="css/dashboard-improvements.css" rel="stylesheet">
+    <link href="css/form-labels-hints.css" rel="stylesheet">
+    <link href="css/content-utilities.css" rel="stylesheet">
+
     <script src="js/jquery-1.10.2.js"></script>
     <script src="js/ajaxpagefetcher.js"></script>
     
