@@ -22,84 +22,78 @@
 
 <body>
 
-    <div class="login-container">
+    <div class="login-wrapper">
         <!-- Branding Section -->
         <div class="login-header">
-            <div class="brand-logo">
-                <i class="fa fa-dashboard"></i>
-            </div>
-            <h1 class="brand-title">iAcc CMS</h1>
-            <p class="brand-subtitle">Intelligent Account Management System</p>
+            <i class="fa fa-dashboard brand-icon"></i>
+            <h1 class="brand-name">iAcc CMS</h1>
+            <p class="brand-tagline">Account Management System</p>
         </div>
 
-        <!-- Login Panel -->
-        <div class="login-panel panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-lock"></i> Secure Login</h3>
-            </div>
-            <div class="panel-body">
-                <form role="form" action="authorize.php" method="post" class="login-form">
-                    <fieldset>
-                        <!-- Email Input -->
-                        <div class="form-group form-group-with-icon">
-                            <label for="email">Email Address</label>
-                            <input
-                                class="form-control"
-                                id="email"
-                                placeholder="Enter your email"
-                                name="m_user"
-                                type="email"
-                                autofocus
-                                required
-                                aria-label="Email address"
-                            >
-                            <i class="fa fa-envelope form-icon"></i>
-                        </div>
-
-                        <!-- Password Input -->
-                        <div class="form-group form-group-with-icon">
-                            <label for="password">Password</label>
-                            <input
-                                class="form-control"
-                                id="password"
-                                placeholder="Enter your password"
-                                name="m_pass"
-                                type="password"
-                                required
-                                aria-label="Password"
-                            >
-                            <i class="fa fa-key form-icon"></i>
-                        </div>
-
-                        <!-- Remember Me -->
-                        <div class="checkbox">
-                            <label>
-                                <input name="remember" type="checkbox" value="Remember Me" aria-label="Remember me">
-                                <span>Remember me on this device</span>
-                            </label>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn btn-login" aria-label="Sign in to your account">
-                            <i class="fa fa-sign-in"></i>
-                            <span>Sign In</span>
-                        </button>
-                    </fieldset>
-                </form>
-
-                <!-- Additional Links -->
-                <div class="login-links">
-                    <a href="#forgot" title="Forgot password">Forgot Password?</a>
-                    <span style="color: #ccc;">•</span>
-                    <a href="#support" title="Get support">Need Help?</a>
+        <!-- Login Form -->
+        <div class="login-form-wrapper">
+            <form action="authorize.php" method="post">
+                <!-- Email Input -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        class="form-control"
+                        id="email"
+                        placeholder="your@email.com"
+                        name="m_user"
+                        type="email"
+                        autofocus
+                        required
+                        autocomplete="email"
+                    >
                 </div>
-            </div>
+
+                <!-- Password Input -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        class="form-control"
+                        id="password"
+                        placeholder="••••••••"
+                        name="m_pass"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <!-- Remember Me -->
+                <div class="form-check">
+                    <input
+                        type="checkbox"
+                        id="remember"
+                        name="remember"
+                        value="Remember Me"
+                    >
+                    <label for="remember">Remember me</label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit">
+                    <i class="fa fa-sign-in"></i>
+                    <span>Sign In</span>
+                </button>
+
+                <!-- Footer Links -->
+                <div class="login-footer">
+                    <div class="footer-links">
+                        <a href="#forgot">Forgot password?</a>
+                        <span class="footer-divider">•</span>
+                        <a href="#support">Help</a>
+                    </div>
+                </div>
+            </form>
         </div>
 
-        <!-- Footer Info -->
-        <div style="text-align: center; margin-top: 2rem; color: rgba(255, 255, 255, 0.8); font-size: 0.875rem;">
-            <p style="margin: 0;">© 2026 iAcc CMS. All rights reserved.</p>
-            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem;">Secure & Encrypted Connection</p>
+        <!-- Info -->
+        <div class="login-info">
+            <p>© 2026 iAcc CMS</p>
+            <p>Secure connection</p>
         </div>
     </div>
 
