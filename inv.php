@@ -19,25 +19,59 @@ if (!$id) {
     die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Error</h2><p>Invalid invoice ID</p></div>');
 }
 
+// Debug mode
+$debug = false;
+
 // Fetch invoice data with prepared-style query (escaped)
 $id_safe = mysqli_real_escape_string($db->conn, $id);
 $session_com_id = mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? 0);
 
-$query = mysqli_query($db->conn, "
+$sql = "
     SELECT 
-        po.name as name, over, ven_id, dis, vat, 
-        taxrw as tax2, tax, pr.cus_id as cus_id, payby, des, brandven, valid_pay,
+        po.name as name, po.over, pr.ven_id, po.dis, po.vat, 
+        iv.taxrw as tax2, po.tax, pr.cus_id as cus_id, pr.payby, pr.des, po.bandven, po.valid_pay,
         DATE_FORMAT(iv.createdate,'%d/%m/%Y') as date,
-        DATE_FORMAT(deliver_date,'%d/%m/%Y') as deliver_date,
-        ref, pic, status 
+        DATE_FORMAT(po.deliver_date,'%d/%m/%Y') as deliver_date,
+        po.ref, po.pic, pr.status 
     FROM pr 
     JOIN po ON pr.id = po.ref  
     JOIN iv ON po.id = iv.tex 
     WHERE po.id = '{$id_safe}' 
-    AND status > '2' 
-    AND (pr.cus_id = '{$session_com_id}' OR ven_id = '{$session_com_id}') 
-    AND po_id_new = ''
-");
+    AND pr.status > '2' 
+    AND po.po_id_new = ''
+    AND (pr.cus_id = '{$session_com_id}' OR pr.ven_id = '{$session_com_id}' OR pr.payby = '{$session_com_id}')
+";
+
+$query = mysqli_query($db->conn, $sql);
+
+if ($debug && (!$query || mysqli_num_rows($query) != 1)) {
+    echo "<h2>Debug Info</h2>";
+    echo "<p><strong>ID:</strong> {$id_safe}</p>";
+    echo "<p><strong>Query:</strong></p><pre>" . htmlspecialchars($sql) . "</pre>";
+    echo "<p><strong>Error:</strong> " . mysqli_error($db->conn) . "</p>";
+    echo "<p><strong>Rows:</strong> " . ($query ? mysqli_num_rows($query) : 'query failed') . "</p>";
+    
+    // Test simpler query
+    $test = mysqli_query($db->conn, "SELECT id, status, po_id_new FROM po WHERE id = '{$id_safe}'");
+    echo "<p><strong>PO exists:</strong></p><pre>";
+    if ($test && mysqli_num_rows($test) > 0) {
+        print_r(mysqli_fetch_assoc($test));
+    } else {
+        echo "PO not found";
+    }
+    echo "</pre>";
+    
+    // Test iv table
+    $test2 = mysqli_query($db->conn, "SELECT * FROM iv WHERE tex = '{$id_safe}'");
+    echo "<p><strong>IV record:</strong></p><pre>";
+    if ($test2 && mysqli_num_rows($test2) > 0) {
+        print_r(mysqli_fetch_assoc($test2));
+    } else {
+        echo "IV not found";
+    }
+    echo "</pre>";
+    exit;
+}
 
 if (!$query || mysqli_num_rows($query) != 1) {
     die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Invoice Not Found</h2><p>The requested invoice does not exist or you do not have permission to view it.</p></div>');
@@ -63,12 +97,25 @@ $customer = mysqli_fetch_array(mysqli_query($db->conn, "
     AND valid_end = '0000-00-00'
 "));
 
-// Get logo
-if ($data['brandven'] == 0) {
+// Fetch payment methods (bank accounts) for vendor
+$paymentMethods = [];
+$pm_query = mysqli_query($db->conn, "
+    SELECT method_type, method_name, account_name, account_number, branch, qr_image 
+    FROM payment_methods 
+    WHERE com_id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' 
+    AND is_active = 1 
+    ORDER BY is_default DESC, sort_order ASC
+");
+while ($pm = mysqli_fetch_array($pm_query)) {
+    $paymentMethods[] = $pm;
+}
+
+// Get logo - column is 'bandven' not 'brandven'
+if ($data['bandven'] == 0) {
     $logo = $vender['logo'] ?? '';
 } else {
     $bandlogo = mysqli_fetch_array(mysqli_query($db->conn, "
-        SELECT logo FROM brand WHERE id = '" . mysqli_real_escape_string($db->conn, $data['brandven']) . "'
+        SELECT logo FROM brand WHERE id = '" . mysqli_real_escape_string($db->conn, $data['bandven']) . "'
     "));
     $logo = $bandlogo['logo'] ?? '';
 }
@@ -131,302 +178,242 @@ if ($data['over'] > 0) {
 $vat = $stotal * $data['vat'] / 100;
 $grandTotal = round($stotal, 2) + round($vat, 2);
 
-// Modern Minimal HTML Template
+// Clean Invoice Template with Improved Colors
 $html = '
 <style>
-    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #333; line-height: 1.5; }
-    .container { max-width: 100%; margin: 0 auto; }
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #333; }
     
     /* Header */
-    .header { margin-bottom: 30px; }
-    .header-flex { display: table; width: 100%; }
-    .logo-cell { display: table-cell; width: 80px; vertical-align: top; }
-    .logo-cell img { max-height: 60px; max-width: 75px; }
-    .company-cell { display: table-cell; vertical-align: top; text-align: right; padding-left: 20px; }
-    .company-name { font-size: 18px; font-weight: bold; color: #1a1a1a; margin-bottom: 5px; }
-    .company-details { font-size: 10px; color: #666; line-height: 1.4; }
+    .header { text-align: center; margin-bottom: 10px; }
+    .header img { width: 50px; height: 50px; }
+    .company-name { font-size: 14px; font-weight: bold; color: #1a5276; margin-top: 5px; }
+    .company-addr { font-size: 10px; color: #444; line-height: 1.4; }
     
-    /* Invoice Title */
-    .invoice-title { 
-        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-        color: white; 
-        text-align: center; 
-        padding: 12px 0; 
-        font-size: 22px; 
-        font-weight: 600;
-        letter-spacing: 3px;
-        margin: 20px 0;
-        border-radius: 4px;
-    }
+    /* Title */
+    .title { background: #1a5276; color: #fff; text-align: center; padding: 8px; font-size: 16px; font-weight: bold; letter-spacing: 2px; margin: 10px 0; }
     
-    /* Info Grid */
-    .info-grid { display: table; width: 100%; margin-bottom: 20px; font-size: 11px; }
-    .info-left { display: table-cell; width: 60%; vertical-align: top; }
-    .info-right { display: table-cell; width: 40%; vertical-align: top; padding-left: 20px; }
-    .info-row { margin-bottom: 6px; }
-    .info-label { font-weight: 600; color: #555; display: inline-block; min-width: 70px; }
-    .info-value { color: #333; }
+    /* Info Section */
+    .info-table { width: 100%; margin-bottom: 10px; }
+    .info-table td { vertical-align: top; font-size: 10px; }
+    .info-left { width: 55%; }
+    .info-right { width: 45%; padding-left: 20px; }
+    .inv-box { padding: 4px 0; margin-bottom: 6px; }
+    .inv-num { font-size: 13px; font-weight: bold; color: #1a5276; margin: 0; }
+    .inv-meta { font-size: 9px; color: #666; margin-top: 2px; }
+    .lbl { font-weight: bold; color: #555; width: 55px; }
+    .cust-name { font-weight: bold; }
     
-    /* Invoice Details Box */
-    .invoice-box { 
-        background: #f8f9fa; 
-        border-left: 4px solid #3498db;
-        padding: 12px 15px;
-        margin-bottom: 5px;
-    }
-    .invoice-number { font-size: 16px; font-weight: bold; color: #2c3e50; }
-    .invoice-meta { font-size: 10px; color: #666; margin-top: 5px; }
-    
-    /* Table */
-    .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 10px; }
-    .items-table th { 
-        background: #2c3e50; 
-        color: white; 
-        padding: 10px 8px; 
-        text-align: left;
-        font-weight: 500;
-        font-size: 10px;
-    }
-    .items-table th.right { text-align: right; }
-    .items-table th.center { text-align: center; }
-    .items-table td { padding: 10px 8px; border-bottom: 1px solid #eee; }
-    .items-table td.right { text-align: right; }
-    .items-table td.center { text-align: center; }
-    .items-table tr:nth-child(even) { background: #fafafa; }
-    .items-table tr:hover { background: #f0f7ff; }
-    .item-desc { font-size: 9px; color: #888; margin-top: 3px; font-style: italic; }
+    /* Items Table */
+    .items { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .items th { background: #1a5276; color: #fff; padding: 6px 8px; font-size: 10px; text-align: left; }
+    .items th.r { text-align: right; }
+    .items th.c { text-align: center; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 10px; vertical-align: top; }
+    .items td.r { text-align: right; }
+    .items td.c { text-align: center; }
+    .items tr:nth-child(even) { background: #f8f9fa; }
+    .desc { font-size: 9px; color: #666; margin-top: 3px; line-height: 1.3; }
     
     /* Totals */
-    .totals-section { margin: 20px 0; }
-    .totals-table { width: 280px; margin-left: auto; font-size: 11px; }
-    .totals-row { display: table; width: 100%; padding: 6px 0; }
-    .totals-label { display: table-cell; width: 60%; text-align: right; padding-right: 15px; color: #666; }
-    .totals-value { display: table-cell; width: 40%; text-align: right; font-weight: 500; }
-    .totals-divider { border-top: 1px solid #ddd; margin: 8px 0; }
-    .grand-total { 
-        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-        color: white;
-        padding: 12px 15px;
-        border-radius: 4px;
-        margin-top: 10px;
-    }
-    .grand-total .totals-label { color: white; font-weight: 500; }
-    .grand-total .totals-value { font-size: 14px; font-weight: bold; }
+    .summary-section { width: 100%; margin-top: 10px; }
+    .summary-section td { vertical-align: top; }
+    .bank-info { width: 55%; font-size: 10px; }
+    .bank-title { font-weight: bold; color: #1a5276; margin-bottom: 5px; }
+    .bank-item { margin-bottom: 4px; line-height: 1.3; }
+    .bank-name { font-weight: bold; }
+    .totals-wrap { width: 45%; text-align: right; }
+    .totals { width: 220px; margin-left: auto; }
+    .totals td { padding: 4px 0; font-size: 10px; }
+    .totals .lbl { text-align: right; padding-right: 12px; color: #555; white-space: nowrap; }
+    .totals .val { text-align: right; }
+    .totals .grand { border-top: 2px solid #1a5276; }
+    .totals .grand td { padding: 8px 0; font-size: 12px; font-weight: bold; color: #1a5276; }
     
-    /* Amount in words */
-    .amount-words { 
-        background: #f8f9fa; 
-        padding: 10px 15px; 
-        font-size: 10px; 
-        color: #555;
-        border-radius: 4px;
-        margin: 15px 0;
-        font-style: italic;
-    }
+    /* Words */
+    .words { background: #eaf2f8; padding: 8px 10px; font-size: 10px; color: #333; margin: 10px 0; }
     
     /* Terms */
-    .terms { 
-        margin: 20px 0; 
-        padding: 15px; 
-        background: #fff;
-        border: 1px solid #eee;
-        border-radius: 4px;
-    }
-    .terms-title { font-weight: 600; font-size: 11px; color: #2c3e50; margin-bottom: 8px; }
-    .terms-content { font-size: 9px; color: #666; line-height: 1.6; }
+    .terms { border-top: 1px solid #ccc; padding-top: 8px; margin-top: 15px; }
+    .terms-title { font-weight: bold; font-size: 10px; color: #1a5276; margin-bottom: 5px; }
+    .terms-content { font-size: 9px; color: #555; line-height: 1.4; }
     
     /* Signatures */
-    .signatures { display: table; width: 100%; margin-top: 40px; }
-    .sig-box { display: table-cell; width: 50%; text-align: center; padding: 0 20px; }
-    .sig-company { font-size: 10px; color: #666; margin-bottom: 50px; }
-    .sig-line { border-top: 1px solid #333; padding-top: 8px; margin: 0 20px; }
-    .sig-title { font-size: 10px; font-weight: 600; color: #333; }
-    .sig-date { font-size: 9px; color: #888; margin-top: 5px; }
+    .sigs { margin-top: 30px; }
+    .sigs td { width: 50%; text-align: center; padding: 0 25px; vertical-align: bottom; }
+    .sig-name { font-size: 9px; color: #666; margin-bottom: 40px; }
+    .sig-line { border-top: 1px solid #333; padding-top: 5px; font-size: 10px; font-weight: bold; }
+    .sig-date { font-size: 9px; color: #888; margin-top: 3px; }
 </style>
 
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <div class="header-flex">
-            <div class="logo-cell">
-                <img src="upload/' . e($logo) . '">
-            </div>
-            <div class="company-cell">
-                <div class="company-name">' . e($vender['name_en'] ?? '') . '</div>
-                <div class="company-details">
-                    ' . e($vender['adr_tax'] ?? '') . '<br>
-                    ' . e($vender['city_tax'] ?? '') . ' ' . e($vender['district_tax'] ?? '') . ' ' . e($vender['province_tax'] ?? '') . ' ' . e($vender['zip_tax'] ?? '') . '<br>
-                    Tel: ' . e($vender['phone'] ?? '') . ' | Fax: ' . e($vender['fax'] ?? '') . '<br>
-                    Email: ' . e($vender['email'] ?? '') . ' | Tax ID: ' . e($vender['tax'] ?? '') . '
-                </div>
-            </div>
-        </div>
+<!-- Header -->
+<div class="header">
+    <img src="upload/' . e($logo) . '" width="50" height="50"><br>
+    <div class="company-name">' . e($vender['name_en'] ?? '') . '</div>
+    <div class="company-addr">
+        ' . e($vender['adr_tax'] ?? '') . ' ' . e($vender['city_tax'] ?? '') . ' ' . e($vender['district_tax'] ?? '') . ' ' . e($vender['province_tax'] ?? '') . ' ' . e($vender['zip_tax'] ?? '') . '<br>
+        Tel: ' . e($vender['phone'] ?? '') . ' &nbsp; Fax: ' . e($vender['fax'] ?? '') . ' &nbsp; Email: ' . e($vender['email'] ?? '') . ' &nbsp; Tax ID: ' . e($vender['tax'] ?? '') . '
     </div>
-    
-    <!-- Invoice Title -->
-    <div class="invoice-title">INVOICE</div>
-    
-    <!-- Info Grid -->
-    <div class="info-grid">
-        <div class="info-left">
-            <div class="invoice-box">
-                <div class="invoice-number">INV-' . e($data['tax2']) . '</div>
-                <div class="invoice-meta">
-                    Date: ' . e($data['date']) . ' | Ref: PO-' . e($data['tax']) . '
-                </div>
+</div>
+
+<!-- Title -->
+<div class="title">INVOICE</div>
+
+<!-- Info Section -->
+<table class="info-table">
+    <tr>
+        <td class="info-left">
+            <div class="inv-box">
+                <div class="inv-num">INV-' . e($data['tax2']) . '</div>
+                <div class="inv-meta">Date: ' . e($data['date']) . ' &nbsp;|&nbsp; Ref: PO-' . e($data['tax']) . '</div>
             </div>
-            <div style="margin-top: 15px;">
-                <div class="info-row"><span class="info-label">Customer:</span> <strong>' . e($customer['name_en'] ?? '') . '</strong></div>
-                <div class="info-row"><span class="info-label">Address:</span> ' . e($customer['adr_tax'] ?? '') . '</div>
-                <div class="info-row"><span class="info-label"></span> ' . e($customer['city_tax'] ?? '') . ' ' . e($customer['district_tax'] ?? '') . ' ' . e($customer['province_tax'] ?? '') . ' ' . e($customer['zip_tax'] ?? '') . '</div>
-                <div class="info-row"><span class="info-label">Tax ID:</span> ' . e($customer['tax'] ?? '') . '</div>
-            </div>
-        </div>
-        <div class="info-right">
-            <div class="info-row"><span class="info-label">Tel:</span> ' . e($customer['phone'] ?? '') . '</div>
-            <div class="info-row"><span class="info-label">Fax:</span> ' . e($customer['fax'] ?? '') . '</div>
-            <div class="info-row"><span class="info-label">Email:</span> ' . e($customer['email'] ?? '') . '</div>
-        </div>
-    </div>
-    
-    <!-- Items Table -->
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th style="width:5%">#</th>
-                <th style="width:15%">Model</th>
-                <th style="width:' . ($hasLabour ? '22%' : '47%') . '">Description</th>
-                <th class="center" style="width:6%">Qty</th>
-                <th class="right" style="width:12%">Unit Price</th>';
+            <table>
+                <tr><td class="lbl">Customer</td><td class="cust-name">' . e($customer['name_en'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Address</td><td>' . e($customer['adr_tax'] ?? '') . ' ' . e($customer['city_tax'] ?? '') . ' ' . e($customer['district_tax'] ?? '') . ' ' . e($customer['province_tax'] ?? '') . ' ' . e($customer['zip_tax'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Tax ID</td><td>' . e($customer['tax'] ?? '') . '</td></tr>
+            </table>
+        </td>
+        <td class="info-right">
+            <table>
+                <tr><td class="lbl">Tel</td><td>' . e($customer['phone'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Fax</td><td>' . e($customer['fax'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Email</td><td>' . e($customer['email'] ?? '') . '</td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- Items -->
+<table class="items">
+    <tr>
+        <th style="width:4%">#</th>
+        <th style="width:14%">Model</th>
+        <th style="width:' . ($hasLabour ? '28%' : '52%') . '">Description</th>
+        <th class="c" style="width:6%">Qty</th>
+        <th class="r" style="width:10%">Price</th>';
 
 if ($hasLabour) {
     $html .= '
-                <th class="right" style="width:12%">Equipment</th>
-                <th class="right" style="width:10%">Labour</th>
-                <th class="right" style="width:12%">Labour Total</th>';
+        <th class="r" style="width:10%">Equipment</th>
+        <th class="r" style="width:8%">Labour</th>
+        <th class="r" style="width:10%">L.Total</th>';
 }
 
 $html .= '
-                <th class="right" style="width:12%">Amount</th>
-            </tr>
-        </thead>
-        <tbody>';
+        <th class="r" style="width:10%">Amount</th>
+    </tr>';
 
 $cot = 1;
 foreach ($products as $prod) {
-    $html .= '
-            <tr>
-                <td>' . $cot . '</td>
-                <td>' . e($prod['model']) . '</td>
-                <td>' . e($prod['name']);
+    $html .= '<tr>
+        <td>' . $cot . '</td>
+        <td>' . e($prod['model']) . '</td>
+        <td>' . e($prod['name']);
     if (!empty($prod['des'])) {
-        $html .= '<div class="item-desc">' . e($prod['des']) . '</div>';
+        $safe_des = strip_tags($prod['des'], '<br><b><strong><i><em><u>');
+        $html .= '<div class="desc">' . $safe_des . '</div>';
     }
     $html .= '</td>
-                <td class="center">' . intval($prod['quantity']) . '</td>
-                <td class="right">' . number_format($prod['price'], 2) . '</td>';
+        <td class="c">' . intval($prod['quantity']) . '</td>
+        <td class="r">' . number_format($prod['price'], 2) . '</td>';
     
     if ($hasLabour) {
         $html .= '
-                <td class="right">' . number_format($prod['equip'], 2) . '</td>
-                <td class="right">' . number_format($prod['labour1'], 2) . '</td>
-                <td class="right">' . number_format($prod['labour'], 2) . '</td>';
+        <td class="r">' . number_format($prod['equip'], 2) . '</td>
+        <td class="r">' . number_format($prod['labour1'], 2) . '</td>
+        <td class="r">' . number_format($prod['labour'], 2) . '</td>';
     }
     
     $html .= '
-                <td class="right">' . number_format($prod['total'], 2) . '</td>
-            </tr>';
+        <td class="r">' . number_format($prod['total'], 2) . '</td>
+    </tr>';
     $cot++;
+}
+$html .= '</table>
+
+<!-- Summary Section -->
+<table class="summary-section">
+    <tr>
+        <td class="bank-info">
+            <div class="bank-title">Payment Information</div>';
+
+// Display payment methods
+if (!empty($paymentMethods)) {
+    foreach ($paymentMethods as $pm) {
+        if ($pm['method_type'] == 'bank') {
+            $html .= '
+            <div class="bank-item">
+                <span class="bank-name">' . e($pm['method_name']) . '</span><br>
+                Account: ' . e($pm['account_number']) . '<br>
+                Name: ' . e($pm['account_name']) . '
+                ' . (!empty($pm['branch']) ? '<br>Branch: ' . e($pm['branch']) : '') . '
+            </div>';
+        } elseif ($pm['method_type'] == 'qrcode' && !empty($pm['qr_image'])) {
+            $html .= '
+            <div class="bank-item">
+                <span class="bank-name">' . e($pm['method_name']) . '</span><br>
+                <img src="' . e($pm['qr_image']) . '" width="80" height="80">
+            </div>';
+        }
+    }
+} else {
+    $html .= '<div class="bank-item">Please contact us for payment details.</div>';
 }
 
 $html .= '
-        </tbody>
-    </table>
-    
-    <!-- Totals Section -->
-    <div class="totals-section">
-        <div class="totals-table">
-            <div class="totals-row">
-                <div class="totals-label">Subtotal</div>
-                <div class="totals-value">' . number_format($summary, 2) . '</div>
-            </div>';
+        </td>
+        <td class="totals-wrap">
+            <table class="totals">
+                <tr><td class="lbl">Subtotal</td><td class="val">' . number_format($summary, 2) . '</td></tr>';
 
 if ($data['dis'] > 0) {
-    $html .= '
-            <div class="totals-row">
-                <div class="totals-label">Discount (' . e($data['dis']) . '%)</div>
-                <div class="totals-value">-' . number_format($disco, 2) . '</div>
-            </div>';
+    $html .= '<tr><td class="lbl">Discount ' . e($data['dis']) . '%</td><td class="val">-' . number_format($disco, 2) . '</td></tr>';
 }
 
 if ($data['over'] > 0) {
-    $html .= '
-            <div class="totals-divider"></div>
-            <div class="totals-row">
-                <div class="totals-label">After Discount</div>
-                <div class="totals-value">' . number_format($stotal - $overh, 2) . '</div>
-            </div>
-            <div class="totals-row">
-                <div class="totals-label">Overhead (' . e($data['over']) . '%)</div>
-                <div class="totals-value">+' . number_format($overh, 2) . '</div>
-            </div>';
+    $html .= '<tr><td class="lbl">Overhead ' . e($data['over']) . '%</td><td class="val">+' . number_format($overh, 2) . '</td></tr>';
 }
 
 $html .= '
-            <div class="totals-divider"></div>
-            <div class="totals-row">
-                <div class="totals-label">Net Amount</div>
-                <div class="totals-value">' . number_format($stotal, 2) . '</div>
-            </div>
-            <div class="totals-row">
-                <div class="totals-label">VAT (' . e($data['vat']) . '%)</div>
-                <div class="totals-value">+' . number_format($vat, 2) . '</div>
-            </div>
-            <div class="grand-total">
-                <div class="totals-row">
-                    <div class="totals-label">Grand Total</div>
-                    <div class="totals-value">' . number_format($grandTotal, 2) . '</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Amount in Words -->
-    <div class="amount-words">
-        <strong>Amount in words:</strong> ' . bahtEng($grandTotal) . '
-    </div>
-    
-    <!-- Terms & Conditions -->
-    ' . (!empty($vender['term']) ? '
-    <div class="terms">
-        <div class="terms-title">Terms & Conditions</div>
-        <div class="terms-content">' . nl2br(e($vender['term'])) . '</div>
-    </div>' : '') . '
-    
-    <!-- Signatures -->
-    <div class="signatures">
-        <div class="sig-box">
-            <div class="sig-company">' . e($customer['name_en'] ?? '') . '</div>
-            <div class="sig-line">
-                <div class="sig-title">Authorized Signature</div>
-                <div class="sig-date">Date: ____/____/________</div>
-            </div>
-        </div>
-        <div class="sig-box">
-            <div class="sig-company">' . e($vender['name_en'] ?? '') . '</div>
-            <div class="sig-line">
-                <div class="sig-title">Authorized Signature</div>
-                <div class="sig-date">Date: ____/____/________</div>
-            </div>
-        </div>
-    </div>
-</div>';
+        <tr><td class="lbl">Net Amount</td><td class="val">' . number_format($stotal, 2) . '</td></tr>
+        <tr><td class="lbl">VAT ' . e($data['vat']) . '%</td><td class="val">+' . number_format($vat, 2) . '</td></tr>
+        <tr class="grand"><td class="lbl">Grand Total</td><td class="val">' . number_format($grandTotal, 2) . '</td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- Amount in Words -->
+<div class="words"><b>Amount in words:</b> ' . bahtEng($grandTotal) . '</div>
+
+<!-- Terms -->
+' . (!empty($vender['term']) ? '
+<div class="terms">
+    <div class="terms-title">Terms & Conditions</div>
+    <div class="terms-content">' . nl2br(e($vender['term'])) . '</div>
+</div>' : '') . '
+
+<!-- Signatures -->
+<table class="sigs" width="100%">
+    <tr>
+        <td>
+            <div class="sig-name">' . e($customer['name_en'] ?? '') . '</div>
+            <div class="sig-line">Authorized Signature</div>
+            <div class="sig-date">Date: ____/____/________</div>
+        </td>
+        <td>
+            <div class="sig-name">' . e($vender['name_en'] ?? '') . '</div>
+            <div class="sig-line">Authorized Signature</div>
+            <div class="sig-date">Date: ____/____/________</div>
+        </td>
+    </tr>
+</table>';
 
 // Generate PDF
 include("MPDF/mpdf.php");
 
-$mpdf = new mPDF('th', 'A4', 0, 'Helvetica', 15, 15, 15, 15, 0, 0);
+$mpdf = new mPDF('th', 'A4', 0, 'Arial', 12, 12, 12, 12, 0, 0);
 $mpdf->SetDisplayMode('fullpage');
 $mpdf->WriteHTML($html);
 $mpdf->Output("INV-" . $data['tax2'] . "-" . ($customer['name_sh'] ?? 'invoice') . ".pdf", "I");
 exit;
+
