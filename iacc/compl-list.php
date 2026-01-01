@@ -2,12 +2,9 @@
 	// require_once("inc/sys.configs.php");
 	// require_once("inc/class.dbconn.php");
 	// $dbconn = new DbConn($config);
-?>
 <script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>  <h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2>
 <?php
 	//$users->checkSecurity();
-?>
-
 <table width="100%" id="table1" class="table table-hover">
 
 <tr><th width="24%"><?=$xml->customer?></th><th width="10%"><?=$xml->inno?></th><th width="20%"><?=$xml->name?></th><th width="13%"><?=$xml->duedate?></th><th width="13%"><?=$xml->deliverydate?></th><th width="20%" colspan="2"><?=$xml->status?></th></tr>
@@ -35,8 +32,6 @@ echo "<a href='inv.php?id=".$data['id']."' target='blank'>IV</a>&nbsp;&nbsp;&nbs
 	
     }
 }
-?>
- 
 <tr><th><?=$xml->vender?></th><th><?=$xml->inno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th colspan="2"><?=$xml->status?></th></tr>
 <?php
 $query=mysqli_query($db->conn, "select po.id as id, po.name as name, taxrw as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, pr.status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id join iv on po.id=iv.tex where po_id_new='' and pr.cus_id='".$_SESSION['com_id']."' and pr.status>='4' order by iv.id desc ");
@@ -56,8 +51,6 @@ if ($query && mysqli_num_rows($query) > 0) {
 </tr>";	
     }
 }
-?>
-
 </table>
 
  <script type="text/javascript">

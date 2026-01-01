@@ -63,7 +63,6 @@ if ($user_id) {
     $audit = null;
     $GLOBALS['audit'] = null;
 }
-?>
 <!DOCTYPE html>
 <html lang="th">
 
@@ -141,8 +140,6 @@ if ($user_id) {
 				include_once "qa-list.php";
 				if($page=="mo_list")				
 				include_once "mo-list.php";
-				
-				?>
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
@@ -169,4 +166,3 @@ if ($user_id) {
 <?php
 // Flush output buffer (allows header redirects in included pages to work)
 ob_end_flush();
-?>

@@ -68,5 +68,3 @@ if(
 }
 
 echo "\n✓ lang.php compatibility test complete\n";
-
-?>

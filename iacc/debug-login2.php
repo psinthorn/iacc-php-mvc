@@ -134,4 +134,3 @@ if($num_rows == 1){
 $stmt->close();
 
 echo "\n=== Test Complete ===\n";
-?>

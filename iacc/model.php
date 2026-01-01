@@ -14,5 +14,3 @@ $tmp.='<option value="'.$data[id].'">'.$data[band_name].'</option>';
                   }}
 				  $tmp.='</select>';
 				  echo   $tmp;
-
-?>

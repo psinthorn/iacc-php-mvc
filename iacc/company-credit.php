@@ -17,7 +17,6 @@ if(mysqli_num_rows($query)==1){
 $method="A4";
 $data=mysqli_fetch_array($query);}
 else $method="A3";
-?>
 <form action="core-function" method="post" id="myform">
 	<div id="box">
 		<lable for="cus_id"><?=$xml->customer?></lable>
@@ -26,9 +25,6 @@ else $method="A3";
 		<input type="text" value="<?php echo (isset($customername['name_en']) ? $customername['name_en'] : '');?>" readonly class="form-control">
 		<input type="text" value="<?php echo (isset($data['cus_id']) ? $data['cus_id'] : '');?>" name ="cus_id">
 		<?php }else{
-		
-			?>
-           
 		<select id="cus_id" name="cus_id" class="form-control">
 			<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where id not in (select cus_id from company_credit where ven_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['ven_id'] ?? '') . "' group by cus_id) and id!='" . mysqli_real_escape_string($db->conn, $_REQUEST['ven_id'] ?? '') . "' and customer='1' ");
 			

@@ -43,5 +43,3 @@ $row = $result->fetch_assoc();
 echo "   Users in DB: {$row['count']}\n";
 
 echo "\n✓ All Systems OK\n";
-
-?>

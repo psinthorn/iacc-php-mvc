@@ -31,10 +31,6 @@ $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
 					$year = $_date[2];
-				
-		
-
-?>
 <div style="float:left; width:auto"><h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2></div><form action="index.php?page=compl_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
@@ -43,9 +39,6 @@ if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
 	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
-	
-	
-	?>
     <div class="clearfix"></div>
 <form action="core-function.php"  method="post" id="company-form" enctype="multipart/form-data">
 
@@ -128,7 +121,6 @@ echo "<tr><td>".$data_pro[model]."</td>
 	$vat=$subt*$data[vat]/100;
 	$totalnet=0;
 	$totalnet=$subt+$vat;
-	?>
   <tr><td colspan="4" rowspan="5"></td>
   <th colspan="2"><?=$xml->total?></th><td  colspan="2" align='right' ><?php echo number_format($summary,2);?></td></tr>
   <tr><th colspan="2"><?=$xml->discount?> <?php echo $data[dis];?>%</th><td colspan="2" align='right'>- <?php echo number_format($disc,2);?></td></tr>
@@ -136,8 +128,6 @@ echo "<tr><td>".$data_pro[model]."</td>
      <?php if($data[over]>0){
 		 $overh= $subt*$data[over]/100;
 		 $subt=$subt+$overh;
-	
-		 ?>
       <tr>
       <th colspan="2"><?=$xml->overhead?> <?php echo $data[over];?>%</th><td colspan="2" align='right'>+ <?php echo number_format($overh,2);?></td></tr>
     <tr><th colspan="2"><?=$xml->total?></th><td colspan="2" align='right'><?php  echo number_format($subt,2);?></td></tr>  <?php }
@@ -146,8 +136,6 @@ echo "<tr><td>".$data_pro[model]."</td>
 	$vat=$subt*$data[vat]/100;
 	
 	$totalnet=$subt+$vat;
-		 ?>
-    
      <tr><th colspan="2"><?=$xml->vat?> <?php echo $data[vat];?>%</th><td colspan="2" align='right'>+ <?php echo number_format($vat,2);?></td></tr>
     
     <tr><th colspan="2"><?=$xml->grandtotal?></th><td colspan="2" align='right'><?php echo number_format($totalnet,2);?></td></tr>
@@ -227,8 +215,6 @@ if($accu!=0){
     <?php $refpo=mysql_fetch_array(mysql_query("select ref from po where id='".$_REQUEST[id]."'"));?>
 	<input type="hidden" name="id" value="<?php echo $refpo[ref];?>">
 	</div></form><?php } 
-		 ?>
-    
     </div><?php
 		
 }else echo "<center>ERROR</center>";?>

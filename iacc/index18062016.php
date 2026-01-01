@@ -78,8 +78,6 @@ $users->checkSecurity();?>
 				include_once "mo-list.php";
 				if($_REQUEST[page]=="report")				
 				include_once "report.php";
-				
-				?>
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->

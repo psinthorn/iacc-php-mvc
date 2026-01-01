@@ -52,5 +52,3 @@ echo "\nNow you can login with ANY of these emails using password: 123456\n";
 echo "Example:\n";
 echo "  Email: etatun@directbooking.co.th\n";
 echo "  Password: 123456\n";
-
-?>

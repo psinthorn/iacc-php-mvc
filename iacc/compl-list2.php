@@ -1,9 +1,6 @@
 
 <script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script> <h2><i class="fa fa-thumbs-up"></i> <?=$xml->taxinvoice?></h2><?php
 // $users->checkSecurity();
-
-?>
-
 <table width="100%" id="table1" class="table table-hover">
 
 <tr><th><?=$xml->customer?></th><th><?=$xml->taxno?></th><th><?=$xml->name?></th><th width="100"><?=$xml->createdate?></th><th colspan="2"><?=$xml->status?></th></tr>

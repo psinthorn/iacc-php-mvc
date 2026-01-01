@@ -61,4 +61,3 @@ echo "<option value=\"$row[$optionValueField]\">$row[$optionTextField]</option>"
 echo "</select>";
 
 
-?>

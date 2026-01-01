@@ -52,8 +52,6 @@ echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td
 		 
 		 
 		 }
-	?>
- 
  <tr><th><?=$xml->vender?></th><th><?=$xml->description?></th><th><?=$xml->name?></th><th><?=$xml->date?></th><th><?=$xml->status?></th><th></th></tr>
 <?php
 $query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where cus_id='" . mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? '') . "' ".$condition." order by cancel,id desc");
@@ -85,9 +83,5 @@ echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td
 		 
 		 
 		 }
-	
-	
-	?>
-
 </table>
 <div id="fetch_state"></div>

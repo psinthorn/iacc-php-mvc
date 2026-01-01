@@ -1,8 +1,5 @@
 <h2><i class="fa fa-truck"></i> <?=$xml->deliverynote?><div style="float:right; font-size:20px; padding-top:7px;"><a href="?page=deliv_make" style="text-decoration:none;"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create." ".$xml->deliverynote;?></a></div></h2><?php
 $db->checkSecurity();
-
-?>
-
 <table width="100%" class="table table-hover">
 
 <tr><th><?=$xml->customer?></th><th><?=$xml->dnno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th><?=$xml->status?></th><th></th></tr>

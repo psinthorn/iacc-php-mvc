@@ -174,7 +174,6 @@ if (!$querycom) {
         $pos = (isset($pos) ? $pos : 0) + (isset($po['ct']) ? $po['ct'] : 0);
         $ivs = (isset($ivs) ? $ivs : 0) + (isset($iv['ct']) ? $iv['ct'] : 0);
         $txs = (isset($txs) ? $txs : 0) + (isset($tx['ct']) ? $tx['ct'] : 0);
-?>
             <tr>
                 <th><?=$fetcom['name_en']?></th>
                 <td style="text-align: center;"><span class="stat-badge"><?=isset($pr['ct']) ? $pr['ct'] : 0?></span></td>
@@ -190,7 +189,6 @@ if (!$querycom) {
         echo '<tr><td colspan="6" class="report-empty"><p>' . $xml->nodata . '</p></td></tr>';
     }
 }
-?>
         </tbody>
         <tfoot>
             <tr>

@@ -12,4 +12,3 @@ $_SESSION['com_name']=$comname['name_en'];
 
 }else{$_SESSION['com_id']="";$_SESSION['com_name']="";}
 		echo "<script>window.location='index.php';</script>";
-?>

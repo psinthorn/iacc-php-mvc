@@ -92,5 +92,3 @@ if($result->num_rows == 1){
         echo "   User NOT FOUND in database\n";
     }
 }
-
-?>

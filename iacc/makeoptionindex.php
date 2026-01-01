@@ -40,5 +40,3 @@ $tmp.='<option value="'.$data[id].'">'.$data[model_name].'</option>';
 	
 	}
 				 echo   $tmp;
-
-?>

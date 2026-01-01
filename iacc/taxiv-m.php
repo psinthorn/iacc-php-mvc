@@ -256,4 +256,4 @@ $mail->AddAttachment("file/Tax-".$data[texiv_rw]."-".$customer[name_sh].".pdf", 
 	
 	
 
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

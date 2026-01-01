@@ -2,8 +2,6 @@
  <h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2>
  <?php
 //$users->checkSecurity();
-?>
-
 <table width="100%" id="table1" class="table table-hover">
 <thead>
 
@@ -87,8 +85,6 @@ $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as t
 		</tr>";}
 
 	}
-?>
- 
 </tbody>
 </table>
  <script type="text/javascript">

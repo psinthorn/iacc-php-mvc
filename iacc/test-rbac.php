@@ -83,4 +83,3 @@ if($result && $result->num_rows > 0){
 }
 
 echo "\n=== Test Complete ===\n";
-?>

@@ -45,7 +45,6 @@ $db -> checkSecurity();
       $configs="";
       $configs2="";
     }
-    ?>
   </ul>
 
   <div class="tab-content"  >

@@ -254,4 +254,4 @@ $mail->AddAttachment("file/INV-".$data[tax2]."-".$customer[name_sh].".pdf", "INV
     }
 	
 	
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

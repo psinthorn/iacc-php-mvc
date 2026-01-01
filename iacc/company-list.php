@@ -4,7 +4,6 @@
 	// require_once("inc/class.dbconn.php");
 	// $db = new DbConn($config);
 	// $users->checkSecurity();
-?>
 <h2><i class="fa fa-home fa-fw"></i> <?=$xml->company?></h2>
 <?php
 $owner = ""; $other = ""; if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=""){
@@ -14,8 +13,6 @@ $owner = ""; $other = ""; if(isset($_SESSION['com_id']) && $_SESSION['com_id']!=
 }
 
 $query = mysqli_query($db->conn, $sql);
-?>
-
 <div id="fetch_state"></div>
 <table width="100%" class="table table-hover"><tr><th><?=$xml->name?></th><th><?=$xml->contact?></th><th><?=$xml->email?></th><th><?=$xml->phone?></th><th width="150">
 <?php if(!isset($_SESSION['com_id']) || $_SESSION['com_id']==""){?>

@@ -244,4 +244,4 @@ $mail->AddAttachment("file/QUO-".$data['tax']."-".$customer[name_sh].".pdf", "QU
       echo $e->getMessage(); //Boring error messages from anything else!
     }
 	
-}else echo "<center>ERROR</center>";?>
+}else echo "<center>ERROR</center>";

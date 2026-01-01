@@ -3,7 +3,6 @@
 // require_once("inc/class.dbconn.php");
 // $db = new DB($config);
 // $db->checkSecurity();
-?>
 <h2><i class="fa fa-cog"></i> <?=$xml->brand?></h2>
 <?php
 $db->checkSecurity();?>
@@ -24,5 +23,4 @@ $db->checkSecurity();?>
 	} else {
 		echo "<tr><td colspan='3'>No brands found</td></tr>";
 	}
-?>
 </table>

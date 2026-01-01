@@ -4,7 +4,6 @@
 // require_once("inc/class.dbconn.php");
 // $users=new DbConn($config);
 // $users->checkSecurity();
-?>
 <!DOCTYPE html>
 <html>
 

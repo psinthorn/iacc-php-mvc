@@ -87,8 +87,6 @@ function get_status_badge($status) {
     }
     return '<span class="badge" style="background: #6c757d; color: white;">Unknown</span>';
 }
-?>
-
 <style>
     /* Dashboard Page Styles */
     .dashboard-wrapper {
@@ -563,7 +561,6 @@ function get_status_badge($status) {
                                         <?php 
                                         $status_text = ($invoice['status_iv'] == 1) ? 'Approved' : 'Pending';
                                         $status_color = ($invoice['status_iv'] == 1) ? '#28a745' : '#ffc107';
-                                        ?>
                                         <span class="badge" style="background: <?php echo $status_color; ?>; color: <?php echo ($invoice['status_iv'] == 1) ? 'white' : '#333'; ?>;">
                                             <?php echo $status_text; ?>
                                         </span>
@@ -608,7 +605,6 @@ function get_status_badge($status) {
                                                   WHERE iv.texiv > 0 
                                                   ORDER BY iv.texiv_create DESC LIMIT 5";
                             $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
-                            ?>
                             <?php if($tax_inv_results && mysqli_num_rows($tax_inv_results) > 0): ?>
                                 <?php while($tax_inv = mysqli_fetch_assoc($tax_inv_results)): ?>
                                 <tr>

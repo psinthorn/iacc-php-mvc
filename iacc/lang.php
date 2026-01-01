@@ -64,5 +64,3 @@ if(ob_get_length()) ob_end_clean();
 // Add cache-buster parameter to force fresh page load
 header("Location: ./index.php?cache=" . time());
 exit;
-?>
-

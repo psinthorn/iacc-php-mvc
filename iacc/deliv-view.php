@@ -15,10 +15,6 @@ $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
 					$year = $_date[2];
-				
-		
-
-?>
 <div style="float:left; width:auto"><h2><i class="fa fa-truck"></i> <?=$xml->deliverynote?></h2></div><form action="index.php?page=deliv_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
@@ -34,9 +30,6 @@ if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
 	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
-	
-	
-	?>
     <div class="clearfix"></div>
 <form action="core-function.php" method="post" id="company-form" enctype="multipart/form-data">
 
@@ -83,10 +76,6 @@ echo "<tr><td>".$data_pro[name]."</td>
 <td>".$data_pro[s_n]."</td>
 </tr>";
  }
-	
-	?>
- 
-    
     </table>
    
 	<input type="hidden" name="method" value="<?php if($_REQUEST[modep]=="ad"){echo "R2";}else { echo "R";}?>">

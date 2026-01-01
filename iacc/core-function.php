@@ -720,4 +720,3 @@ $maxno=mysql_fetch_array(mysql_query("select max(no) as maxno from store join pr
 
 }break;
 }
-?>

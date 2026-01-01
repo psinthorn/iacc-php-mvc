@@ -81,4 +81,3 @@ if(file_exists($lang_file)) {
 }
 
 echo "</pre>";
-?>

@@ -107,10 +107,6 @@ $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
 					$year = $_date[2];
-				
-		
-
-?>
 <div style="float:left; width:auto"><h2><i class="fa fa-shopping-cart"></i> <?=$xml->deliverynote?></h2></div><form action="index.php?page=deliv_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
@@ -119,8 +115,6 @@ $_date = explode("-", date("d-m-Y"));
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
 	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
 	$limit_day=mysql_fetch_array(mysql_query("select limit_day from company_credit where ven_id='".$data[ven_id]."' and cus_id='".$data[cus_id]."'"));
-	
-	?>
     <div class="clearfix"></div>
 <form action="core-function.php" method="post" id="company-form">
 
@@ -137,8 +131,6 @@ $_date = explode("-", date("d-m-Y"));
 					echo "<option selected value='".$fetch_customer[id]."' >".$fetch_customer[name_en]."</option>";
 				}else {
 					echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name_en]."</option>";} }
-				
-				?>
 		</select>
 	</div>
        <div id="box">

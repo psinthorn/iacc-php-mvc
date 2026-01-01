@@ -114,9 +114,6 @@ $queryvou=mysql_query("select * from receipt where id='".$_REQUEST[id]."' and ve
 if(mysql_num_rows($queryvou)==1){$mode="E";
 $fetvou=mysql_fetch_array($queryvou);
 }else{$mode="A";}
-		
-
-?>
 <div style="float:left; width:auto"><h2><i class="glyphicon glyphicon-usd"></i> <?=$xml->receipt?></h2></div><form action="index.php?page=voucher_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 <div class="clearfix"></div>
 

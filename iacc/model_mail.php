@@ -5,9 +5,6 @@ require_once("inc/class.dbconn.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
 $users->checkSecurity();
-
-
-?>	
 	<!DOCTYPE html>
 <html>
 <head>
@@ -135,8 +132,6 @@ Thank you for your business, we appreciate it very much.
 	 
 	 
 	 }
-
-?>
 <form action="<?=$page?>"  method="post">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>

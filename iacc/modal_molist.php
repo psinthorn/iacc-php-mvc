@@ -10,9 +10,6 @@ $query=mysql_query("select model.id as id,price,model_name,type.name as type,mod
 		 $data=mysql_fetch_array($query);
 		 
 		 }else{exit("<script>alert('access denied');  window.history.back();</script>");}
-
-
-?>
 	<!DOCTYPE html>
 <html>
 <head>
