@@ -16,8 +16,8 @@ body {
 }
 
 body {
-  background-color: #ffffff;
-  color: #1a1a1a;
+  background-color: #f5f5f7;
+  color: #424245;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   font-size: 14px;
   line-height: 1.6;
@@ -47,31 +47,31 @@ body {
 
 .brand-icon {
   font-size: 2.5rem;
-  color: #007bff;
+  color: #5a7a99;
   margin-bottom: 1rem;
   display: block;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .brand-name {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.5px;
-  color: #1a1a1a;
+  color: #424245;
   margin: 0;
 }
 
 .brand-tagline {
   font-size: 0.875rem;
-  color: #666;
+  color: #757575;
   margin-top: 0.5rem;
   font-weight: 400;
 }
 
 /* ========== Form Container ========== */
 .login-form-wrapper {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -96,7 +96,7 @@ body {
 .form-group label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #1a1a1a;
+  color: #424245;
   margin-bottom: 0.5rem;
   letter-spacing: 0.25px;
 }
@@ -106,10 +106,10 @@ body {
   width: 100%;
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #d8d8d8;
   border-radius: 6px;
-  background-color: #f9fafb;
-  color: #1a1a1a;
+  background-color: #ffffff;
+  color: #424245;
   transition: all 0.2s ease;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -119,9 +119,9 @@ body {
 
 .form-control:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #5a7a99;
   background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(90, 122, 153, 0.08);
 }
 
 .form-control:hover {
@@ -130,15 +130,15 @@ body {
 }
 
 .form-control::placeholder {
-  color: #9ca3af;
+  color: #b0b0b0;
 }
 
 .form-control::-webkit-input-placeholder {
-  color: #9ca3af;
+  color: #b0b0b0;
 }
 
 .form-control::-moz-placeholder {
-  color: #9ca3af;
+  color: #b0b0b0;
 }
 
 /* ========== Checkbox Styling ========== */
@@ -154,26 +154,26 @@ body {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: #007bff;
-  border: 1px solid #d1d5db;
+  accent-color: #5a7a99;
+  border: 1px solid #d8d8d8;
   border-radius: 4px;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .form-check input[type='checkbox']:hover {
-  border-color: #007bff;
-  background-color: #f0f7ff;
+  border-color: #5a7a99;
+  background-color: #f5f8fb;
 }
 
 .form-check input[type='checkbox']:checked {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #5a7a99;
+  border-color: #5a7a99;
 }
 
 .form-check label {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: #616161;
   margin: 0;
   cursor: pointer;
   user-select: none;
@@ -181,7 +181,7 @@ body {
 }
 
 .form-check label:hover {
-  color: #007bff;
+  color: #5a7a99;
 }
 
 /* ========== Form Actions ========== */
@@ -199,13 +199,13 @@ body {
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
-  background-color: #007bff;
+  background-color: #5a7a99;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.15);
+  box-shadow: 0 2px 4px rgba(90, 122, 153, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -214,18 +214,18 @@ body {
 }
 
 .btn-submit:hover {
-  background-color: #0056b3;
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.25);
+  background-color: #475f7d;
+  box-shadow: 0 4px 8px rgba(90, 122, 153, 0.25);
   transform: translateY(-1px);
 }
 
 .btn-submit:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.15);
+  box-shadow: 0 2px 4px rgba(90, 122, 153, 0.15);
 }
 
 .btn-submit:focus {
-  outline: 2px solid #007bff;
+  outline: 2px solid #5a7a99;
   outline-offset: 2px;
 }
 
@@ -244,7 +244,7 @@ body {
 .login-footer {
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e0e0e0;
 }
 
 .footer-links {
@@ -257,25 +257,25 @@ body {
 
 .footer-links a {
   font-size: 0.85rem;
-  color: #007bff;
+  color: #5a7a99;
   text-decoration: none;
   transition: all 0.2s ease;
   font-weight: 500;
 }
 
 .footer-links a:hover {
-  color: #0056b3;
+  color: #475f7d;
   text-decoration: underline;
 }
 
 .footer-links a:focus {
-  outline: 2px solid #007bff;
+  outline: 2px solid #5a7a99;
   outline-offset: 2px;
   border-radius: 2px;
 }
 
 .footer-divider {
-  color: #d1d5db;
+  color: #e0e0e0;
 }
 
 /* ========== Footer Info ========== */
@@ -283,7 +283,7 @@ body {
   text-align: center;
   margin-top: 2rem;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: #9e9e9e;
 }
 
 .login-info p {
