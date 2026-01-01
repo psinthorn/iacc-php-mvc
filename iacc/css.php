@@ -47,6 +47,13 @@
     <link href="css/carousels-sliders.css" rel="stylesheet">
     <link href="css/tabs-accordions.css" rel="stylesheet">
 
+    <!-- UX/UI Improvements - Refinements CSS Files -->
+    <link href="css/states-transitions.css" rel="stylesheet">
+    <link href="css/micro-interactions.css" rel="stylesheet">
+    <link href="css/progress-loaders.css" rel="stylesheet">
+    <link href="css/status-indicators.css" rel="stylesheet">
+    <link href="css/form-validation.css" rel="stylesheet">
+
     <script src="js/jquery-1.10.2.js"></script>
     <script src="js/ajaxpagefetcher.js"></script>
     

@@ -1,0 +1,456 @@
+/* ============================================
+   Micro-interactions and Polish Effects
+   ============================================ */
+
+/* ========== Button Ripple Effect ========== */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  opacity: 0;
+}
+
+.btn:active::before {
+  width: 300px;
+  height: 300px;
+  opacity: 0;
+  transition: 0s;
+}
+
+/* ========== Button Glow Effect ========== */
+.btn.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 123, 255, 0.4),
+              0 0 30px rgba(0, 123, 255, 0.2);
+}
+
+.btn.btn-glow:active {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+}
+
+/* ========== Button Pulse Effect ========== */
+.btn.btn-pulse {
+  animation: none;
+}
+
+.btn.btn-pulse:hover {
+  animation: buttonPulse 0.6s ease-out;
+}
+
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+/* ========== Link Underline Animation ========== */
+a.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+a.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--primary-color);
+  transition: width var(--transition-normal);
+}
+
+a.link-underline:hover::after {
+  width: 100%;
+}
+
+/* ========== Link Gradient Underline ========== */
+a.link-gradient-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+a.link-gradient-underline::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+  transition: width var(--transition-normal);
+}
+
+a.link-gradient-underline:hover::after {
+  width: 100%;
+}
+
+/* ========== Input Focus Glow ========== */
+.form-control.form-control-glow:focus {
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1),
+              0 0 20px rgba(0, 123, 255, 0.2),
+              inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  border-color: var(--primary-color);
+}
+
+/* ========== Input Floating Label ========== */
+.form-group.form-group-floating {
+  position: relative;
+  margin-top: var(--spacing-lg);
+}
+
+.form-group.form-group-floating label {
+  position: absolute;
+  top: -var(--spacing-md);
+  left: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background-color: #fff;
+  padding: 0 4px;
+  color: var(--primary-color);
+  font-weight: var(--font-weight-bold);
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.form-group.form-group-floating .form-control:focus ~ label,
+.form-group.form-group-floating .form-control:valid ~ label,
+.form-group.form-group-floating .form-control:not(:placeholder-shown) ~ label {
+  opacity: 1;
+  top: 0;
+}
+
+/* ========== Icon Animation ========== */
+.icon-spin {
+  display: inline-block;
+  animation: iconSpin 1s linear infinite;
+}
+
+@keyframes iconSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.icon-pulse {
+  display: inline-block;
+  animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.icon-bounce {
+  display: inline-block;
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.icon-swing {
+  display: inline-block;
+  transform-origin: top center;
+  animation: iconSwing 1s ease-in-out infinite;
+}
+
+@keyframes iconSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-10deg);
+  }
+}
+
+/* ========== Checkbox Custom Animation ========== */
+.checkbox-custom input[type="checkbox"] {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 3px;
+  background-color: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  vertical-align: middle;
+}
+
+.checkbox-custom input[type="checkbox"]:hover {
+  border-color: var(--primary-color);
+}
+
+.checkbox-custom input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  animation: checkboxCheck var(--transition-fast) ease-out;
+}
+
+@keyframes checkboxCheck {
+  0% {
+    transform: scale(0.5) rotate(45deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.checkbox-custom input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  left: 2px;
+  top: -2px;
+}
+
+/* ========== Radio Custom Animation ========== */
+.radio-custom input[type="radio"] {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  background-color: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  vertical-align: middle;
+}
+
+.radio-custom input[type="radio"]:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.radio-custom input[type="radio"]:checked {
+  border-color: var(--primary-color);
+  animation: radioCheck var(--transition-fast) ease-out;
+}
+
+@keyframes radioCheck {
+  0% {
+    box-shadow: 0 0 0 0 var(--primary-color);
+  }
+  100% {
+    box-shadow: 0 0 0 6px rgba(0, 123, 255, 0.2);
+  }
+}
+
+.radio-custom input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ========== Toggle Switch ========== */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gray-lighter);
+  transition: all var(--transition-fast);
+  border-radius: 24px;
+}
+
+.toggle-switch .slider::before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: all var(--transition-fast);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(16px);
+}
+
+.toggle-switch input:focus + .slider {
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* ========== Hover Text Decoration ========== */
+.text-decoration-hover {
+  text-decoration: none;
+  transition: text-decoration var(--transition-fast);
+  border-bottom: 2px solid transparent;
+}
+
+.text-decoration-hover:hover {
+  text-decoration: underline;
+  border-bottom-color: var(--primary-color);
+}
+
+/* ========== Smooth Scroll ========== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ========== Page Transition ========== */
+.page-transition {
+  animation: pageTransition var(--transition-normal) ease-out;
+}
+
+@keyframes pageTransition {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== Stagger Effect ========== */
+.stagger > * {
+  animation: staggerChild var(--transition-normal) ease-out both;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(n+6) { animation-delay: 250ms; }
+
+@keyframes staggerChild {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== Shake Animation ========== */
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  .btn::before,
+  .btn:active::before,
+  .btn.btn-glow:hover,
+  .btn.btn-pulse:hover,
+  a.link-underline::after,
+  a.link-gradient-underline::after,
+  .form-control.form-control-glow:focus,
+  .icon-spin,
+  .icon-pulse,
+  .icon-bounce,
+  .icon-swing,
+  .checkbox-custom input[type="checkbox"]:checked,
+  .radio-custom input[type="radio"]:checked,
+  .toggle-switch .slider,
+  .toggle-switch .slider::before,
+  .page-transition,
+  .stagger > * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ========== Dark Mode ========== */
+@media (prefers-color-scheme: dark) {
+  .form-group.form-group-floating label {
+    background-color: var(--gray-darker);
+  }
+
+  .checkbox-custom input[type="checkbox"] {
+    background-color: var(--gray-darker);
+    border-color: var(--gray-dark);
+  }
+
+  .radio-custom input[type="radio"] {
+    background-color: var(--gray-darker);
+    border-color: var(--gray-dark);
+  }
+
+  .toggle-switch .slider {
+    background-color: #2d3748;
+  }
+
+  .toggle-switch .slider::before {
+    background-color: var(--gray-lighter);
+  }
+
+  .text-decoration-hover {
+    color: #f0f0f0;
+  }
+}
