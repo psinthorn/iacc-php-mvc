@@ -51,13 +51,13 @@ if(isset($_SESSION['usr_id']) && !empty($_SESSION['usr_id'])){
             <form action="authorize.php" method="post" name="login-form" id="login-form">
                 <!-- Email Input -->
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email or Username</label>
                     <input
                         class="form-control"
                         id="email"
                         placeholder="your@email.com"
                         name="m_user"
-                        type="email"
+                        type="text"
                         autofocus
                         required
                         autocomplete="email"
@@ -136,13 +136,7 @@ if(isset($_SESSION['usr_id']) && !empty($_SESSION['usr_id'])){
             // Validate fields
             if(!m_user || !m_pass){
                 e.preventDefault();
-                showError('Please enter both username and password');
-                return false;
-            }
-            
-            if(!isValidEmail(m_user)){
-                e.preventDefault();
-                showError('Please enter a valid email address');
+                showError('Please enter both username/email and password');
                 return false;
             }
             
@@ -158,17 +152,12 @@ if(isset($_SESSION['usr_id']) && !empty($_SESSION['usr_id'])){
             $('input[name="m_pass"]').focus();
         }
         
-        function isValidEmail(email) {
-            var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-        
         // Handle URL parameters for error messages
         var urlParams = new URLSearchParams(window.location.search);
         if(urlParams.has('error')){
             var error = urlParams.get('error');
             var messages = {
-                'invalid_credentials': 'Invalid username or password',
+                'invalid_credentials': 'Invalid username/email or password',
                 'db_error': 'Database error. Please try again.',
                 'invalid_request': 'Invalid request. Please try again.'
             };

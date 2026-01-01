@@ -24,7 +24,8 @@ if(isset($_SESSION['usr_id']) && !empty($_SESSION['usr_id'])){
 
 // Check if login form was submitted
 if(!isset($_POST['m_user']) || !isset($_POST['m_pass'])){
-    echo "<script>alert('Invalid request');history.back();</script>";
+    error_log("Login attempt: Missing form data");
+    echo "<script>alert('Please submit the login form');history.back();</script>";
     exit;
 }
 
@@ -34,9 +35,12 @@ $m_pass = trim($_POST['m_pass']);
 
 // Validate input
 if(empty($m_user) || empty($m_pass)){
+    error_log("Login attempt: Empty credentials from {$_SERVER['REMOTE_ADDR']}");
     echo "<script>alert('Please enter username and password');history.back();</script>";
     exit;
 }
+
+error_log("Login attempt for user: {$m_user}");
 
 // Query with prepared statement
 $query = "SELECT usr_id, level, lang FROM authorize WHERE usr_name = ? AND usr_pass = ?";
@@ -72,6 +76,8 @@ if($result->num_rows == 1){
     $_SESSION['level'] = $level;
     $_SESSION['lang'] = $lang;
     
+    error_log("Login SUCCESS for user: {$m_user} (ID: {$usr_id})");
+    
     // Load RBAC if Authorization class exists
     if(file_exists("../resources/classes/Authorization.php")){
         require_once("../resources/classes/Authorization.php");
@@ -80,22 +86,26 @@ if($result->num_rows == 1){
             $auth = new Authorization($db, $usr_id);
             $_SESSION['auth'] = serialize($auth);
             $_SESSION['rbac_enabled'] = true;
+            error_log("RBAC loaded for user: {$m_user}");
         } catch(Exception $e){
-            error_log("RBAC Load Error: " . $e->getMessage());
+            error_log("RBAC Load Error for user {$m_user}: " . $e->getMessage());
             $_SESSION['rbac_enabled'] = false;
         }
     } else {
         $_SESSION['rbac_enabled'] = false;
+        error_log("Authorization class not found - RBAC disabled");
     }
     
     $stmt->close();
     
     // Redirect to dashboard
+    header("Location: index.php?page=dashboard");
     echo "<script>window.location='index.php?page=dashboard';</script>";
     exit;
     
 } else {
     // Login failed
+    error_log("Login FAILED for user: {$m_user} - Invalid credentials");
     $stmt->close();
     echo "<script>alert('Invalid username or password');history.back();</script>";
     exit;
