@@ -1,3 +1,13 @@
+<?php
+error_reporting(E_ALL & ~E_NOTICE);
+session_start();
+
+// Redirect if already logged in
+if(isset($_SESSION['usr_id']) && !empty($_SESSION['usr_id'])){
+    header('Location: index.php?page=dashboard');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html>
 
@@ -6,7 +16,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>CMS Login</title>
+    <title>CMS Login - iACC</title>
 
     <!-- Core CSS - Include with every page -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -32,7 +42,13 @@
 
         <!-- Login Form -->
         <div class="login-form-wrapper">
-            <form action="authorize.php" method="post">
+            <!-- Error Message Display -->
+            <div id="error-message" class="alert alert-danger" style="display:none; margin-bottom:20px;">
+                <i class="fa fa-exclamation-circle"></i>
+                <span id="error-text"></span>
+            </div>
+
+            <form action="authorize.php" method="post" name="login-form" id="login-form">
                 <!-- Email Input -->
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -105,6 +121,65 @@
     <!-- SB Admin Scripts - Include with every page -->
     <script src="js/sb-admin.js"></script>
 
+    <!-- Login Form Validation -->
+    <script>
+    $(document).ready(function() {
+        // Form validation on submit
+        $('#login-form').on('submit', function(e) {
+            var m_user = $('input[name="m_user"]').val().trim();
+            var m_pass = $('input[name="m_pass"]').val().trim();
+            
+            // Clear previous error
+            $('#error-message').hide();
+            $('#error-text').text('');
+            
+            // Validate fields
+            if(!m_user || !m_pass){
+                e.preventDefault();
+                showError('Please enter both username and password');
+                return false;
+            }
+            
+            if(!isValidEmail(m_user)){
+                e.preventDefault();
+                showError('Please enter a valid email address');
+                return false;
+            }
+            
+            // Show loading state
+            $('.btn-submit').prop('disabled', true);
+            $('.btn-submit span').text('Signing in...');
+            $('.btn-submit i').addClass('fa-spinner fa-spin').removeClass('fa-sign-in');
+        });
+        
+        function showError(message) {
+            $('#error-text').text(message);
+            $('#error-message').slideDown();
+            $('input[name="m_pass"]').focus();
+        }
+        
+        function isValidEmail(email) {
+            var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Handle URL parameters for error messages
+        var urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('error')){
+            var error = urlParams.get('error');
+            var messages = {
+                'invalid_credentials': 'Invalid username or password',
+                'db_error': 'Database error. Please try again.',
+                'invalid_request': 'Invalid request. Please try again.'
+            };
+            if(messages[error]){
+                showError(messages[error]);
+            }
+        }
+    });
+    </script>
+
 </body>
 
 </html>
+

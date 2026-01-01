@@ -191,6 +191,52 @@ body {
   color: #5a7a99;
 }
 
+/* ========== Alert Messages ========== */
+.alert {
+  padding: 0.875rem 1rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-danger {
+  background-color: #fee;
+  color: #c33;
+  border-color: #fcc;
+}
+
+.alert-danger i {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.alert-success {
+  background-color: #efe;
+  color: #3c3;
+  border-color: #cfc;
+}
+
+.alert-success i {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
 /* ========== Form Actions ========== */
 .form-actions {
   margin-top: 2rem;
