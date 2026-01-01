@@ -40,6 +40,13 @@
     <link href="css/responsive-media.css" rel="stylesheet">
     <link href="css/polish.css" rel="stylesheet">
 
+    <!-- UX/UI Improvements - Advanced Components CSS Files -->
+    <link href="css/modals-improvements.css" rel="stylesheet">
+    <link href="css/popovers-tooltips.css" rel="stylesheet">
+    <link href="css/dropdowns-improvements.css" rel="stylesheet">
+    <link href="css/carousels-sliders.css" rel="stylesheet">
+    <link href="css/tabs-accordions.css" rel="stylesheet">
+
     <script src="js/jquery-1.10.2.js"></script>
     <script src="js/ajaxpagefetcher.js"></script>
     
