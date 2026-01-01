@@ -24,7 +24,10 @@ if(
     
     error_log("Language change requested: from " . $current_lang . " to " . $new_lang);
     
-    // Only update if language changed
+    // Always update session first (in case database fails)
+    $_SESSION['lang'] = $new_lang;
+    
+    // Only update database if language changed
     if($new_lang != $current_lang){
         $user_id = intval($_SESSION['usr_id']);
         $username = $_SESSION['usr_name'] ?? '';
@@ -38,9 +41,7 @@ if(
         if($stmt){
             $stmt->bind_param('iis', $new_lang, $user_id, $username);
             if($stmt->execute()){
-                // Update session variable immediately
-                $_SESSION['lang'] = $new_lang;
-                error_log("✅ Language updated: DATABASE and SESSION updated to " . $new_lang);
+                error_log("✅ Language updated: DATABASE and SESSION both set to " . $new_lang);
             } else {
                 error_log("❌ Database execute failed: " . $stmt->error);
             }
@@ -49,8 +50,6 @@ if(
             error_log("❌ Statement prepare failed: " . $db->conn->error);
         }
     } else {
-        // Even if same language, make sure session is set
-        $_SESSION['lang'] = $new_lang;
         error_log("Language already set to " . $new_lang . ", session confirmed");
     }
 } else {
@@ -60,8 +59,9 @@ if(
 // Clear any output before redirect
 if(ob_get_length()) ob_end_clean();
 
-// Redirect back to index with proper header
-header("Location: index.php");
+// Redirect back to this folder's index.php (iacc/index.php)
+// The relative path will resolve to the same directory
+header("Location: ./index.php");
 exit;
 ?>
 
