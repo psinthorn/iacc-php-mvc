@@ -7,6 +7,7 @@ if(isset($_SESSION['usr_id']) && !empty($_SESSION['usr_id'])){
     header('Location: index.php?page=dashboard');
     exit;
 }
+?>
 <!DOCTYPE html>
 <html>
 

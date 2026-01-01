@@ -109,4 +109,4 @@ if($result->num_rows == 1){
     $stmt->close();
     echo "<script>alert('Invalid username or password');history.back();</script>";
     exit;
-}
+}?>

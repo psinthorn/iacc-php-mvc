@@ -63,6 +63,7 @@ if ($user_id) {
     $audit = null;
     $GLOBALS['audit'] = null;
 }
+?>
 <!DOCTYPE html>
 <html lang="th">
 

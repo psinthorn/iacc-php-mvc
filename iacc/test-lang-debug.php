@@ -91,3 +91,4 @@ echo "🇹🇭 ไทย</button>";
 echo "</form>";
 
 echo "<p><a href='index.php'>Back to dashboard</a></p>";
+?>
