@@ -140,8 +140,7 @@ if ($user_id) {
 				if($page=="qa_list")				
 				include_once "qa-list.php";
 				if($page=="mo_list")				
-				include_once "mo-list.php";
-                <!-- /.col-lg-12 -->
+				include_once "mo-list.php";			?>                <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
           
