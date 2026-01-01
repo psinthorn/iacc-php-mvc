@@ -26,8 +26,8 @@
         <!-- Branding Section -->
         <div class="login-header">
             <i class="fa fa-dashboard brand-icon"></i>
-            <h1 class="brand-name">iACC CMS</h1>
-            <p class="brand-tagline">Account Management System</p>
+            <h1 class="brand-name">iACC</h1>
+            <p class="brand-tagline">Intelligence Accounting Content Management System</p>
         </div>
 
         <!-- Login Form -->
@@ -92,7 +92,7 @@
 
         <!-- Info -->
         <div class="login-info">
-            <p>© 2026 iACC CMS</p>
+            <p>© 2026 iACC</p>
             <p>Secure connection</p>
         </div>
     </div>
