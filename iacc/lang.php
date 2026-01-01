@@ -26,6 +26,7 @@ if(
     
     // Always update session first (in case database fails)
     $_SESSION['lang'] = $new_lang;
+    error_log("Session updated: \$_SESSION['lang'] = " . $_SESSION['lang']);
     
     // Only update database if language changed
     if($new_lang != $current_lang){
@@ -41,7 +42,7 @@ if(
         if($stmt){
             $stmt->bind_param('iis', $new_lang, $user_id, $username);
             if($stmt->execute()){
-                error_log("✅ Language updated: DATABASE and SESSION both set to " . $new_lang);
+                error_log("✅ Database updated successfully. Affected rows: " . $stmt->affected_rows);
             } else {
                 error_log("❌ Database execute failed: " . $stmt->error);
             }
@@ -53,15 +54,15 @@ if(
         error_log("Language already set to " . $new_lang . ", session confirmed");
     }
 } else {
-    error_log("❌ Not logged in or chlang not in POST");
+    error_log("❌ Not logged in or chlang not in POST. Session usr_id: " . ($_SESSION['usr_id'] ?? 'NOT SET') . ", POST: " . json_encode($_POST));
 }
 
 // Clear any output before redirect
 if(ob_get_length()) ob_end_clean();
 
 // Redirect back to this folder's index.php (iacc/index.php)
-// The relative path will resolve to the same directory
-header("Location: ./index.php");
+// Add cache-buster parameter to force fresh page load
+header("Location: ./index.php?cache=" . time());
 exit;
 ?>
 
