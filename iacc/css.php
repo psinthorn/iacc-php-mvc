@@ -24,8 +24,15 @@
     <link href="css/sidebar-improvements.css" rel="stylesheet">
     <link href="css/card-component.css" rel="stylesheet">
 
+    <!-- UX/UI Improvements - Interactivity CSS Files -->
+    <link href="css/toast.css" rel="stylesheet">
+
     <script src="js/jquery-1.10.2.js"></script>
-	<script src="js/ajaxpagefetcher.js"></script>
+    <script src="js/ajaxpagefetcher.js"></script>
+    
+    <!-- UX/UI Improvements - JavaScript Enhancements -->
+    <script src="js/toast-notifications.js"></script>
+    <script src="js/form-loader.js"></script>
     
     
     <style type="text/css">
