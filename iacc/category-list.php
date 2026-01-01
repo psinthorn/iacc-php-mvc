@@ -4,6 +4,7 @@
 	// $db = new DbConn($config);
 	// ตัวแปรสำหรับติดต่อดาต้าเบส
 	// $db->conn
+?>
 <h2><i class="fa fa-cog"></i> <?=$xml->category?></h2><?php
 $db->checkSecurity();?>
 <?php

@@ -4,6 +4,7 @@
 // require_once("inc/class.dbconn.php");
 // $db=new DbConn($config);
 // $db->checkSecurity();
+?>
 <h2><i class="fa fa-ticket"></i> <?=$xml->model?></h2>
 <script type="text/javascript">
 
