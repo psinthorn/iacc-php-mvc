@@ -33,6 +33,13 @@
     <link href="css/form-labels-hints.css" rel="stylesheet">
     <link href="css/content-utilities.css" rel="stylesheet">
 
+    <!-- UX/UI Improvements - Accessibility and Polish CSS Files -->
+    <link href="css/accessibility.css" rel="stylesheet">
+    <link href="css/animations.css" rel="stylesheet">
+    <link href="css/print-styles.css" rel="stylesheet">
+    <link href="css/responsive-media.css" rel="stylesheet">
+    <link href="css/polish.css" rel="stylesheet">
+
     <script src="js/jquery-1.10.2.js"></script>
     <script src="js/ajaxpagefetcher.js"></script>
     
