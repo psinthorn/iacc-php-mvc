@@ -191,6 +191,9 @@
                         <!-- /input-group -->
                     </li>
                   
+                  <li>
+                        <a href="index.php?page=dashboard"><i class="fa fa-dashboard"></i> <?= isset($xml->dashboard) ? $xml->dashboard : 'Dashboard' ?></a>
+                  </li>
                   
                  <li>
                         <a href="#"><i class="fa fa-cogs"></i> 
