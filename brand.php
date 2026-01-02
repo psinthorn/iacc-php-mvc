@@ -4,7 +4,9 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $db=new DbConn($config);
-$db->checkSecurity();?>
+$db->checkSecurity();
+$brand_id = sql_int($_REQUEST['id'] ?? 0);
+?>
 <!DOCTYPE html>
 <html>
 
@@ -13,7 +15,7 @@ $db->checkSecurity();?>
 
 <body>
 <?php
-$query=mysqli_query($db->conn, "select * from brand where id='" . mysqli_real_escape_string($db->conn, $_REQUEST['id'] ?? '') . "'");
+$query=mysqli_query($db->conn, "select * from brand where id='".$brand_id."'");
 if(mysqli_num_rows($query)==1){
 $method="E";
 $data=mysqli_fetch_array($query);
@@ -21,11 +23,11 @@ $data=mysqli_fetch_array($query);
 <form action="core-function.php" method="post" enctype="multipart/form-data" id="myform">
 	<div id="box">
 		<lable for="brand_name"><?=$xml->name?></lable>
-		<input id="brand_name" name="brand_name" class="form-control" required type="text" value="<?php echo $data[brand_name];?>">
+		<input id="brand_name" name="brand_name" class="form-control" required type="text" value="<?php echo e($data['brand_name'] ?? '');?>">
 	</div>
     <div id="box">
 		<lable for="des"><?=$xml->description?></lable>
-		<input id="des" name="des" class="form-control" required type="text" value="<?php echo $data[des];?>">
+		<input id="des" name="des" class="form-control" required type="text" value="<?php echo e($data['des'] ?? '');?>">
 	</div>
     <div id="box">
     <lable for="des"><?=$xml->owner?></lable>
@@ -40,17 +42,17 @@ $data=mysqli_fetch_array($query);
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($fetch_customer['id']==$data['ven_id'])
-					echo "<option selected value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>"; else 	echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";
+					echo "<option selected value='".intval($fetch_customer['id'])."' >".e($fetch_customer['name_en'])."</option>"; else 	echo "<option value='".intval($fetch_customer['id'])."' >".e($fetch_customer['name_en'])."</option>";
 				}?>
 		</select>
     
     </div>
     <div id="box"><lable for="des"><?=$xml->logo?></lable>
-	<?php if(isset($data['logo']) && $data['logo']!=""){?><img width="200" src="upload/<?php echo $data['logo'];?>"><?php } ?>
+	<?php if(isset($data['logo']) && $data['logo']!=""){?><img width="200" src="upload/<?php echo e($data['logo']);?>"><?php } ?>
         <input id="logo" name="logo" class="form-control" type="file" value=""></div>
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="brand">
-	<input type="hidden" name="id" value="<?php echo isset($_REQUEST['id']) ? $_REQUEST['id'] : '';?>"><div class="clearfix"
+	<input type="hidden" name="id" value="<?php echo $brand_id;?>"><div class="clearfix"
 ></div>	<div id="box" style="padding-top:25px;"><input type="submit" value="<?php if($method=="E")echo $xml->save;else echo $xml->add;?>" class="btn btn-primary"></div>
 </form>
 

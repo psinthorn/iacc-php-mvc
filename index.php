@@ -29,7 +29,7 @@ $routes = [
     'company'       => 'company-list.php',
     'category'      => 'category-list.php',
     'type'          => 'type-list.php',
-    'brand'         => 'band-list.php',
+    'brand'         => 'brand-list.php',
     
     // Purchase Requisition
     'pr_list'       => 'pr-list.php',
