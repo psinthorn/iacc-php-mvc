@@ -173,6 +173,3 @@ usort($report_data, function($a, $b) use ($sort_by, $sort_dir) {
     <i class="fa fa-info-circle"></i> No transactions found for the selected period.
 </div>
 <?php endif; ?>
-    <i class="fa fa-info-circle"></i> No transactions found for the selected period.
-</div>
-<?php endif; ?>
