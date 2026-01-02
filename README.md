@@ -1,6 +1,6 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.2  
+**Version**: 2.3  
 **Status**: Production Ready  
 **Last Updated**: January 2, 2026  
 **Project Size**: 172 MB
@@ -8,6 +8,29 @@
 ---
 
 ## 📋 Changelog
+
+### v2.3 (January 2, 2026)
+- **Dashboard Overhaul**:
+  - Role-based dashboard views (Admin Panel + User Dashboard)
+  - Admin/Super Admin: Always see Admin Panel with system stats
+  - Admin with company selected: See Admin Panel + Company-specific data
+  - Normal User: See only their company's data
+  - Company selection grid for quick switching
+  - Fixed all dashboard queries to filter by company correctly
+  - Direction indicators on invoices (↓ received, ↑ sent)
+- **User Management**:
+  - New `user-list.php` for Super Admin to manage users
+  - Company assignment for normal users (`authorize.company_id`)
+  - Role management (User/Admin/Super Admin)
+  - Password reset and account unlock features
+- **Company Filtering**:
+  - All dashboard data filtered by selected company
+  - Invoice queries fixed (`iv.id = pr.id` join)
+  - Business partner filtering on company list
+- **Routing Improvements**:
+  - Company switching handled in `index.php` with proper redirects
+  - Dashboard menu item added to sidebar
+  - Role-based menu visibility
 
 ### v2.2 (January 2, 2026)
 - **Renamed**: `band` table → `brand` (with files `brand.php`, `brand-list.php`)
@@ -67,7 +90,70 @@ docker compose down
 
 ---
 
-## 🔒 Security Features (v2.1)
+## � Dashboard (v2.3)
+
+### Role-Based Views
+
+| User Type | Company Selected | Dashboard View |
+|-----------|-----------------|----------------|
+| Admin/Super Admin | ❌ No | Admin Panel only + Company selection |
+| Admin/Super Admin | ✅ Yes | Admin Panel + User Dashboard |
+| Normal User | ✅ Always | User Dashboard only |
+
+### Admin Panel Features
+- **System Stats**: Total users, companies, locked accounts, failed logins
+- **User Breakdown**: Count by role (User/Admin/Super Admin)
+- **Quick Actions**: Manage Users, Companies, Reports
+- **Company Selection Grid**: 8 most active companies for quick access
+
+### User Dashboard Features
+- **KPIs**: Sales today, month sales, pending orders, total orders
+- **Invoice Stats**: Invoices and Tax Invoices this month
+- **Tables**:
+  - Recent Payments (with payment method)
+  - Active Purchase Orders
+  - Recent Invoices (with counterparty & direction)
+  - Tax Invoices Issued
+
+### Company Switching (Admin Only)
+```
+?page=remote&select_company=ID  → Select a company
+?page=remote&clear=1            → Clear selection (back to Admin Panel)
+?page=remote&id=ID              → Toggle company (legacy)
+```
+
+---
+
+## 👤 User Management (v2.3)
+
+### User Roles
+| Level | Role | Permissions |
+|-------|------|-------------|
+| 0 | User | View own company data only |
+| 1 | Admin | View all data, switch companies |
+| 2 | Super Admin | All admin + manage users |
+
+### Session Variables
+```php
+$_SESSION['user_id']     // User ID
+$_SESSION['user_email']  // Email address
+$_SESSION['user_level']  // 0=User, 1=Admin, 2=Super Admin
+$_SESSION['com_id']      // Selected company ID (0 = global)
+$_SESSION['com_name']    // Selected company name
+```
+
+### Role Helper Methods (class.dbconn.php)
+```php
+$db->getUserLevel();        // Get current user level
+$db->hasLevel(1);           // Check if user has at least level 1
+$db->requireLevel(2);       // Require Super Admin, redirect if not
+$db->isAdmin();             // Check if Admin or Super Admin
+$db->isSuperAdmin();        // Check if Super Admin
+```
+
+---
+
+## �🔒 Security Features (v2.1)
 
 ### SQL Injection Prevention
 All 49+ database files secured with input sanitization:

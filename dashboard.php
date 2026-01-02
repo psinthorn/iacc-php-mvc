@@ -158,16 +158,9 @@ $row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
 $total_tax_invoices = $row_tax_inv['count'] ?? 0;
 
 // Recent invoices (filtered by company via pr relationship)
-// Get all parties: vendor (issuer), pr customer, and invoice recipient
-$sql_recent_inv = "SELECT iv.*, 
-                   pr.ven_id, ven.name_en as vendor_name, 
-                   pr.cus_id as pr_cus_id, prcus.name_en as pr_customer_name,
-                   ivcus.name_en as iv_customer_name
+$sql_recent_inv = "SELECT iv.id, iv.tex, iv.createdate, iv.total, iv.status_iv
                    FROM iv 
                    JOIN pr ON iv.id = pr.id
-                   LEFT JOIN company ven ON pr.ven_id = ven.id
-                   LEFT JOIN company prcus ON pr.cus_id = prcus.id
-                   LEFT JOIN company ivcus ON iv.cus_id = ivcus.id
                    WHERE 1=1 $company_filter_iv
                    ORDER BY iv.createdate DESC LIMIT 5";
 $recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
@@ -783,42 +776,26 @@ function get_status_badge($status) {
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-file-invoice"></i> Recent Invoices
+                    <a href="index.php?page=inv" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
-                                <th>Counterparty</th>
                                 <th>Date</th>
+                                <th>Amount</th>
                                 <th>Status</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if($recent_invoices && mysqli_num_rows($recent_invoices) > 0): ?>
                                 <?php while($invoice = mysqli_fetch_assoc($recent_invoices)): ?>
-                                <?php 
-                                // Determine counterparty - show the OTHER company in this transaction
-                                // If current company is the invoice recipient, show vendor
-                                // If current company is the vendor, show invoice recipient
-                                if ($invoice['cus_id'] == $com_id) {
-                                    // We received this invoice, show who sent it (vendor)
-                                    $counterparty = $invoice['vendor_name'] ?? 'N/A';
-                                    $direction = '<span style="color:#28a745;" title="Received from"><i class="fa fa-arrow-down"></i></span>';
-                                } elseif ($invoice['ven_id'] == $com_id) {
-                                    // We issued this invoice, show who received it
-                                    $counterparty = $invoice['iv_customer_name'] ?? 'N/A';
-                                    $direction = '<span style="color:#007bff;" title="Sent to"><i class="fa fa-arrow-up"></i></span>';
-                                } else {
-                                    // Related via pr.cus_id
-                                    $counterparty = $invoice['vendor_name'] ?? 'N/A';
-                                    $direction = '<span style="color:#6c757d;"><i class="fa fa-exchange-alt"></i></span>';
-                                }
-                                ?>
                                 <tr>
                                     <td><strong>#<?php echo $invoice['tex'] ?? 'N/A'; ?></strong></td>
-                                    <td><?php echo $direction; ?> <?php echo htmlspecialchars(substr($counterparty, 0, 20)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($invoice['createdate'])); ?></td>
+                                    <td><?php echo number_format($invoice['total'] ?? 0, 2); ?></td>
                                     <td>
                                         <?php 
                                         $status_text = ($invoice['status_iv'] == 1) ? 'Approved' : 'Pending';
@@ -828,11 +805,16 @@ function get_status_badge($status) {
                                             <?php echo $status_text; ?>
                                         </span>
                                     </td>
+                                    <td>
+                                        <a href="index.php?page=inv_m&id=<?php echo $invoice['id']; ?>" class="action-btn" title="View Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4">
+                                    <td colspan="5">
                                         <div class="empty-state">
                                             <i class="fa fa-file"></i>
                                             <p>No invoices found</p>
@@ -848,51 +830,37 @@ function get_status_badge($status) {
             <!-- Recent Tax Invoices -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-file-invoice-dollar"></i> Tax Invoices Issued
+                    <i class="fa fa-file-invoice-dollar"></i> Recent Tax Invoices
+                    <a href="index.php?page=taxiv" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
                                 <th>Tax Inv #</th>
-                                <th>Counterparty</th>
                                 <th>Created</th>
-                                <th>Email Sent</th>
+                                <th>Amount</th>
+                                <th>Email</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
                             // Tax invoices with actual data (filtered by company via pr relationship - iv.id links to pr.id)
                             $sql_tax_inv_detail = "SELECT iv.*, 
-                                                  pr.ven_id, ven.name_en as vendor_name,
-                                                  ivcus.name_en as iv_customer_name
+                                                  pr.ven_id
                                                   FROM iv 
                                                   JOIN pr ON iv.id = pr.id
-                                                  LEFT JOIN company ven ON pr.ven_id = ven.id
-                                                  LEFT JOIN company ivcus ON iv.cus_id = ivcus.id
                                                   WHERE iv.texiv > 0 $company_filter_iv
                                                   ORDER BY iv.texiv_create DESC LIMIT 5";
                             $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
                             ?>
                             <?php if($tax_inv_results && mysqli_num_rows($tax_inv_results) > 0): ?>
                                 <?php while($tax_inv = mysqli_fetch_assoc($tax_inv_results)): ?>
-                                <?php 
-                                // Determine counterparty
-                                if ($tax_inv['cus_id'] == $com_id) {
-                                    $counterparty = $tax_inv['vendor_name'] ?? 'N/A';
-                                    $direction = '<span style="color:#28a745;" title="Received from"><i class="fa fa-arrow-down"></i></span>';
-                                } elseif ($tax_inv['ven_id'] == $com_id) {
-                                    $counterparty = $tax_inv['iv_customer_name'] ?? 'N/A';
-                                    $direction = '<span style="color:#007bff;" title="Sent to"><i class="fa fa-arrow-up"></i></span>';
-                                } else {
-                                    $counterparty = $tax_inv['vendor_name'] ?? 'N/A';
-                                    $direction = '<span style="color:#6c757d;"><i class="fa fa-exchange-alt"></i></span>';
-                                }
-                                ?>
                                 <tr>
                                     <td><strong>#<?php echo $tax_inv['texiv'] ?? 'N/A'; ?></strong></td>
-                                    <td><?php echo $direction; ?> <?php echo htmlspecialchars(substr($counterparty, 0, 20)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
+                                    <td><?php echo number_format($tax_inv['total'] ?? 0, 2); ?></td>
                                     <td>
                                         <?php if($tax_inv['countmailtax'] > 0): ?>
                                             <span class="badge" style="background: #28a745; color: white;">
@@ -902,14 +870,19 @@ function get_status_badge($status) {
                                             <span style="color: #999;">-</span>
                                         <?php endif; ?>
                                     </td>
+                                    <td>
+                                        <a href="index.php?page=taxiv_m&id=<?php echo $tax_inv['id']; ?>" class="action-btn" title="View Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4">
+                                    <td colspan="5">
                                         <div class="empty-state">
                                             <i class="fa fa-receipt"></i>
-                                            <p>No tax invoices issued yet</p>
+                                            <p>No tax invoices found</p>
                                         </div>
                                     </td>
                                 </tr>
