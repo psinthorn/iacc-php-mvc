@@ -5,73 +5,100 @@
 $cur_date = date('Y-m-d');
 $month_start = date('Y-m-01');
 
+// Get current company filter
+$com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
+$com_name = isset($_SESSION['com_name']) ? $_SESSION['com_name'] : '';
+
+// Build company filter condition for queries
+// If com_id is set, filter by vendor or customer company
+// If com_id is empty (admin viewing all), show all data
+$company_filter_pr = "";
+$company_filter_iv = "";
+if ($com_id > 0) {
+    $company_filter_pr = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id)";
+    $company_filter_iv = " AND (iv.ven_id = $com_id OR iv.cus_id = $com_id)";
+}
+
 // ============ FETCH KPI DATA FROM DATABASE ============
 
-// Sales Today - from pay table (payment volume)
+// Sales Today - from pay table (payment volume) - filtered by company via PO->PR
 $sql_today = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay 
-              WHERE DATE(pay.date) = '$cur_date'";
+              JOIN po ON pay.po_id = po.id
+              JOIN pr ON po.ref = pr.id
+              WHERE DATE(pay.date) = '$cur_date' $company_filter_pr";
 $result_today = mysqli_query($db->conn, $sql_today);
 $row_today = mysqli_fetch_assoc($result_today);
 $sales_today = $row_today['total'] ?? 0;
 
 // Sales This Month - from pay table
 $sql_month = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay 
-              WHERE DATE(pay.date) >= '$month_start' AND DATE(pay.date) <= '$cur_date'";
+              JOIN po ON pay.po_id = po.id
+              JOIN pr ON po.ref = pr.id
+              WHERE DATE(pay.date) >= '$month_start' AND DATE(pay.date) <= '$cur_date' $company_filter_pr";
 $result_month = mysqli_query($db->conn, $sql_month);
 $row_month = mysqli_fetch_assoc($result_month);
 $sales_month = $row_month['total'] ?? 0;
 
-// Pending Purchase Orders - from po table (assuming status checking)
-$sql_pending = "SELECT COUNT(po.id) as count FROM po WHERE po.over = 0";
+// Pending Purchase Orders - from po table (filtered by company)
+$sql_pending = "SELECT COUNT(po.id) as count FROM po 
+                JOIN pr ON po.ref = pr.id
+                WHERE po.over = 0 $company_filter_pr";
 $result_pending = mysqli_query($db->conn, $sql_pending);
 $row_pending = mysqli_fetch_assoc($result_pending);
 $pending_orders = $row_pending['count'] ?? 0;
 
-// Total PO count
-$sql_total_po = "SELECT COUNT(po.id) as count FROM po";
+// Total PO count (filtered by company)
+$sql_total_po = "SELECT COUNT(po.id) as count FROM po
+                 JOIN pr ON po.ref = pr.id
+                 WHERE 1=1 $company_filter_pr";
 $result_total = mysqli_query($db->conn, $sql_total_po);
 $row_total = mysqli_fetch_assoc($result_total);
 $total_orders = $row_total['count'] ?? 0;
 
-// Recent payments - from pay table
+// Recent payments - from pay table (filtered by company)
 $sql_recent_pay = "SELECT pay.*, po.name, po.tax 
                    FROM pay 
                    LEFT JOIN po ON pay.po_id = po.id 
+                   LEFT JOIN pr ON po.ref = pr.id
+                   WHERE 1=1 $company_filter_pr
                    ORDER BY pay.date DESC LIMIT 5";
 $recent_payments = mysqli_query($db->conn, $sql_recent_pay);
 
-// Pending POs - from po table where over = 0
+// Pending POs - from po table where over = 0 (filtered by company)
 $sql_pending_po = "SELECT po.*, 
                    (SELECT SUM(volumn) FROM pay WHERE po_id = po.id) as paid_amount
                    FROM po 
-                   WHERE po.over = 0 
+                   JOIN pr ON po.ref = pr.id
+                   WHERE po.over = 0 $company_filter_pr
                    ORDER BY po.date DESC LIMIT 5";
 $pending_pos = mysqli_query($db->conn, $sql_pending_po);
 
-// Completed orders this month
+// Completed orders this month (filtered by company)
 $sql_completed = "SELECT COUNT(po.id) as count FROM po 
-                  WHERE po.over = 1 AND DATE(po.date) >= '$month_start'";
+                  JOIN pr ON po.ref = pr.id
+                  WHERE po.over = 1 AND DATE(po.date) >= '$month_start' $company_filter_pr";
 $result_completed = mysqli_query($db->conn, $sql_completed);
 $row_completed = mysqli_fetch_assoc($result_completed);
 $completed_orders = $row_completed['count'] ?? 0;
 
-// Invoice statistics
+// Invoice statistics (filtered by company)
 $sql_invoices = "SELECT COUNT(DISTINCT iv.tex) as count FROM iv 
-                 WHERE DATE(iv.createdate) >= '$month_start'";
+                 WHERE DATE(iv.createdate) >= '$month_start' $company_filter_iv";
 $result_invoices = mysqli_query($db->conn, $sql_invoices);
 $row_invoices = mysqli_fetch_assoc($result_invoices);
 $total_invoices = $row_invoices['count'] ?? 0;
 
-// Tax Invoice statistics
+// Tax Invoice statistics (filtered by company)
 $sql_tax_invoices = "SELECT COUNT(DISTINCT iv.texiv) as count FROM iv 
-                     WHERE iv.texiv > 0 AND DATE(iv.texiv_create) >= '$month_start'";
+                     WHERE iv.texiv > 0 AND DATE(iv.texiv_create) >= '$month_start' $company_filter_iv";
 $result_tax_inv = mysqli_query($db->conn, $sql_tax_invoices);
 $row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
 $total_tax_invoices = $row_tax_inv['count'] ?? 0;
 
-// Recent invoices
+// Recent invoices (filtered by company)
 $sql_recent_inv = "SELECT iv.*, company.name_en FROM iv 
                    LEFT JOIN company ON iv.cus_id = company.id
+                   WHERE 1=1 $company_filter_iv
                    ORDER BY iv.createdate DESC LIMIT 5";
 $recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
 
@@ -355,10 +382,21 @@ function get_status_badge($status) {
     <div class="dashboard-header">
         <div>
             <h2 class="dashboard-title"><i class="fa fa-tachometer-alt"></i> Dashboard</h2>
-            <div class="dashboard-subtitle">Welcome back! Here's your business overview</div>
+            <div class="dashboard-subtitle">
+                <?php if ($com_id > 0): ?>
+                    <i class="fa fa-building"></i> <?php echo htmlspecialchars($com_name); ?>
+                <?php else: ?>
+                    Welcome back! Here's your business overview (All Companies)
+                <?php endif; ?>
+            </div>
         </div>
         <div style="text-align: right;">
             <small><?php echo date('l, F j, Y'); ?></small>
+            <?php if ($com_id > 0): ?>
+                <br><span class="badge" style="background: rgba(255,255,255,0.2);">Company Data</span>
+            <?php else: ?>
+                <br><span class="badge" style="background: rgba(255,255,255,0.2);">All Data</span>
+            <?php endif; ?>
         </div>
     </div>
 
