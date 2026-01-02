@@ -158,12 +158,16 @@ $row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
 $total_tax_invoices = $row_tax_inv['count'] ?? 0;
 
 // Recent invoices (filtered by company via pr relationship)
-// Show vendor name (who issued the invoice) - pr.ven_id is the vendor
-$sql_recent_inv = "SELECT iv.*, ven.name_en as vendor_name, cus.name_en as customer_name
+// Get all parties: vendor (issuer), pr customer, and invoice recipient
+$sql_recent_inv = "SELECT iv.*, 
+                   pr.ven_id, ven.name_en as vendor_name, 
+                   pr.cus_id as pr_cus_id, prcus.name_en as pr_customer_name,
+                   ivcus.name_en as iv_customer_name
                    FROM iv 
                    JOIN pr ON iv.id = pr.id
                    LEFT JOIN company ven ON pr.ven_id = ven.id
-                   LEFT JOIN company cus ON pr.cus_id = cus.id
+                   LEFT JOIN company prcus ON pr.cus_id = prcus.id
+                   LEFT JOIN company ivcus ON iv.cus_id = ivcus.id
                    WHERE 1=1 $company_filter_iv
                    ORDER BY iv.createdate DESC LIMIT 5";
 $recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
@@ -785,7 +789,7 @@ function get_status_badge($status) {
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
-                                <th>From (Vendor)</th>
+                                <th>Counterparty</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
@@ -793,9 +797,27 @@ function get_status_badge($status) {
                         <tbody>
                             <?php if($recent_invoices && mysqli_num_rows($recent_invoices) > 0): ?>
                                 <?php while($invoice = mysqli_fetch_assoc($recent_invoices)): ?>
+                                <?php 
+                                // Determine counterparty - show the OTHER company in this transaction
+                                // If current company is the invoice recipient, show vendor
+                                // If current company is the vendor, show invoice recipient
+                                if ($invoice['cus_id'] == $com_id) {
+                                    // We received this invoice, show who sent it (vendor)
+                                    $counterparty = $invoice['vendor_name'] ?? 'N/A';
+                                    $direction = '<span style="color:#28a745;" title="Received from"><i class="fa fa-arrow-down"></i></span>';
+                                } elseif ($invoice['ven_id'] == $com_id) {
+                                    // We issued this invoice, show who received it
+                                    $counterparty = $invoice['iv_customer_name'] ?? 'N/A';
+                                    $direction = '<span style="color:#007bff;" title="Sent to"><i class="fa fa-arrow-up"></i></span>';
+                                } else {
+                                    // Related via pr.cus_id
+                                    $counterparty = $invoice['vendor_name'] ?? 'N/A';
+                                    $direction = '<span style="color:#6c757d;"><i class="fa fa-exchange-alt"></i></span>';
+                                }
+                                ?>
                                 <tr>
                                     <td><strong>#<?php echo $invoice['tex'] ?? 'N/A'; ?></strong></td>
-                                    <td><?php echo htmlspecialchars(substr($invoice['vendor_name'] ?? 'N/A', 0, 22)); ?></td>
+                                    <td><?php echo $direction; ?> <?php echo htmlspecialchars(substr($counterparty, 0, 20)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($invoice['createdate'])); ?></td>
                                     <td>
                                         <?php 
@@ -833,7 +855,7 @@ function get_status_badge($status) {
                         <thead>
                             <tr>
                                 <th>Tax Inv #</th>
-                                <th>From (Vendor)</th>
+                                <th>Counterparty</th>
                                 <th>Created</th>
                                 <th>Email Sent</th>
                             </tr>
@@ -841,19 +863,35 @@ function get_status_badge($status) {
                         <tbody>
                             <?php 
                             // Tax invoices with actual data (filtered by company via pr relationship - iv.id links to pr.id)
-                            $sql_tax_inv_detail = "SELECT iv.*, ven.name_en as vendor_name
+                            $sql_tax_inv_detail = "SELECT iv.*, 
+                                                  pr.ven_id, ven.name_en as vendor_name,
+                                                  ivcus.name_en as iv_customer_name
                                                   FROM iv 
                                                   JOIN pr ON iv.id = pr.id
                                                   LEFT JOIN company ven ON pr.ven_id = ven.id
+                                                  LEFT JOIN company ivcus ON iv.cus_id = ivcus.id
                                                   WHERE iv.texiv > 0 $company_filter_iv
                                                   ORDER BY iv.texiv_create DESC LIMIT 5";
                             $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
                             ?>
                             <?php if($tax_inv_results && mysqli_num_rows($tax_inv_results) > 0): ?>
                                 <?php while($tax_inv = mysqli_fetch_assoc($tax_inv_results)): ?>
+                                <?php 
+                                // Determine counterparty
+                                if ($tax_inv['cus_id'] == $com_id) {
+                                    $counterparty = $tax_inv['vendor_name'] ?? 'N/A';
+                                    $direction = '<span style="color:#28a745;" title="Received from"><i class="fa fa-arrow-down"></i></span>';
+                                } elseif ($tax_inv['ven_id'] == $com_id) {
+                                    $counterparty = $tax_inv['iv_customer_name'] ?? 'N/A';
+                                    $direction = '<span style="color:#007bff;" title="Sent to"><i class="fa fa-arrow-up"></i></span>';
+                                } else {
+                                    $counterparty = $tax_inv['vendor_name'] ?? 'N/A';
+                                    $direction = '<span style="color:#6c757d;"><i class="fa fa-exchange-alt"></i></span>';
+                                }
+                                ?>
                                 <tr>
                                     <td><strong>#<?php echo $tax_inv['texiv'] ?? 'N/A'; ?></strong></td>
-                                    <td><?php echo htmlspecialchars(substr($tax_inv['vendor_name'] ?? 'N/A', 0, 22)); ?></td>
+                                    <td><?php echo $direction; ?> <?php echo htmlspecialchars(substr($counterparty, 0, 20)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
                                     <td>
                                         <?php if($tax_inv['countmailtax'] > 0): ?>
