@@ -3,6 +3,7 @@
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/class.hard.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();
 
@@ -15,7 +16,7 @@ case "company" : {
 		$args['table']="company";
 		$args2['table']="company_addr";
 		//$args3['table']="company_credit";
-	$args['value']="'".$_REQUEST['name_en']."','".$_REQUEST['name_th']."','".$_REQUEST['name_sh']."','".$_REQUEST['contact']."','".$_REQUEST['email']."','".$_REQUEST['phone']."','".$_REQUEST['fax']."','".$_REQUEST['tax']."','".$_REQUEST['customer']."','".$_REQUEST['vender']."','','".$_REQUEST['term']."'";
+	$args['value']="'".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".sql_escape($_REQUEST['customer'])."','".sql_escape($_REQUEST['vender'])."','','".sql_escape($_REQUEST['term'])."'";
 
 	$tmpid=$har->insertDbMax($args);	
 	
@@ -24,7 +25,7 @@ case "company" : {
 	if($_REQUEST['district_bil']=="")$_REQUEST['district_bil']=$_REQUEST['district_tax'];
 	if($_REQUEST['province_bil']=="")$_REQUEST['province_bil']=$_REQUEST['province_tax'];
 	if($_REQUEST['zip_bil']=="")$_REQUEST['zip_bil']=$_REQUEST['zip_tax'];
-	$args2['value']="'','".$tmpid."','".$_REQUEST['adr_tax']."','".$_REQUEST['city_tax']."','".$_REQUEST['district_tax']."','".$_REQUEST['province_tax']."','".$_REQUEST['zip_tax']."','".$_REQUEST['adr_bil']."','".$_REQUEST['city_bil']."','".$_REQUEST['district_bil']."','".$_REQUEST['province_bil']."','".$_REQUEST['zip_bil']."','".date('Y-m-d')."','0000-00-00'";
+	$args2['value']="'','".$tmpid."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'])."','".sql_escape($_REQUEST['district_tax'])."','".sql_escape($_REQUEST['province_tax'])."','".sql_escape($_REQUEST['zip_tax'])."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','0000-00-00'";
 	$har->insertDB($args2);	
 		}
 	else if($_REQUEST['method']=="E"){
@@ -40,31 +41,31 @@ case "company" : {
 	}else{$tmpupdate="";}
 		
 	$args['table']="company";
-	$args['value']="name_en='".$_REQUEST['name_en']."',name_th='".$_REQUEST['name_th']."',name_sh='".$_REQUEST['name_sh']."',contact='".$_REQUEST['contact']."',email='".$_REQUEST['email']."',phone='".$_REQUEST['phone']."',fax='".$_REQUEST['fax']."',tax='".$_REQUEST['tax']."',customer='".$_REQUEST['customer']."',vender='".$_REQUEST['vender']."'".$tmpupdate.",term='".$_REQUEST['term']."'";
+	$args['value']="name_en='".sql_escape($_REQUEST['name_en'])."',name_th='".sql_escape($_REQUEST['name_th'])."',name_sh='".sql_escape($_REQUEST['name_sh'])."',contact='".sql_escape($_REQUEST['contact'])."',email='".sql_escape($_REQUEST['email'])."',phone='".sql_escape($_REQUEST['phone'])."',fax='".sql_escape($_REQUEST['fax'])."',tax='".sql_escape($_REQUEST['tax'])."',customer='".sql_escape($_REQUEST['customer'])."',vender='".sql_escape($_REQUEST['vender'])."'".$tmpupdate.",term='".sql_escape($_REQUEST['term'])."'";
 	
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);	
 		}
 		else if($_REQUEST['method']=="A2"){
 	$args['table']="company_addr";
 	$args['value']="valid_end='".date('Y-m-d')."'";
-	$args['condition']="com_id='".$_REQUEST['id']."' and valid_end='0000-00-00'";
+	$args['condition']="com_id='".sql_int($_REQUEST['id'])."' and valid_end='0000-00-00'";
 	$har->updateDb($args);
-		$args['value']="'','".$_REQUEST['com_id']."','".$_REQUEST['adr_tax']."','".$_REQUEST['city_tax']."','".$_REQUEST['district_tax']."','".$_REQUEST['province_tax']."','".$_REQUEST['zip_tax']."','".$_REQUEST['adr_bil']."','".$_REQUEST['city_bil']."','".$_REQUEST['district_bil']."','".$_REQUEST['province_bil']."','".$_REQUEST['zip_bil']."','".date('Y-m-d')."','0000-00-00'";
+		$args['value']="'','".sql_int($_REQUEST['com_id'])."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'])."','".sql_escape($_REQUEST['district_tax'])."','".sql_escape($_REQUEST['province_tax'])."','".sql_escape($_REQUEST['zip_tax'])."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','0000-00-00'";
 	$har->insertDb($args);	
 		}
 	else if($_REQUEST['method']=="A3"){
 	$args['table']="company_credit";
-		$args['value']="'','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".$_REQUEST['limit_credit']."','".$_REQUEST['limit_day']."','".date('Y-m-d')."','0000-00-00'";
+		$args['value']="'','".sql_int($_REQUEST['cus_id'])."','".sql_int($_REQUEST['ven_id'])."','".sql_escape($_REQUEST['limit_credit'])."','".sql_escape($_REQUEST['limit_day'])."','".date('Y-m-d')."','0000-00-00'";
 	$har->insertDb($args);	
 		}
 		else if($_REQUEST['method']=="A4"){
 	$args['table']="company_credit";
 	$args['value']="valid_end='".date('Y-m-d')."'";
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);
 	$args['table']="company_credit";
-	$args['value']="'','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".$_REQUEST['limit_credit']."','".$_REQUEST['limit_day']."','".date('Y-m-d')."','0000-00-00'";
+	$args['value']="'','".sql_int($_REQUEST['cus_id'])."','".sql_int($_REQUEST['ven_id'])."','".sql_escape($_REQUEST['limit_credit'])."','".sql_escape($_REQUEST['limit_day'])."','".date('Y-m-d')."','0000-00-00'";
 	$har->insertDb($args);	
 		}
 	
@@ -75,51 +76,51 @@ case "type" : {
 		$args['table']="type";
 		
 	
-	$args['value']="'".htmlspecialchars($_REQUEST['type_name'])."','".$_REQUEST['des']."','".$_REQUEST['cat_id']."'";
+	$args['value']="'".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."'";
 	$max_id=$har->insertDbMax($args);	
 	while(list($key, $val) = each($_POST))
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
-			mysql_query("insert into map_type_to_brand values('','".$max_id."','".$key."')");
+			mysql_query("insert into map_type_to_brand values('','".sql_int($max_id)."','".sql_int($key)."')");
 		}}
 		}else if($_REQUEST['method']=="D"){
-			mysql_query("delete from type where id='".$_REQUEST['id']."'");
-			mysql_query("delete from map_type_to_brand where type_id='".$_REQUEST['id']."'");
+			mysql_query("delete from type where id='".sql_int($_REQUEST['id'])."'");
+			mysql_query("delete from map_type_to_brand where type_id='".sql_int($_REQUEST['id'])."'");
 			
 			
 		
 			}
 	else if($_REQUEST['method']=="E"){
 		
-		mysql_query("delete from map_type_to_brand where type_id='".$_POST[id]."'");
+		mysql_query("delete from map_type_to_brand where type_id='".sql_int($_POST['id'])."'");
 		while(list($key, $val) = each($_POST))
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
-			mysql_query("insert into map_type_to_brand values('','".$_POST[id]."','".$key."')");
+			mysql_query("insert into map_type_to_brand values('','".sql_int($_POST['id'])."','".sql_int($key)."')");
 		}
 		}	
 		
 	$args['table']="type";
 
 	
-	$args['value']="name='".htmlspecialchars($_REQUEST['type_name'])."',cat_id='".$_REQUEST['cat_id']."',des='".$_REQUEST['des']."'";
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['value']="name='".sql_escape($_REQUEST['type_name'])."',cat_id='".sql_int($_REQUEST['cat_id'])."',des='".sql_escape($_REQUEST['des'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);	
 		}
 }break;	
 case "category" : {
 	if($_REQUEST['method']=="A"){
 		$args['table']="category";
-	$args['value']="'','".$_REQUEST['cat_name']."','".$_REQUEST['des']."'";
+	$args['value']="'','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
-			mysql_query("delete from category where id='".$_REQUEST['id']."'");
+			mysql_query("delete from category where id='".sql_int($_REQUEST['id'])."'");
 		
 			}
 	else if($_REQUEST['method']=="E"){
 	$args['table']="category";
-	$args['value']="cat_name='".$_REQUEST['cat_name']."',des='".$_REQUEST['des']."'";
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['value']="cat_name='".sql_escape($_REQUEST['cat_name'])."',des='".sql_escape($_REQUEST['des'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);	
 		}
 }break;
@@ -128,21 +129,21 @@ case "category" : {
 case "compl_list" : {
 	if($_REQUEST['method']=="C"){
 		$args['table']="pay";
-	$args['value']="'','".$_REQUEST['po_id']."','".$_REQUEST['payment']."','".$_REQUEST['remark']."','".$_REQUEST['volumn']."','".date("Y-m-d")."'";
+	$args['value']="'','".sql_int($_REQUEST['po_id'])."','".sql_escape($_REQUEST['payment'])."','".sql_escape($_REQUEST['remark'])."','".sql_escape($_REQUEST['volumn'])."','".date("Y-m-d")."'";
 	
 	$har->insertDB($args);	
 		}
-		exit("<script>window.location = 'index.php?page=compl_view&id=".$_REQUEST['po_id']."'</script>");break;
+		exit("<script>window.location = 'index.php?page=compl_view&id=".sql_int($_REQUEST['po_id'])."'</script>");break;
 }break;
 
 case "compl_view" : {
 	if($_REQUEST['method']=="S"){
 		$args['table']="pr";
-	$args['value']="payby='".$_REQUEST['payby']."'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
+	$args['value']="payby='".sql_escape($_REQUEST['payby'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);
 		}
-		exit("<script>window.location = 'index.php?page=compl_view&id=".$_REQUEST['id']."'</script>");break;
+		exit("<script>window.location = 'index.php?page=compl_view&id=".sql_int($_REQUEST['id'])."'</script>");break;
 }break;
 
 
@@ -150,10 +151,10 @@ case "compl_view" : {
 case "compl_list2" : {
 	
 	if($_REQUEST['method']=="V"){	
-	$po_id=mysql_fetch_array(mysql_query("select po.id as po_id,ven_id from pr join po on pr.id=po.ref where po_id_new='' and pr.id='".$_REQUEST['id']."'"));
+	$po_id=mysql_fetch_array(mysql_query("select po.id as po_id,ven_id from pr join po on pr.id=po.ref where po_id_new='' and pr.id='".sql_int($_REQUEST['id'])."'"));
 		$args2['table']="iv";
 	$args2['value']="status_iv='2'";
-	$args2['condition']="tex='".$po_id[po_id]."'";
+	$args2['condition']="tex='".sql_int($po_id['po_id'])."'";
 	
 	$har->updateDb($args2);
 		}
