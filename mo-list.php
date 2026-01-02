@@ -50,7 +50,7 @@ function fetbrand(str) {
 		<lable for="des"><?=$xml->type?></lable>
 		<select id="type"  onchange="fetbrand(this.value)" class="form-control" name="type" >
           <option value="">-----Please select Type-----</option>    
-	<?php $querytype=mysqli_query($db-conn, "select * from type order by name");			
+	<?php $querytype=mysqli_query($db->conn, "select * from type order by name");			
 		while($datatype=mysqli_fetch_array($querytype)){
 			echo "<option value='".$datatype['id']."'>".$datatype['name']."</option>";
 			}
