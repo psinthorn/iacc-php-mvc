@@ -302,3 +302,170 @@ function input_int($key, $default = 0) {
     $value = $_REQUEST[$key] ?? $default;
     return sql_int($value);
 }
+
+// ============================================================================
+// FORM VALIDATION HELPERS
+// Use these to validate form submissions
+// ============================================================================
+
+/**
+ * Validate that required fields are present and non-empty
+ * 
+ * @param array $fields Array of field names that are required
+ * @param array $data Data to validate (defaults to $_POST)
+ * @return array Array of missing field names (empty if all present)
+ * 
+ * Usage: 
+ *   $missing = validate_required(['name', 'email', 'phone']);
+ *   if (!empty($missing)) { echo "Missing: " . implode(', ', $missing); }
+ */
+function validate_required($fields, $data = null) {
+    if ($data === null) {
+        $data = $_POST;
+    }
+    
+    $missing = [];
+    foreach ($fields as $field) {
+        if (!isset($data[$field]) || trim($data[$field]) === '') {
+            $missing[] = $field;
+        }
+    }
+    return $missing;
+}
+
+/**
+ * Validate email format
+ * 
+ * @param string $email Email to validate
+ * @return bool True if valid email format
+ */
+function validate_email($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+/**
+ * Validate phone number (Thai format or international)
+ * 
+ * @param string $phone Phone number to validate
+ * @return bool True if valid phone format
+ */
+function validate_phone($phone) {
+    // Remove spaces, dashes, parentheses
+    $phone = preg_replace('/[\s\-\(\)]+/', '', $phone);
+    // Allow Thai mobile (0x-xxx-xxxx) or international (+66...)
+    return preg_match('/^(\+?[0-9]{9,15}|0[0-9]{8,9})$/', $phone) === 1;
+}
+
+/**
+ * Validate that a value is within a numeric range
+ * 
+ * @param mixed $value Value to validate
+ * @param float $min Minimum value
+ * @param float $max Maximum value
+ * @return bool True if within range
+ */
+function validate_range($value, $min, $max) {
+    $num = is_numeric($value) ? floatval($value) : null;
+    if ($num === null) return false;
+    return $num >= $min && $num <= $max;
+}
+
+/**
+ * Validate string length
+ * 
+ * @param string $value String to validate
+ * @param int $min Minimum length
+ * @param int $max Maximum length
+ * @return bool True if length is within range
+ */
+function validate_length($value, $min, $max) {
+    $len = mb_strlen($value);
+    return $len >= $min && $len <= $max;
+}
+
+/**
+ * Validate date format
+ * 
+ * @param string $date Date string to validate
+ * @param string $format Expected format (default: d-m-Y)
+ * @return bool True if valid date format
+ */
+function validate_date($date, $format = 'd-m-Y') {
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) === $date;
+}
+
+/**
+ * Validate that a value exists in an allowed list
+ * 
+ * @param mixed $value Value to check
+ * @param array $allowed Array of allowed values
+ * @return bool True if value is in allowed list
+ */
+function validate_in($value, $allowed) {
+    return in_array($value, $allowed, true);
+}
+
+/**
+ * Validate Thai tax ID (13 digits)
+ * 
+ * @param string $taxId Tax ID to validate
+ * @return bool True if valid format
+ */
+function validate_tax_id($taxId) {
+    // Remove dashes and spaces
+    $taxId = preg_replace('/[\s\-]+/', '', $taxId);
+    return preg_match('/^[0-9]{13}$/', $taxId) === 1;
+}
+
+/**
+ * Sanitize filename for safe upload
+ * 
+ * @param string $filename Original filename
+ * @return string Safe filename
+ */
+function sanitize_filename($filename) {
+    // Remove path components
+    $filename = basename($filename);
+    // Remove special characters
+    $filename = preg_replace('/[^a-zA-Z0-9\.\-_]/', '_', $filename);
+    // Prevent double extensions
+    $filename = preg_replace('/\.{2,}/', '.', $filename);
+    return $filename;
+}
+
+/**
+ * Validate file upload
+ * 
+ * @param array $file $_FILES element
+ * @param array $options ['extensions' => [...], 'max_size' => bytes]
+ * @return array ['valid' => bool, 'error' => string|null]
+ */
+function validate_file_upload($file, $options = []) {
+    $allowed = $options['extensions'] ?? ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
+    $maxSize = $options['max_size'] ?? 5 * 1024 * 1024; // 5MB default
+    
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        $errors = [
+            UPLOAD_ERR_INI_SIZE => 'File too large (server limit)',
+            UPLOAD_ERR_FORM_SIZE => 'File too large (form limit)',
+            UPLOAD_ERR_PARTIAL => 'File upload incomplete',
+            UPLOAD_ERR_NO_FILE => 'No file uploaded',
+            UPLOAD_ERR_NO_TMP_DIR => 'Server configuration error',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file',
+            UPLOAD_ERR_EXTENSION => 'Upload blocked by extension',
+        ];
+        return ['valid' => false, 'error' => $errors[$file['error']] ?? 'Upload error'];
+    }
+    
+    if ($file['size'] > $maxSize) {
+        return ['valid' => false, 'error' => 'File too large (max ' . round($maxSize / 1024 / 1024) . 'MB)'];
+    }
+    
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowed)) {
+        return ['valid' => false, 'error' => 'File type not allowed'];
+    }
+    
+    return ['valid' => true, 'error' => null];
+}
