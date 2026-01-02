@@ -1,6 +1,6 @@
 <h2><i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder?></h2><?php
-$users->checkSecurity();
-// Security: Use session variable (already validated) for queries
+// Security already checked in index.php
+// Use session variable (already validated) for queries
 $com_id = sql_int($_SESSION['com_id']);
 ?>
 
@@ -8,9 +8,9 @@ $com_id = sql_int($_SESSION['com_id']);
 <tr><td colspan="6"><?=$xml->purchasingorder?> - <?=$xml->out?></td></tr>
 <tr><th><?=$xml->customer?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>
 <?php
-$query=mysql_query("select po.id as id,cancel, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$com_id."' and status='2' order by cancel,po.id desc");
+$query=mysqli_query($db->conn, "select po.id as id,cancel, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$com_id."' and status='2' order by cancel,po.id desc");
 
- while($data=mysql_fetch_array($query)){
+ while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
 	 
 echo "<tr><td>".e($data['name'])."</td><td>PO-".e($data['tax'])."</td><td>".e($data['name_en'])."</td><td>".e($data['valid_pay'])."</td>";
@@ -31,9 +31,9 @@ echo "<td><font color='red'>".$xml->$var."</font></td><td><!--<a href='index.php
  
 <tr><th><?=$xml->vender?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>
 <?php
-$query=mysql_query("select po.id as id, po.name as name, po.tax as tax,cancel, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$com_id."' and status='2' order by cancel,po.id desc ");
+$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,cancel, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$com_id."' and status='2' order by cancel,po.id desc ");
 
- while($data=mysql_fetch_array($query)){
+ while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
 	 
 echo "<tr><td>".e($data['name_en'])."</td><td>PO-".e($data['tax'])."</td><td>".e($data['name'])."</td><td>".e($data['valid_pay'])."</td>";
