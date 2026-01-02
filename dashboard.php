@@ -807,7 +807,7 @@ function get_status_badge($status) {
                                             <i class="fa fa-eye"></i>
                                         </a>
                                         <a href="inv.php?id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank" style="background: #28a745;">
-                                            <i class="fa fa-file-pdf"></i>
+                                            <i class="fa fa-file-text-o"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -866,7 +866,7 @@ function get_status_badge($status) {
                                     <td><?php echo number_format($tax_inv['subtotal'] ?? 0, 2); ?></td>
                                     <td>
                                         <a href="taxiv.php?id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="View PDF" target="_blank">
-                                            <i class="fa fa-file-pdf"></i>
+                                            <i class="fa fa-file-text-o"></i>
                                         </a>
                                     </td>
                                 </tr>
