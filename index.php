@@ -27,6 +27,7 @@ $routes = [
     
     // Master Data
     'company'       => 'company-list.php',
+    'user'          => 'user-list.php',      // Super Admin only
     'category'      => 'category-list.php',
     'type'          => 'type-list.php',
     'brand'         => 'brand-list.php',

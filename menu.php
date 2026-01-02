@@ -199,9 +199,11 @@
                             <li>
                                 <a href="index.php?page=company"><?=$xml->company?></a>
                             </li>
+                            <?php if (isset($_SESSION['user_level']) && $_SESSION['user_level'] >= 2): ?>
                             <li>
                                 <a href="index.php?page=user"><?=$xml->user?></a>
                             </li>
+                            <?php endif; ?>
                              <li>
                              
                                 <a href="index.php?page=category"><?=$xml->category?></a>
