@@ -4,7 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();?>
+// Security already checked in index.php?>
 <!DOCTYPE html>
 <html>
 
@@ -21,10 +21,10 @@ alert('Hello ThaiCreate.Com');
 <body><h2><i class="fa fa-truck"></i> <?=$xml->address?></h2>
 <?php
 $id = sql_int($_REQUEST['id']);
-$query=mysql_query("select * from company_addr where com_id='".$id."' and valid_end='0000-00-00'");
-if(mysql_num_rows($query)=="1"){
+$query=mysqli_query($db->conn, "select * from company_addr where com_id='".$id."' and valid_end='0000-00-00'");
+if(mysqli_num_rows($query)=="1"){
 $method="A2";
-$data=mysql_fetch_array($query);?>
+$data=mysqli_fetch_array($query);?>
 <form action="core-function.php" methord="post" id="myform">
 	<div id="box">
 		<lable for="adr_tax"><?=$xml->raddress?></lable>

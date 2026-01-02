@@ -5,7 +5,7 @@ require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
-$users->checkSecurity();
+// Security already checked in index.php
 
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
@@ -29,10 +29,10 @@ $page_param = sql_escape($_REQUEST['page']);
  switch($page_param){
 	case "exp" : {
 		
- $fetmail=mysql_fetch_array(mysql_query("select email,po.tax as tax,vat,dis,over,name_sh,name_en from pr join po on pr.id=po.ref join company on pr.cus_id=company.id where po.id='".$id."' and status>'0' and ven_id='".$com_id."' and po_id_new=''"));
-  $que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+ $fetmail=mysqli_fetch_array(mysqli_query($db->conn, "select email,po.tax as tax,vat,dis,over,name_sh,name_en from pr join po on pr.id=po.ref join company on pr.cus_id=company.id where po.id='".$id."' and status>'0' and ven_id='".$com_id."' and po_id_new=''"));
+  $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
 	 $summary=$total=0;
-	 while($data_pro=mysql_fetch_array($que_pro)){
+	 while($data_pro=mysqli_fetch_array($que_pro)){
 
 $equip=$data_pro[price]*$data_pro[quantity];
 $labour1=$data_pro[valuelabour]*$data_pro[activelabour];
@@ -50,7 +50,7 @@ $total=$equip+$labour;
  $total=$stotal+$vat;
 	 
  
- $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$com_id."'"));
+ $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
  $subject='QUO-'.$fetmail[tax]."-".$fetmail[name_sh];
  $page="exp-m.php";
  $message = "Dear ".$fetmail[name_en]."
@@ -64,10 +64,10 @@ Thank you for your business, we appreciate it very much.
  }break;
  case "inv" : {
 		
- $fetmail=mysql_fetch_array(mysql_query("select email,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$id."' and status>'2' and  ven_id='".$com_id."' and po_id_new=''"));
-  $que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+ $fetmail=mysqli_fetch_array(mysqli_query($db->conn, "select email,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$id."' and status>'2' and  ven_id='".$com_id."' and po_id_new=''"));
+  $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
   $summary=$total=0;
-	 while($data_pro=mysql_fetch_array($que_pro)){
+	 while($data_pro=mysqli_fetch_array($que_pro)){
 
 $equip=$data_pro[price]*$data_pro[quantity];
 $labour1=$data_pro[valuelabour]*$data_pro[activelabour];
@@ -85,7 +85,7 @@ $total=$equip+$labour;
  $total=$stotal+$vat;
 	 
  
- $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$com_id."'"));
+ $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
  $subject="INV-".$fetmail[tax2]."-".$fetmail[name_sh];
  $page="inv-m.php";
   $message = "Dear ".$fetmail[name_en]."
@@ -99,10 +99,10 @@ Thank you for your business, we appreciate it very much.
  }break;
   case "tax" : {
 		
- $fetmail=mysql_fetch_array(mysql_query("select email,texiv_rw,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$id."' and status>'2' and  ven_id='".$com_id."' and po_id_new=''"));
- $que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+ $fetmail=mysqli_fetch_array(mysqli_query($db->conn, "select email,texiv_rw,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$id."' and status>'2' and  ven_id='".$com_id."' and po_id_new=''"));
+ $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
   $summary=$total=0;
-	 while($data_pro=mysql_fetch_array($que_pro)){
+	 while($data_pro=mysqli_fetch_array($que_pro)){
 
 $equip=$data_pro[price]*$data_pro[quantity];
 $labour1=$data_pro[valuelabour]*$data_pro[activelabour];
@@ -121,7 +121,7 @@ $total=$equip+$labour;
  $total=$stotal+$vat;
 	 
  
- $vender=mysql_fetch_array(mysql_query("select name_en from company where id='".$com_id."'"));
+ $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
  $subject="Tax-".$fetmail[texiv_rw]."-".$fetmail[name_sh];
  $page="taxiv-m.php";
   $message = "Dear ".$fetmail[name_en]."

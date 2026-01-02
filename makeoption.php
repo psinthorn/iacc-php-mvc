@@ -50,12 +50,12 @@ default :  $referField = "";
 $listName .= $type;
 $nextType = $type+1;
 $sql = "SELECT * FROM $dataTable where $referField = $refer ORDER BY $order";
-$result = mysql_query($sql);
+$result = mysqli_query($db->conn, $sql);
 if($type < 3)
 $action = "$actionEvent=\"JavaScript:loadList('$nextType',this.value)\"";
 
 echo "<select  class=\"province_check form-control\"   name=\"".$listName."\" id=\"".$listName."\" ".$action."><option selected value=\"106\">Select $dataTable</option>";
-while($row = mysql_fetch_array($result))
+while($row = mysqli_fetch_array($result))
 {
 echo "<option value=\"$row[$optionValueField]\">$row[$optionTextField]</option>"; 
 }

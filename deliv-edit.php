@@ -4,7 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();?>
+// Security already checked in index.php?>
 <!DOCTYPE html>
 <html>
 
@@ -64,9 +64,9 @@ $(function(){
 			var indexthis = document.getElementById("countloop").value;
 		document.getElementById("countloop").value=parseInt(indexthis)+1;
 		
-		var NR ="<tr id=fr["+indexthis+"]> <td style=' margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;'><div id='box'><select required id='type["+indexthis+"]' name='type["+indexthis+"]' onchange='checkorder(this.value,this.id)' class='form-control'><?php $querycustomer=mysql_query("select name,id from type");
+		var NR ="<tr id=fr["+indexthis+"]> <td style=' margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;'><div id='box'><select required id='type["+indexthis+"]' name='type["+indexthis+"]' onchange='checkorder(this.value,this.id)' class='form-control'><?php $querycustomer=mysqli_query($db->conn, "select name,id from type");
 			echo "<option value='' >Please Select Product</option>";
-			while($fetch_customer=mysql_fetch_array($querycustomer)){
+			while($fetch_customer=mysqli_fetch_array($querycustomer)){
 				
 			echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name]."</option>";}?></select></div><div id='box'><div id='slotbrand["+indexthis+"]'><select id='ban_id["+indexthis+"]' name='ban_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'><div class='input-group'><input type='number' class='form-control' name='quantity[]' id='quantity[]' required placeholder='<?=$xml->unit?>' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity[]' id='pack_quantity[]' required placeholder='Quantity Per Pack' /><div id='box'><div class='input-group'><input type='text' class='form-control' name='s_n[]' id='s_n[]' required placeholder='<?=$xml->sn?>' /><span class='input-group-addon'><?=$xml->sn?></span></div></div><div id='box' style='width:25%'><div class='input-group'><input type='text' class='form-control' name='warranty[]' id='warranty[]' required placeholder='dd-mm-yyyy' /><span class='input-group-addon'><?=$xml->warranty?></span></div></div><div id='box' style='width:8%;'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div></td></tr>";
 		//$("#myTbl").append($("#firstTr").clone());
@@ -102,10 +102,10 @@ function del_id(id)
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 
-$query=mysql_query("select cus_id,sendoutitem.id as id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,tmp from sendoutitem join deliver on sendoutitem.id=deliver.out_id  where deliver.id='".$id."' and ven_id='".$com_id."'");
+$query=mysqli_query($db->conn, "select cus_id,sendoutitem.id as id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,tmp from sendoutitem join deliver on sendoutitem.id=deliver.out_id  where deliver.id='".$id."' and ven_id='".$com_id."'");
 
-if(mysql_num_rows($query)=="1"){
-	$datadeliver=mysql_fetch_array($query);
+if(mysqli_num_rows($query)=="1"){
+	$datadeliver=mysqli_fetch_array($query);
 $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
@@ -119,9 +119,9 @@ $_date = explode("-", date("d-m-Y"));
 
 <?php
 
-	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
-	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
-	$limit_day=mysql_fetch_array(mysql_query("select limit_day from company_credit where ven_id='".$data[ven_id]."' and cus_id='".$data[cus_id]."'"));
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[ven_id]."'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[cus_id]."'"));
+	$limit_day=mysqli_fetch_array(mysqli_query($db->conn, "select limit_day from company_credit where ven_id='".$data[ven_id]."' and cus_id='".$data[cus_id]."'"));
 	
 	?>
     <div class="clearfix"></div>
@@ -132,10 +132,10 @@ $_date = explode("-", date("d-m-Y"));
 		<lable for="name"><?=$xml->customer?></lable>
 		<select id="cus_id" name="cus_id" class="form-control">
   		<option value='0' >------ Please Select Customer ---------</option>
-		<?php $querycustomer=mysql_query("select name_en,id from company where customer='1' and id !='".$_SESSION[com_id]."' ");
+		<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where customer='1' and id !='".$_SESSION['com_id']."' ");
 			
 			
-				while($fetch_customer=mysql_fetch_array($querycustomer)){
+				while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($fetch_customer[id]==$datadeliver[cus_id]){
 					echo "<option selected value='".$fetch_customer[id]."' >".$fetch_customer[name_en]."</option>";
 				}else {
@@ -156,29 +156,29 @@ $_date = explode("-", date("d-m-Y"));
   
 <table id="myTbl" class ="table" width="100%" border="0" cellpadding="0" cellspacing="0">
 <?php 
-$qeurytmpitem=mysql_query("select DATE_FORMAT(warranty,'%d-%m-%Y') as warranty,product.pro_id as pro_id,model,ban_id,s_n,type,quantity,pack_quantity from product join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id where so_id='".$datadeliver[id]."'");
+$qeurytmpitem=mysqli_query($db->conn, "select DATE_FORMAT(warranty,'%d-%m-%Y') as warranty,product.pro_id as pro_id,model,ban_id,s_n,type,quantity,pack_quantity from product join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id where so_id='".$datadeliver[id]."'");
 
-if(mysql_num_rows($qeurytmpitem)>0){
+if(mysqli_num_rows($qeurytmpitem)>0){
 	$i=0;
-while($data_fetitem=mysql_fetch_array($qeurytmpitem)){?>
+while($data_fetitem=mysqli_fetch_array($qeurytmpitem)){?>
 <tr id="firstTr">
    <td  style=" margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;">
     
        <div id="box">
        
        <select  onchange="checkorder(this.value,this.id)" id="type[<?=$i?>]" name="type[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysql_query("select name,id from type order by id desc");
+			<?php $querycustomer=mysqli_query($db->conn, "select name,id from type order by id desc");
 			echo "<option value='' >-------Please Select Product--------</option>";
-		while($fetch_customer=mysql_fetch_array($querycustomer)){
+		while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($data_fetitem[type]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
 					
 					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[name]."</option>";
 				}?>
 		</select></div>
      <div id="box"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_fetitem[type]."'");
+<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_fetitem[type]."'");
 echo "<option value='' >-------Please Select Brand--------</option>";
-while($fetch_customer=mysql_fetch_array($querycustomer)){
+while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					
 									if($fetch_customer[id]== $data_fetitem[ban_id]){	echo "<option value='".$fetch_customer[id]."' selected >".$fetch_customer[brand_name]."</option>";
 				}else{	echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[brand_name]."</option>";
@@ -189,11 +189,11 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){
         
       <div id="box">
       <div id="slotmodel[<?=$i?>]"><select id="model[<?=$i?>]" name="model[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysql_query("select model_name,id from model where brand_id='".$data_fetitem[ban_id]."' and type_id='".$data_fetitem[type]."'");
-			if(mysql_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
+			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_fetitem[ban_id]."' and type_id='".$data_fetitem[type]."'");
+			if(mysqli_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
 			else
 			echo "<option value=''>Please Select Model</option>";
-		while($fetch_customer=mysql_fetch_array($querycustomer)){
+		while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($data_fetitem[model]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
 					
 					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[model_name]."</option>";

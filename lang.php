@@ -8,7 +8,7 @@ new DbConn($config);
 if(($_SESSION['user_id']!="")&&($_POST[chlang]!=$_SESSION[lang])){
 	
 	
-$query=mysql_query("update  authorize set lang='".$_POST[chlang]."' where email='".$_SESSION['user_email']."' and id='".$_SESSION['user_id']."'");
+$query=mysqli_query($db->conn, "update  authorize set lang='".$_POST[chlang]."' where email='".$_SESSION['user_email']."' and id='".$_SESSION['user_id']."'");
 $_SESSION[lang]=$_POST[chlang];
 	
 	echo "<script>window.location='index.php';</script>";

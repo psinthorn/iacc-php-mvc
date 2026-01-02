@@ -3,13 +3,13 @@
 <table class="table" width="100%">
 <tr><th></th><th><?=$xml->purchasingrequest?></th><th><?=$xml->quotation?></th><th><?=$xml->purchasingorder?></th><th><?=$xml->invoice?></th><th><?=$xml->taxinvoice?></th></tr><?php
 
-$querycom=mysql_query("select name_en,id from company where company.id!='".$_SESSION[com_id]."' and customer='1'");
-while($fetcom=mysql_fetch_array($querycom)){
-	$pr=mysql_fetch_array(mysql_query("select count(id) as ct from pr where ven_id='".$_SESSION[com_id]."' and cus_id='".$fetcom[id]."'"));
-	$qa=mysql_fetch_array(mysql_query("select count(id) as ct from pr where ven_id='".$_SESSION[com_id]."' and cus_id='".$fetcom[id]."' and status>='1'"));
-	$po=mysql_fetch_array(mysql_query("select count(id) as ct from pr where ven_id='".$_SESSION[com_id]."' and cus_id='".$fetcom[id]."' and status>='2'"));
-	$iv=mysql_fetch_array(mysql_query("select count(id) as ct from pr where ven_id='".$_SESSION[com_id]."' and cus_id='".$fetcom[id]."' and status>='4'"));
-	$tx=mysql_fetch_array(mysql_query("select count(id) as ct from pr where ven_id='".$_SESSION[com_id]."' and cus_id='".$fetcom[id]."' and status>='5'"));
+$querycom=mysqli_query($db->conn, "select name_en,id from company where company.id!='".$_SESSION['com_id']."' and customer='1'");
+while($fetcom=mysqli_fetch_array($querycom)){
+	$pr=mysqli_fetch_array(mysqli_query($db->conn, "select count(id) as ct from pr where ven_id='".$_SESSION['com_id']."' and cus_id='".$fetcom[id]."'"));
+	$qa=mysqli_fetch_array(mysqli_query($db->conn, "select count(id) as ct from pr where ven_id='".$_SESSION['com_id']."' and cus_id='".$fetcom[id]."' and status>='1'"));
+	$po=mysqli_fetch_array(mysqli_query($db->conn, "select count(id) as ct from pr where ven_id='".$_SESSION['com_id']."' and cus_id='".$fetcom[id]."' and status>='2'"));
+	$iv=mysqli_fetch_array(mysqli_query($db->conn, "select count(id) as ct from pr where ven_id='".$_SESSION['com_id']."' and cus_id='".$fetcom[id]."' and status>='4'"));
+	$tx=mysqli_fetch_array(mysqli_query($db->conn, "select count(id) as ct from pr where ven_id='".$_SESSION['com_id']."' and cus_id='".$fetcom[id]."' and status>='5'"));
 	?>
 <tr><th><?=$fetcom[name_en]?></th>
 <td><?=$pr[ct];$prs=$prs+$pr[ct]?></td>

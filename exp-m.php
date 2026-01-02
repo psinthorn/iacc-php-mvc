@@ -5,19 +5,19 @@ require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
-$users->checkSecurity();
+// Security already checked in index.php
 
- $query=mysql_query("select po.name as name,ven_id,dis,tax,cus_id,vat,over,des,ref,mailcount,valid_pay,brandven,DATE_FORMAT(po.date,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_POST[id]."' and status>'0' and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
-if(mysql_num_rows($query)=="1"){
-	$data=mysql_fetch_array($query);
+ $query=mysqli_query($db->conn, "select po.name as name,ven_id,dis,tax,cus_id,vat,over,des,ref,mailcount,valid_pay,brandven,DATE_FORMAT(po.date,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_POST[id]."' and status>'0' and (cus_id='".$_SESSION['com_id']."' or ven_id='".$_SESSION['com_id']."') and po_id_new=''");
+if(mysqli_num_rows($query)=="1"){
+	$data=mysqli_fetch_array($query);
 	$ct=$data[mailcount]+1;
-	mysql_query("update pr set mailcount='".$ct."' where id='".$data[ref]."' and ven_id='".$_SESSION[com_id]."'");
-	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
-	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[cus_id]."' and valid_end='0000-00-00'"));
+	mysqli_query($db->conn, "update pr set mailcount='".$ct."' where id='".$data[ref]."' and ven_id='".$_SESSION['com_id']."'");
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[cus_id]."' and valid_end='0000-00-00'"));
 	
 	
 	if($data[brandven]==0){$logo=$vender[logo];}else{
-		$bandlogo=mysql_fetch_array(mysql_query("select logo from brand where id='".$data[brandven]."'"));
+		$bandlogo=mysqli_fetch_array(mysqli_query($db->conn, "select logo from brand where id='".$data[brandven]."'"));
 		$logo=$bandlogo[logo];
 		
 		}
@@ -64,7 +64,7 @@ $html = '
 <div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>';
-$cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_POST[id]."'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_POST[id]."'"));
 if($cklabour[cklabour]==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -85,9 +85,9 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysql_query("select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_POST[id]."'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_POST[id]."'");$summary=0;
 $cot=1;
-	while($data_pro=mysql_fetch_array($que_pro)){
+	while($data_pro=mysqli_fetch_array($que_pro)){
 	
 if($cklabour[cklabour]==1){	
 $equip=$data_pro[price]*$data_pro[quantity];

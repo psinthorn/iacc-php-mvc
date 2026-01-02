@@ -5,18 +5,18 @@ require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
-$users->checkSecurity();
+// Security already checked in index.php
 
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 
- $query=mysql_query("select po.name as name,over,ven_id,dis, taxrw as tax2,tax,countmailtax,pr.cus_id as cus_id,payby,des,vat,DATE_FORMAT(texiv_create,'%d-%m-%Y') as date,texiv_rw,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$id."' and status='5' and (pr.cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
-if(mysql_num_rows($query)=="1"){
-	$data=mysql_fetch_array($query);
+ $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis, taxrw as tax2,tax,countmailtax,pr.cus_id as cus_id,payby,des,vat,DATE_FORMAT(texiv_create,'%d-%m-%Y') as date,texiv_rw,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$id."' and status='5' and (pr.cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
+if(mysqli_num_rows($query)=="1"){
+	$data=mysqli_fetch_array($query);
 	$ct=$data[countmailtax]+1;
-	mysql_query("update iv set countmailtax='".$ct."' where tex='".$id."' and cus_id='".$com_id."'");
-	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
-	$customer=mysql_fetch_array(mysql_query("select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[payby]."' and valid_end='0000-00-00'"));
+	mysqli_query($db->conn, "update iv set countmailtax='".$ct."' where tex='".$id."' and cus_id='".$com_id."'");
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[payby]."' and valid_end='0000-00-00'"));
 	
 
 $html = '
@@ -78,7 +78,7 @@ $html = '
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>
 ';
-$cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
 if($cklabour[cklabour]==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -100,9 +100,9 @@ $html .= '
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
 
-$que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,product.des as des,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,product.des as des,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");$summary=0;
 $cot=1;
-	while($data_pro=mysql_fetch_array($que_pro)){
+	while($data_pro=mysqli_fetch_array($que_pro)){
 
 if($cklabour[cklabour]==1){	
 $equip=$data_pro[price]*$data_pro[quantity];

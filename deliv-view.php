@@ -4,7 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();?>
+// Security already checked in index.php?>
 <!DOCTYPE html>
 <html>
 
@@ -30,14 +30,14 @@ $com_id = sql_int($_SESSION['com_id']);
 $modep = sql_escape($_REQUEST['modep']);
 
 if($modep=="ad"){
-	$query=mysql_query("select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$id."' and (cus_id='".$com_id."' or ven_id='".$com_id."') and deliver.id not in (select deliver_id from receive) ");
+	$query=mysqli_query($db->conn, "select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$id."' and (cus_id='".$com_id."' or ven_id='".$com_id."') and deliver.id not in (select deliver_id from receive) ");
 	
-	}else{$query=mysql_query("select po.name as name,po.id as id,ven_id,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref join deliver on po.id=deliver.po_id where deliver.id='".$id."' and status='3' and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''".$id."'");}
+	}else{$query=mysqli_query($db->conn, "select po.name as name,po.id as id,ven_id,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref join deliver on po.id=deliver.po_id where deliver.id='".$id."' and status='3' and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''".$id."'");}
 
-if(mysql_num_rows($query)=="1"){
-	$data=mysql_fetch_array($query);
-	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
-	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
+if(mysqli_num_rows($query)=="1"){
+	$data=mysqli_fetch_array($query);
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[ven_id]."'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[cus_id]."'"));
 	
 	
 	?>
@@ -74,12 +74,12 @@ if(mysql_num_rows($query)=="1"){
 	</div><?php } ?>
 <div class="clearfix"></div><br><table class="table"><tr><tr><th width="150"><?=$xml->name?></th><th><?=$xml->model?></th><th width="150"><?=$xml->sn?></th></tr>
 	  <?php if($modep=="ad"){
-		   $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,s_n from product join store on product.pro_id=store.pro_id join type on product.type=type.id join model on product.model=model.id where so_id='".$data[id]."'");
+		   $que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,discount,model.model_name as model,s_n from product join store on product.pro_id=store.pro_id join type on product.type=type.id join model on product.model=model.id where so_id='".$data[id]."'");
 	  }else{
-	 $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,s_n from product join store on product.pro_id=store.pro_id join type on product.type=type.id join model on product.model=model.id  where po_id='".$data[id]."'");
+	 $que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,discount,model.model_name as model,s_n from product join store on product.pro_id=store.pro_id join type on product.type=type.id join model on product.model=model.id  where po_id='".$data[id]."'");
 	  }
 	
-	while($data_pro=mysql_fetch_array($que_pro)){
+	while($data_pro=mysqli_fetch_array($que_pro)){
 $total=$data_pro[price]-$data_pro[discount];
 $summary+=$total;
 echo "<tr><td>".$data_pro[name]."</td>

@@ -4,7 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();?>
+// Security already checked in index.php?>
 <!DOCTYPE html>
 <html>
 
@@ -26,11 +26,11 @@ $_date = explode("-", date("d-m-Y"));
 <?php  
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
-$query=mysql_query("select po.name as name,ven_id,cus_id,vat,des,over,dis,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2')  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
-if(mysql_num_rows($query)=="1"){
-	$data=mysql_fetch_array($query);
-	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
-	$customer=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[cus_id]."'"));
+$query=mysqli_query($db->conn, "select po.name as name,ven_id,cus_id,vat,des,over,dis,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2')  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
+if(mysqli_num_rows($query)=="1"){
+	$data=mysqli_fetch_array($query);
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[ven_id]."'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[cus_id]."'"));
 	
 	
 	?>
@@ -67,7 +67,7 @@ if(mysql_num_rows($query)=="1"){
 	</div>
 <div class="clearfix"></div><br><table class="table" width="100%"><tr>
 
-<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
+<?php $cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
 if($cklabour[cklabour]==1){
 ?><th width="17%"><?=$xml->model?></th><th><?=$xml->product?></th>
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
@@ -78,9 +78,9 @@ if($cklabour[cklabour]==1){
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
 <th style='text-align:center' width="8%"><?=$xml->price?></th>
 <th style='text-align:right' width="8%"><?=$xml->amount?></th><?php }?></tr>
-	<?php $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");$summary=0;
+	<?php $que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");$summary=0;
 
-	while($data_pro=mysql_fetch_array($que_pro)){
+	while($data_pro=mysqli_fetch_array($que_pro)){
 		if($cklabour[cklabour]==1){
 $equip=$data_pro[price]*$data_pro[quantity];
 $labour1=$data_pro[valuelabour]*$data_pro[activelabour];

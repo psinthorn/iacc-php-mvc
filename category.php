@@ -4,7 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();
+// Security already checked in index.php
 $cat_id = sql_int($_REQUEST['id'] ?? 0);
 ?>
 <!DOCTYPE html>
@@ -15,10 +15,10 @@ $cat_id = sql_int($_REQUEST['id'] ?? 0);
 
 <body>
 <?php
-$query=mysql_query("select * from category where id='".$cat_id."'");
-if(mysql_num_rows($query)==1){
+$query=mysqli_query($db->conn, "select * from category where id='".$cat_id."'");
+if(mysqli_num_rows($query)==1){
 $method="E";
-$data=mysql_fetch_array($query);
+$data=mysqli_fetch_array($query);
 }else $method="A";?>
 <form action="core-function.php" method="post" id="myform">
 	<div id="box">

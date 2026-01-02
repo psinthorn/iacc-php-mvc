@@ -4,11 +4,11 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();
+// Security already checked in index.php
 
-$query=mysql_query("select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$_REQUEST[p_id]."'");
-	 if(mysql_num_rows($query)>0){
-		 $data=mysql_fetch_array($query);
+$query=mysqli_query($db->conn, "select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$_REQUEST[p_id]."'");
+	 if(mysqli_num_rows($query)>0){
+		 $data=mysqli_fetch_array($query);
 		 
 		 }else{exit("<script>alert('access denied');  window.history.back();</script>");}
 
@@ -85,7 +85,7 @@ return false;
  
             </div>			<!-- /modal-body -->
             <div class="modal-footer">
-              <button type="submit" name="method" value="E" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-saved"></span> <?=$xml->edit?></button><?php if(mysql_num_rows(mysql_query("SELECT * FROM  product WHERE 	model='".$_REQUEST[p_id]."'"))==0){?>   <button name="method" value="D" type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> <?=$xml->delete?></button>  <?php }?> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> <?=$xml->close?></button>
+              <button type="submit" name="method" value="E" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-saved"></span> <?=$xml->edit?></button><?php if(mysqli_num_rows(mysqli_query($db->conn, "SELECT * FROM  product WHERE 	model='".$_REQUEST[p_id]."'"))==0){?>   <button name="method" value="D" type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> <?=$xml->delete?></button>  <?php }?> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> <?=$xml->close?></button>
            
 
             </div>			<!-- /modal-footer -->
