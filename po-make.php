@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -154,8 +155,11 @@ $_date = explode("-", date("d-m-Y"));
 ?>
 <div style="float:left; width:auto"><h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2></div><form action="index.php?page=pr_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
+<?php 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
 
-<?php $query=mysql_query("select id, name, des, cus_id,	ven_id from pr where id='".$_REQUEST[id]."' and status='0' and ven_id='".$_SESSION[com_id]."'");
+$query=mysql_query("select id, name, des, cus_id,	ven_id from pr where id='".$id."' and status='0' and ven_id='".$com_id."'");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
@@ -226,7 +230,7 @@ if(mysql_num_rows($query)=="1"){
      <div style="width:10%; float:left;"><?=$xml->labour?></div> 
 <table id="myTbl" class ="table" width="100%" border="0" cellpadding="0" cellspacing="0">
 <?php 
-$qeurytmpitem=mysql_query("select * from tmp_product join type on tmp_product.type=type.id where pr_id='".$_REQUEST[id]."'");
+$qeurytmpitem=mysql_query("select * from tmp_product join type on tmp_product.type=type.id where pr_id='".$id."'");
 $i=0;
 if(mysql_num_rows($qeurytmpitem)>0){
 while($data_fetitem=mysql_fetch_array($qeurytmpitem)){?>

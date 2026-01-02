@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -12,7 +13,8 @@ $users->checkSecurity();?>
 
 <body>
 <?php
-$query=mysql_query("select * from payment where id='".$_REQUEST[id]."'");
+$id = sql_int($_REQUEST['id']);
+$query=mysql_query("select * from payment where id='".$id."'");
 if(mysql_num_rows($query)==1){
 $method="E";
 $data=mysql_fetch_array($query);
@@ -28,7 +30,7 @@ $data=mysql_fetch_array($query);
 	</div>
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="payment">
-	<input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
+	<input type="hidden" name="id" value="<?php echo $id;?>">
 	<div id="box" style="padding-top:20px;"><input type="submit" value="<?php if($method=="E")echo $xml->edit;else echo $xml->add;?>" class="btn btn-primary"></div>
 </form>
 

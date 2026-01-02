@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -38,7 +39,10 @@ $_date = explode("-", date("d-m-Y"));
 <div style="float:left; width:auto"><h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2></div><form action="index.php?page=compl_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
-<?php  $query=mysql_query("select po.name as name,ven_id, vat,cus_id,des,payby,over, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,dis, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_REQUEST[id]."' and status='4'  and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
+<?php  
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
+$query=mysql_query("select po.name as name,ven_id, vat,cus_id,des,payby,over, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,dis, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and status='4'  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
@@ -86,7 +90,7 @@ if(mysql_num_rows($query)=="1"){
 	</div><button type="submit" name="method" class="btn btn-primary" value="S">Save</button>
 <div class="clearfix"></div><br><table class="table" width="100%"><tr>
 
-<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_REQUEST[id]."'"));
+<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
 if($cklabour[cklabour]==1){
 ?><th width="17%"><?=$xml->model?></th><th><?=$xml->product?></th>
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
@@ -97,7 +101,7 @@ if($cklabour[cklabour]==1){
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
 <th style='text-align:center' width="8%"><?=$xml->price?></th>
 <th style='text-align:right' width="8%"><?=$xml->amount?></th><?php }?></tr>
-	<?php $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");$summary=0;
+	<?php $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");$summary=0;
 
 	while($data_pro=mysql_fetch_array($que_pro)){
 		if($cklabour[cklabour]==1){
@@ -152,13 +156,13 @@ echo "<tr><td>".$data_pro[model]."</td>
     
     <tr><th colspan="2"><?=$xml->grandtotal?></th><td colspan="2" align='right'><?php echo number_format($totalnet,2);?></td></tr>
 
-<?php $querypay=mysql_query("select DATE_FORMAT(date,'%d-%m-%Y') as date,value,id,volumn from pay where po_id='".$_REQUEST[id]."'");
+<?php $querypay=mysql_query("select DATE_FORMAT(date,'%d-%m-%Y') as date,value,id,volumn from pay where po_id='".$id."'");
 while($datapays=mysql_fetch_array($querypay)){?>
 <tr><th colspan="6"><?=$xml->pay?> (<?=$datapays['date']?>)<?=$datapays[value]?> <a href="sptinv.php?id=<?=$datapays['id']?>" target="_blank" style="color:#ff0000"><?=$xml->print?></a></th><td colspan="2" align='right'><?=number_format($datapays[volumn],2);?></td></tr>
 <?php } ?>
     </table>
     <input type="hidden" name="ref" value="<?php echo $data[ref];?>">
-    <input type="hidden" name="id" value="<?=$_REQUEST[id]?>">
+    <input type="hidden" name="id" value="<?=$id?>">
 	<input type="hidden" name="page" value="compl_view">
 	
 </form>
@@ -167,7 +171,7 @@ while($datapays=mysql_fetch_array($querypay)){?>
 <?php 
 
 
-$stotals=mysql_fetch_array(mysql_query("select sum(volumn) as stotal from pay where po_id='".$_REQUEST[id]."'"));
+$stotals=mysql_fetch_array(mysql_query("select sum(volumn) as stotal from pay where po_id='".$id."'"));
 $accu=$totalnet-$stotals[stotal];
 if($accu<0.000000000001)$accu=0;
 if($accu!=0){
@@ -202,7 +206,7 @@ if($accu!=0){
     
     	<input type="hidden" name="method" value="C">
 	<input type="hidden" name="page" value="compl_list">
-	<input type="hidden" name="po_id" value="<?php echo $_REQUEST[id];?>">
+	<input type="hidden" name="po_id" value="<?php echo $id;?>">
 
     </form>
 	
@@ -213,7 +217,7 @@ if($accu!=0){
          
         
 	<input type="hidden" name="page" value="compl_list2">
-    <?php $refpo=mysql_fetch_array(mysql_query("select ref from po where id='".$_REQUEST[id]."'"));?>
+    <?php $refpo=mysql_fetch_array(mysql_query("select ref from po where id='".$id."'"));?>
 	<input type="hidden" name="id" value="<?php echo $refpo[ref];?>">
 	</div></form>
 	
@@ -224,7 +228,7 @@ if($accu!=0){
          
    
 	<input type="hidden" name="page" value="compl_list2">
-    <?php $refpo=mysql_fetch_array(mysql_query("select ref from po where id='".$_REQUEST[id]."'"));?>
+    <?php $refpo=mysql_fetch_array(mysql_query("select ref from po where id='".$id."'"));?>
 	<input type="hidden" name="id" value="<?php echo $refpo[ref];?>">
 	</div></form><?php } 
 		 ?>

@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -162,6 +163,9 @@ function del_id(id)
 </head>
 
 <body><?Php 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
+
 $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
@@ -175,7 +179,7 @@ $_date = explode("-", date("d-m-Y"));
 
 <?php
 
- $query=mysql_query("select po.id as id,ref,over,brandven,des, po.name as name,vat,adr_tax,city_tax,district_tax,province_tax,zip_tax des,DATE_FORMAT(po.date,'%d-%m-%Y')  as datepo, cus_id,dis,	ven_id from po join pr on po.ref=pr.id join company_addr on pr.cus_id=company_addr.com_id where po.id='".$_REQUEST[id]."' and status='1' and ven_id='".$_SESSION[com_id]."' and valid_end='0000-00-00'");
+ $query=mysql_query("select po.id as id,ref,over,brandven,des, po.name as name,vat,adr_tax,city_tax,district_tax,province_tax,zip_tax des,DATE_FORMAT(po.date,'%d-%m-%Y')  as datepo, cus_id,dis,	ven_id from po join pr on po.ref=pr.id join company_addr on pr.cus_id=company_addr.com_id where po.id='".$id."' and status='1' and ven_id='".$com_id."' and valid_end='0000-00-00'");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
@@ -282,7 +286,7 @@ if(mysql_num_rows($query)=="1"){
 
 
 <?php 
-$query_pro=mysql_query("select * from product where po_id='".$_REQUEST[id]."'");$i=0;
+$query_pro=mysql_query("select * from product where po_id='".$id."'");$i=0;
 
 while($data_pro=mysql_fetch_array($query_pro)){?>										
 <tr id="fr[<?=$i?>] <?php if($i==0) echo 'firstTr'?>">
@@ -354,7 +358,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
 	<input type="hidden" name="method" value="E">
     <input type="hidden" name="ref" value="<?php echo $data[ref];?>">
 	<input type="hidden" name="page" value="po_list">
-    <input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
+    <input type="hidden" name="id" value="<?php echo $id;?>">
     
     
 	

@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -98,6 +99,9 @@ function del_id(id)
 </head>
 
 <body><?Php 
+$com_id = sql_int($_SESSION['com_id']);
+$id = sql_int($_REQUEST['id']);
+
 $_date = explode("-", date("d-m-Y"));
 					$day = $_date[0];
 					$month = $_date[1];
@@ -124,7 +128,7 @@ $_date = explode("-", date("d-m-Y"));
 		<lable for="name"><?=$xml->customer?></lable>
 		<select id="cus_id" name="cus_id" class="form-control">
   		<option value='0' >------ Please Select Customer ---------</option>
-		<?php $querycustomer=mysql_query("select name_en,id from company where customer='1' and id !='".$_SESSION[com_id]."' ");
+		<?php $querycustomer=mysql_query("select name_en,id from company where customer='1' and id !='".$com_id."' ");
 			
 			
 				while($fetch_customer=mysql_fetch_array($querycustomer)){
@@ -144,7 +148,7 @@ $_date = explode("-", date("d-m-Y"));
   
 <table id="myTbl" class ="table" width="100%" border="0" cellpadding="0" cellspacing="0">
 <?php 
-$qeurytmpitem=mysql_query("select * from tmp_product where pr_id='".$_REQUEST[id]."'");
+$qeurytmpitem=mysql_query("select * from tmp_product where pr_id='".$id."'");
 $i=0;
 if(mysql_num_rows($qeurytmpitem)>0){
 while($data_fetitem=mysql_fetch_array($qeurytmpitem)){?>

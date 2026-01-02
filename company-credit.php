@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -12,7 +13,9 @@ $users->checkSecurity();?>
 
 <body>
 <?php
-$query=mysql_query("select * from company_credit where id='".$_REQUEST[id]."'");
+$id = sql_int($_REQUEST['id']);
+$ven_id = sql_int($_REQUEST['ven_id']);
+$query=mysql_query("select * from company_credit where id='".$id."'");
 if(mysql_num_rows($query)==1){
 $method="A4";
 $data=mysql_fetch_array($query);}
@@ -30,7 +33,7 @@ else $method="A3";
 			?>
            
 		<select id="cus_id" name="cus_id" class="form-control">
-			<?php $querycustomer=mysql_query("select name_en,id from company where id not in (select cus_id from company_credit where ven_id='".$_REQUEST[ven_id]."' group by cus_id) and id!='".$_REQUEST[ven_id]."' and customer='1' ");
+			<?php $querycustomer=mysql_query("select name_en,id from company where id not in (select cus_id from company_credit where ven_id='".$ven_id."' group by cus_id) and id!='".$ven_id."' and customer='1' ");
 			
 			
 				while($fetch_customer=mysql_fetch_array($querycustomer)){
@@ -51,9 +54,9 @@ else $method="A3";
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="company">
     
-    <input type="hidden" name="ven_id" value="<?php echo $_REQUEST[ven_id];?>">
-	<input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
-	<input type="hidden" name="valid_start" value="<?php echo $_REQUEST[valid_start];?>">
+    <input type="hidden" name="ven_id" value="<?php echo $ven_id;?>">
+	<input type="hidden" name="id" value="<?php echo $id;?>">
+	<input type="hidden" name="valid_start" value="<?php echo sql_escape($_REQUEST['valid_start']);?>">
 	<div id="box" style="padding-top:20px;"><input type="submit" value="<?php if($method=="A4")echo $xml->save;else echo $xml->add;?>" class="btn btn-primary"></div>
 </form>
 </body>

@@ -2,17 +2,21 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
 $users->checkSecurity();
 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
+$modep = sql_escape($_REQUEST['modep']);
 
-if($_REQUEST[modep]=="ad"){
-	$query=mysql_query("select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,out_id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$_REQUEST[id]."' and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and deliver.id not in (select deliver_id from receive) ");
+if($modep=="ad"){
+	$query=mysql_query("select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,out_id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$id."' and (cus_id='".$com_id."' or ven_id='".$com_id."') and deliver.id not in (select deliver_id from receive) ");
 	}else{
  
  
- $query=mysql_query("select po.name as name,ven_id,dis,tax,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,brandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$_REQUEST[id]."' and  status>'2'  and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
+ $query=mysql_query("select po.name as name,ven_id,dis,tax,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,brandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$id."' and  status>'2'  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
  }
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
@@ -43,13 +47,13 @@ $html = '
 <div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">No.</div>
 ';
 
-if($_REQUEST[modep]!="ad"){
+if($modep!="ad"){
 $html.='	
-<div style="width:20%; float:left; ">DN-'.str_pad($_REQUEST[id], 7, "0", STR_PAD_LEFT).'</div>
+<div style="width:20%; float:left; ">DN-'.str_pad($id, 7, "0", STR_PAD_LEFT).'</div>
 ';}else{
 $html.='	
 <div style="width:20%; float:left; ">
-DN-'.str_pad($_REQUEST[id], 7, "0", STR_PAD_LEFT).'(make)</div>
+DN-'.str_pad($id, 7, "0", STR_PAD_LEFT).'(make)</div>
 ';}
 
 
@@ -63,7 +67,7 @@ $html.='
 
 
 
-if($_REQUEST[modep]!="ad"){
+if($modep!="ad"){
 $html.='<div style="width:14%; float:left;  padding-left:3px; font-weight:bold;">Ref-Doc</div>
 <div style="width:20%; float:left;">PO-'.$data[tax].'</div>
 ';}else{
@@ -151,7 +155,7 @@ $mpdf->WriteHTML($html);
 
 
 
-$mpdf->Output("DN-".str_pad($_REQUEST[id], 7, "0", STR_PAD_LEFT)."-".$customer[name_sh].".pdf","I");
+$mpdf->Output("DN-".str_pad($id, 7, "0", STR_PAD_LEFT)."-".$customer[name_sh].".pdf","I");
 exit;
 //==============================================================
 //==============================================================

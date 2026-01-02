@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -22,7 +23,10 @@ $_date = explode("-", date("d-m-Y"));
 <div style="float:left; width:auto"><h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2></div><form action="index.php?page=qa_list" style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
-<?php  $query=mysql_query("select po.name as name,ven_id,cus_id,vat,des,over,dis,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_REQUEST[id]."' and (status='1' or status='2')  and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
+<?php  
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
+$query=mysql_query("select po.name as name,ven_id,cus_id,vat,des,over,dis,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2')  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
@@ -63,7 +67,7 @@ if(mysql_num_rows($query)=="1"){
 	</div>
 <div class="clearfix"></div><br><table class="table" width="100%"><tr>
 
-<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_REQUEST[id]."'"));
+<?php $cklabour=mysql_fetch_array(mysql_query("select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
 if($cklabour[cklabour]==1){
 ?><th width="17%"><?=$xml->model?></th><th><?=$xml->product?></th>
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
@@ -74,7 +78,7 @@ if($cklabour[cklabour]==1){
 <th style='text-align:center' width="8%"><?=$xml->unit?></th>
 <th style='text-align:center' width="8%"><?=$xml->price?></th>
 <th style='text-align:right' width="8%"><?=$xml->amount?></th><?php }?></tr>
-	<?php $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");$summary=0;
+	<?php $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");$summary=0;
 
 	while($data_pro=mysql_fetch_array($que_pro)){
 		if($cklabour[cklabour]==1){

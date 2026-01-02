@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 new DbConn($config);
 
 if(($_SESSION['usr_id']!="")&&($_POST[chlang]!=$_SESSION[lang])){

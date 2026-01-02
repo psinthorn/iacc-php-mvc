@@ -2,15 +2,18 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
 $users->checkSecurity();
 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
 
- $query=mysql_query("select * from voucher where id='".$_REQUEST[id]."' and vender='".$_SESSION[com_id]."'");
+ $query=mysql_query("select * from voucher where id='".$id."' and vender='".$com_id."'");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
-	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$_SESSION[com_id]."' and valid_end='0000-00-00'"));
+	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$com_id."' and valid_end='0000-00-00'"));
 	
 	
 	if($data[brandven]==0){$logo=$vender[logo];}else{
@@ -61,7 +64,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysql_query("select type.name as name,quantity,product.price as price,product.des as des from product join type on product.type=type.id where vo_id='".$_REQUEST[id]."' and po_id='0' and so_id='0' ");$summary=0;
+$que_pro=mysql_query("select type.name as name,quantity,product.price as price,product.des as des from product join type on product.type=type.id where vo_id='".$id."' and po_id='0' and so_id='0' ");$summary=0;
 $cot=1;
 while($data_pro=mysql_fetch_array($que_pro))
 	{

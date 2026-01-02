@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -98,8 +99,10 @@ function del_id(id)
 </head>
 
 <body><?Php 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
 
-$query=mysql_query("select cus_id,sendoutitem.id as id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,tmp from sendoutitem join deliver on sendoutitem.id=deliver.out_id  where deliver.id='".$_REQUEST[id]."' and ven_id='".$_SESSION[com_id]."'");
+$query=mysql_query("select cus_id,sendoutitem.id as id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,tmp from sendoutitem join deliver on sendoutitem.id=deliver.out_id  where deliver.id='".$id."' and ven_id='".$com_id."'");
 
 if(mysql_num_rows($query)=="1"){
 	$datadeliver=mysql_fetch_array($query);
@@ -218,7 +221,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){
     
     	
 	<input type="hidden" name="method" value="ED">
-    <input type="hidden" name="deliv_id" value="<?=$_REQUEST[id]?>">    	<input type="hidden" id="countloop" name="countloop" value="<?=$i?>">
+    <input type="hidden" name="deliv_id" value="<?=$id?>">    	<input type="hidden" id="countloop" name="countloop" value="<?=$i?>">
   
 	<input type="hidden" name="page" value="deliv_list">
 	

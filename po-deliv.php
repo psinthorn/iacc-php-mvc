@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -38,7 +39,11 @@ $_date = explode("-", date("d-m-Y"));
 <div style="float:left; width:auto"><h2><i class="fa fa fa-truck"></i> <?php if($_GET[action]=="m")echo $xml->make." ".$xml->deliverynote; else echo $xml->create." ".$xml->deliverynote?></h2></div><form action="index.php?page=po_list"  style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
 
 
-<?php  $query=mysql_query("select po.name as name,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as valid_pay,DATE_FORMAT(valid_pay,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_REQUEST[id]."' and (status='1' or status='2')  and ven_id='".$_SESSION[com_id]."' and po_id_new=''");
+<?php  
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
+
+$query=mysql_query("select po.name as name,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as valid_pay,DATE_FORMAT(valid_pay,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2')  and ven_id='".$com_id."' and po_id_new=''");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_sh from company where id='".$data[ven_id]."'"));
@@ -86,7 +91,7 @@ if(mysql_num_rows($query)=="1"){
 </select>
 	</div>
 <div class="clearfix"></div><br><table class="table"><tr><tr><th width="250"><?=$xml->name?></th><th><?=$xml->sn?></th><th width="150"><?=$xml->warranty?></th></tr>
-	<?php $que_pro=mysql_query("select type.name as name,product.des as des,product.price as price,pro_id,discount,model.model_name as model,quantity,pack_quantity,type from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_REQUEST[id]."'");
+	<?php $que_pro=mysql_query("select type.name as name,product.des as des,product.price as price,pro_id,discount,model.model_name as model,quantity,pack_quantity,type from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
 
 $j=0;
 	while($data_pro=mysql_fetch_array($que_pro)){
@@ -97,7 +102,7 @@ echo "<tr><td>".$data_pro[name]."<br>(".$data_pro[model].")</td>
 if($_GET[action]=="m"){ echo "
 <select required class='form-control' name='sn[".$j."]'><option value='' >-------Please Select Item------</option>";
 
-$query_store=mysql_query("select store.id as st_id, type.name as name, s_n from store join product on store.pro_id=product.pro_id join store_sale on store.id=store_sale.st_id join type on product.type=type.id where own_id='".$_SESSION[com_id]."' and type='".$data_pro[type]."' and sale='0'");
+$query_store=mysql_query("select store.id as st_id, type.name as name, s_n from store join product on store.pro_id=product.pro_id join store_sale on store.id=store_sale.st_id join type on product.type=type.id where own_id='".$com_id."' and type='".$data_pro[type]."' and sale='0'");
 $countpro=mysql_num_rows($query_store);
 
 $tmpstore="";
@@ -124,10 +129,10 @@ $j++;
     
     </table>
    
-	<input type="hidden"  name="method" value="<?php echo $_GET[action];?>">
+	<input type="hidden"  name="method" value="<?php echo e($_GET['action']);?>">
     <input type="hidden" name="ref" value="<?php echo $data[ref];?>">
 	<input type="hidden" name="page" value="deliv_list">
-    <input type="hidden" name="po_id" value="<?php echo $_REQUEST[id];?>">
+    <input type="hidden" name="po_id" value="<?php echo $id;?>">
     <input type="hidden" name="cus_id" value="<?php echo $data[cus_id];?>">
     
 	

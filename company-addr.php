@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -19,7 +20,8 @@ alert('Hello ThaiCreate.Com');
 <body>
 <body><h2><i class="fa fa-truck"></i> <?=$xml->address?></h2>
 <?php
-$query=mysql_query("select * from company_addr where com_id='".$_REQUEST[id]."' and valid_end='0000-00-00'");
+$id = sql_int($_REQUEST['id']);
+$query=mysql_query("select * from company_addr where com_id='".$id."' and valid_end='0000-00-00'");
 if(mysql_num_rows($query)=="1"){
 $method="A2";
 $data=mysql_fetch_array($query);?>
@@ -70,7 +72,7 @@ $data=mysql_fetch_array($query);?>
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="company">
     <input type="hidden" name="com_id" value="<?php echo $data[com_id];?>">
-	<input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
+	<input type="hidden" name="id" value="<?php echo $id;?>">
 	<div id="box" style="padding-top:25px;">
 	<input type="submit" value="<?=$xml->save?>" class="btn btn-primary"></div>
 </form><?php 

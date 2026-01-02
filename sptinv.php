@@ -2,12 +2,15 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 require_once("inc/class.current.php");
 $users=new DbConn($config);
 $users->checkSecurity();
 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
 
- $query=mysql_query("select po.name as name,volumn,pay.id as pay_id,pay.po_id as po_id,ven_id,dis,vat, taxrw as tax2,tax,pr.cus_id as cus_id,des,brandven,valid_pay,po.date as date,deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join pay on po.id=pay.po_id  where pay.id='".$_REQUEST[id]."' and status>='4' and (pr.cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");
+ $query=mysql_query("select po.name as name,volumn,pay.id as pay_id,pay.po_id as po_id,ven_id,dis,vat, taxrw as tax2,tax,pr.cus_id as cus_id,des,brandven,valid_pay,po.date as date,deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join pay on po.id=pay.po_id  where pay.id='".$id."' and status>='4' and (pr.cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
 	$vender=mysql_fetch_array(mysql_query("select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));

@@ -2,6 +2,7 @@
 // session_start();
 // require_once("inc/sys.configs.php");
 // require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 // $users=new DbConn($config);
 // $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -13,7 +14,8 @@
 
 <body><h2><i class="fa fa-briefcase"></i> <?=$xml->information?></h2>
 <?php
-$query=mysqli_query($db->conn, "select * from company where id='".$_REQUEST['id']."'");
+$id = sql_int($_REQUEST['id']);
+$query=mysqli_query($db->conn, "select * from company where id='".$id."'");
 if(mysqli_num_rows($query)==1){
 $method="E";
 $data=mysql_fetch_array($query);

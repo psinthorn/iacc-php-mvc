@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -109,8 +110,10 @@ function del_id(id)
 </head>
 
 <body><?Php 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
 
-$queryvou=mysql_query("select * from receipt where id='".$_REQUEST[id]."' and vender='".$_SESSION[com_id]."'");
+$queryvou=mysql_query("select * from receipt where id='".$id."' and vender='".$com_id."'");
 if(mysql_num_rows($queryvou)==1){$mode="E";
 $fetvou=mysql_fetch_array($queryvou);
 }else{$mode="A";}
@@ -144,7 +147,7 @@ $fetvou=mysql_fetch_array($queryvou);
 			else
 			echo "<option value='0' >Use Default</option>";
 			
-			$querycustomer=mysql_query("select brand_name,id from brand where ven_id='".$_SESSION[com_id]."' ");
+			$querycustomer=mysql_query("select brand_name,id from brand where ven_id='".$com_id."' ");
 			
 			
 				while($fetch_customer=mysql_fetch_array($querycustomer)){
@@ -233,7 +236,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
 
   <?php $i++;}else
 if($mode=="E"){
-	$query_pro=mysql_query("select pro_id,price,type,ban_id,model,quantity,pack_quantity,des,vo_id,DATE_FORMAT(vo_warranty,'%d-%m-%Y') as vo_warranty from product where re_id='".$_REQUEST[id]."'");$i=0;
+	$query_pro=mysql_query("select pro_id,price,type,ban_id,model,quantity,pack_quantity,des,vo_id,DATE_FORMAT(vo_warranty,'%d-%m-%Y') as vo_warranty from product where re_id='".$id."'");$i=0;
 
 while($data_pro=mysql_fetch_array($query_pro)){?>
 <tr id="fr[<?=$i?>] <?php if($i==0) echo 'firstTr'?>">
@@ -301,7 +304,7 @@ while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
 	<input type="hidden" name="method" value="<?=$mode?>">
   
 	<input type="hidden" name="page" value="receipt_list">
-    <input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
+    <input type="hidden" name="id" value="<?php echo $id;?>">
     
     
 	

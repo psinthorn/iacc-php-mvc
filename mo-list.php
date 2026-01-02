@@ -2,6 +2,7 @@
 // session_start();
 // require_once("inc/sys.configs.php");
 // require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 // $db=new DbConn($config);
 // $db->checkSecurity();
 ?>
@@ -30,7 +31,8 @@ function fetbrand(str) {
 
 </script>
 <?php
-  $query=mysqli_query($db->conn, "select * from model where id='".$_REQUEST['id']."'");
+  $id = sql_int($_REQUEST['id']);
+  $query=mysqli_query($db->conn, "select * from model where id='".$id."'");
   if(mysqli_num_rows($query)==1){
     $method="E";
     $data=mysqli_fetch_array($query);

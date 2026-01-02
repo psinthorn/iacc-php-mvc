@@ -2,6 +2,7 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
 $users->checkSecurity();?>
 <!DOCTYPE html>
@@ -24,11 +25,14 @@ $_date = explode("-", date("d-m-Y"));
 
 <?php  
 
+$id = sql_int($_REQUEST['id']);
+$com_id = sql_int($_SESSION['com_id']);
+$modep = sql_escape($_REQUEST['modep']);
 
-if($_REQUEST[modep]=="ad"){
-	$query=mysql_query("select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$_REQUEST[id]."' and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and deliver.id not in (select deliver_id from receive) ");
+if($modep=="ad"){
+	$query=mysql_query("select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$id."' and (cus_id='".$com_id."' or ven_id='".$com_id."') and deliver.id not in (select deliver_id from receive) ");
 	
-	}else{$query=mysql_query("select po.name as name,po.id as id,ven_id,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref join deliver on po.id=deliver.po_id where deliver.id='".$_REQUEST[id]."' and status='3' and (cus_id='".$_SESSION[com_id]."' or ven_id='".$_SESSION[com_id]."') and po_id_new=''");}
+	}else{$query=mysql_query("select po.name as name,po.id as id,ven_id,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref join deliver on po.id=deliver.po_id where deliver.id='".$id."' and status='3' and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''".$id."'");}
 
 if(mysql_num_rows($query)=="1"){
 	$data=mysql_fetch_array($query);
@@ -56,7 +60,7 @@ if(mysql_num_rows($query)=="1"){
 		<lable for="des"><?=$xml->description?></lable><textarea id="des" class="form-control" readonly rows="5"><?php echo $data[des];?></textarea>
 		
 	</div>
-     <?php if($_REQUEST[modep]!="ad"){?>
+     <?php if($modep!="ad"){?>
      <div id="box">
 		<lable for="name"><?=$xml->validpay?></lable>
 		<input readonly class="form-control" name="valid_pay" type="text" value="<?php echo $data[valid_pay];?>">
@@ -65,11 +69,11 @@ if(mysql_num_rows($query)=="1"){
 		<lable for="name"><?=$xml->deliverydate?></lable>
 		<input readonly class="form-control" name="deliver_date" type="text" value="<?php echo $data[deliver_date];?>">
 	</div>
-    <?php if($_REQUEST[modep]!="ad"){?> <div id="box">
+    <?php if($modep!="ad"){?> <div id="box">
 		<lable for="name">Upload PO</lable><?php echo "<a href='upload/".$data[pic]."' target='blank' class='form-control'>View PO</a>";?>
 	</div><?php } ?>
 <div class="clearfix"></div><br><table class="table"><tr><tr><th width="150"><?=$xml->name?></th><th><?=$xml->model?></th><th width="150"><?=$xml->sn?></th></tr>
-	  <?php if($_REQUEST[modep]=="ad"){
+	  <?php if($modep=="ad"){
 		   $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,s_n from product join store on product.pro_id=store.pro_id join type on product.type=type.id join model on product.model=model.id where so_id='".$data[id]."'");
 	  }else{
 	 $que_pro=mysql_query("select type.name as name,product.price as price,discount,model.model_name as model,s_n from product join store on product.pro_id=store.pro_id join type on product.type=type.id join model on product.model=model.id  where po_id='".$data[id]."'");
@@ -89,10 +93,10 @@ echo "<tr><td>".$data_pro[name]."</td>
     
     </table>
    
-	<input type="hidden" name="method" value="<?php if($_REQUEST[modep]=="ad"){echo "R2";}else { echo "R";}?>">
+	<input type="hidden" name="method" value="<?php if($modep=="ad"){echo "R2";}else { echo "R";}?>">
     <input type="hidden" name="ref" value="<?php echo $data[ref];?>">
     <input type="hidden" name="po_id" value="<?php echo $data[id];?>">
-    <input type="hidden" name="deliv_id" value="<?php echo $_REQUEST[id];?>">
+    <input type="hidden" name="deliv_id" value="<?php echo $id;?>">
 	<input type="hidden" name="page" value="deliv_list">
     
 	<input type="submit" value="<?=$xml->recieve?>" class="btn btn-primary">
