@@ -899,7 +899,7 @@ function get_status_badge($status) {
                     <i class="fa fa-chevron-right"></i>
                 </a>
                 <a href="index.php?page=remote" class="quick-link" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
-                    <i class="fa fa-exchange-alt"></i>
+                    <i class="fa fa-exchange"></i>
                     <span class="quick-link-text">Switch Company</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
@@ -917,7 +917,7 @@ function get_status_badge($status) {
                     <i class="fa fa-chevron-right"></i>
                 </a>
                 <a href="index.php?page=pr_list" class="quick-link">
-                    <i class="fa fa-clipboard-list"></i>
+                    <i class="fa fa-clipboard"></i>
                     <span class="quick-link-text">Requests</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
@@ -927,7 +927,7 @@ function get_status_badge($status) {
                     <i class="fa fa-chevron-right"></i>
                 </a>
                 <a href="index.php?page=report" class="quick-link">
-                    <i class="fa fa-chart-bar"></i>
+                    <i class="fa fa-bar-chart-o"></i>
                     <span class="quick-link-text">Reports</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
@@ -959,27 +959,6 @@ function get_status_badge($status) {
                     <?php endif; ?>
                         <span><strong>Updated:</strong></span>
                         <span><?php echo date('H:i:s'); ?></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Stats -->
-            <div class="content-card">
-                <h5 class="card-title">
-                    <i class="fa fa-chart-pie"></i> This Month
-                </h5>
-                <div class="row" style="margin: 0;">
-                    <div class="col-md-6">
-                        <div class="stat-box">
-                            <div class="stat-label">Completed</div>
-                            <div class="stat-value"><?php echo $completed_orders; ?></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="stat-box" style="background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);">
-                            <div class="stat-label">Pending</div>
-                            <div class="stat-value"><?php echo $pending_orders; ?></div>
-                        </div>
                     </div>
                 </div>
             </div>
