@@ -26,7 +26,8 @@ $company_filter_pr = "";
 $company_filter_iv = "";
 if ($com_id > 0) {
     $company_filter_pr = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id)";
-    $company_filter_iv = " AND (iv.ven_id = $com_id OR iv.cus_id = $com_id)";
+    // iv.tex links to pr.id, so we join to pr for company filtering
+    $company_filter_iv = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id)";
 }
 
 // ============ ADMIN SYSTEM STATS ============
@@ -140,22 +141,25 @@ $result_completed = mysqli_query($db->conn, $sql_completed);
 $row_completed = mysqli_fetch_assoc($result_completed);
 $completed_orders = $row_completed['count'] ?? 0;
 
-// Invoice statistics (filtered by company)
+// Invoice statistics (filtered by company via pr relationship)
 $sql_invoices = "SELECT COUNT(DISTINCT iv.tex) as count FROM iv 
+                 JOIN pr ON iv.tex = pr.id
                  WHERE DATE(iv.createdate) >= '$month_start' $company_filter_iv";
 $result_invoices = mysqli_query($db->conn, $sql_invoices);
 $row_invoices = mysqli_fetch_assoc($result_invoices);
 $total_invoices = $row_invoices['count'] ?? 0;
 
-// Tax Invoice statistics (filtered by company)
+// Tax Invoice statistics (filtered by company via pr relationship)
 $sql_tax_invoices = "SELECT COUNT(DISTINCT iv.texiv) as count FROM iv 
+                     JOIN pr ON iv.tex = pr.id
                      WHERE iv.texiv > 0 AND DATE(iv.texiv_create) >= '$month_start' $company_filter_iv";
 $result_tax_inv = mysqli_query($db->conn, $sql_tax_invoices);
 $row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
 $total_tax_invoices = $row_tax_inv['count'] ?? 0;
 
-// Recent invoices (filtered by company)
+// Recent invoices (filtered by company via pr relationship)
 $sql_recent_inv = "SELECT iv.*, company.name_en FROM iv 
+                   JOIN pr ON iv.tex = pr.id
                    LEFT JOIN company ON iv.cus_id = company.id
                    WHERE 1=1 $company_filter_iv
                    ORDER BY iv.createdate DESC LIMIT 5";
@@ -833,10 +837,11 @@ function get_status_badge($status) {
                         </thead>
                         <tbody>
                             <?php 
-                            // Re-query for tax invoices with actual data
+                            // Tax invoices with actual data (filtered by company via pr relationship)
                             $sql_tax_inv_detail = "SELECT iv.*, company.name_en FROM iv 
+                                                  JOIN pr ON iv.tex = pr.id
                                                   LEFT JOIN company ON iv.cus_id = company.id
-                                                  WHERE iv.texiv > 0 
+                                                  WHERE iv.texiv > 0 $company_filter_iv
                                                   ORDER BY iv.texiv_create DESC LIMIT 5";
                             $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
                             ?>
