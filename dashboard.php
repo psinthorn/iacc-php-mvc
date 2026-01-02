@@ -26,8 +26,8 @@ $company_filter_pr = "";
 $company_filter_iv = "";
 if ($com_id > 0) {
     $company_filter_pr = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id)";
-    // For invoices: check pr.ven_id, pr.cus_id, AND iv.cus_id (invoice recipient)
-    $company_filter_iv = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id OR iv.cus_id = $com_id)";
+    // For invoices: join via po.ref = pr.id, filter on pr
+    $company_filter_iv = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id)";
 }
 
 // ============ ADMIN SYSTEM STATS ============
@@ -141,26 +141,31 @@ $result_completed = mysqli_query($db->conn, $sql_completed);
 $row_completed = mysqli_fetch_assoc($result_completed);
 $completed_orders = $row_completed['count'] ?? 0;
 
-// Invoice statistics (filtered by company via pr relationship - iv.id links to pr.id)
+// Invoice statistics (filtered by company via po -> pr relationship)
 $sql_invoices = "SELECT COUNT(DISTINCT iv.tex) as count FROM iv 
-                 JOIN pr ON iv.id = pr.id
+                 JOIN po ON iv.tex = po.id
+                 JOIN pr ON po.ref = pr.id
                  WHERE DATE(iv.createdate) >= '$month_start' $company_filter_iv";
 $result_invoices = mysqli_query($db->conn, $sql_invoices);
 $row_invoices = mysqli_fetch_assoc($result_invoices);
 $total_invoices = $row_invoices['count'] ?? 0;
 
-// Tax Invoice statistics (filtered by company via pr relationship)
+// Tax Invoice statistics (filtered by company via po -> pr relationship)
 $sql_tax_invoices = "SELECT COUNT(DISTINCT iv.texiv) as count FROM iv 
-                     JOIN pr ON iv.id = pr.id
+                     JOIN po ON iv.tex = po.id
+                     JOIN pr ON po.ref = pr.id
                      WHERE iv.texiv > 0 AND DATE(iv.texiv_create) >= '$month_start' $company_filter_iv";
 $result_tax_inv = mysqli_query($db->conn, $sql_tax_invoices);
 $row_tax_inv = mysqli_fetch_assoc($result_tax_inv);
 $total_tax_invoices = $row_tax_inv['count'] ?? 0;
 
-// Recent invoices (filtered by company via pr relationship)
-$sql_recent_inv = "SELECT iv.id, iv.tex, iv.createdate, iv.total, iv.status_iv
+// Recent invoices (filtered by company via po -> pr relationship)
+$sql_recent_inv = "SELECT iv.tex as po_id, iv.createdate, iv.status_iv,
+                   po.name as description,
+                   (SELECT SUM(price*quantity) FROM product WHERE po_id = po.id) as subtotal
                    FROM iv 
-                   JOIN pr ON iv.id = pr.id
+                   JOIN po ON iv.tex = po.id
+                   JOIN pr ON po.ref = pr.id
                    WHERE 1=1 $company_filter_iv
                    ORDER BY iv.createdate DESC LIMIT 5";
 $recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
@@ -776,16 +781,16 @@ function get_status_badge($status) {
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-file-invoice"></i> Recent Invoices
-                    <a href="index.php?page=inv" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
+                    <a href="index.php?page=compl_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
+                                <th>Description</th>
                                 <th>Date</th>
                                 <th>Amount</th>
-                                <th>Status</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -793,21 +798,16 @@ function get_status_badge($status) {
                             <?php if($recent_invoices && mysqli_num_rows($recent_invoices) > 0): ?>
                                 <?php while($invoice = mysqli_fetch_assoc($recent_invoices)): ?>
                                 <tr>
-                                    <td><strong>#<?php echo $invoice['tex'] ?? 'N/A'; ?></strong></td>
+                                    <td><strong>#<?php echo $invoice['po_id'] ?? 'N/A'; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(mb_substr($invoice['description'] ?? '', 0, 25)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($invoice['createdate'])); ?></td>
-                                    <td><?php echo number_format($invoice['total'] ?? 0, 2); ?></td>
+                                    <td><?php echo number_format($invoice['subtotal'] ?? 0, 2); ?></td>
                                     <td>
-                                        <?php 
-                                        $status_text = ($invoice['status_iv'] == 1) ? 'Approved' : 'Pending';
-                                        $status_color = ($invoice['status_iv'] == 1) ? '#28a745' : '#ffc107';
-                                        ?>
-                                        <span class="badge" style="background: <?php echo $status_color; ?>; color: <?php echo ($invoice['status_iv'] == 1) ? 'white' : '#333'; ?>;">
-                                            <?php echo $status_text; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="index.php?page=inv_m&id=<?php echo $invoice['id']; ?>" class="action-btn" title="View Details">
+                                        <a href="index.php?page=compl_view&id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="View Details">
                                             <i class="fa fa-eye"></i>
+                                        </a>
+                                        <a href="inv.php?id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank" style="background: #28a745;">
+                                            <i class="fa fa-file-pdf"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -831,26 +831,28 @@ function get_status_badge($status) {
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-file-invoice-dollar"></i> Recent Tax Invoices
-                    <a href="index.php?page=taxiv" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
+                    <a href="index.php?page=compl_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
                                 <th>Tax Inv #</th>
+                                <th>Description</th>
                                 <th>Created</th>
                                 <th>Amount</th>
-                                <th>Email</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            // Tax invoices with actual data (filtered by company via pr relationship - iv.id links to pr.id)
-                            $sql_tax_inv_detail = "SELECT iv.*, 
-                                                  pr.ven_id
+                            // Tax invoices with correct join: iv.tex = po.id, po.ref = pr.id
+                            $sql_tax_inv_detail = "SELECT iv.texiv, iv.tex as po_id, iv.texiv_create, iv.countmailtax,
+                                                  po.name as description,
+                                                  (SELECT SUM(price*quantity) FROM product WHERE po_id = po.id) as subtotal
                                                   FROM iv 
-                                                  JOIN pr ON iv.id = pr.id
+                                                  JOIN po ON iv.tex = po.id
+                                                  JOIN pr ON po.ref = pr.id
                                                   WHERE iv.texiv > 0 $company_filter_iv
                                                   ORDER BY iv.texiv_create DESC LIMIT 5";
                             $tax_inv_results = mysqli_query($db->conn, $sql_tax_inv_detail);
@@ -859,20 +861,15 @@ function get_status_badge($status) {
                                 <?php while($tax_inv = mysqli_fetch_assoc($tax_inv_results)): ?>
                                 <tr>
                                     <td><strong>#<?php echo $tax_inv['texiv'] ?? 'N/A'; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(mb_substr($tax_inv['description'] ?? '', 0, 25)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
-                                    <td><?php echo number_format($tax_inv['total'] ?? 0, 2); ?></td>
+                                    <td><?php echo number_format($tax_inv['subtotal'] ?? 0, 2); ?></td>
                                     <td>
-                                        <?php if($tax_inv['countmailtax'] > 0): ?>
-                                            <span class="badge" style="background: #28a745; color: white;">
-                                                <i class="fa fa-check"></i> <?php echo $tax_inv['countmailtax']; ?>x
-                                            </span>
-                                        <?php else: ?>
-                                            <span style="color: #999;">-</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <a href="index.php?page=taxiv_m&id=<?php echo $tax_inv['id']; ?>" class="action-btn" title="View Details">
+                                        <a href="index.php?page=compl_view&id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="View Details">
                                             <i class="fa fa-eye"></i>
+                                        </a>
+                                        <a href="taxiv.php?id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank" style="background: #28a745;">
+                                            <i class="fa fa-file-pdf"></i>
                                         </a>
                                     </td>
                                 </tr>
