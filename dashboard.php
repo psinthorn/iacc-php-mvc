@@ -689,16 +689,16 @@ function get_status_badge($status) {
             <!-- Recent Payments -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-receipt"></i> Recent Payments
+                    <i class="fa fa-money-bill-wave"></i> Recent Payments
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>PO #</th>
+                                <th>PO / Description</th>
                                 <th>Amount</th>
-                                <th>Method</th>
+                                <th>Payment Method</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -707,11 +707,11 @@ function get_status_badge($status) {
                                 <?php while($payment = mysqli_fetch_assoc($recent_payments)): ?>
                                 <tr>
                                     <td><?php echo date('M d, Y', strtotime($payment['date'])); ?></td>
-                                    <td><?php echo $payment['po_id'] . ' - ' . substr($payment['name'] ?? 'N/A', 0, 15); ?></td>
-                                    <td><?php echo format_currency($payment['volumn']); ?></td>
-                                    <td><?php echo $payment['value'] ?? 'Direct'; ?></td>
+                                    <td><strong>#<?php echo $payment['po_id']; ?></strong> <?php echo substr($payment['name'] ?? '', 0, 15); ?></td>
+                                    <td><strong><?php echo format_currency($payment['volumn']); ?></strong></td>
+                                    <td><?php echo !empty($payment['value']) ? ucfirst($payment['value']) : 'Direct'; ?></td>
                                     <td>
-                                        <button class="action-btn">View</button>
+                                        <a href="index.php?page=po_view&id=<?php echo $payment['po_id']; ?>" class="action-btn">View</a>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
@@ -739,9 +739,9 @@ function get_status_badge($status) {
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>PO ID</th>
-                                <th>Name</th>
-                                <th>Tax ID</th>
+                                <th>PO #</th>
+                                <th>Description</th>
+                                <th>Tax Invoice #</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
@@ -750,9 +750,9 @@ function get_status_badge($status) {
                             <?php if($pending_pos && mysqli_num_rows($pending_pos) > 0): ?>
                                 <?php while($po = mysqli_fetch_assoc($pending_pos)): ?>
                                 <tr>
-                                    <td><?php echo $po['po_id_new'] ?? $po['id']; ?></td>
-                                    <td><?php echo substr($po['name'], 0, 20); ?></td>
-                                    <td><?php echo $po['tax']; ?></td>
+                                    <td><strong><?php echo $po['po_id_new'] ?? $po['id']; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(substr($po['name'], 0, 25)); ?></td>
+                                    <td><code><?php echo $po['tax'] ?: '-'; ?></code></td>
                                     <td><?php echo date('M d, Y', strtotime($po['date'])); ?></td>
                                     <td><?php echo get_status_badge($po['over']); ?></td>
                                 </tr>
@@ -781,8 +781,8 @@ function get_status_badge($status) {
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
-                                <th>Tax ID</th>
-                                <th>Customer</th>
+                                <th>Invoice #</th>
+                                <th>Issued To</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
@@ -791,8 +791,8 @@ function get_status_badge($status) {
                             <?php if($recent_invoices && mysqli_num_rows($recent_invoices) > 0): ?>
                                 <?php while($invoice = mysqli_fetch_assoc($recent_invoices)): ?>
                                 <tr>
-                                    <td><?php echo $invoice['tex'] ?? 'N/A'; ?></td>
-                                    <td><?php echo substr($invoice['name_en'] ?? 'N/A', 0, 18); ?></td>
+                                    <td><strong>#<?php echo $invoice['tex'] ?? 'N/A'; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(substr($invoice['name_en'] ?? 'N/A', 0, 22)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($invoice['createdate'])); ?></td>
                                     <td>
                                         <?php 
@@ -823,16 +823,16 @@ function get_status_badge($status) {
             <!-- Recent Tax Invoices -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-receipt"></i> Tax Invoices Issued
+                    <i class="fa fa-file-invoice-dollar"></i> Tax Invoices Issued
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
-                                <th>Tax Inv ID</th>
-                                <th>Customer</th>
+                                <th>Tax Inv #</th>
+                                <th>Issued To</th>
                                 <th>Created</th>
-                                <th>Mailed</th>
+                                <th>Email Sent</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -848,11 +848,17 @@ function get_status_badge($status) {
                             <?php if($tax_inv_results && mysqli_num_rows($tax_inv_results) > 0): ?>
                                 <?php while($tax_inv = mysqli_fetch_assoc($tax_inv_results)): ?>
                                 <tr>
-                                    <td><?php echo $tax_inv['texiv'] ?? 'N/A'; ?></td>
-                                    <td><?php echo substr($tax_inv['name_en'] ?? 'N/A', 0, 18); ?></td>
+                                    <td><strong>#<?php echo $tax_inv['texiv'] ?? 'N/A'; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(substr($tax_inv['name_en'] ?? 'N/A', 0, 22)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
                                     <td>
-                                        <?php echo ($tax_inv['countmailtax'] > 0) ? 'Yes (' . $tax_inv['countmailtax'] . ')' : '-'; ?>
+                                        <?php if($tax_inv['countmailtax'] > 0): ?>
+                                            <span class="badge" style="background: #28a745; color: white;">
+                                                <i class="fa fa-check"></i> <?php echo $tax_inv['countmailtax']; ?>x
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color: #999;">-</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
