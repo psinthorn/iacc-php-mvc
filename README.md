@@ -1,13 +1,36 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.3  
+**Version**: 2.4  
 **Status**: Production Ready  
-**Last Updated**: January 2, 2026  
+**Last Updated**: January 3, 2026  
 **Project Size**: 172 MB
 
 ---
 
 ## 📋 Changelog
+
+### v2.4 (January 3, 2026)
+- **MySQLi Migration**:
+  - Migrated 37+ PHP files from deprecated `mysql_*` to `mysqli_*` functions
+  - Full PHP 7.4+ compatibility
+  - Fixed all database queries to use `mysqli_query($db->conn, ...)`
+- **Dashboard Enhancements**:
+  - Simplified invoice tables (Invoice #, Description, Date, Amount, Actions)
+  - Added clickable View and PDF buttons for invoices
+  - Fixed invoice table joins (`iv.tex = po.id`)
+  - Added Business Summary Report section with period filters
+  - Top 10 customers by invoice count
+  - Font Awesome 4 icon compatibility fixes
+  - Removed redundant "This Month" component
+- **Report Page Improvements**:
+  - Period filters (Today, 7 Days, 30 Days, This Year, All Time)
+  - Column sorting (click any header to sort ascending/descending)
+  - Admin global view when no company selected
+  - Shows aggregated data across all customers for admins
+- **Bug Fixes**:
+  - Fixed `po-list.php` undefined `$users` variable
+  - Fixed report page showing no data for admin users
+  - Fixed duplicate code causing PHP parse errors
 
 ### v2.3 (January 2, 2026)
 - **Dashboard Overhaul**:
