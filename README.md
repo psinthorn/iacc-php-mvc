@@ -1,9 +1,35 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.1  
+**Version**: 2.2  
 **Status**: Production Ready  
 **Last Updated**: January 2, 2026  
 **Project Size**: 172 MB
+
+---
+
+## 📋 Changelog
+
+### v2.2 (January 2, 2026)
+- **Renamed**: `band` table → `brand` (with files `brand.php`, `brand-list.php`)
+- **Renamed**: Authorize table columns (`usr_id`→`id`, `usr_name`→`email`, `usr_pass`→`password`)
+- **Added**: Account lockout after 10 failed attempts (30 min)
+- **Added**: Password reset flow (`forgot-password.php`, `reset-password.php`)
+- **Added**: Remember Me with secure cookies (30 days)
+- **Added**: Role-based access control (User/Admin/Super Admin)
+- **Fixed**: `authorize.id` PRIMARY KEY with AUTO_INCREMENT
+- **Fixed**: `authorize.level` changed from VARCHAR(1) to INT
+- **Fixed**: `brand_name` column size (varchar 20 → 100)
+- **New Tables**: `password_resets`, `remember_tokens`
+
+### v2.1 (January 2, 2026)
+- SQL Injection prevention on 49+ files
+- Prepared statements in HardClass
+- bcrypt password hashing with MD5 auto-migration
+- Rate limiting (5 attempts/15 min)
+- CSRF protection
+- Session security hardening
+- Soft delete support (16 tables)
+- DevOps scripts (backup, restore, PHPStan)
 
 ---
 
@@ -230,6 +256,31 @@ docker exec -it iacc_mysql mysql -uroot -proot iacc
 
 ---
 
+## 🗃️ Database Schema
+
+### Core Tables
+| Table | Description |
+|-------|-------------|
+| `authorize` | User authentication (id, email, password, level) |
+| `company` | Companies/vendors/customers |
+| `brand` | Product brands |
+| `category` | Product categories |
+| `type` | Product types |
+| `product` | Products catalog |
+| `po` | Purchase orders |
+| `deliv` | Deliveries |
+| `payment` | Payments |
+| `credit` | Credits |
+
+### Security Tables
+| Table | Description |
+|-------|-------------|
+| `login_attempts` | Rate limiting tracker |
+| `password_resets` | Password reset tokens |
+| `remember_tokens` | Persistent login tokens |
+
+---
+
 ## ✅ Core Features
 
 - **Company Management** - Vendors, suppliers, customers
@@ -256,15 +307,53 @@ Template: `inc/pdf-template.php`
 
 ---
 
-## 🔐 Authentication
+## 🔐 Authentication System (v2.1)
 
-- Session-based authentication
-- Login: `login.php`
-- Auth handler: `authorize.php`
-- Session check in `index.php`
-- **Password**: bcrypt with auto-migration from MD5
-- **Rate limiting**: 5 attempts per 15 minutes
-- **CSRF protection**: Token validation on login
+### Login Flow
+| Page | Purpose |
+|------|---------|
+| `login.php` | Login form with CSRF protection |
+| `authorize.php` | Authentication handler |
+| `forgot-password.php` | Password reset request |
+| `reset-password.php` | Set new password with token |
+
+### User Roles
+| Level | Role | Description |
+|-------|------|-------------|
+| 0 | User | Standard access |
+| 1 | Admin | Administrative access |
+| 2 | Super Admin | Full system access |
+
+### Security Features
+- **Password Hashing**: bcrypt (cost=12) with auto-migration from MD5
+- **Rate Limiting**: 5 attempts per 15 minutes per IP
+- **Account Lockout**: 10 failed attempts → 30 minute lock
+- **CSRF Protection**: Token validation on all forms
+- **Remember Me**: Secure cookie-based persistent login (30 days)
+- **Password Reset**: Token-based email reset (1 hour expiry)
+
+### Role-Based Access Control
+```php
+// In inc/class.dbconn.php
+$db->getUserLevel();              // Get current user's level
+$db->hasLevel(1);                 // Check if user has admin level
+$db->requireLevel(2);             // Require super admin (redirects if not)
+$db->isSuperAdmin();              // Check if super admin
+$db->isAdmin();                   // Check if admin or higher
+```
+
+### Session Variables
+| Variable | Description |
+|----------|-------------|
+| `$_SESSION['user_id']` | User ID (int) |
+| `$_SESSION['user_email']` | User email |
+| `$_SESSION['user_level']` | User role level |
+| `$_SESSION['lang']` | Language preference |
+
+### Default Users
+| Email | Role |
+|-------|------|
+| adminx@f2.co.th | Super Admin |
 
 ---
 
