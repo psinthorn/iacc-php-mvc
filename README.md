@@ -1,6 +1,6 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.0  
+**Version**: 2.1  
 **Status**: Production Ready  
 **Last Updated**: January 2, 2026  
 **Project Size**: 172 MB
@@ -36,8 +36,81 @@ docker compose down
 | MySQL | 5.7 | ✅ Running |
 | Nginx | Alpine | ✅ Running |
 | mPDF | 5.7 | ✅ Working |
-| Bootstrap | 3.x | ✅ Active |
-| jQuery | 1.10.2 | ✅ Active |
+| Bootstrap | 3.x / 5.3.3 | ✅ Active |
+| jQuery | 1.10.2 / 3.7.1 | ✅ Active |
+
+---
+
+## 🔒 Security Features (v2.1)
+
+### SQL Injection Prevention
+All 49+ database files secured with input sanitization:
+```php
+$id = sql_int($_REQUEST['id']);
+$name = sql_escape($_REQUEST['name']);
+```
+
+### Prepared Statements
+New safe methods in `HardClass`:
+```php
+$hard->insertSafe('table', ['name' => $value]);
+$hard->updateSafe('table', ['name' => $value], ['id' => $id]);
+$hard->selectSafe('table', ['id' => $id]);
+```
+
+### Password Security
+- **Automatic migration** from MD5 to bcrypt on first login
+- Uses `password_hash()` with cost factor 12
+- Backward compatible with existing MD5 passwords
+
+### Rate Limiting
+- **5 login attempts** per 15 minutes per IP
+- Login attempts tracked in `login_attempts` table
+- User feedback on remaining attempts
+
+### CSRF Protection
+- Token-based CSRF protection on login
+- Functions: `csrf_token()`, `csrf_field()`, `csrf_verify()`
+
+### Session Security
+- HttpOnly cookies
+- Strict mode enabled
+- SameSite protection
+- Session regeneration on login
+
+### Soft Delete
+16 tables support soft delete for audit trails:
+```php
+$hard->softDelete('company', ['id' => $id]);
+$hard->restore('company', ['id' => $id]);
+$hard->selectActiveSafe('company', []);
+```
+
+---
+
+## 🛠️ DevOps Tools
+
+### Database Backup
+```bash
+# Manual backup
+./scripts/backup-db.sh manual
+
+# Daily backup (for cron)
+./scripts/backup-db.sh daily
+
+# Weekly backup
+./scripts/backup-db.sh weekly
+```
+
+### Database Restore
+```bash
+./scripts/restore-db.sh backups/iacc_backup_20260102.sql.gz
+```
+
+### Static Analysis (PHPStan)
+```bash
+./scripts/phpstan.sh inc iacc
+```
 
 ---
 
@@ -91,8 +164,14 @@ iAcc-PHP-MVC/ (172 MB)
 │   ├── nginx/default.conf        # Nginx config
 │   └── mysql/my.cnf              # MySQL config
 │
+├── scripts/                      # Utility scripts
+│   ├── backup-db.sh              # Database backup
+│   ├── restore-db.sh             # Database restore
+│   └── phpstan.sh                # Static analysis
+│
 ├── docker-compose.yml            # Docker orchestration
 ├── Dockerfile                    # PHP-FPM image
+├── phpstan.neon                  # PHPStan config
 ├── .env                          # Environment variables
 └── .htaccess                     # Apache config
 ```
@@ -183,6 +262,9 @@ Template: `inc/pdf-template.php`
 - Login: `login.php`
 - Auth handler: `authorize.php`
 - Session check in `index.php`
+- **Password**: bcrypt with auto-migration from MD5
+- **Rate limiting**: 5 attempts per 15 minutes
+- **CSRF protection**: Token validation on login
 
 ---
 
@@ -211,12 +293,36 @@ All documentation files are in `docs/` folder (83 markdown files).
 
 ### Create Backup
 ```bash
-./backup.sh
+./scripts/backup-db.sh manual
+```
+
+### Restore Backup
+```bash
+./scripts/restore-db.sh backups/iacc_backup_YYYYMMDD.sql.gz
 ```
 
 ### SQL Backups Location
 ```
 backups/
+```
+
+### Backup Retention
+- Daily backups: 30 days
+- Weekly backups: 12 weeks
+
+---
+
+## 🔧 Validation Functions
+
+Available in `inc/security.php`:
+```php
+validate_required(['name', 'email']);  // Check required fields
+validate_email($email);                 // Email format
+validate_phone($phone);                 // Thai phone format
+validate_date($date);                   // Date format (d-m-Y)
+validate_range($val, 0, 100);          // Numeric range
+validate_tax_id($taxId);               // Thai 13-digit tax ID
+validate_file_upload($file, $options); // File upload validation
 ```
 
 ---
