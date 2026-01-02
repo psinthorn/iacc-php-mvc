@@ -44,8 +44,6 @@ services:
     volumes:
       # Database persistent storage
       - mysql_data:/var/lib/mysql
-      # Initialize database with production backup
-      - ./iacc/theiconn_cms.sql:/docker-entrypoint-initdb.d/01-init.sql
       # MySQL configuration
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     networks:
@@ -65,8 +63,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # Application code
-      - ./iacc:/var/www/html
+      # Application code - mount root (same as PHP)
+      - .:/var/www/html
       # Upload and file directories
       - php_uploads:/var/www/html/upload
       - php_files:/var/www/html/file

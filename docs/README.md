@@ -1,10 +1,9 @@
 # iAcc - Accounting Management System
 
 **Project**: iACC - Comprehensive Accounting & Procurement Management  
-**Version**: 2.2 (Post-Cleanup)  
-**Status**: Production Ready  
-**Last Updated**: January 2, 2026  
-**Project Size**: 295 MB (after cleanup)
+**Version**: 2.1 (PDF Template Update)  
+**Status**: Active Development  
+**Last Updated**: January 2, 2026
 
 ---
 
@@ -19,8 +18,8 @@ docker-compose up -d
 ### Access Application
 | URL | Description |
 |-----|-------------|
-| http://localhost/dashboard.php | Main Dashboard |
-| http://localhost/login.php | Login Page |
+| http://localhost/ | Main entry |
+| http://localhost/iacc/ | Application |
 | http://localhost/inv.php?id=1923 | Invoice PDF |
 | http://localhost/exp.php?id={id} | Quotation PDF |
 | http://localhost/taxiv.php?id={id} | Tax Invoice PDF |
@@ -44,78 +43,42 @@ docker exec -it iacc-mysql mysql -u root -piacc iacc
 | Bootstrap | 3.3.7 | ✅ Active |
 | jQuery | 1.10.2 | ✅ Active |
 
-### Docker Configuration
-- **Nginx** serves from `./iacc:/var/www/html` (port 80)
-- **PHP-FPM** processes PHP files
-- **MySQL** database server (port 3306)
+### Docker Services
+- **nginx** - Web server (port 80)
+- **php-fpm** - PHP processor
+- **mysql** - Database (port 3306)
 
 ---
 
-## 📂 Project Structure (Clean)
+## 📂 Project Structure
 
 ```
-iAcc-PHP-MVC/ (295 MB)
+iAcc-PHP-MVC/
 ├── docker-compose.yml          # Docker configuration
-├── Dockerfile                  # PHP-FPM image
-├── .env                        # Environment variables
-├── backup.sh                   # Backup script
-├── deploy.sh                   # Deployment script
+├── index.php                   # Main router
+├── SYSTEM_SUMMARY.md           # Detailed system summary
 │
-├── iacc/                       # 🔥 MAIN APPLICATION (130 MB)
+├── iacc/                       # Main application
 │   ├── inc/                    # Core includes
 │   │   ├── class.dbconn.php    # MySQLi connection
 │   │   ├── sys.configs.php     # System settings
-│   │   ├── security.php        # Security functions
-│   │   └── pdf-template.php    # Shared PDF template
-│   │
-│   ├── MPDF/                   # PDF library (mPDF 5.7)
-│   ├── PHPMailer/              # Email library
-│   ├── TableFilter/            # Table filtering
-│   │
-│   ├── css/                    # Stylesheets
-│   ├── js/                     # JavaScript
-│   ├── fonts/                  # Font files
-│   ├── font-awesome/           # Font Awesome icons
+│   │   ├── security.php        # Security functions (NEW)
+│   │   └── pdf-template.php    # Shared PDF template (NEW)
 │   │
 │   ├── inv.php                 # Invoice PDF generator
 │   ├── exp.php                 # Quotation PDF generator
 │   ├── taxiv.php               # Tax Invoice PDF generator
-│   ├── dashboard.php           # Main dashboard
-│   ├── login.php               # Login page
-│   └── [70+ PHP files]         # Application modules
+│   ├── po-*.php                # Purchase order files
+│   ├── deliv-*.php             # Delivery files
+│   ├── company*.php            # Company management
+│   └── ...
 │
-├── file/                       # User uploads (87 MB)
-├── upload/                     # Upload folder (2 MB)
-├── vendor/                     # Composer dependencies (30 MB)
-├── docs/                       # Documentation (86 files)
-├── backups/                    # SQL backups
+├── MPDF/                       # PDF library
 ├── migrations/                 # SQL migration files
-├── scripts/                    # Shell scripts
-├── docker/                     # Docker configs
+├── backups/                    # Backup files
+├── php-source/                 # Original PHP backup
 └── logs/                       # Application logs
 ```
-
----
-
-## 🧹 Project Cleanup (January 2, 2026)
-
-### Cleanup Summary
-| Metric | Before | After | Saved |
-|--------|--------|-------|-------|
-| **Project Size** | 482 MB | 295 MB | **187 MB (39%)** |
-| **Git Size** | 158 MB | 40 MB | **118 MB** |
-| **Files Removed** | - | 1,179 | - |
-
-### What Was Removed
-- **Duplicate folders**: `css/`, `js/`, `fonts/`, `font-awesome/`, `PHPMailer/`, `TableFilter/` (duplicates of iacc/)
-- **Unused framework**: `src/`, `resources/`, `views/`, `public/`, `bootstrap/`
-- **Other unused**: `config/`, `tests/`, `backup/`, `database/`, `storage/`, `images/`, `.github/`, `php-source/`
-- **Duplicate files**: 70 PHP files in root (nginx serves from iacc/, not root)
-- **MPDF duplicates**: Root `MPDF/` and `MPDF57-7/` folders
-
-### Backup Locations
-- **Git branch**: `backup-before-cleanup-20260102` (pushed to origin)
-- **Zip backup**: `/Volumes/Data/Projects/iAcc-PHP-MVC-backup-20260102.zip` (207 MB)
 
 ---
 
@@ -199,19 +162,15 @@ $db   = "iacc";
 
 ### Recent Commits
 ```
-18f36a8 Deep cleanup: Remove duplicate assets and unused folders
-8473918 Major cleanup: Remove duplicates and organize files
-16b5d87 Update README with current system status
 b0be717 Add system summary for development continuity
 4f57e47 Merge pdf-template branch into main
+1389519 Fix signature section styling in PDF templates
+56a97cf Create shared PDF template for Invoice, Quotation, Tax Invoice
 ```
 
 ---
 
 ## 📋 Development Notes
-
-### Key Architecture Insight
-**Nginx serves from `./iacc:/var/www/html`** - All PHP files must be in the `iacc/` folder to be accessible via web. Root-level PHP files are not served.
 
 ### For Detailed System Information
 See [SYSTEM_SUMMARY.md](SYSTEM_SUMMARY.md) for:
@@ -219,6 +178,11 @@ See [SYSTEM_SUMMARY.md](SYSTEM_SUMMARY.md) for:
 - Function documentation
 - Testing URLs
 - Known issues and TODO
+
+### Backup Locations
+- `php-source/` - Original PHP files backup
+- `backups/` - File backups with timestamps
+- `*.backup` files - Individual file backups
 
 ---
 
@@ -262,51 +226,62 @@ WEEK 5 (Feb 5-18)          PHASE 4: cPanel Deployment
 ## 📂 PROJECT DIRECTORY STRUCTURE
 
 ```
-iAcc-PHP-MVC/ (295 MB - Clean Structure)
-├── 📄 docker-compose.yml               ← Docker dev setup
-├── 📄 docker-compose.prod.yml          ← Docker prod setup
-├── 📄 Dockerfile                       ← PHP-FPM image
-├── 📄 .env                             ← Environment config
-├── 📄 backup.sh                        ← Backup script
-├── 📄 deploy.sh                        ← Deployment script
+iAcc-PHP-MVC/
+├── 📋 PLANNING_COMPLETE_SUMMARY.md      ← Planning overview
+├── 📄 EXECUTIVE_SUMMARY.md              ← Team reference
+├── 🚀 PROJECT_ROADMAP_2026.md           ← Main detailed plan
+├── 📅 IMPLEMENTATION_TIMELINE.md        ← Day-by-day schedule
+├── 📌 QUICK_REFERENCE.md                ← Desk reference card
+├── 📚 DOCUMENTATION_INDEX.md            ← Master index
+├── README.md                            ← This file
+├── docker-compose.yml                   ← Development setup
+├── .env                                 ← Environment config
 │
-├── 📁 iacc/                            ← 🔥 MAIN APPLICATION
+├── iacc/                                ← Main application
 │   ├── inc/                            ← Core classes
 │   │   ├── sys.configs.php             ← Database config
 │   │   ├── class.dbconn.php            ← DB connection
 │   │   ├── class.hard.php              ← Helper functions
-│   │   ├── security.php                ← Security utils
-│   │   ├── pdf-template.php            ← PDF template
+│   │   ├── SecurityHelper.php           ← NEW: Security utils
 │   │   ├── string-th.xml               ← Thai language
 │   │   └── string-us.xml               ← English language
 │   │
-│   ├── MPDF/                           ← PDF library
-│   ├── PHPMailer/                      ← Email library
-│   ├── TableFilter/                    ← Table filtering
-│   ├── css/                            ← Stylesheets
-│   ├── js/                             ← JavaScript
-│   ├── fonts/                          ← Font files
-│   ├── font-awesome/                   ← Icon fonts
-│   │
-│   ├── dashboard.php                   ← Main dashboard
-│   ├── login.php                       ← Login page
+│   ├── index.php                       ← Main router
 │   ├── authorize.php                   ← Authentication
+│   ├── login.php                       ← Login page
+│   ├── dashboard.php                   ← Main dashboard
+│   │
 │   ├── company-*.php                   ← Company management
 │   ├── po-*.php                        ← Purchase orders
-│   ├── inv*.php                        ← Invoices
+│   ├── inv-*.php                       ← Invoices
 │   ├── payment-*.php                   ← Payments
 │   ├── deliv-*.php                     ← Deliveries
-│   └── rep-*.php                       ← Reports
+│   ├── rep-*.php                       ← Reports
+│   │
+│   ├── MPDF/                           ← PDF library
+│   ├── PHPMailer/                      ← Email library
+│   ├── upload/                         ← File uploads
+│   ├── file/                           ← File storage
+│   ├── css/                            ← Stylesheets
+│   ├── js/                             ← JavaScript
+│   ├── images/                         ← Assets
+│   └── core-function.php               ← Business logic
 │
-├── 📁 file/                            ← User uploads (87 MB)
-├── 📁 upload/                          ← Upload folder (2 MB)
-├── 📁 vendor/                          ← Composer deps (30 MB)
-├── 📁 docs/                            ← Documentation (86 files)
-├── 📁 backups/                         ← SQL backups
-├── 📁 migrations/                      ← SQL migrations
-├── 📁 scripts/                         ← Shell scripts
-├── 📁 docker/                          ← Docker configs
-└── 📁 logs/                            ← Application logs
+├── database/
+│   ├── migrations/                     ← Schema migrations
+│   └── *.sql                           ← Database dumps
+│
+├── docs/
+│   ├── UPGRADE_PHP_MYSQL.md            ← PHP/MySQL upgrade
+│   ├── TESTING_CHECKLIST.md            ← 29 test procedures
+│   ├── STAGING_DEPLOYMENT_GUIDE.md     ← Staging setup
+│   └── [other reference docs]
+│
+├── config/
+│   ├── app.php                         ← App configuration
+│   └── database.php                    ← DB configuration
+│
+└── [other support files]
 ```
 
 ---
