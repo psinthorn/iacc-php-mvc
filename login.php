@@ -1,3 +1,9 @@
+<?php
+// Initialize session for CSRF protection
+session_start();
+require_once("inc/sys.configs.php");
+require_once("inc/security.php");
+?>
 <!DOCTYPE html>
 <html>
 
@@ -28,6 +34,7 @@
                     </div>
                     <div class="panel-body">
                         <form role="form" action="authorize.php" method="post">
+                            <?= csrf_field() ?>
                             <fieldset>
                                 <div class="form-group">
                                     <input class="form-control" placeholder="E-mail" name="m_user" type="email" autofocus>

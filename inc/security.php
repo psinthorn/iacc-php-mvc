@@ -217,3 +217,88 @@ function get_flash() {
     }
     return null;
 }
+
+// ============================================================================
+// SQL INJECTION PREVENTION HELPERS
+// Use these functions when building SQL queries with user input
+// ============================================================================
+
+/**
+ * Safely escape a string value for SQL queries
+ * Prevents SQL injection attacks
+ * 
+ * @param mixed $value The value to escape
+ * @return string Escaped value safe for SQL
+ * 
+ * Usage: $query = "SELECT * FROM users WHERE name='" . sql_escape($_POST['name']) . "'";
+ */
+function sql_escape($value) {
+    global $__MYSQL_COMPAT_CONNECTION;
+    
+    if ($value === null) {
+        return '';
+    }
+    
+    $value = (string) $value;
+    
+    if ($__MYSQL_COMPAT_CONNECTION && isset($__MYSQL_COMPAT_CONNECTION->conn)) {
+        return $__MYSQL_COMPAT_CONNECTION->conn->real_escape_string($value);
+    }
+    
+    // Fallback if no connection (should rarely happen)
+    return addslashes($value);
+}
+
+/**
+ * Get a safe integer value from user input
+ * Returns 0 if input is not a valid integer
+ * 
+ * @param mixed $value The value to convert
+ * @return int Safe integer value
+ * 
+ * Usage: $id = sql_int($_GET['id']);
+ */
+function sql_int($value) {
+    return intval($value);
+}
+
+/**
+ * Get a safe float value from user input
+ * Returns 0.0 if input is not a valid number
+ * 
+ * @param mixed $value The value to convert
+ * @return float Safe float value
+ * 
+ * Usage: $price = sql_float($_POST['price']);
+ */
+function sql_float($value) {
+    return floatval($value);
+}
+
+/**
+ * Get escaped string input from request (shorthand)
+ * 
+ * @param string $key The key to look for
+ * @param string $default Default value if not found
+ * @return string Escaped string safe for SQL
+ * 
+ * Usage: $name = input_string('name');
+ */
+function input_string($key, $default = '') {
+    $value = $_REQUEST[$key] ?? $default;
+    return sql_escape($value);
+}
+
+/**
+ * Get integer input from request (shorthand)
+ * 
+ * @param string $key The key to look for
+ * @param int $default Default value if not found
+ * @return int Safe integer
+ * 
+ * Usage: $id = input_int('id');
+ */
+function input_int($key, $default = 0) {
+    $value = $_REQUEST[$key] ?? $default;
+    return sql_int($value);
+}
