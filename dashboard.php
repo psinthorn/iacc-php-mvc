@@ -5,9 +5,12 @@
 $cur_date = date('Y-m-d');
 $month_start = date('Y-m-01');
 
-// Get current company filter
+// Get current company filter and user level
 $com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 $com_name = isset($_SESSION['com_name']) ? $_SESSION['com_name'] : '';
+$user_level = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
+$is_admin = ($user_level >= 1);
+$is_super_admin = ($user_level >= 2);
 
 // Build company filter condition for queries
 // If com_id is set, filter by vendor or customer company
@@ -17,6 +20,53 @@ $company_filter_iv = "";
 if ($com_id > 0) {
     $company_filter_pr = " AND (pr.ven_id = $com_id OR pr.cus_id = $com_id)";
     $company_filter_iv = " AND (iv.ven_id = $com_id OR iv.cus_id = $com_id)";
+}
+
+// ============ ADMIN SYSTEM STATS ============
+if ($is_admin) {
+    // Total users
+    $sql_users = "SELECT COUNT(*) as count FROM authorize";
+    $result_users = mysqli_query($db->conn, $sql_users);
+    $total_users = mysqli_fetch_assoc($result_users)['count'] ?? 0;
+    
+    // Users by role
+    $sql_users_role = "SELECT level, COUNT(*) as count FROM authorize GROUP BY level";
+    $result_users_role = mysqli_query($db->conn, $sql_users_role);
+    $users_by_role = [0 => 0, 1 => 0, 2 => 0];
+    while ($row = mysqli_fetch_assoc($result_users_role)) {
+        $users_by_role[$row['level']] = $row['count'];
+    }
+    
+    // Total companies
+    $sql_companies = "SELECT COUNT(*) as count FROM company WHERE deleted_at IS NULL";
+    $result_companies = mysqli_query($db->conn, $sql_companies);
+    $total_companies = mysqli_fetch_assoc($result_companies)['count'] ?? 0;
+    
+    // Active companies (with recent transactions)
+    $sql_active_companies = "SELECT COUNT(DISTINCT company_id) as count FROM (
+        SELECT ven_id as company_id FROM pr WHERE date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        UNION
+        SELECT cus_id as company_id FROM pr WHERE date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ) as active";
+    $result_active = mysqli_query($db->conn, $sql_active_companies);
+    $active_companies = mysqli_fetch_assoc($result_active)['count'] ?? 0;
+    
+    // Locked accounts
+    $sql_locked = "SELECT COUNT(*) as count FROM authorize WHERE locked_until > NOW()";
+    $result_locked = mysqli_query($db->conn, $sql_locked);
+    $locked_accounts = mysqli_fetch_assoc($result_locked)['count'] ?? 0;
+    
+    // Recent login attempts (failed)
+    $sql_failed = "SELECT COUNT(*) as count FROM login_attempts 
+                   WHERE success = 0 AND attempt_time > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+    $result_failed = mysqli_query($db->conn, $sql_failed);
+    $failed_logins_24h = mysqli_fetch_assoc($result_failed)['count'] ?? 0;
+    
+    // Recent users (last 5 registered)
+    $sql_recent_users = "SELECT id, email, level, 
+                         CASE level WHEN 0 THEN 'User' WHEN 1 THEN 'Admin' WHEN 2 THEN 'Super Admin' END as role_name
+                         FROM authorize ORDER BY id DESC LIMIT 5";
+    $recent_users = mysqli_query($db->conn, $sql_recent_users);
 }
 
 // ============ FETCH KPI DATA FROM DATABASE ============
@@ -383,22 +433,97 @@ function get_status_badge($status) {
         <div>
             <h2 class="dashboard-title"><i class="fa fa-tachometer-alt"></i> Dashboard</h2>
             <div class="dashboard-subtitle">
-                <?php if ($com_id > 0): ?>
+                <?php if ($is_admin && $com_id == 0): ?>
+                    <i class="fa fa-globe"></i> System Overview - All Companies
+                <?php elseif ($com_id > 0): ?>
                     <i class="fa fa-building"></i> <?php echo htmlspecialchars($com_name); ?>
                 <?php else: ?>
-                    Welcome back! Here's your business overview (All Companies)
+                    Welcome back! Here's your business overview
                 <?php endif; ?>
             </div>
         </div>
         <div style="text-align: right;">
-            <small><?php echo date('l, F j, Y'); ?></small>
+            <small><?php echo date('l, F j, Y'); ?></small><br>
+            <?php if ($is_super_admin): ?>
+                <span class="badge" style="background: #dc3545;">Super Admin</span>
+            <?php elseif ($is_admin): ?>
+                <span class="badge" style="background: #17a2b8;">Admin</span>
+            <?php endif; ?>
             <?php if ($com_id > 0): ?>
-                <br><span class="badge" style="background: rgba(255,255,255,0.2);">Company Data</span>
-            <?php else: ?>
-                <br><span class="badge" style="background: rgba(255,255,255,0.2);">All Data</span>
+                <span class="badge" style="background: rgba(255,255,255,0.2);">Company View</span>
+            <?php elseif ($is_admin): ?>
+                <span class="badge" style="background: rgba(255,255,255,0.2);">Global View</span>
             <?php endif; ?>
         </div>
     </div>
+
+    <?php if ($is_admin): ?>
+    <!-- Admin Management Panel -->
+    <div class="row kpi-row">
+        <div class="col-md-12">
+            <div class="content-card" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; margin-bottom: 20px;">
+                <h5 style="color: #fff; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">
+                    <i class="fa fa-shield-alt"></i> Admin Control Panel
+                </h5>
+                <div class="row">
+                    <div class="col-md-2 col-sm-4">
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 32px; color: #667eea;"><?php echo $total_users; ?></div>
+                            <div style="font-size: 12px; color: #aaa;">Total Users</div>
+                            <div style="font-size: 10px; margin-top: 5px;">
+                                <span style="color: #51cf66;"><?php echo $users_by_role[0]; ?> Users</span> |
+                                <span style="color: #ffd43b;"><?php echo $users_by_role[1]; ?> Admins</span> |
+                                <span style="color: #ff6b6b;"><?php echo $users_by_role[2]; ?> Super</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4">
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 32px; color: #51cf66;"><?php echo $total_companies; ?></div>
+                            <div style="font-size: 12px; color: #aaa;">Companies</div>
+                            <div style="font-size: 10px; margin-top: 5px; color: #51cf66;">
+                                <?php echo $active_companies; ?> active (30d)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4">
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 32px; color: <?php echo $locked_accounts > 0 ? '#ff6b6b' : '#51cf66'; ?>;"><?php echo $locked_accounts; ?></div>
+                            <div style="font-size: 12px; color: #aaa;">Locked Accounts</div>
+                            <?php if ($locked_accounts > 0): ?>
+                            <div style="font-size: 10px; margin-top: 5px; color: #ff6b6b;">
+                                <a href="index.php?page=user" style="color: #ff6b6b;">View & Unlock</a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4">
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 32px; color: <?php echo $failed_logins_24h > 10 ? '#ff6b6b' : '#ffd43b'; ?>;"><?php echo $failed_logins_24h; ?></div>
+                            <div style="font-size: 12px; color: #aaa;">Failed Logins (24h)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-8">
+                        <div style="padding: 15px;">
+                            <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Quick Admin Actions</div>
+                            <?php if ($is_super_admin): ?>
+                            <a href="index.php?page=user" class="btn btn-sm" style="background: #667eea; color: white; margin: 2px;">
+                                <i class="fa fa-users"></i> Manage Users
+                            </a>
+                            <?php endif; ?>
+                            <a href="index.php?page=company" class="btn btn-sm" style="background: #51cf66; color: white; margin: 2px;">
+                                <i class="fa fa-building"></i> Companies
+                            </a>
+                            <a href="index.php?page=report" class="btn btn-sm" style="background: #ffd43b; color: #333; margin: 2px;">
+                                <i class="fa fa-chart-bar"></i> Reports
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- KPI Cards Row -->
     <div class="row kpi-row">
@@ -673,16 +798,42 @@ function get_status_badge($status) {
             </div>
         </div>
         <div class="col-lg-4">
+            <?php if ($is_admin): ?>
+            <!-- Admin Quick Actions -->
+            <div class="content-card" style="background: #f8f9fa; border-left: 4px solid #667eea;">
+                <h5 class="card-title">
+                    <i class="fa fa-cog"></i> Admin Actions
+                </h5>
+                <?php if ($is_super_admin): ?>
+                <a href="index.php?page=user" class="quick-link" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    <i class="fa fa-users-cog"></i>
+                    <span class="quick-link-text">User Management</span>
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                <?php endif; ?>
+                <a href="index.php?page=company" class="quick-link" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                    <i class="fa fa-building"></i>
+                    <span class="quick-link-text">Company Management</span>
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                <a href="index.php?page=category" class="quick-link" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                    <i class="fa fa-tags"></i>
+                    <span class="quick-link-text">Categories</span>
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                <a href="index.php?page=brand" class="quick-link" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); color: #333;">
+                    <i class="fa fa-trademark" style="color: #333;"></i>
+                    <span class="quick-link-text" style="color: #333;">Brands</span>
+                    <i class="fa fa-chevron-right" style="color: #333;"></i>
+                </a>
+            </div>
+            <?php endif; ?>
+
             <!-- Quick Links -->
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-bolt"></i> Quick Links
                 </h5>
-                <a href="index.php?page=rec" class="quick-link">
-                    <i class="fa fa-receipt"></i>
-                    <span class="quick-link-text">Payments</span>
-                    <i class="fa fa-chevron-right"></i>
-                </a>
                 <a href="index.php?page=po_list" class="quick-link">
                     <i class="fa fa-shopping-cart"></i>
                     <span class="quick-link-text">Purchase Orders</span>
@@ -691,6 +842,11 @@ function get_status_badge($status) {
                 <a href="index.php?page=pr_list" class="quick-link">
                     <i class="fa fa-clipboard-list"></i>
                     <span class="quick-link-text">Requests</span>
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+                <a href="index.php?page=deliv_list" class="quick-link">
+                    <i class="fa fa-truck"></i>
+                    <span class="quick-link-text">Deliveries</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
                 <a href="index.php?page=report" class="quick-link">
@@ -703,7 +859,7 @@ function get_status_badge($status) {
             <!-- System Info -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-info-circle"></i> System Stats
+                    <i class="fa fa-info-circle"></i> <?php echo $com_id > 0 ? 'Company Stats' : 'System Stats'; ?>
                 </h5>
                 <div style="font-size: 13px;">
                     <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
@@ -714,7 +870,16 @@ function get_status_badge($status) {
                         <span><strong>Completed:</strong></span>
                         <span><?php echo $completed_orders; ?></span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
+                        <span><strong>Pending:</strong></span>
+                        <span style="color: <?php echo $pending_orders > 0 ? '#dc3545' : '#28a745'; ?>;"><?php echo $pending_orders; ?></span>
+                    </div>
+                    <?php if ($com_id > 0): ?>
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
+                        <span><strong>Viewing:</strong></span>
+                        <span style="color: #667eea;"><?php echo htmlspecialchars(substr($com_name, 0, 15)); ?></span>
+                    </div>
+                    <?php endif; ?>
                         <span><strong>Updated:</strong></span>
                         <span><?php echo date('H:i:s'); ?></span>
                     </div>
