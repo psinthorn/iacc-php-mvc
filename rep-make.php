@@ -197,7 +197,7 @@ if($mode=="A"){?>
 				}?>
    </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
 <?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro[type]."'");
-echo "<option value='' >Please Select Band</option>";
+echo "<option value='' >Please Select Brand</option>";
 while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
 					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[ban_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
 					
@@ -253,7 +253,7 @@ while($data_pro=mysql_fetch_array($query_pro)){?>
 				}?>
    </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
 <?php $querycustomer=mysql_query("select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro[type]."'");
-echo "<option value='' >Please Select Band</option>";
+echo "<option value='' >Please Select Brand</option>";
 while($fetch_customer=mysql_fetch_array($querycustomer)){	?>
 					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[ban_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
 					

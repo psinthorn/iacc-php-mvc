@@ -22,8 +22,8 @@ $data=mysql_fetch_array($query);
 }else $method="A";?>
 <form action="core-function.php" method="post" enctype="multipart/form-data" id="myform">
 	<div id="box">
-		<lable for="band_name"><?=$xml->name?></lable>
-		<input id="band_name" name="band_name" class="form-control" required type="text" value="<?php echo e($data['band_name'] ?? '');?>">
+		<lable for="brand_name"><?=$xml->name?></lable>
+		<input id="brand_name" name="brand_name" class="form-control" required type="text" value="<?php echo e($data['brand_name'] ?? '');?>">
 	</div>
     <div id="box">
 		<lable for="des"><?=$xml->description?></lable>

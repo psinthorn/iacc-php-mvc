@@ -234,7 +234,7 @@ case "brand" : {
 		$tmpupdate=",'".$filepath."'";
 	}else{$tmpupdate=",''";}
 	
-	$args['value']="'','".$_REQUEST['band_name']."','".$_REQUEST['des']."'".$tmpupdate.",'".$_REQUEST['ven_id']."'";
+	$args['value']="'','".$_REQUEST['brand_name']."','".$_REQUEST['des']."'".$tmpupdate.",'".$_REQUEST['ven_id']."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
 			mysql_query("delete from brand where id='".$_REQUEST['id']."'");
@@ -251,7 +251,7 @@ case "brand" : {
 		$tmpupdate=",logo='".$filepath."'";
 	}else{$tmpupdate="";}
 		
-	$args['value']="band_name='".$_REQUEST['band_name']."',des='".$_REQUEST['des']."'".$tmpupdate.",ven_id='".$_REQUEST['ven_id']."'";
+	$args['value']="brand_name='".$_REQUEST['brand_name']."',des='".$_REQUEST['des']."'".$tmpupdate.",ven_id='".$_REQUEST['ven_id']."'";
 	
 	$args['condition']="id='".$_REQUEST['id']."'";
 	$har->updateDb($args);	

@@ -168,10 +168,10 @@ while($data_fetitem=mysql_fetch_array($qeurytmpitem)){?>
    
       
      <div id="box"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysql_query("select band_name,id from brand order by id desc");
-echo "<option value='' >-------Please Select Band--------</option>";
+<?php $querycustomer=mysql_query("select brand_name,id from brand order by id desc");
+echo "<option value='' >-------Please Select Brand--------</option>";
 while($fetch_customer=mysql_fetch_array($querycustomer)){
-					echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[band_name]."</option>";
+					echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[brand_name]."</option>";
 				}?>
 		</select></div></div>
         

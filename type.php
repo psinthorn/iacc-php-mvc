@@ -48,11 +48,11 @@ if(mysqli_num_rows($query)==1){
 		</div>
        	<div id="box" style="width:100%;"> 
 			<label for="st"><?=$xml->brandonthistype?></label><br>
-			<?php $query_additional=mysql_query("select brand.id as id ,band.brand_name as name  from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$type_id."' order by band.brand_name");
+			<?php $query_additional=mysql_query("select brand.id as id ,brand.brand_name as name  from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$type_id."' order by brand.brand_name");
 			while($fet_additional=mysql_fetch_array($query_additional)){?>
 			<input type="checkbox" checked id="<?=intval($fet_additional['id'])?>" name="<?=intval($fet_additional['id'])?>"  class="checkbox" />
 			<label style="padding:7px;cursor:pointer !important"   for="<?=intval($fet_additional['id'])?>"><?=htmlspecialchars($fet_additional['name'])?></label><?php }?>
-			<?php $query_additional=mysql_query("select brand.id as id ,band.brand_name as name from brand where id not in (select brand_id from map_type_to_brand where type_id='".$type_id."') order by band.brand_name");
+			<?php $query_additional=mysql_query("select brand.id as id ,brand.brand_name as name from brand where id not in (select brand_id from map_type_to_brand where type_id='".$type_id."') order by brand.brand_name");
 		
 			while($fet_additional=mysql_fetch_array($query_additional)){?>
 			<input type="checkbox" name="<?=intval($fet_additional['id'])?>" id="<?=intval($fet_additional['id'])?>" class="checkbox" />

@@ -7,13 +7,13 @@ $users=new DbConn($config);
 $users->checkSecurity();
 
 if(($_GET[id]!="")&&($_GET[value]!="")&&($_GET[mode]=="1")){
-$query=mysql_query("select brand.id as id,band_name from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$_GET['value']."'");
+$query=mysql_query("select brand.id as id,brand_name from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$_GET['value']."'");
 $tmp='<select name="ban_id['.$_GET['id'].']" onchange="checkorder2(this.value,this.id)" id="ban_id['.$_GET['id'].']"   class="form-control">';
 if(mysql_num_rows($query)==0){$tmp.='<option value="">No brand on this Type</option>';           
               }else {
 				  $tmp.='<option value="">Please Select Brand</option>'; 
 while($data=mysql_fetch_array($query)){
-$tmp.='<option value="'.$data[id].'">'.$data[band_name].'</option>';           
+$tmp.='<option value="'.$data[id].'">'.$data[brand_name].'</option>';           
                                 
                   }}
 				  $tmp.='</select>';
