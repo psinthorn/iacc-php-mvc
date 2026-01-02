@@ -4,6 +4,8 @@ $report_period = isset($_GET['period']) ? $_GET['period'] : 'all';
 $sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'name';
 $sort_dir = isset($_GET['dir']) ? $_GET['dir'] : 'asc';
 $com_id = sql_int($_SESSION['com_id']);
+$user_level = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
+$is_admin = ($user_level >= 1);
 
 // Validate sort parameters
 $valid_sorts = ['name', 'pr', 'qa', 'po', 'iv', 'tx'];
@@ -47,17 +49,44 @@ function sortLink($column, $label, $current_sort, $current_dir, $base_url) {
     return '<a href="' . $base_url . '&sort=' . $column . '&dir=' . $new_dir . '" style="color:#333;text-decoration:none;">' . $label . $icon . '</a>';
 }
 
+// Check if company is selected
+if ($com_id == 0 && !$is_admin) {
+    // Non-admin without company - shouldn't happen but handle it
+    echo '<div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i> Please select a company to view reports.</div>';
+    return;
+}
+
 // Collect all data first
 $report_data = [];
 $prs = $qas = $pos = $ivs = $txs = 0;
 
-$querycom = mysqli_query($db->conn, "SELECT name_en, name_th, id FROM company WHERE company.id != '".$com_id."' AND customer='1'");
+// Build vendor filter - if no company selected (admin global view), show all vendors
+if ($com_id > 0) {
+    $ven_filter = "ven_id='".$com_id."'";
+    $company_exclude = "company.id != '".$com_id."' AND";
+} else {
+    // Admin with no company - show aggregated report by vendor
+    $ven_filter = "1=1"; // No vendor filter
+    $company_exclude = "";
+}
+
+$querycom = mysqli_query($db->conn, "SELECT name_en, name_th, id FROM company WHERE $company_exclude customer='1'");
 while($fetcom = mysqli_fetch_array($querycom)){
-    $pr = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' $date_filter"));
-    $qa = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='1' $date_filter"));
-    $po = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='2' $date_filter"));
-    $iv = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='4' $date_filter"));
-    $tx = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='5' $date_filter"));
+    if ($com_id > 0) {
+        // Normal mode: show customers for selected vendor
+        $pr = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' $date_filter"));
+        $qa = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='1' $date_filter"));
+        $po = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='2' $date_filter"));
+        $iv = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='4' $date_filter"));
+        $tx = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE ven_id='".$com_id."' AND cus_id='".$fetcom['id']."' AND status>='5' $date_filter"));
+    } else {
+        // Admin global view: show all transactions for each customer
+        $pr = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE cus_id='".$fetcom['id']."' $date_filter"));
+        $qa = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE cus_id='".$fetcom['id']."' AND status>='1' $date_filter"));
+        $po = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE cus_id='".$fetcom['id']."' AND status>='2' $date_filter"));
+        $iv = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE cus_id='".$fetcom['id']."' AND status>='4' $date_filter"));
+        $tx = mysqli_fetch_array(mysqli_query($db->conn, "SELECT count(id) as ct FROM pr WHERE cus_id='".$fetcom['id']."' AND status>='5' $date_filter"));
+    };
     
     // Only include rows with data
     if ($pr['ct'] > 0) {
