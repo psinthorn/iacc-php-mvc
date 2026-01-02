@@ -19,28 +19,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit("<script>alert('Invalid request. Please try again.');window.location='login.php';</script>");
     }
     
+    // Check rate limiting
+    $rateLimit = check_rate_limit($db->conn, 5, 15);
+    if ($rateLimit['limited']) {
+        $minutes = ceil($rateLimit['retry_after'] / 60);
+        exit("<script>alert('Too many login attempts. Please try again in {$minutes} minutes.');window.location='login.php';</script>");
+    }
+    
     // Sanitize input
     $user_email = sql_escape($_POST['m_user']);
-    $user_pass = MD5($_POST['m_pass']);
     
-    $query = mysqli_query($db->conn, "SELECT usr_id, level, lang FROM authorize WHERE usr_name='" . $user_email . "' AND usr_pass='" . $user_pass . "'");
+    // Get user record (don't check password in SQL anymore)
+    $query = mysqli_query($db->conn, "SELECT usr_id, usr_pass, level, lang FROM authorize WHERE usr_name='" . $user_email . "'");
 
 	if(mysqli_num_rows($query)==1){
-		$tmp=mysqli_fetch_array($query);
+		$tmp = mysqli_fetch_array($query);
+		$needsRehash = false;
 		
-		$_SESSION['usr_name']=$_POST['m_user'];
-		$_SESSION['usr_id']=$tmp['usr_id'];
-		$_SESSION['lang']=$tmp['lang'];
-		
-		// Regenerate session ID after successful login (security best practice)
-		session_regenerate_id(true);
-		
-		// Regenerate CSRF token
-		csrf_regenerate();
-		
-		echo "<script>window.location='index.php';</script>";
-	} else { 
-		exit("<script>alert('LOGIN FAIL');history.back();</script>");
+		// Verify password (supports both MD5 and bcrypt)
+		if (password_verify_secure($_POST['m_pass'], $tmp['usr_pass'], $needsRehash)) {
+		    
+		    // Migrate password to bcrypt if needed
+		    if ($needsRehash) {
+		        $newHash = password_hash_secure($_POST['m_pass']);
+		        password_migrate($db->conn, $tmp['usr_id'], $newHash, 'usr_id');
+		    }
+		    
+		    // Record successful login
+		    record_login_attempt($db->conn, $_POST['m_user'], true);
+		    
+		    $_SESSION['usr_name'] = $_POST['m_user'];
+		    $_SESSION['usr_id'] = $tmp['usr_id'];
+		    $_SESSION['lang'] = $tmp['lang'];
+		    
+		    // Regenerate session ID after successful login (security best practice)
+		    session_regenerate_id(true);
+		    
+		    // Regenerate CSRF token
+		    csrf_regenerate();
+		    
+		    echo "<script>window.location='index.php';</script>";
+		    exit;
+		}
+	}
+	
+	// Record failed login attempt
+	record_login_attempt($db->conn, $_POST['m_user'], false);
+	$remaining = $rateLimit['remaining'] - 1;
+	
+	if ($remaining <= 2 && $remaining > 0) {
+	    exit("<script>alert('LOGIN FAIL. {$remaining} attempts remaining.');history.back();</script>");
+	} else {
+	    exit("<script>alert('LOGIN FAIL');history.back();</script>");
 	}
 }
 

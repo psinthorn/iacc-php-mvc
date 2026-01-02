@@ -469,3 +469,160 @@ function validate_file_upload($file, $options = []) {
     
     return ['valid' => true, 'error' => null];
 }
+
+// ============================================================================
+// PASSWORD SECURITY HELPERS
+// Modern password hashing using bcrypt (replaces MD5)
+// ============================================================================
+
+/**
+ * Hash a password using bcrypt
+ * @param string $password Plain text password
+ * @return string Hashed password (60+ characters)
+ */
+function password_hash_secure($password) {
+    return password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+}
+
+/**
+ * Verify a password against a hash
+ * Also checks if it's a legacy MD5 hash
+ * @param string $password Plain text password
+ * @param string $hash Stored hash (bcrypt or MD5)
+ * @param bool &$needsRehash Set to true if password needs migration
+ * @return bool True if password matches
+ */
+function password_verify_secure($password, $hash, &$needsRehash = false) {
+    // Check if it's a bcrypt hash (starts with $2y$ or $2a$)
+    if (preg_match('/^\$2[aby]\$/', $hash)) {
+        $valid = password_verify($password, $hash);
+        $needsRehash = $valid && password_needs_rehash($hash, PASSWORD_BCRYPT, ['cost' => 12]);
+        return $valid;
+    }
+    
+    // Legacy MD5 check (32 character hex string)
+    if (strlen($hash) === 32 && ctype_xdigit($hash)) {
+        $valid = (md5($password) === $hash);
+        $needsRehash = $valid; // MD5 always needs rehash
+        return $valid;
+    }
+    
+    return false;
+}
+
+/**
+ * Update user password to modern hash
+ * @param mysqli $conn Database connection
+ * @param int|string $userId User ID or username
+ * @param string $newHash New bcrypt hash
+ * @param string $idField Field name for user identifier (usr_id or usr_name)
+ * @return bool Success
+ */
+function password_migrate($conn, $userId, $newHash, $idField = 'usr_id') {
+    $stmt = $conn->prepare("UPDATE authorize SET usr_pass = ?, password_migrated = 1 WHERE $idField = ?");
+    if (!$stmt) return false;
+    
+    if ($idField === 'usr_id') {
+        $stmt->bind_param('si', $newHash, $userId);
+    } else {
+        $stmt->bind_param('ss', $newHash, $userId);
+    }
+    
+    $result = $stmt->execute();
+    $stmt->close();
+    return $result;
+}
+
+// ============================================================================
+// RATE LIMITING HELPERS
+// Prevent brute force attacks on login
+// ============================================================================
+
+/**
+ * Record a login attempt
+ * @param mysqli $conn Database connection
+ * @param string $username Username attempted
+ * @param bool $successful Whether login was successful
+ */
+function record_login_attempt($conn, $username, $successful = false) {
+    $ip = get_client_ip();
+    $stmt = $conn->prepare("INSERT INTO login_attempts (ip_address, username, successful) VALUES (?, ?, ?)");
+    if ($stmt) {
+        $success = $successful ? 1 : 0;
+        $stmt->bind_param('ssi', $ip, $username, $success);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+/**
+ * Check if IP is rate limited
+ * @param mysqli $conn Database connection
+ * @param int $maxAttempts Max attempts allowed (default 5)
+ * @param int $windowMinutes Time window in minutes (default 15)
+ * @return array ['limited' => bool, 'remaining' => int, 'retry_after' => int seconds]
+ */
+function check_rate_limit($conn, $maxAttempts = 5, $windowMinutes = 15) {
+    $ip = get_client_ip();
+    $windowStart = date('Y-m-d H:i:s', strtotime("-{$windowMinutes} minutes"));
+    
+    $stmt = $conn->prepare("SELECT COUNT(*) as attempts, MIN(attempted_at) as first_attempt 
+                            FROM login_attempts 
+                            WHERE ip_address = ? AND attempted_at > ? AND successful = 0");
+    if (!$stmt) {
+        return ['limited' => false, 'remaining' => $maxAttempts, 'retry_after' => 0];
+    }
+    
+    $stmt->bind_param('ss', $ip, $windowStart);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    $attempts = (int)$row['attempts'];
+    $remaining = max(0, $maxAttempts - $attempts);
+    
+    if ($attempts >= $maxAttempts) {
+        $firstAttempt = strtotime($row['first_attempt']);
+        $retryAfter = ($firstAttempt + ($windowMinutes * 60)) - time();
+        return ['limited' => true, 'remaining' => 0, 'retry_after' => max(0, $retryAfter)];
+    }
+    
+    return ['limited' => false, 'remaining' => $remaining, 'retry_after' => 0];
+}
+
+/**
+ * Clear old login attempts (cleanup)
+ * @param mysqli $conn Database connection
+ * @param int $olderThanDays Delete attempts older than X days
+ */
+function cleanup_login_attempts($conn, $olderThanDays = 7) {
+    $cutoff = date('Y-m-d H:i:s', strtotime("-{$olderThanDays} days"));
+    $stmt = $conn->prepare("DELETE FROM login_attempts WHERE attempted_at < ?");
+    if ($stmt) {
+        $stmt->bind_param('s', $cutoff);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+/**
+ * Get client IP address
+ * @return string IP address
+ */
+function get_client_ip() {
+    $headers = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'];
+    foreach ($headers as $header) {
+        if (!empty($_SERVER[$header])) {
+            $ip = $_SERVER[$header];
+            // Handle comma-separated list (X-Forwarded-For)
+            if (strpos($ip, ',') !== false) {
+                $ip = trim(explode(',', $ip)[0]);
+            }
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+    }
+    return '0.0.0.0';
+}

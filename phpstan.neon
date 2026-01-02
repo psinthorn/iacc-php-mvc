@@ -1,0 +1,32 @@
+parameters:
+    level: 1
+    paths:
+        - inc
+        - iacc
+    excludePaths:
+        - vendor
+        - node_modules
+        - storage
+        - logs
+    
+    # Ignore common legacy patterns
+    ignoreErrors:
+        # Legacy mysql_* functions (wrapped by compatibility layer)
+        - '#Function mysql_[a-z_]+ is deprecated#'
+        - '#Function mysql_[a-z_]+ invoked with#'
+        
+        # Dynamic variable access common in legacy code
+        - '#Variable \$[a-zA-Z_]+ might not be defined#'
+        
+        # Suppress for mysqli extension functions
+        - '#Parameter \#1 \$result of function mysqli_#'
+    
+    # PHP version
+    phpVersion: 70400
+    
+    # Report unmatched ignored errors
+    reportUnmatchedIgnoredErrors: false
+    
+    # Parallel processing
+    parallel:
+        maximumNumberOfProcesses: 4

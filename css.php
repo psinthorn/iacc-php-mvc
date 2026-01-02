@@ -4,7 +4,14 @@
     <title>CMS</title>
 
     <!-- Core CSS - Include with every page -->
+    <?php 
+    // Use Bootstrap 5 for new pages, Bootstrap 3 for legacy compatibility
+    $useBootstrap5 = isset($USE_BOOTSTRAP_5) && $USE_BOOTSTRAP_5;
+    if ($useBootstrap5): ?>
+    <link href="css/bootstrap-5.3.3.min.css" rel="stylesheet">
+    <?php else: ?>
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <?php endif; ?>
     <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
 
     <!-- Page-Level Plugin CSS - Dashboard -->
@@ -13,8 +20,14 @@
 
     <!-- SB Admin CSS - Include with every page -->
     <link href="css/sb-admin.css" rel="stylesheet">
-      <script src="js/jquery-1.10.2.js"></script>
-	<script src="js/ajaxpagefetcher.js"></script>
+    
+    <!-- jQuery - Use 3.x with 1.x migrate for compatibility -->
+    <?php if ($useBootstrap5): ?>
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <?php else: ?>
+    <script src="js/jquery-1.10.2.js"></script>
+    <?php endif; ?>
+    <script src="js/ajaxpagefetcher.js"></script>
     
     
     <style type="text/css">

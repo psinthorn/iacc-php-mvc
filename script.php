@@ -1,6 +1,11 @@
     <!-- Core Scripts - Include with every page -->
-  
+    <?php 
+    $useBootstrap5 = isset($USE_BOOTSTRAP_5) && $USE_BOOTSTRAP_5;
+    if ($useBootstrap5): ?>
+    <script src="js/bootstrap-5.3.3.bundle.min.js"></script>
+    <?php else: ?>
     <script src="js/bootstrap.min.js"></script>
+    <?php endif; ?>
     
     <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
 
