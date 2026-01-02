@@ -87,12 +87,12 @@ function fetbrand(str) {
 </form>
 
 <?php
-$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,brand.brand_name as brand,price from model join type on model.type_id=type.id join brand on model.brand_id=brand.id order by model.id desc");?>
+$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,band.band_name as brand,price from model join type on model.type_id=type.id join band on model.brand_id=band.id order by model.id desc");?>
 
 <div id="fetch_state"></div>
 <table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->type?></th><th><?=$xml->brand?></th><th><?=$xml->price?></th><th width="120"></th></tr>
 <?php while($data=mysqli_fetch_array($query)){
-echo " <tr  data-toggle='modal' style='cursor:pointer;' href='modal_molist.php?p_id=".$data['id']."'  data-target='.bs-example-modal-lg'><td>".$data['model_name']."</td><td>".$data['type']."</td><td>".$data['brand']."</td><td>".$data['price']."</td>
+echo " <tr  data-toggle='modal' style='cursor:pointer;' href='modal_molist.php?p_id=".$data['id']."'  data-target='.bs-example-modal-lg'><td>".e($data['model_name'])."</td><td>".e($data['type'])."</td><td>".e($data['brand'])."</td><td>".e($data['price'])."</td>
 <td></td></tr>";	
 	
 	}?>
