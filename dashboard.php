@@ -75,6 +75,57 @@ if ($is_admin) {
                          CASE level WHEN 0 THEN 'User' WHEN 1 THEN 'Admin' WHEN 2 THEN 'Super Admin' END as role_name
                          FROM authorize ORDER BY id DESC LIMIT 5";
     $recent_users = mysqli_query($db->conn, $sql_recent_users);
+    
+    // ============ BUSINESS SUMMARY REPORT DATA ============
+    // Get date filter from request (default: this month)
+    $report_period = isset($_GET['report_period']) ? $_GET['report_period'] : 'month';
+    switch ($report_period) {
+        case 'today':
+            $report_date_filter = "DATE(pr.date) = CURDATE()";
+            $report_period_label = "Today";
+            break;
+        case 'week':
+            $report_date_filter = "pr.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+            $report_period_label = "Last 7 Days";
+            break;
+        case 'month':
+            $report_date_filter = "pr.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+            $report_period_label = "Last 30 Days";
+            break;
+        case 'year':
+            $report_date_filter = "YEAR(pr.date) = YEAR(CURDATE())";
+            $report_period_label = "This Year";
+            break;
+        case 'all':
+            $report_date_filter = "1=1";
+            $report_period_label = "All Time";
+            break;
+        default:
+            $report_date_filter = "pr.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+            $report_period_label = "Last 30 Days";
+    }
+    
+    // Overall summary counts
+    $sql_report_summary = "SELECT 
+        COUNT(DISTINCT pr.id) as total_pr,
+        SUM(CASE WHEN pr.status >= 1 THEN 1 ELSE 0 END) as total_qa,
+        SUM(CASE WHEN pr.status >= 2 THEN 1 ELSE 0 END) as total_po,
+        SUM(CASE WHEN pr.status >= 4 THEN 1 ELSE 0 END) as total_iv,
+        SUM(CASE WHEN pr.status >= 5 THEN 1 ELSE 0 END) as total_tax
+        FROM pr WHERE $report_date_filter";
+    $report_summary = mysqli_fetch_assoc(mysqli_query($db->conn, $sql_report_summary));
+    
+    // Top 5 customers by transaction count
+    $sql_top_customers = "SELECT c.id, c.name_en, c.name_th,
+        COUNT(pr.id) as tx_count,
+        SUM(CASE WHEN pr.status >= 4 THEN 1 ELSE 0 END) as invoice_count
+        FROM pr 
+        JOIN company c ON pr.cus_id = c.id
+        WHERE $report_date_filter
+        GROUP BY c.id, c.name_en, c.name_th
+        ORDER BY tx_count DESC
+        LIMIT 5";
+    $top_customers = mysqli_query($db->conn, $sql_top_customers);
 }
 
 // ============ FETCH KPI DATA FROM DATABASE ============
@@ -592,6 +643,122 @@ function get_status_badge($status) {
                     <div class="col-md-3 col-sm-6" style="margin-bottom: 10px;">
                         <a href="index.php?page=remote" class="btn btn-block" style="background: #667eea; color: white; text-align: center; padding: 20px 15px;">
                             <i class="fa fa-search"></i> Browse All Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Business Summary Report -->
+    <div class="row kpi-row">
+        <div class="col-md-12">
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-bar-chart-o"></i> Business Summary Report
+                    <div style="float: right;">
+                        <a href="?page=dashboard&report_period=today" class="btn btn-sm <?php echo $report_period == 'today' ? 'btn-primary' : 'btn-default'; ?>">Today</a>
+                        <a href="?page=dashboard&report_period=week" class="btn btn-sm <?php echo $report_period == 'week' ? 'btn-primary' : 'btn-default'; ?>">7 Days</a>
+                        <a href="?page=dashboard&report_period=month" class="btn btn-sm <?php echo $report_period == 'month' ? 'btn-primary' : 'btn-default'; ?>">30 Days</a>
+                        <a href="?page=dashboard&report_period=year" class="btn btn-sm <?php echo $report_period == 'year' ? 'btn-primary' : 'btn-default'; ?>">This Year</a>
+                        <a href="?page=dashboard&report_period=all" class="btn btn-sm <?php echo $report_period == 'all' ? 'btn-primary' : 'btn-default'; ?>">All Time</a>
+                    </div>
+                </h5>
+                <p style="color: #6c757d; margin-bottom: 15px;">Period: <strong><?php echo $report_period_label; ?></strong></p>
+                
+                <div class="row">
+                    <!-- Summary Stats -->
+                    <div class="col-md-7">
+                        <table class="table table-bordered" style="font-size: 13px;">
+                            <thead style="background: #f8f9fa;">
+                                <tr>
+                                    <th>Stage</th>
+                                    <th class="text-center">Count</th>
+                                    <th class="text-center">Conversion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fa fa-file-o" style="color: #667eea;"></i> Purchase Requests</td>
+                                    <td class="text-center"><strong><?php echo $report_summary['total_pr'] ?? 0; ?></strong></td>
+                                    <td class="text-center">-</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-check" style="color: #17a2b8;"></i> Quotations</td>
+                                    <td class="text-center"><strong><?php echo $report_summary['total_qa'] ?? 0; ?></strong></td>
+                                    <td class="text-center">
+                                        <?php 
+                                        $pr_count = $report_summary['total_pr'] ?? 0;
+                                        $qa_rate = $pr_count > 0 ? round(($report_summary['total_qa'] ?? 0) / $pr_count * 100) : 0;
+                                        echo $qa_rate . '%';
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-shopping-cart" style="color: #ffc107;"></i> Purchase Orders</td>
+                                    <td class="text-center"><strong><?php echo $report_summary['total_po'] ?? 0; ?></strong></td>
+                                    <td class="text-center">
+                                        <?php 
+                                        $po_rate = $pr_count > 0 ? round(($report_summary['total_po'] ?? 0) / $pr_count * 100) : 0;
+                                        echo $po_rate . '%';
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fa fa-file-text-o" style="color: #28a745;"></i> Invoices</td>
+                                    <td class="text-center"><strong><?php echo $report_summary['total_iv'] ?? 0; ?></strong></td>
+                                    <td class="text-center">
+                                        <?php 
+                                        $iv_rate = $pr_count > 0 ? round(($report_summary['total_iv'] ?? 0) / $pr_count * 100) : 0;
+                                        echo $iv_rate . '%';
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr style="background: #e8f5e9;">
+                                    <td><i class="fa fa-money" style="color: #28a745;"></i> <strong>Tax Invoices</strong></td>
+                                    <td class="text-center"><strong style="color: #28a745;"><?php echo $report_summary['total_tax'] ?? 0; ?></strong></td>
+                                    <td class="text-center">
+                                        <?php 
+                                        $tax_rate = $pr_count > 0 ? round(($report_summary['total_tax'] ?? 0) / $pr_count * 100) : 0;
+                                        echo '<strong style="color: #28a745;">' . $tax_rate . '%</strong>';
+                                        ?>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Top Customers -->
+                    <div class="col-md-5">
+                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-users"></i> Top Customers</h6>
+                        <table class="table table-sm" style="font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th class="text-center">TX</th>
+                                    <th class="text-center">INV</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if($top_customers && mysqli_num_rows($top_customers) > 0): ?>
+                                    <?php while($tc = mysqli_fetch_assoc($top_customers)): ?>
+                                    <tr>
+                                        <td>
+                                            <a href="index.php?page=remote&select_company=<?php echo $tc['id']; ?>" style="color: #333;">
+                                                <?php echo htmlspecialchars(substr($tc['name_en'] ?: $tc['name_th'], 0, 20)); ?>
+                                            </a>
+                                        </td>
+                                        <td class="text-center"><?php echo $tc['tx_count']; ?></td>
+                                        <td class="text-center"><?php echo $tc['invoice_count']; ?></td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="3" class="text-center text-muted">No data</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                        <a href="index.php?page=report" class="btn btn-sm btn-default btn-block">
+                            <i class="fa fa-external-link"></i> Full Report
                         </a>
                     </div>
                 </div>
