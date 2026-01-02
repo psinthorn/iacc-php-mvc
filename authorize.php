@@ -39,7 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Get user record (don't check password in SQL anymore)
-    $query = mysqli_query($db->conn, "SELECT id, password, level, lang FROM authorize WHERE email='" . $user_email . "'");
+    $query = mysqli_query($db->conn, "SELECT a.id, a.password, a.level, a.lang, a.company_id, c.name_en as company_name 
+                                       FROM authorize a 
+                                       LEFT JOIN company c ON a.company_id = c.id 
+                                       WHERE a.email='" . $user_email . "'");
 
 	if(mysqli_num_rows($query)==1){
 		$tmp = mysqli_fetch_array($query);
@@ -62,6 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		    $_SESSION['user_id'] = $tmp['id'];
 		    $_SESSION['user_level'] = $tmp['level'];
 		    $_SESSION['lang'] = $tmp['lang'];
+		    
+		    // Set company access based on user level
+		    // Level 0 (User): Locked to assigned company
+		    // Level 1-2 (Admin/Super Admin): Can access all companies
+		    if ($tmp['level'] == 0 && !empty($tmp['company_id'])) {
+		        $_SESSION['com_id'] = $tmp['company_id'];
+		        $_SESSION['com_name'] = $tmp['company_name'] ?? '';
+		    } else {
+		        // Admins start with no company selected (can switch)
+		        $_SESSION['com_id'] = '';
+		        $_SESSION['com_name'] = '';
+		    }
 		    
 		    // Handle "Remember Me"
 		    if (isset($_POST['remember']) && $_POST['remember']) {

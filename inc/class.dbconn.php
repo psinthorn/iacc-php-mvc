@@ -56,7 +56,18 @@ class DbConn {
 		if ($userData) {
 			$_SESSION['user_id'] = $userData['user_id'];
 			$_SESSION['user_email'] = $userData['email'];
+			$_SESSION['user_level'] = $userData['level'];
 			$_SESSION['lang'] = $userData['lang'];
+			
+			// Set company access based on user level
+			if ($userData['level'] == 0 && !empty($userData['company_id'])) {
+				$_SESSION['com_id'] = $userData['company_id'];
+				$_SESSION['com_name'] = $userData['company_name'] ?? '';
+			} else {
+				$_SESSION['com_id'] = '';
+				$_SESSION['com_name'] = '';
+			}
+			
 			session_regenerate_id(true);
 			return true;
 		}

@@ -25,8 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $email = isset($_POST['email']) ? trim($_POST['email']) : '';
                 $password = isset($_POST['password']) ? $_POST['password'] : '';
                 $level = isset($_POST['level']) ? intval($_POST['level']) : 0;
+                $companyId = isset($_POST['company_id']) ? intval($_POST['company_id']) : null;
                 
-                if (empty($email) || empty($password)) {
+                // Normal users (level 0) must have a company
+                if ($level == 0 && empty($companyId)) {
+                    $message = 'Normal users must be assigned to a company.';
+                    $messageType = 'danger';
+                } elseif (empty($email) || empty($password)) {
                     $message = 'Email and password are required.';
                     $messageType = 'danger';
                 } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -43,8 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         // Insert new user
                         $hash = password_hash_secure($password);
-                        $stmt = $db->conn->prepare("INSERT INTO authorize (email, password, level, lang, password_migrated) VALUES (?, ?, ?, 0, 1)");
-                        $stmt->bind_param("ssi", $email, $hash, $level);
+                        // Admin/Super Admin don't need company_id
+                        $finalCompanyId = ($level >= 1) ? null : $companyId;
+                        $stmt = $db->conn->prepare("INSERT INTO authorize (email, password, level, company_id, lang, password_migrated) VALUES (?, ?, ?, ?, 0, 1)");
+                        $stmt->bind_param("ssii", $email, $hash, $level, $finalCompanyId);
                         if ($stmt->execute()) {
                             $message = 'User created successfully.';
                             $messageType = 'success';
@@ -66,8 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = 'You cannot change your own role.';
                     $messageType = 'warning';
                 } else {
-                    $stmt = $db->conn->prepare("UPDATE authorize SET level = ? WHERE id = ?");
-                    $stmt->bind_param("ii", $level, $userId);
+                    // If demoting to user level, keep existing company_id
+                    // If promoting to admin/super admin, clear company_id
+                    if ($level >= 1) {
+                        $stmt = $db->conn->prepare("UPDATE authorize SET level = ?, company_id = NULL WHERE id = ?");
+                        $stmt->bind_param("ii", $level, $userId);
+                    } else {
+                        $stmt = $db->conn->prepare("UPDATE authorize SET level = ? WHERE id = ?");
+                        $stmt->bind_param("ii", $level, $userId);
+                    }
                     if ($stmt->execute()) {
                         $message = 'User role updated successfully.';
                         $messageType = 'success';
@@ -77,6 +91,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $stmt->close();
                 }
+                break;
+            
+            case 'update_company':
+                $userId = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+                $companyId = isset($_POST['company_id']) ? intval($_POST['company_id']) : null;
+                
+                if (empty($companyId)) {
+                    $companyId = null;
+                }
+                
+                $stmt = $db->conn->prepare("UPDATE authorize SET company_id = ? WHERE id = ?");
+                $stmt->bind_param("ii", $companyId, $userId);
+                if ($stmt->execute()) {
+                    $message = 'User company updated successfully.';
+                    $messageType = 'success';
+                } else {
+                    $message = 'Failed to update user company.';
+                    $messageType = 'danger';
+                }
+                $stmt->close();
                 break;
                 
             case 'reset_password':
@@ -139,9 +173,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch all users
-$sql = "SELECT id, email, level, lang, password_migrated, locked_until, failed_attempts FROM authorize ORDER BY id ASC";
+// Fetch all users with company info
+$sql = "SELECT a.id, a.email, a.level, a.company_id, a.lang, a.password_migrated, a.locked_until, a.failed_attempts, 
+        c.name_en as company_name 
+        FROM authorize a 
+        LEFT JOIN company c ON a.company_id = c.id 
+        ORDER BY a.id ASC";
 $result = $db->conn->query($sql);
+
+// Fetch all companies for dropdown
+$companiesResult = $db->conn->query("SELECT id, name_en FROM company ORDER BY name_en ASC");
+$companies = [];
+while ($row = $companiesResult->fetch_assoc()) {
+    $companies[] = $row;
+}
 
 // Role labels
 $roles = [
@@ -175,6 +220,7 @@ $roles = [
                 <th>ID</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Company</th>
                 <th>Password</th>
                 <th>Status</th>
                 <th width="200">Actions</th>
@@ -209,6 +255,29 @@ $roles = [
                         $role = isset($roles[$user['level']]) ? $roles[$user['level']] : $roles[0];
                     ?>
                         <span class="label label-<?= $role['class'] ?>"><?= $role['label'] ?></span>
+                    <?php endif; ?>
+                </td>
+                <td>
+                    <?php if ($user['level'] == 0): // Only show company for normal users ?>
+                        <?php if (!$isSelf): ?>
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                            <input type="hidden" name="action" value="update_company">
+                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                            <select name="company_id" class="form-control input-sm" style="width: 150px; display: inline;" onchange="this.form.submit()">
+                                <option value="">-- Select --</option>
+                                <?php foreach ($companies as $company): ?>
+                                <option value="<?= $company['id'] ?>" <?= $user['company_id'] == $company['id'] ? 'selected' : '' ?>>
+                                    <?= e($company['name_en']) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
+                        <?php else: ?>
+                            <?= e($user['company_name'] ?? '-') ?>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <span class="text-muted">All Companies</span>
                     <?php endif; ?>
                 </td>
                 <td>
@@ -289,11 +358,22 @@ $roles = [
                     
                     <div class="form-group">
                         <label for="level">Role</label>
-                        <select class="form-control" id="level" name="level">
+                        <select class="form-control" id="level" name="level" onchange="toggleCompanyField()">
                             <option value="0">User</option>
                             <option value="1">Admin</option>
                             <option value="2">Super Admin</option>
                         </select>
+                    </div>
+                    
+                    <div class="form-group" id="companyField">
+                        <label for="company_id">Company <span class="text-danger">*</span></label>
+                        <select class="form-control" id="company_id" name="company_id">
+                            <option value="">-- Select Company --</option>
+                            <?php foreach ($companies as $company): ?>
+                            <option value="<?= $company['id'] ?>"><?= e($company['name_en']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="help-block">Normal users must be assigned to a company.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -336,6 +416,27 @@ $roles = [
 </div>
 
 <script>
+// Toggle company field visibility based on role selection
+function toggleCompanyField() {
+    var level = document.getElementById('level').value;
+    var companyField = document.getElementById('companyField');
+    var companySelect = document.getElementById('company_id');
+    
+    if (level == '0') {
+        companyField.style.display = 'block';
+        companySelect.required = true;
+    } else {
+        companyField.style.display = 'none';
+        companySelect.required = false;
+        companySelect.value = '';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCompanyField();
+});
+
 // Populate Reset Password modal with user data
 $('#resetPasswordModal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);

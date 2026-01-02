@@ -907,9 +907,10 @@ function verify_remember_token($conn) {
     $userId = (int)$_COOKIE['remember_user'];
     $tokenHash = hash('sha256', $token);
     
-    $stmt = $conn->prepare("SELECT rt.user_id, a.email, a.lang 
+    $stmt = $conn->prepare("SELECT rt.user_id, a.email, a.level, a.lang, a.company_id, c.name_en as company_name 
                             FROM remember_tokens rt 
                             JOIN authorize a ON rt.user_id = a.id 
+                            LEFT JOIN company c ON a.company_id = c.id
                             WHERE rt.token_hash = ? AND rt.user_id = ? AND rt.expires_at > NOW()");
     if (!$stmt) return false;
     
@@ -928,7 +929,10 @@ function verify_remember_token($conn) {
     return [
         'user_id' => $row['user_id'],
         'email' => $row['email'],
-        'lang' => $row['lang']
+        'level' => $row['level'],
+        'lang' => $row['lang'],
+        'company_id' => $row['company_id'],
+        'company_name' => $row['company_name']
     ];
 }
 
