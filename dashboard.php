@@ -12,6 +12,13 @@ $user_level = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) :
 $is_admin = ($user_level >= 1);
 $is_super_admin = ($user_level >= 2);
 
+// Determine dashboard mode:
+// - Admin/Super Admin with no company selected: Show Admin Panel only
+// - Admin/Super Admin with company selected: Show User Dashboard only (company data)
+// - Normal User: Show User Dashboard only (their company data)
+$show_admin_panel = $is_admin && $com_id == 0;
+$show_user_dashboard = $com_id > 0 || !$is_admin;
+
 // Build company filter condition for queries
 // If com_id is set, filter by vendor or customer company
 // If com_id is empty (admin viewing all), show all data
@@ -70,6 +77,8 @@ if ($is_admin) {
 }
 
 // ============ FETCH KPI DATA FROM DATABASE ============
+// Only fetch user dashboard data if we need to show it
+if ($show_user_dashboard) {
 
 // Sales Today - from pay table (payment volume) - filtered by company via PO->PR
 $sql_today = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay 
@@ -151,6 +160,8 @@ $sql_recent_inv = "SELECT iv.*, company.name_en FROM iv
                    WHERE 1=1 $company_filter_iv
                    ORDER BY iv.createdate DESC LIMIT 5";
 $recent_invoices = mysqli_query($db->conn, $sql_recent_inv);
+
+} // End of $show_user_dashboard condition
 
 function format_currency($amount) {
     return '฿' . number_format($amount, 2);
@@ -433,10 +444,14 @@ function get_status_badge($status) {
         <div>
             <h2 class="dashboard-title"><i class="fa fa-tachometer-alt"></i> Dashboard</h2>
             <div class="dashboard-subtitle">
-                <?php if ($is_admin && $com_id == 0): ?>
-                    <i class="fa fa-globe"></i> System Overview - All Companies
+                <?php if ($show_admin_panel): ?>
+                    <i class="fa fa-globe"></i> System Administration - Global View
+                    <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">Select a company from menu to view company-specific data</div>
                 <?php elseif ($com_id > 0): ?>
                     <i class="fa fa-building"></i> <?php echo htmlspecialchars($com_name); ?>
+                    <?php if ($is_admin): ?>
+                    <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">Viewing company data | <a href="index.php?page=remote" style="color: rgba(255,255,255,0.9);">Switch company</a> or <a href="index.php?page=remote&clear=1" style="color: rgba(255,255,255,0.9);">Back to Admin Panel</a></div>
+                    <?php endif; ?>
                 <?php else: ?>
                     Welcome back! Here's your business overview
                 <?php endif; ?>
@@ -449,15 +464,15 @@ function get_status_badge($status) {
             <?php elseif ($is_admin): ?>
                 <span class="badge" style="background: #17a2b8;">Admin</span>
             <?php endif; ?>
-            <?php if ($com_id > 0): ?>
+            <?php if ($show_admin_panel): ?>
+                <span class="badge" style="background: rgba(255,255,255,0.2);">Admin Panel</span>
+            <?php elseif ($com_id > 0): ?>
                 <span class="badge" style="background: rgba(255,255,255,0.2);">Company View</span>
-            <?php elseif ($is_admin): ?>
-                <span class="badge" style="background: rgba(255,255,255,0.2);">Global View</span>
             <?php endif; ?>
         </div>
     </div>
 
-    <?php if ($is_admin): ?>
+    <?php if ($show_admin_panel): ?>
     <!-- Admin Management Panel -->
     <div class="row kpi-row">
         <div class="col-md-12">
@@ -517,14 +532,64 @@ function get_status_badge($status) {
                             <a href="index.php?page=report" class="btn btn-sm" style="background: #ffd43b; color: #333; margin: 2px;">
                                 <i class="fa fa-chart-bar"></i> Reports
                             </a>
+                            <a href="index.php?page=remote" class="btn btn-sm" style="background: #17a2b8; color: white; margin: 2px;">
+                                <i class="fa fa-building"></i> Select Company
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <?php endif; ?>
+    
+    <!-- Company Selection for Admin -->
+    <div class="row kpi-row">
+        <div class="col-md-12">
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-building"></i> Select Company to View Data
+                </h5>
+                <p style="color: #6c757d; margin-bottom: 15px;">Choose a company to view their specific business data (sales, orders, invoices)</p>
+                <?php
+                // Get recent active companies for quick selection
+                $sql_quick_companies = "SELECT DISTINCT c.id, c.name_en, c.name_th,
+                    (SELECT MAX(pr.date) FROM pr WHERE pr.ven_id = c.id OR pr.cus_id = c.id) as last_activity
+                    FROM company c
+                    WHERE c.deleted_at IS NULL
+                    ORDER BY last_activity DESC
+                    LIMIT 8";
+                $quick_companies = mysqli_query($db->conn, $sql_quick_companies);
+                ?>
+                <div class="row">
+                    <?php if($quick_companies && mysqli_num_rows($quick_companies) > 0): ?>
+                        <?php while($qc = mysqli_fetch_assoc($quick_companies)): ?>
+                        <div class="col-md-3 col-sm-6" style="margin-bottom: 10px;">
+                            <a href="index.php?page=remote&select_company=<?php echo $qc['id']; ?>" 
+                               class="btn btn-block" 
+                               style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 12px 15px;">
+                                <i class="fa fa-building" style="color: #667eea;"></i>
+                                <strong><?php echo htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 20)); ?></strong>
+                                <?php if($qc['last_activity']): ?>
+                                <br><small style="color: #6c757d;">Last: <?php echo date('M d', strtotime($qc['last_activity'])); ?></small>
+                                <?php endif; ?>
+                            </a>
+                        </div>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
+                    <div class="col-md-3 col-sm-6" style="margin-bottom: 10px;">
+                        <a href="index.php?page=remote" class="btn btn-block" style="background: #667eea; color: white; text-align: center; padding: 20px 15px;">
+                            <i class="fa fa-search"></i> Browse All Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; // End of Admin Panel ?>
 
+    <?php if ($show_user_dashboard): ?>
+    <!-- ============ USER DASHBOARD (Company-specific data) ============ -->
+    
     <!-- KPI Cards Row -->
     <div class="row kpi-row">
         <div class="col-md-3 col-sm-6">
@@ -798,33 +863,21 @@ function get_status_badge($status) {
             </div>
         </div>
         <div class="col-lg-4">
-            <?php if ($is_admin): ?>
-            <!-- Admin Quick Actions -->
+            <?php if ($is_admin && $com_id > 0): ?>
+            <!-- Admin Quick Actions (only when viewing company data) -->
             <div class="content-card" style="background: #f8f9fa; border-left: 4px solid #667eea;">
                 <h5 class="card-title">
                     <i class="fa fa-cog"></i> Admin Actions
                 </h5>
-                <?php if ($is_super_admin): ?>
-                <a href="index.php?page=user" class="quick-link" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
-                    <i class="fa fa-users-cog"></i>
-                    <span class="quick-link-text">User Management</span>
+                <a href="index.php?page=remote&clear=1" class="quick-link" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);">
+                    <i class="fa fa-arrow-left"></i>
+                    <span class="quick-link-text">Back to Admin Panel</span>
                     <i class="fa fa-chevron-right"></i>
                 </a>
-                <?php endif; ?>
-                <a href="index.php?page=company" class="quick-link" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
-                    <i class="fa fa-building"></i>
-                    <span class="quick-link-text">Company Management</span>
+                <a href="index.php?page=remote" class="quick-link" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                    <i class="fa fa-exchange-alt"></i>
+                    <span class="quick-link-text">Switch Company</span>
                     <i class="fa fa-chevron-right"></i>
-                </a>
-                <a href="index.php?page=category" class="quick-link" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
-                    <i class="fa fa-tags"></i>
-                    <span class="quick-link-text">Categories</span>
-                    <i class="fa fa-chevron-right"></i>
-                </a>
-                <a href="index.php?page=brand" class="quick-link" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); color: #333;">
-                    <i class="fa fa-trademark" style="color: #333;"></i>
-                    <span class="quick-link-text" style="color: #333;">Brands</span>
-                    <i class="fa fa-chevron-right" style="color: #333;"></i>
                 </a>
             </div>
             <?php endif; ?>
@@ -908,4 +961,4 @@ function get_status_badge($status) {
             </div>
         </div>
     </div>
-
+    <?php endif; // End of User Dashboard ?>
