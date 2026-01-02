@@ -13,11 +13,11 @@ $is_admin = ($user_level >= 1);
 $is_super_admin = ($user_level >= 2);
 
 // Determine dashboard mode:
-// - Admin/Super Admin with no company selected: Show Admin Panel only
-// - Admin/Super Admin with company selected: Show User Dashboard only (company data)
+// - Admin/Super Admin: Always show Admin Panel
+// - Admin/Super Admin with company selected: Also show User Dashboard (company data)
 // - Normal User: Show User Dashboard only (their company data)
-$show_admin_panel = $is_admin && $com_id == 0;
-$show_user_dashboard = $com_id > 0 || !$is_admin;
+$show_admin_panel = $is_admin;  // Admin always sees admin panel
+$show_user_dashboard = $com_id > 0 || !$is_admin;  // Show user dashboard if company selected OR not admin
 
 // Build company filter condition for queries
 // If com_id is set, filter by vendor or customer company
@@ -444,14 +444,17 @@ function get_status_badge($status) {
         <div>
             <h2 class="dashboard-title"><i class="fa fa-tachometer-alt"></i> Dashboard</h2>
             <div class="dashboard-subtitle">
-                <?php if ($show_admin_panel): ?>
+                <?php if ($is_admin && $com_id == 0): ?>
                     <i class="fa fa-globe"></i> System Administration - Global View
-                    <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">Select a company from menu to view company-specific data</div>
+                    <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">Select a company below to view company-specific data</div>
+                <?php elseif ($is_admin && $com_id > 0): ?>
+                    <i class="fa fa-building"></i> Viewing: <?php echo htmlspecialchars($com_name); ?>
+                    <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">
+                        <a href="index.php?page=remote" style="color: rgba(255,255,255,0.9);"><i class="fa fa-exchange-alt"></i> Switch company</a> | 
+                        <a href="index.php?page=remote&clear=1" style="color: rgba(255,255,255,0.9);"><i class="fa fa-times"></i> Clear selection</a>
+                    </div>
                 <?php elseif ($com_id > 0): ?>
                     <i class="fa fa-building"></i> <?php echo htmlspecialchars($com_name); ?>
-                    <?php if ($is_admin): ?>
-                    <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">Viewing company data | <a href="index.php?page=remote" style="color: rgba(255,255,255,0.9);">Switch company</a> or <a href="index.php?page=remote&clear=1" style="color: rgba(255,255,255,0.9);">Back to Admin Panel</a></div>
-                    <?php endif; ?>
                 <?php else: ?>
                     Welcome back! Here's your business overview
                 <?php endif; ?>
@@ -466,7 +469,8 @@ function get_status_badge($status) {
             <?php endif; ?>
             <?php if ($show_admin_panel): ?>
                 <span class="badge" style="background: rgba(255,255,255,0.2);">Admin Panel</span>
-            <?php elseif ($com_id > 0): ?>
+            <?php endif; ?>
+            <?php if ($com_id > 0): ?>
                 <span class="badge" style="background: rgba(255,255,255,0.2);">Company View</span>
             <?php endif; ?>
         </div>
