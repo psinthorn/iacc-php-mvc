@@ -17,11 +17,11 @@ echo "=== User Password Reset Tool ===\n\n";
 // Show all users
 echo "Current Users in Database:\n";
 echo "---\n";
-$result = $db->conn->query("SELECT usr_id, usr_name, usr_pass FROM authorize");
+$result = $db->conn->query("SELECT id, email, password FROM authorize");
 while($row = $result->fetch_assoc()){
-    echo "ID: {$row['usr_id']}\n";
-    echo "Email: {$row['usr_name']}\n";
-    echo "Hash: {$row['usr_pass']}\n";
+    echo "ID: {$row['id']}\n";
+    echo "Email: {$row['email']}\n";
+    echo "Hash: {$row['password']}\n";
     echo "---\n";
 }
 
@@ -30,7 +30,7 @@ $new_pass_hash = md5('123456');
 echo "\nSetting all passwords to '123456'...\n";
 echo "Hash: {$new_pass_hash}\n\n";
 
-$update_query = "UPDATE authorize SET usr_pass = ? WHERE usr_id > 0";
+$update_query = "UPDATE authorize SET password = ? WHERE id > 0";
 $stmt = $db->conn->prepare($update_query);
 $stmt->bind_param('s', $new_pass_hash);
 $stmt->execute();
@@ -40,11 +40,11 @@ echo "✓ Updated " . $db->conn->affected_rows . " records\n\n";
 // Verify
 echo "Verification - Updated Users:\n";
 echo "---\n";
-$result = $db->conn->query("SELECT usr_id, usr_name, usr_pass FROM authorize");
+$result = $db->conn->query("SELECT id, email, password FROM authorize");
 while($row = $result->fetch_assoc()){
-    echo "ID: {$row['usr_id']}\n";
-    echo "Email: {$row['usr_name']}\n";
-    echo "Hash: {$row['usr_pass']}\n";
+    echo "ID: {$row['id']}\n";
+    echo "Email: {$row['email']}\n";
+    echo "Hash: {$row['password']}\n";
     echo "---\n";
 }
 

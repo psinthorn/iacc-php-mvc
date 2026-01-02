@@ -3,7 +3,7 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 
-if(!isset($_SESSION['usr_id'])){
+if(!isset($_SESSION['user_id'])){
     echo "❌ Not logged in";
     exit;
 }
@@ -14,8 +14,8 @@ $db = new DbConn($config);
 $session_lang = $_SESSION['lang'] ?? 0;
 
 // Get database language
-$user_id = intval($_SESSION['usr_id']);
-$query = "SELECT lang FROM authorize WHERE usr_id = ?";
+$user_id = intval($_SESSION['user_id']);
+$query = "SELECT lang FROM authorize WHERE id = ?";
 $stmt = $db->conn->prepare($query);
 $stmt->bind_param('i', $user_id);
 $stmt->execute();

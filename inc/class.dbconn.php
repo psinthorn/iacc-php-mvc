@@ -46,7 +46,7 @@ class DbConn {
 	}
 
 	function checkSecurity(){ 
-		if (!isset($_SESSION['usr_id']) || $_SESSION['usr_id'] === "") {
+		if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] === "") {
 			exit("<script>alert('Please Login');window.location='login.php';</script>");
 		}
 	}

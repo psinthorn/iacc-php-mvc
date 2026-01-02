@@ -7,7 +7,7 @@ require_once("inc/security.php");
 $db = new DbConn($config);
 
 // Handle logout first
-if($_SESSION['usr_id']!=""){
+if($_SESSION['user_id']!=""){
 	session_destroy();
 	echo "<script>alert('Logout Success');window.location='login.php';</script>";
 	exit;
@@ -30,26 +30,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_email = sql_escape($_POST['m_user']);
     
     // Get user record (don't check password in SQL anymore)
-    $query = mysqli_query($db->conn, "SELECT usr_id, usr_pass, level, lang FROM authorize WHERE usr_name='" . $user_email . "'");
+    $query = mysqli_query($db->conn, "SELECT id, password, level, lang FROM authorize WHERE email='" . $user_email . "'");
 
 	if(mysqli_num_rows($query)==1){
 		$tmp = mysqli_fetch_array($query);
 		$needsRehash = false;
 		
 		// Verify password (supports both MD5 and bcrypt)
-		if (password_verify_secure($_POST['m_pass'], $tmp['usr_pass'], $needsRehash)) {
+		if (password_verify_secure($_POST['m_pass'], $tmp['password'], $needsRehash)) {
 		    
 		    // Migrate password to bcrypt if needed
 		    if ($needsRehash) {
 		        $newHash = password_hash_secure($_POST['m_pass']);
-		        password_migrate($db->conn, $tmp['usr_id'], $newHash, 'usr_id');
+		        password_migrate($db->conn, $tmp['id'], $newHash, 'id');
 		    }
 		    
 		    // Record successful login
 		    record_login_attempt($db->conn, $_POST['m_user'], true);
 		    
-		    $_SESSION['usr_name'] = $_POST['m_user'];
-		    $_SESSION['usr_id'] = $tmp['usr_id'];
+		    $_SESSION['user_email'] = $_POST['m_user'];
+		    $_SESSION['user_id'] = $tmp['id'];
 		    $_SESSION['lang'] = $tmp['lang'];
 		    
 		    // Regenerate session ID after successful login (security best practice)

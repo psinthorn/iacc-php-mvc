@@ -5,10 +5,10 @@ require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 new DbConn($config);
 
-if(($_SESSION['usr_id']!="")&&($_POST[chlang]!=$_SESSION[lang])){
+if(($_SESSION['user_id']!="")&&($_POST[chlang]!=$_SESSION[lang])){
 	
 	
-$query=mysql_query("update  authorize set lang='".$_POST[chlang]."' where usr_name='".$_SESSION['usr_name']."' and usr_id='".$_SESSION['usr_id']."'");
+$query=mysql_query("update  authorize set lang='".$_POST[chlang]."' where email='".$_SESSION['user_email']."' and id='".$_SESSION['user_id']."'");
 $_SESSION[lang]=$_POST[chlang];
 	
 	echo "<script>window.location='index.php';</script>";

@@ -6,7 +6,7 @@ echo "<pre>";
 // Session info
 echo "=== SESSION ===\n";
 echo "com_id: " . ($_SESSION['com_id'] ?? 'NOT SET') . "\n";
-echo "usr_id: " . ($_SESSION['usr_id'] ?? 'NOT SET') . "\n";
+echo "user_id: " . ($_SESSION['user_id'] ?? 'NOT SET') . "\n";
 echo "auth: " . ($_SESSION['auth'] ?? 'NOT SET') . "\n\n";
 
 require_once("inc/sys.configs.php");

@@ -267,7 +267,7 @@ case "pr_list" : {
 		
 		}else
 	if($_REQUEST['method']=="A"){
-	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['des']."','".$_SESSION['usr_id']."','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".date('Y-m-d')."','0','0','0',''";
+	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['des']."','".$_SESSION['user_id']."','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".date('Y-m-d')."','0','0','0',''";
 	
 	 $pr_id=$har->insertDbMax($args);
 	 for($i=0;$i<9;$i++){

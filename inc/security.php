@@ -513,16 +513,16 @@ function password_verify_secure($password, $hash, &$needsRehash = false) {
 /**
  * Update user password to modern hash
  * @param mysqli $conn Database connection
- * @param int|string $userId User ID or username
+ * @param int|string $userId User ID or email
  * @param string $newHash New bcrypt hash
- * @param string $idField Field name for user identifier (usr_id or usr_name)
+ * @param string $idField Field name for user identifier (id or email)
  * @return bool Success
  */
-function password_migrate($conn, $userId, $newHash, $idField = 'usr_id') {
-    $stmt = $conn->prepare("UPDATE authorize SET usr_pass = ?, password_migrated = 1 WHERE $idField = ?");
+function password_migrate($conn, $userId, $newHash, $idField = 'id') {
+    $stmt = $conn->prepare("UPDATE authorize SET password = ?, password_migrated = 1 WHERE $idField = ?");
     if (!$stmt) return false;
     
-    if ($idField === 'usr_id') {
+    if ($idField === 'id') {
         $stmt->bind_param('si', $newHash, $userId);
     } else {
         $stmt->bind_param('ss', $newHash, $userId);

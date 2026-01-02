@@ -483,13 +483,13 @@ echo "<h2>8. Authorize (User) Table Test</h2>";
 // READ existing users
 echo "<h3>READ Users</h3>";
 $authTest = runTest('authorize_read', function() use ($db) {
-    $sql = "SELECT usr_id, usr_name, level FROM authorize LIMIT 5";
+    $sql = "SELECT id, email, level FROM authorize LIMIT 5";
     $result = mysqli_query($db->conn, $sql);
     
     if ($result && mysqli_num_rows($result) > 0) {
         $users = [];
         while ($row = mysqli_fetch_assoc($result)) {
-            $users[] = $row['usr_name'];
+            $users[] = $row['email'];
         }
         return ['status' => 'PASS', 'message' => "Found " . count($users) . " users: " . implode(', ', $users)];
     }
