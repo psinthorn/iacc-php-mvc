@@ -54,8 +54,16 @@ function sumall() {
     <div id="box">
 		<lable for="name"><?=$xml->customer?></lable>
 		<select id="cus_id" name="cus_id" class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select name_en,id from company where customer='1' and id !='".$_SESSION['com_id'] ."' order by name_en ");
-			
+			<?php 
+			$com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
+			if ($com_id > 0) {
+			    // Show only customers this company has done business with, or all customers
+			    $querycustomer = mysqli_query($db->conn, "SELECT DISTINCT c.name_en, c.id FROM company c 
+			        WHERE c.customer='1' AND c.id != '$com_id' AND c.deleted_at IS NULL
+			        ORDER BY c.name_en");
+			} else {
+			    $querycustomer = mysqli_query($db->conn, "SELECT name_en, id FROM company WHERE customer='1' ORDER BY name_en");
+			}
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";
