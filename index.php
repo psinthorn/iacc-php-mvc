@@ -20,6 +20,62 @@ require_once("inc/security.php");
 $db = new DbConn($config);
 $db->checkSecurity();
 
+// ========== Handle Company Switching (Admin/Super Admin only) ==========
+// This must happen before any HTML output so we can redirect
+if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'remote') {
+    $userLevel = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
+    
+    if ($userLevel < 1) {
+        // Normal users cannot switch companies
+        header('Location: index.php?page=dashboard&error=access_denied');
+        exit;
+    }
+    
+    // Handle clear company (back to admin panel)
+    if (isset($_GET['clear']) && $_GET['clear'] == '1') {
+        $_SESSION['com_id'] = "";
+        $_SESSION['com_name'] = "";
+        header('Location: index.php?page=dashboard');
+        exit;
+    }
+    
+    // Handle quick company selection from dashboard
+    if (isset($_GET['select_company'])) {
+        $company_id = sql_int($_GET['select_company']);
+        $sql = "SELECT name_en, name_sh FROM company WHERE id='" . $company_id . "' AND deleted_at IS NULL";
+        $result = mysqli_query($db->conn, $sql);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $comname = mysqli_fetch_array($result);
+            $_SESSION['com_id'] = $company_id;
+            $_SESSION['com_name'] = $comname['name_en'] ?: $comname['name_sh'];
+        }
+        header('Location: index.php?page=dashboard');
+        exit;
+    }
+    
+    // Handle toggle from company list (legacy id parameter)
+    if (isset($_GET['id'])) {
+        $company_id = sql_int($_GET['id']);
+        if ($_SESSION['com_id'] == $company_id) {
+            // If same company, clear it
+            $_SESSION['com_id'] = "";
+            $_SESSION['com_name'] = "";
+        } else {
+            // Set new company
+            $sql = "SELECT name_en, name_sh FROM company WHERE id='" . $company_id . "'";
+            $comname = mysqli_fetch_array(mysqli_query($db->conn, $sql));
+            $_SESSION['com_id'] = $company_id;
+            $_SESSION['com_name'] = $comname['name_en'] ?: $comname['name_sh'];
+        }
+        header('Location: index.php?page=dashboard');
+        exit;
+    }
+    
+    // If no action specified, go to dashboard
+    header('Location: index.php?page=dashboard');
+    exit;
+}
+
 // Page routing configuration - maps page parameter to file
 $routes = [
     // Dashboard
