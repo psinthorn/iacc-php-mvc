@@ -865,10 +865,7 @@ function get_status_badge($status) {
                                     <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
                                     <td><?php echo number_format($tax_inv['subtotal'] ?? 0, 2); ?></td>
                                     <td>
-                                        <a href="index.php?page=compl_view&id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="View Details">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        <a href="taxiv.php?id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank" style="background: #28a745;">
+                                        <a href="taxiv.php?id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="View PDF" target="_blank">
                                             <i class="fa fa-file-pdf"></i>
                                         </a>
                                     </td>
