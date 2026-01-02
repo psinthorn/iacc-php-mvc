@@ -2,8 +2,11 @@
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
+require_once("inc/security.php");
 $users=new DbConn($config);
-$users->checkSecurity();?>
+$users->checkSecurity();
+$cat_id = sql_int($_REQUEST['id'] ?? 0);
+?>
 <!DOCTYPE html>
 <html>
 
@@ -12,7 +15,7 @@ $users->checkSecurity();?>
 
 <body>
 <?php
-$query=mysql_query("select * from category where id='".$_REQUEST[id]."'");
+$query=mysql_query("select * from category where id='".$cat_id."'");
 if(mysql_num_rows($query)==1){
 $method="E";
 $data=mysql_fetch_array($query);
@@ -20,15 +23,15 @@ $data=mysql_fetch_array($query);
 <form action="core-function.php" method="post" id="myform">
 	<div id="box">
 		<lable for="cat_name"><?=$xml->name?></lable>
-		<input id="cat_name" name="cat_name" class="form-control" required type="text" value="<?php echo $data[cat_name];?>">
+		<input id="cat_name" name="cat_name" class="form-control" required type="text" value="<?php echo e($data['cat_name'] ?? '');?>">
 	</div>
     	<div id="box">
 		<lable for="des"><?=$xml->description?></lable>
-		<input id="des" name="des" class="form-control" required type="text" value="<?php echo $data[des];?>">
+		<input id="des" name="des" class="form-control" required type="text" value="<?php echo e($data['des'] ?? '');?>">
 	</div>
 	<input type="hidden" name="method" value="<?php echo $method;?>">
 	<input type="hidden" name="page" value="category">
-	<input type="hidden" name="id" value="<?php echo $_REQUEST[id];?>">
+	<input type="hidden" name="id" value="<?php echo $cat_id;?>">
 	<div id="box" style="padding-top:25px;"><input type="submit" value="<?php if($method=="E")echo $xml->edit; else echo $xml->add;?>" class="btn btn-primary"></div>
 </form>
 
