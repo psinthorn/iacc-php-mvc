@@ -37,20 +37,23 @@ require_once("inc/security.php");
                             <?= csrf_field() ?>
                             <fieldset>
                                 <div class="form-group">
-                                    <input class="form-control" placeholder="E-mail" name="m_user" type="email" autofocus>
+                                    <input class="form-control" placeholder="E-mail" name="m_user" type="email" autofocus required>
                                 </div>
                                 <div class="form-group">
-                                    <input class="form-control" placeholder="Password" name="m_pass" type="password" value="">
+                                    <input class="form-control" placeholder="Password" name="m_pass" type="password" value="" required>
                                 </div>
                                 <div class="checkbox">
                                     <label>
-                                        <input name="remember" type="checkbox" value="Remember Me">Remember Me
+                                        <input name="remember" type="checkbox" value="1">Remember Me
                                     </label>
                                 </div>
-                                <!-- Change this to a button or input when using this as a form -->
                                 <input type="submit" class="btn btn-lg btn-primary btn-block" value="Login">
                             </fieldset>
                         </form>
+                        <hr>
+                        <p class="text-center">
+                            <a href="forgot-password.php">Forgot Password?</a>
+                        </p>
                     </div>
                 </div>
             </div>

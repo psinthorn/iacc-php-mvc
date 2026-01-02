@@ -7,7 +7,9 @@ require_once("inc/security.php");
 $db = new DbConn($config);
 
 // Handle logout first
-if($_SESSION['user_id']!=""){
+if(isset($_SESSION['user_id']) && $_SESSION['user_id'] != ""){
+	// Clear remember me token
+	clear_remember_token($db->conn, $_SESSION['user_id']);
 	session_destroy();
 	echo "<script>alert('Logout Success');window.location='login.php';</script>";
 	exit;
@@ -19,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit("<script>alert('Invalid request. Please try again.');window.location='login.php';</script>");
     }
     
-    // Check rate limiting
+    // Check rate limiting (IP-based)
     $rateLimit = check_rate_limit($db->conn, 5, 15);
     if ($rateLimit['limited']) {
         $minutes = ceil($rateLimit['retry_after'] / 60);
@@ -28,6 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Sanitize input
     $user_email = sql_escape($_POST['m_user']);
+    
+    // Check if account is locked
+    $lockStatus = is_account_locked($db->conn, $_POST['m_user']);
+    if ($lockStatus['locked']) {
+        $lockTime = date('H:i', strtotime($lockStatus['until']));
+        exit("<script>alert('Account is locked. Try again after {$lockTime}.');window.location='login.php';</script>");
+    }
     
     // Get user record (don't check password in SQL anymore)
     $query = mysqli_query($db->conn, "SELECT id, password, level, lang FROM authorize WHERE email='" . $user_email . "'");
@@ -45,12 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		        password_migrate($db->conn, $tmp['id'], $newHash, 'id');
 		    }
 		    
-		    // Record successful login
+		    // Record successful login and reset failed attempts
 		    record_login_attempt($db->conn, $_POST['m_user'], true);
+		    reset_failed_attempts($db->conn, $_POST['m_user']);
 		    
 		    $_SESSION['user_email'] = $_POST['m_user'];
 		    $_SESSION['user_id'] = $tmp['id'];
+		    $_SESSION['user_level'] = $tmp['level'];
 		    $_SESSION['lang'] = $tmp['lang'];
+		    
+		    // Handle "Remember Me"
+		    if (isset($_POST['remember']) && $_POST['remember']) {
+		        create_remember_token($db->conn, $tmp['id'], 30);
+		    }
 		    
 		    // Regenerate session ID after successful login (security best practice)
 		    session_regenerate_id(true);
@@ -65,6 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
 	// Record failed login attempt
 	record_login_attempt($db->conn, $_POST['m_user'], false);
+	
+	// Increment failed attempts and check for lockout
+	$isLocked = increment_failed_attempts($db->conn, $_POST['m_user'], 10, 30);
+	
+	if ($isLocked) {
+	    exit("<script>alert('Too many failed attempts. Account locked for 30 minutes.');window.location='login.php';</script>");
+	}
+	
 	$remaining = $rateLimit['remaining'] - 1;
 	
 	if ($remaining <= 2 && $remaining > 0) {

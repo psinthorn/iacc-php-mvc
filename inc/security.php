@@ -626,3 +626,338 @@ function get_client_ip() {
     }
     return '0.0.0.0';
 }
+
+// ============================================================================
+// ACCOUNT LOCKOUT HELPERS
+// Lock accounts after too many failed login attempts
+// ============================================================================
+
+/**
+ * Check if account is locked
+ * @param mysqli $conn Database connection
+ * @param string $email User email
+ * @return array ['locked' => bool, 'until' => datetime string or null]
+ */
+function is_account_locked($conn, $email) {
+    $stmt = $conn->prepare("SELECT locked_until FROM authorize WHERE email = ?");
+    if (!$stmt) return ['locked' => false, 'until' => null];
+    
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$row || !$row['locked_until']) {
+        return ['locked' => false, 'until' => null];
+    }
+    
+    $lockedUntil = strtotime($row['locked_until']);
+    if ($lockedUntil > time()) {
+        return ['locked' => true, 'until' => $row['locked_until']];
+    }
+    
+    // Lock expired, clear it
+    unlock_account($conn, $email);
+    return ['locked' => false, 'until' => null];
+}
+
+/**
+ * Increment failed attempts and lock if threshold reached
+ * @param mysqli $conn Database connection
+ * @param string $email User email
+ * @param int $maxAttempts Lock after this many attempts (default 10)
+ * @param int $lockMinutes Lock duration in minutes (default 30)
+ * @return bool True if account is now locked
+ */
+function increment_failed_attempts($conn, $email, $maxAttempts = 10, $lockMinutes = 30) {
+    $stmt = $conn->prepare("UPDATE authorize SET failed_attempts = failed_attempts + 1 WHERE email = ?");
+    if ($stmt) {
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+    // Check if should lock
+    $stmt = $conn->prepare("SELECT failed_attempts FROM authorize WHERE email = ?");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if ($row && $row['failed_attempts'] >= $maxAttempts) {
+        lock_account($conn, $email, $lockMinutes);
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Lock an account
+ * @param mysqli $conn Database connection
+ * @param string $email User email
+ * @param int $minutes Lock duration in minutes
+ */
+function lock_account($conn, $email, $minutes = 30) {
+    $lockedUntil = date('Y-m-d H:i:s', strtotime("+{$minutes} minutes"));
+    $stmt = $conn->prepare("UPDATE authorize SET locked_until = ? WHERE email = ?");
+    if ($stmt) {
+        $stmt->bind_param('ss', $lockedUntil, $email);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+/**
+ * Unlock an account and reset failed attempts
+ * @param mysqli $conn Database connection
+ * @param string $email User email
+ */
+function unlock_account($conn, $email) {
+    $stmt = $conn->prepare("UPDATE authorize SET locked_until = NULL, failed_attempts = 0 WHERE email = ?");
+    if ($stmt) {
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+/**
+ * Reset failed attempts on successful login
+ * @param mysqli $conn Database connection
+ * @param string $email User email
+ */
+function reset_failed_attempts($conn, $email) {
+    $stmt = $conn->prepare("UPDATE authorize SET failed_attempts = 0 WHERE email = ?");
+    if ($stmt) {
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+// ============================================================================
+// PASSWORD RESET HELPERS
+// Forgot password functionality
+// ============================================================================
+
+/**
+ * Generate password reset token
+ * @param mysqli $conn Database connection
+ * @param string $email User email
+ * @param int $expiresMinutes Token validity in minutes (default 60)
+ * @return string|false Token on success, false on failure
+ */
+function generate_password_reset_token($conn, $email, $expiresMinutes = 60) {
+    // Check if user exists
+    $stmt = $conn->prepare("SELECT id FROM authorize WHERE email = ?");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        return false; // User not found
+    }
+    $stmt->close();
+    
+    // Invalidate old tokens
+    $stmt = $conn->prepare("UPDATE password_resets SET used = 1 WHERE email = ? AND used = 0");
+    if ($stmt) {
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+    // Generate new token
+    $token = bin2hex(random_bytes(32));
+    $expiresAt = date('Y-m-d H:i:s', strtotime("+{$expiresMinutes} minutes"));
+    
+    $stmt = $conn->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('sss', $email, $token, $expiresAt);
+    $result = $stmt->execute();
+    $stmt->close();
+    
+    return $result ? $token : false;
+}
+
+/**
+ * Verify password reset token
+ * @param mysqli $conn Database connection
+ * @param string $token Reset token
+ * @return string|false Email if valid, false otherwise
+ */
+function verify_password_reset_token($conn, $token) {
+    $stmt = $conn->prepare("SELECT email, expires_at FROM password_resets WHERE token = ? AND used = 0");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('s', $token);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$row) return false;
+    
+    if (strtotime($row['expires_at']) < time()) {
+        return false; // Token expired
+    }
+    
+    return $row['email'];
+}
+
+/**
+ * Reset password using token
+ * @param mysqli $conn Database connection
+ * @param string $token Reset token
+ * @param string $newPassword New password (plain text)
+ * @return bool Success
+ */
+function reset_password_with_token($conn, $token, $newPassword) {
+    $email = verify_password_reset_token($conn, $token);
+    if (!$email) return false;
+    
+    // Hash new password
+    $hash = password_hash_secure($newPassword);
+    
+    // Update password
+    $stmt = $conn->prepare("UPDATE authorize SET password = ?, password_migrated = 1, failed_attempts = 0, locked_until = NULL WHERE email = ?");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('ss', $hash, $email);
+    $result = $stmt->execute();
+    $stmt->close();
+    
+    if (!$result) return false;
+    
+    // Mark token as used
+    $stmt = $conn->prepare("UPDATE password_resets SET used = 1 WHERE token = ?");
+    if ($stmt) {
+        $stmt->bind_param('s', $token);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+    return true;
+}
+
+// ============================================================================
+// REMEMBER ME HELPERS
+// Persistent login functionality
+// ============================================================================
+
+/**
+ * Generate remember me token and set cookie
+ * @param mysqli $conn Database connection
+ * @param int $userId User ID
+ * @param int $days Cookie validity in days (default 30)
+ * @return bool Success
+ */
+function create_remember_token($conn, $userId, $days = 30) {
+    // Generate token
+    $token = bin2hex(random_bytes(32));
+    $tokenHash = hash('sha256', $token);
+    $expiresAt = date('Y-m-d H:i:s', strtotime("+{$days} days"));
+    
+    // Clean old tokens for this user
+    $stmt = $conn->prepare("DELETE FROM remember_tokens WHERE user_id = ? OR expires_at < NOW()");
+    if ($stmt) {
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+    // Store token hash
+    $stmt = $conn->prepare("INSERT INTO remember_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('iss', $userId, $tokenHash, $expiresAt);
+    $result = $stmt->execute();
+    $stmt->close();
+    
+    if (!$result) return false;
+    
+    // Set cookie with plain token
+    $cookieExpires = time() + ($days * 24 * 60 * 60);
+    $secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    setcookie('remember_token', $token, $cookieExpires, '/', '', $secure, true);
+    setcookie('remember_user', $userId, $cookieExpires, '/', '', $secure, true);
+    
+    return true;
+}
+
+/**
+ * Verify remember me token and auto-login
+ * @param mysqli $conn Database connection
+ * @return array|false User data if valid, false otherwise
+ */
+function verify_remember_token($conn) {
+    if (empty($_COOKIE['remember_token']) || empty($_COOKIE['remember_user'])) {
+        return false;
+    }
+    
+    $token = $_COOKIE['remember_token'];
+    $userId = (int)$_COOKIE['remember_user'];
+    $tokenHash = hash('sha256', $token);
+    
+    $stmt = $conn->prepare("SELECT rt.user_id, a.email, a.lang 
+                            FROM remember_tokens rt 
+                            JOIN authorize a ON rt.user_id = a.id 
+                            WHERE rt.token_hash = ? AND rt.user_id = ? AND rt.expires_at > NOW()");
+    if (!$stmt) return false;
+    
+    $stmt->bind_param('si', $tokenHash, $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    if (!$row) {
+        // Invalid token, clear cookies
+        clear_remember_token();
+        return false;
+    }
+    
+    return [
+        'user_id' => $row['user_id'],
+        'email' => $row['email'],
+        'lang' => $row['lang']
+    ];
+}
+
+/**
+ * Clear remember me token and cookies
+ * @param mysqli|null $conn Database connection (optional)
+ * @param int|null $userId User ID (optional)
+ */
+function clear_remember_token($conn = null, $userId = null) {
+    // Clear cookies
+    setcookie('remember_token', '', time() - 3600, '/');
+    setcookie('remember_user', '', time() - 3600, '/');
+    
+    // Clear from database if connection provided
+    if ($conn && $userId) {
+        $stmt = $conn->prepare("DELETE FROM remember_tokens WHERE user_id = ?");
+        if ($stmt) {
+            $stmt->bind_param('i', $userId);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+}
+
+/**
+ * Cleanup expired tokens (call periodically)
+ * @param mysqli $conn Database connection
+ */
+function cleanup_expired_tokens($conn) {
+    $conn->query("DELETE FROM password_resets WHERE expires_at < NOW() OR used = 1");
+    $conn->query("DELETE FROM remember_tokens WHERE expires_at < NOW()");
+}

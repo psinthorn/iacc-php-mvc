@@ -46,8 +46,49 @@ class DbConn {
 	}
 
 	function checkSecurity(){ 
-		if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] === "") {
-			exit("<script>alert('Please Login');window.location='login.php';</script>");
+		// Check if already logged in via session
+		if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== "") {
+			return true;
+		}
+		
+		// Try to auto-login via remember me cookie
+		$userData = verify_remember_token($this->conn);
+		if ($userData) {
+			$_SESSION['user_id'] = $userData['user_id'];
+			$_SESSION['user_email'] = $userData['email'];
+			$_SESSION['lang'] = $userData['lang'];
+			session_regenerate_id(true);
+			return true;
+		}
+		
+		// Not authenticated
+		exit("<script>alert('Please Login');window.location='login.php';</script>");
+	}
+	
+	/**
+	 * Get current user's role level
+	 * @return int User level (0=user, 1=admin, 2=superadmin)
+	 */
+	function getUserLevel() {
+		return $_SESSION['user_level'] ?? 0;
+	}
+	
+	/**
+	 * Check if current user has required level
+	 * @param int $requiredLevel Minimum level required
+	 * @return bool
+	 */
+	function hasLevel($requiredLevel) {
+		return $this->getUserLevel() >= $requiredLevel;
+	}
+	
+	/**
+	 * Require specific user level, redirect if not authorized
+	 * @param int $requiredLevel Minimum level required
+	 */
+	function requireLevel($requiredLevel) {
+		if (!$this->hasLevel($requiredLevel)) {
+			exit("<script>alert('Access Denied');window.location='index.php';</script>");
 		}
 	}
 }
