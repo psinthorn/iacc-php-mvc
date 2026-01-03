@@ -4,6 +4,9 @@
  * Add/Edit payment method
  */
 
+require_once("inc/class.company_filter.php");
+$companyFilter = CompanyFilter::getInstance();
+
 $mode = isset($_GET['mode']) ? $_GET['mode'] : 'A';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -17,9 +20,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     $is_gateway = isset($_POST['is_gateway']) ? 1 : 0;
     $is_active = isset($_POST['is_active']) ? 1 : 0;
     $sort_order = intval($_POST['sort_order']);
+    $company_id = $companyFilter->getSafeCompanyId();
     
     if($mode === 'E' && $id > 0) {
-        // Update existing
+        // Update existing (with company check)
         $sql = "UPDATE payment_method SET 
                 code = '$code',
                 name = '$name',
@@ -29,12 +33,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 is_gateway = $is_gateway,
                 is_active = $is_active,
                 sort_order = $sort_order
-                WHERE id = $id";
+                WHERE id = $id " . $companyFilter->andCompanyFilter();
         mysqli_query($db->conn, $sql);
     } else {
-        // Insert new
-        $sql = "INSERT INTO payment_method (code, name, name_th, icon, description, is_gateway, is_active, sort_order) 
-                VALUES ('$code', '$name', '$name_th', '$icon', '$description', $is_gateway, $is_active, $sort_order)";
+        // Insert new (with company_id)
+        $sql = "INSERT INTO payment_method (code, name, name_th, icon, description, is_gateway, is_active, sort_order, company_id) 
+                VALUES ('$code', '$name', '$name_th', '$icon', '$description', $is_gateway, $is_active, $sort_order, $company_id)";
         mysqli_query($db->conn, $sql);
     }
     
@@ -55,15 +59,16 @@ $data = [
 ];
 
 if($mode === 'E' && $id > 0) {
-    $result = mysqli_query($db->conn, "SELECT * FROM payment_method WHERE id = $id");
+    $result = mysqli_query($db->conn, "SELECT * FROM payment_method WHERE id = $id " . $companyFilter->andCompanyFilter());
     if($row = mysqli_fetch_assoc($result)) {
         $data = $row;
     }
 }
 
-// Get next sort order for new entries
+// Get next sort order for new entries (with company filter)
 if($mode === 'A') {
-    $max_order = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT MAX(sort_order) as max_order FROM payment_method"));
+    $companyCondition = $companyFilter->hasCompany() ? "WHERE company_id = " . $companyFilter->getSafeCompanyId() : "";
+    $max_order = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT MAX(sort_order) as max_order FROM payment_method $companyCondition"));
     $data['sort_order'] = ($max_order['max_order'] ?? 0) + 1;
 }
 

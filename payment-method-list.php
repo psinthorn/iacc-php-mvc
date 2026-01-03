@@ -4,10 +4,14 @@
  * CRUD operations for managing payment methods
  */
 
+require_once("inc/class.company_filter.php");
+$companyFilter = CompanyFilter::getInstance();
+$companyCondition = $companyFilter->hasCompany() ? "company_id = " . $companyFilter->getSafeCompanyId() : "1=1";
+
 // Handle delete action
 if(isset($_GET['del'])) {
     $del_id = intval($_GET['del']);
-    mysqli_query($db->conn, "DELETE FROM payment_method WHERE id = $del_id");
+    mysqli_query($db->conn, "DELETE FROM payment_method WHERE id = $del_id AND $companyCondition");
     echo "<script>window.location.href='index.php?page=payment_method_list';</script>";
     exit;
 }
@@ -15,7 +19,7 @@ if(isset($_GET['del'])) {
 // Handle toggle active status
 if(isset($_GET['toggle'])) {
     $toggle_id = intval($_GET['toggle']);
-    mysqli_query($db->conn, "UPDATE payment_method SET is_active = NOT is_active WHERE id = $toggle_id");
+    mysqli_query($db->conn, "UPDATE payment_method SET is_active = NOT is_active WHERE id = $toggle_id AND $companyCondition");
     echo "<script>window.location.href='index.php?page=payment_method_list';</script>";
     exit;
 }
@@ -26,6 +30,9 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 $where_conditions = [];
+// Add company filter
+$where_conditions[] = $companyCondition;
+
 if($search) {
     $where_conditions[] = "(code LIKE '%$search%' OR name LIKE '%$search%' OR name_th LIKE '%$search%')";
 }
@@ -38,11 +45,11 @@ if($filter_status !== '') {
 
 $where_clause = count($where_conditions) > 0 ? "WHERE " . implode(" AND ", $where_conditions) : "";
 
-// Get statistics
-$stats_total = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method"))['cnt'];
-$stats_active = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE is_active = 1"))['cnt'];
-$stats_inactive = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE is_active = 0"))['cnt'];
-$stats_gateway = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE is_gateway = 1"))['cnt'];
+// Get statistics (with company filter)
+$stats_total = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE $companyCondition"))['cnt'];
+$stats_active = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE $companyCondition AND is_active = 1"))['cnt'];
+$stats_inactive = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE $companyCondition AND is_active = 0"))['cnt'];
+$stats_gateway = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM payment_method WHERE $companyCondition AND is_gateway = 1"))['cnt'];
 
 // Get payment methods
 $query = mysqli_query($db->conn, "SELECT * FROM payment_method $where_clause ORDER BY sort_order ASC, id ASC");

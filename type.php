@@ -4,9 +4,11 @@
 // require_once("inc/class.dbconn.php");
 // $db=new DbConn($config);
 // $db->checkSecurity();
+require_once("inc/class.company_filter.php");
 
 // Security: Sanitize ID parameter
 $type_id = intval($_REQUEST['id'] ?? 0);
+$companyFilter = CompanyFilter::getInstance();
 ?>
 <!DOCTYPE html>
 <html>
@@ -16,7 +18,7 @@ $type_id = intval($_REQUEST['id'] ?? 0);
 
 <body>
 <?php
-$query=mysqli_query($db->conn,"select * from type where id='".$type_id."'");
+$query=mysqli_query($db->conn,"SELECT * FROM type WHERE id='".$type_id."' " . $companyFilter->andCompanyFilter());
 if(mysqli_num_rows($query)==1){
 	$method="E";
 	$data=mysqli_fetch_array($query);
@@ -30,7 +32,7 @@ if(mysqli_num_rows($query)==1){
 		<div id="box">
 			<lable for="cat_id"><?=$xml->category?></lable>
 			<select id="cat_id" name="cat_id" class="form-control">
-				<?php $querycustomer=mysqli_query($db->conn, "select cat_name,id from category");
+				<?php $querycustomer=mysqli_query($db->conn, "SELECT cat_name, id FROM category " . $companyFilter->whereCompanyFilter());
 				
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($data['cat_id']==$fetch_customer['id'])$seld=" selected ";else $seld="";
@@ -46,13 +48,13 @@ if(mysqli_num_rows($query)==1){
 			<lable for="cat_id"><?=$xml->description?></lable>
 			<textarea name="des" class="form-control"><?php echo $data['des'];?></textarea>
 		</div>
-       	<div id="box" style="width:100%;"> 
+		<div id="box" style="width:100%;"> 
 			<label for="st"><?=$xml->brandonthistype?></label><br>
-			<?php $query_additional=mysqli_query($db->conn, "select brand.id as id ,brand.brand_name as name  from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$type_id."' order by brand.brand_name");
+			<?php $query_additional=mysqli_query($db->conn, "SELECT brand.id as id, brand.brand_name as name FROM brand JOIN map_type_to_brand ON brand.id=map_type_to_brand.brand_id WHERE type_id='".$type_id."' " . $companyFilter->andCompanyFilter('brand') . " ORDER BY brand.brand_name");
 			while($fet_additional=mysqli_fetch_array($query_additional)){?>
 			<input type="checkbox" checked id="<?=intval($fet_additional['id'])?>" name="<?=intval($fet_additional['id'])?>"  class="checkbox" />
 			<label style="padding:7px;cursor:pointer !important"   for="<?=intval($fet_additional['id'])?>"><?=htmlspecialchars($fet_additional['name'])?></label><?php }?>
-			<?php $query_additional=mysqli_query($db->conn, "select brand.id as id ,brand.brand_name as name from brand where id not in (select brand_id from map_type_to_brand where type_id='".$type_id."') order by brand.brand_name");
+			<?php $query_additional=mysqli_query($db->conn, "SELECT brand.id as id, brand.brand_name as name FROM brand WHERE id NOT IN (SELECT brand_id FROM map_type_to_brand WHERE type_id='".$type_id."') " . $companyFilter->andCompanyFilter() . " ORDER BY brand.brand_name");
 		
 			while($fet_additional=mysqli_fetch_array($query_additional)){?>
 			<input type="checkbox" name="<?=intval($fet_additional['id'])?>" id="<?=intval($fet_additional['id'])?>" class="checkbox" />

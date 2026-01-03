@@ -4,6 +4,7 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/class.hard.php");
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
 
 // CSRF protection for all POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -11,6 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('CSRF token validation failed. Please refresh the page and try again.');
     }
 }
+
+// Initialize company filter for multi-tenant queries
+$companyFilter = CompanyFilter::getInstance();
 
 $users=new DbConn($config);
 // Security already checked in index.php
@@ -80,31 +84,32 @@ case "company" : {
 	
 }break;		
 case "type" : {
+	$company_id = $companyFilter->getSafeCompanyId();
 	if($_REQUEST['method']=="A"){
 		$args['table']="type";
 		
 	
-	$args['value']="'".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."'";
+	$args['value']="'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."'";
 	$max_id=$har->insertDbMax($args);	
 	while(list($key, $val) = each($_POST))
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
-			mysqli_query($db->conn, "insert into map_type_to_brand values('','".sql_int($max_id)."','".sql_int($key)."')");
+			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES('','".$company_id."','".sql_int($max_id)."','".sql_int($key)."')");
 		}}
 		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "delete from type where id='".sql_int($_REQUEST['id'])."'");
-			mysqli_query($db->conn, "delete from map_type_to_brand where type_id='".sql_int($_REQUEST['id'])."'");
+			mysqli_query($db->conn, "DELETE FROM type WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
+			mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE type_id='".sql_int($_REQUEST['id'])."'");
 			
 			
 		
 			}
 	else if($_REQUEST['method']=="E"){
 		
-		mysqli_query($db->conn, "delete from map_type_to_brand where type_id='".sql_int($_POST['id'])."'");
+		mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE type_id='".sql_int($_POST['id'])."'");
 		while(list($key, $val) = each($_POST))
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
-			mysqli_query($db->conn, "insert into map_type_to_brand values('','".sql_int($_POST['id'])."','".sql_int($key)."')");
+			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES('','".$company_id."','".sql_int($_POST['id'])."','".sql_int($key)."')");
 		}
 		}	
 		
@@ -112,23 +117,24 @@ case "type" : {
 
 	
 	$args['value']="name='".sql_escape($_REQUEST['type_name'])."',cat_id='".sql_int($_REQUEST['cat_id'])."',des='".sql_escape($_REQUEST['des'])."'";
-	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
 	$har->updateDb($args);	
 		}
 }break;	
 case "category" : {
+	$company_id = $companyFilter->getSafeCompanyId();
 	if($_REQUEST['method']=="A"){
 		$args['table']="category";
-	$args['value']="'','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."'";
+	$args['value']="'','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."','".$company_id."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "delete from category where id='".sql_int($_REQUEST['id'])."'");
+			mysqli_query($db->conn, "DELETE FROM category WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
 		
 			}
 	else if($_REQUEST['method']=="E"){
 	$args['table']="category";
 	$args['value']="cat_name='".sql_escape($_REQUEST['cat_name'])."',des='".sql_escape($_REQUEST['des'])."'";
-	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
 	$har->updateDb($args);	
 		}
 }break;
@@ -230,6 +236,7 @@ case "mo_list" : {
 
 case "brand" : {
 	$args['table']="brand";
+	$company_id = $companyFilter->getSafeCompanyId();
 	
 	if($_REQUEST['method']=="A"){
 		if (($_FILES["logo"] != "") && 
@@ -242,11 +249,11 @@ case "brand" : {
 		$tmpupdate=",'".$filepath."'";
 	}else{$tmpupdate=",''";}
 	
-	$args['value']="'','".sql_escape($_REQUEST['brand_name'])."','".sql_escape($_REQUEST['des'])."'".$tmpupdate.",'".sql_int($_REQUEST['ven_id'])."'";
+	$args['value']="'','".$company_id."','".sql_escape($_REQUEST['brand_name'])."','".sql_escape($_REQUEST['des'])."'".$tmpupdate.",'".sql_int($_REQUEST['ven_id'])."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "delete from brand where id='".sql_int($_REQUEST['id'])."'");
-			mysqli_query($db->conn, "delete from  map_type_to_brand where 	brand_id='".sql_int($_REQUEST['id'])."'");
+			mysqli_query($db->conn, "DELETE FROM brand WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
+			mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE brand_id='".sql_int($_REQUEST['id'])."'");
 			}
 	else if($_REQUEST['method']=="E"){
 			if (($_FILES["logo"] != "") && 
@@ -261,7 +268,7 @@ case "brand" : {
 		
 	$args['value']="brand_name='".sql_escape($_REQUEST['brand_name'])."',des='".sql_escape($_REQUEST['des'])."'".$tmpupdate.",ven_id='".sql_int($_REQUEST['ven_id'])."'";
 	
-	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
 	$har->updateDb($args);	
 		}
 }break;

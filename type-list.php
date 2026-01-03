@@ -3,8 +3,12 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
 $db=new DbConn($config);
 $db->checkSecurity();
+
+// Get company filter instance
+$companyFilter = CompanyFilter::getInstance();
 
 // Get search parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -40,7 +44,7 @@ if (!empty($search)) {
 	</div>
 
 	<?php
-		$query=mysqli_query($db->conn, "select type.id as id,name, cat_name from type join category on type.cat_id=category.id where 1=1 $search_cond order by type.id desc");
+		$query=mysqli_query($db->conn, "SELECT type.id as id, name, cat_name FROM type JOIN category ON type.cat_id=category.id WHERE 1=1 " . $companyFilter->andCompanyFilter('type') . " $search_cond ORDER BY type.id DESC");
 	?>
 
 		<div id="fetch_state"></div>

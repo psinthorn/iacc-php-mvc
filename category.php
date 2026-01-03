@@ -3,9 +3,11 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
 $users=new DbConn($config);
 // Security already checked in index.php
 $cat_id = sql_int($_REQUEST['id'] ?? 0);
+$companyFilter = CompanyFilter::getInstance();
 ?>
 <!DOCTYPE html>
 <html>
@@ -15,7 +17,7 @@ $cat_id = sql_int($_REQUEST['id'] ?? 0);
 
 <body>
 <?php
-$query=mysqli_query($db->conn, "select * from category where id='".$cat_id."'");
+$query=mysqli_query($db->conn, "SELECT * FROM category WHERE id='".$cat_id."' " . $companyFilter->andCompanyFilter());
 if(mysqli_num_rows($query)==1){
 $method="E";
 $data=mysqli_fetch_array($query);

@@ -1,14 +1,18 @@
 <?php
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
+
+// Get company filter instance
+$companyFilter = CompanyFilter::getInstance();
 
 // Get search parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Build search condition
+// Build search condition with company filter
 $search_cond = '';
 if (!empty($search)) {
     $search_escaped = sql_escape($search);
-    $search_cond = " WHERE (cat_name LIKE '%$search_escaped%' OR des LIKE '%$search_escaped%')";
+    $search_cond = " AND (cat_name LIKE '%$search_escaped%' OR des LIKE '%$search_escaped%')";
 }
 ?>
 <h2><i class="fa fa-cog"></i> <?=$xml->category?></h2>
@@ -35,7 +39,7 @@ if (!empty($search)) {
 </div>
 
 <?php
-$sql="select id, cat_name, des from category $search_cond order by id desc";
+$sql = "SELECT id, cat_name, des FROM category " . $companyFilter->whereCompanyFilter() . " $search_cond ORDER BY id DESC";
 $query=mysqli_query($db->conn, $sql);?>
 
 <div id="fetch_state"></div>

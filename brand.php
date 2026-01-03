@@ -3,9 +3,11 @@
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
 $db=new DbConn($config);
 $db->checkSecurity();
 $brand_id = sql_int($_REQUEST['id'] ?? 0);
+$companyFilter = CompanyFilter::getInstance();
 ?>
 <!DOCTYPE html>
 <html>
@@ -15,7 +17,7 @@ $brand_id = sql_int($_REQUEST['id'] ?? 0);
 
 <body>
 <?php
-$query=mysqli_query($db->conn, "select * from brand where id='".$brand_id."'");
+$query=mysqli_query($db->conn, "SELECT * FROM brand WHERE id='".$brand_id."' " . $companyFilter->andCompanyFilter());
 if(mysqli_num_rows($query)==1){
 $method="E";
 $data=mysqli_fetch_array($query);
