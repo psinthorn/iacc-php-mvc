@@ -71,8 +71,8 @@ $show_form = isset($_GET['new']) || $edit_data;
 <!-- Action Toolbar -->
 <div class="action-toolbar">
     <div class="search-box">
-        <i class="fa fa-search"></i>
         <form method="get" action="" style="margin:0;">
+            <i class="fa fa-search"></i>
             <input type="hidden" name="page" value="category">
             <input type="text" class="form-control" name="search" 
                    placeholder="<?=$xml->search ?? 'Search'?> <?=$xml->category ?? 'category'?>..." 

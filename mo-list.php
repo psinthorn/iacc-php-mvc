@@ -86,8 +86,8 @@ $show_form = isset($_GET['new']) || $edit_data;
 <div class="action-toolbar">
     <div class="search-box" style="display:flex;gap:10px;max-width:600px;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:200px;">
-            <i class="fa fa-search"></i>
             <form method="get" action="" style="margin:0;" id="searchForm">
+                <i class="fa fa-search"></i>
                 <input type="hidden" name="page" value="mo_list">
                 <input type="hidden" name="type_id" value="<?=$type_filter?>">
                 <input type="hidden" name="brand_id" value="<?=$brand_filter?>">

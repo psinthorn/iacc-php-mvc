@@ -75,8 +75,8 @@ $vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE 
 <!-- Action Toolbar -->
 <div class="action-toolbar">
     <div class="search-box">
-        <i class="fa fa-search"></i>
         <form method="get" action="" style="margin:0;">
+            <i class="fa fa-search"></i>
             <input type="hidden" name="page" value="brand">
             <input type="text" class="form-control" name="search" 
                    placeholder="<?=$xml->search ?? 'Search'?> <?=$xml->brand ?? 'brand'?>..." 

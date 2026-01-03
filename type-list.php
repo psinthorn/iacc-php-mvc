@@ -95,8 +95,8 @@ $all_brands_query = mysqli_query($db->conn, "SELECT id, brand_name FROM brand " 
 <div class="action-toolbar">
     <div class="search-box" style="display:flex;gap:10px;max-width:500px;">
         <div style="position:relative;flex:1;">
-            <i class="fa fa-search"></i>
             <form method="get" action="" style="margin:0;" id="searchForm">
+                <i class="fa fa-search"></i>
                 <input type="hidden" name="page" value="type">
                 <input type="hidden" name="cat" value="<?=$cat_filter?>">
                 <input type="text" class="form-control" name="search" 

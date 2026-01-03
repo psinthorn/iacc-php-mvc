@@ -105,8 +105,8 @@ $show_form = isset($_GET['new']);
 <div class="action-toolbar">
     <div class="search-box" style="display:flex;gap:10px;max-width:500px;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:200px;">
-            <i class="fa fa-search"></i>
             <form method="get" action="" style="margin:0;">
+                <i class="fa fa-search"></i>
                 <input type="hidden" name="page" value="company">
                 <input type="hidden" name="type" value="<?=$type_filter?>">
                 <input type="text" class="form-control" name="search" 
