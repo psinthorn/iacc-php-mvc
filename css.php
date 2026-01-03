@@ -63,8 +63,43 @@
         left: 0;
         z-index: 1000;
         overflow-y: auto;
-        background-color: #222;
+        background-color: #f8f9fa;
         width: 250px;
+        border-right: 1px solid #e9ecef;
+    }
+    
+    /* Sidebar menu styling for light background */
+    body.has-top-nav .navbar-static-side .nav > li > a {
+        color: #333;
+    }
+    
+    body.has-top-nav .navbar-static-side .nav > li > a:hover,
+    body.has-top-nav .navbar-static-side .nav > li > a:focus {
+        background-color: #e9ecef;
+        color: #8e44ad;
+    }
+    
+    body.has-top-nav .navbar-static-side .nav > li.active > a {
+        background-color: #8e44ad;
+        color: #fff;
+    }
+    
+    body.has-top-nav .navbar-static-side .nav-second-level > li > a {
+        color: #555;
+    }
+    
+    body.has-top-nav .navbar-static-side .nav-second-level > li > a:hover {
+        color: #8e44ad;
+    }
+    
+    body.has-top-nav .navbar-static-side .sidebar-search input {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        color: #333;
+    }
+    
+    body.has-top-nav .navbar-static-side .sidebar-search input::placeholder {
+        color: #999;
     }
     
     body.has-top-nav #page-wrapper {

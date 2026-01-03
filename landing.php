@@ -16,8 +16,8 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="iAcc - Professional Accounting Management System for modern businesses">
-    <title>iAcc - Accounting Management System</title>
+    <meta name="description" content="iACC - Professional Accounting Management System for modern businesses">
+    <title>iACC - Accounting Management System</title>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -699,8 +699,7 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <nav class="top-navbar" id="navbar">
         <div class="nav-container">
             <a href="landing.php" class="nav-brand">
-                <div class="nav-brand-icon">iA</div>
-                <div class="nav-brand-text">i<span>Acc</span></div>
+                <div class="nav-brand-text"><span style="color: var(--primary);">iACC</span></div>
             </a>
             
             <ul class="nav-menu">
@@ -901,7 +900,7 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <section class="cta">
         <div class="section-container">
             <h2>Ready to Get Started?</h2>
-            <p>Join hundreds of businesses already using iAcc to manage their finances.</p>
+            <p>Join hundreds of businesses already using iACC to manage their finances.</p>
             <a href="login.php" class="btn btn-white btn-lg">
                 <i class="fa fa-rocket"></i> Start Your Free Trial
             </a>
@@ -912,7 +911,7 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <footer class="footer" id="contact">
         <div class="footer-container">
             <div class="footer-brand">
-                <h3><span style="color: var(--primary);">i</span>Acc</h3>
+                <h3><span style="color: var(--primary);">iACC</span></h3>
                 <p>Professional accounting management system for modern businesses. Simplify your finances today.</p>
             </div>
             
@@ -948,7 +947,7 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
         </div>
         
         <div class="footer-bottom">
-            <p>&copy; 2026 iAcc. All rights reserved.</p>
+            <p>&copy; 2026 iACC. All rights reserved.</p>
             <div class="social-links">
                 <a href="#"><i class="fa fa-facebook"></i></a>
                 <a href="#"><i class="fa fa-twitter"></i></a>

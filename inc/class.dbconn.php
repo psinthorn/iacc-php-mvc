@@ -72,8 +72,9 @@ class DbConn {
 			return true;
 		}
 		
-		// Not authenticated
-		exit("<script>alert('Please Login');window.location='login.php';</script>");
+		// Not authenticated - redirect to landing page for first-time visitors
+		header('Location: landing.php');
+		exit;
 	}
 	
 	/**

@@ -1,6 +1,6 @@
-# iAcc - Accounting Management System
+# iACC - Accounting Management System
 
-**Version**: 2.7  
+**Version**: 2.8  
 **Status**: Production Ready  
 **Last Updated**: January 3, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,50 @@
 ---
 
 ## 📋 Changelog
+
+### v2.8 (January 3, 2026)
+- **Landing Page** 🚀:
+  - New public-facing landing page (`landing.php`)
+  - Hero section with dashboard preview
+  - 6 feature cards showcasing system capabilities
+  - 3-tier pricing section (Free, Pro, Enterprise)
+  - Call-to-action sections
+  - Footer with social links and navigation
+
+- **Modern Login Page**:
+  - Complete redesign with split-panel layout
+  - Branding panel (left) with feature highlights
+  - Form panel (right) with modern styling
+  - Password visibility toggle
+  - Remember me functionality
+  - Loading state animations
+  - Responsive design (branding hides on mobile)
+
+- **Top Navbar Component**:
+  - New fixed top navigation bar (`inc/top-navbar.php`)
+  - Purple gradient background
+  - iACC logo branding
+  - Company badge display
+  - Language switcher (EN/TH)
+  - User dropdown with avatar and initials
+  - Profile, Settings, Help, Sign Out menu items
+  - Mobile sidebar toggle
+
+- **Sidebar Improvements**:
+  - Light gray background (#f8f9fa) for better readability
+  - Purple accent colors for active/hover states
+  - Proper text colors for light theme
+  - Subtle border separation
+
+- **Authentication Flow**:
+  - First-time visitors redirect to landing page
+  - Landing page links to login
+  - Post-login redirect to dashboard
+
+- **Branding Updates**:
+  - Consistent iACC branding throughout
+  - Purple primary color scheme (#8e44ad)
+  - Inter font family for modern typography
 
 ### v2.7 (January 3, 2026)
 - **Payment Gateway Integration** 💳:

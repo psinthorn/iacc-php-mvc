@@ -395,8 +395,7 @@ body.has-top-nav .navbar-static-side {
 <nav class="top-nav">
     <!-- Brand -->
     <a href="index.php?page=dashboard" class="top-nav-brand">
-        <div class="top-nav-brand-icon">iA</div>
-        <span class="top-nav-brand-text">iAcc</span>
+        <span class="top-nav-brand-text">iACC</span>
     </a>
     
     <!-- Company Badge -->
