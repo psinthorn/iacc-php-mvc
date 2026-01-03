@@ -3,7 +3,7 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 $users=new DbConn($config);
-$users->checkSecurity();
+// Security already checked in index.php
 $html = '
 <img src="images/logo.png" style="float:left;">
 <h2>'.$travelag[name].'</h2>

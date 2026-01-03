@@ -4,7 +4,7 @@
 // require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 // $users=new DbConn($config);
-// $users->checkSecurity();
+// // Security already checked in index.php
 ?>
 <!DOCTYPE html>
 <html>

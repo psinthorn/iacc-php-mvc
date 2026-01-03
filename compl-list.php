@@ -7,7 +7,7 @@ require_once("inc/security.php");
 
 <script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>  <h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2>
 <?php
-	//$users->checkSecurity();
+	//// Security already checked in index.php
 ?>
 
 <table width="100%" id="table1" class="table table-hover">

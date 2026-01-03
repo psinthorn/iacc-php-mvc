@@ -1,6 +1,6 @@
 
 <script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script> <h2><i class="fa fa-thumbs-up"></i> <?=$xml->taxinvoice?></h2><?php
-// $users->checkSecurity();
+// // Security already checked in index.php
 
 ?>
 

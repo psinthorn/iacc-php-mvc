@@ -4,7 +4,7 @@
 	// require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 	// $db = new DbConn($config);
-	// $users->checkSecurity();
+	// // Security already checked in index.php
 ?>
 
 <h2><i class="fa fa-home fa-fw"></i> <?=$xml->company?></h2>

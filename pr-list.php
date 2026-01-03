@@ -20,7 +20,7 @@
 <option value='6' <?php if($status == 6)echo "selected";?> ><?=$xml->processall?></option>
 
 </select><input value="<?=$xml->filter?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form><?php
-//$users->checkSecurity();?>
+//// Security already checked in index.php?>
 
 <table width="100%" class="table table-hover">
 	<tr>
