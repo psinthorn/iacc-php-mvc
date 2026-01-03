@@ -1,5 +1,9 @@
 <?php 
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
+
+// Get company filter instance
+$companyFilter = CompanyFilter::getInstance();
 
 // Get search parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -77,7 +81,7 @@ function fetbrand(str) {
 		<lable for="des"><?=$xml->type?></lable>
 		<select id="type"  onchange="fetbrand(this.value)" class="form-control" name="type" >
           <option value="">-----Please select Type-----</option>    
-	<?php $querytype=mysqli_query($db->conn, "select * from type order by name");			
+	<?php $querytype=mysqli_query($db->conn, "select * from type " . $companyFilter->whereCompanyFilter() . " order by name");			
 		while($datatype=mysqli_fetch_array($querytype)){
 			echo "<option value='".$datatype['id']."'>".$datatype['name']."</option>";
 			}
@@ -114,7 +118,7 @@ function fetbrand(str) {
 </form>
 
 <?php
-$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,brand.brand_name as brand,price from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where 1=1 $search_cond order by model.id desc");?>
+$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,brand.brand_name as brand,price from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where 1=1 " . $companyFilter->andCompanyFilter('model') . " $search_cond order by model.id desc");?>
 
 <div id="fetch_state"></div>
 <table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->type?></th><th><?=$xml->brand?></th><th><?=$xml->price?></th><th width="120"></th></tr>
