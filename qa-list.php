@@ -23,7 +23,6 @@ if (!empty($date_to)) {
 }
 ?>
 
-<script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>  
 <h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2>
 
 <!-- Search and Filter Panel -->
@@ -144,20 +143,4 @@ $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as t
  
 </tbody>
 </table>
- <script type="text/javascript">
- 
-  var table2_Props = {
-    col_0: "select",
-    col_4: "none",
-	col_5: "none", 
-    display_all_text: " [ Show all ] ",
-	  col_date_type: [null,null,null,'dmy',null,null], 
-	   on_filters_loaded: function(o){   
-        o.SetFilterValue(3,'>01-07-2014');    
-        o.Filter();  
-    } , 
-  
-    sort_select: true
-};
-var tf2 = setFilterGrid("table1", table2_Props,2);</script>
 <div id="fetch_state"></div>

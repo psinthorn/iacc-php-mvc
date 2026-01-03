@@ -35,7 +35,6 @@ if ($status_filter === 'pending') {
 }
 ?>
 
-<script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>
 <h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2>
 
 <!-- Search and Filter Panel -->
@@ -122,21 +121,4 @@ echo "<a href='inv.php?id=".$data['id']."' target='blank'>IV</a></td>
 	}?>
 
 </table>
-
- <script type="text/javascript">
- 
-  var table2_Props = {
-    col_0: "select",
-	col_5: "select",
-	col_6: "none",
-     col_date_type: [null,null,null,'dmy','dmy',null],  
-    display_all_text: " [ Show all ] ",
-    on_filters_loaded: function(o){   
-        o.SetFilterValue(3,'>01-09-2014');  
-		o.SetFilterValue(4,'>01-09-2014');  
-        o.Filter();  
-    } ,
-	sort_select: true
-};
-var tf2 = setFilterGrid("table1", table2_Props,2);</script>
 <div id="fetch_state"></div>

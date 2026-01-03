@@ -173,11 +173,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Get search parameters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$role_filter = isset($_GET['role']) ? $_GET['role'] : '';
+$company_filter = isset($_GET['company_id']) ? $_GET['company_id'] : '';
+
+// Build search condition
+$search_cond = '';
+if (!empty($search)) {
+    $search_escaped = sql_escape($search);
+    $search_cond = " AND (a.email LIKE '%$search_escaped%' OR c.name_en LIKE '%$search_escaped%')";
+}
+
+// Build role filter
+$role_cond = '';
+if ($role_filter !== '') {
+    $role_cond = " AND a.level = " . intval($role_filter);
+}
+
+// Build company filter
+$company_cond = '';
+if ($company_filter !== '') {
+    $company_cond = " AND a.company_id = " . intval($company_filter);
+}
+
 // Fetch all users with company info
 $sql = "SELECT a.id, a.email, a.level, a.company_id, a.lang, a.password_migrated, a.locked_until, a.failed_attempts, 
         c.name_en as company_name 
         FROM authorize a 
         LEFT JOIN company c ON a.company_id = c.id 
+        WHERE 1=1 $search_cond $role_cond $company_cond
         ORDER BY a.id ASC";
 $result = $db->conn->query($sql);
 
@@ -197,6 +222,49 @@ $roles = [
 ?>
 
 <h2><i class="fa fa-users fa-fw"></i> <?= isset($xml->user) ? $xml->user : 'User Management' ?></h2>
+
+<!-- Search and Filter Panel -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+    </div>
+    <div class="panel-body">
+        <form method="get" action="" class="form-inline">
+            <input type="hidden" name="page" value="user">
+            
+            <div class="form-group" style="margin-right: 15px;">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> Email, Company..." 
+                       value="<?=htmlspecialchars($search)?>" style="width: 200px;">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;">Role:</label>
+                <select name="role" class="form-control">
+                    <option value="">All Roles</option>
+                    <option value="0" <?=$role_filter==='0'?'selected':''?>>User</option>
+                    <option value="1" <?=$role_filter==='1'?'selected':''?>>Admin</option>
+                    <option value="2" <?=$role_filter==='2'?'selected':''?>>Super Admin</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;">Company:</label>
+                <select name="company_id" class="form-control">
+                    <option value="">All Companies</option>
+                    <?php foreach ($companies as $company): ?>
+                    <option value="<?= $company['id'] ?>" <?=$company_filter==$company['id']?'selected':''?>>
+                        <?= e($company['name_en']) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+            <a href="?page=user" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+        </form>
+    </div>
+</div>
 
 <?php if ($message): ?>
 <div class="alert alert-<?= $messageType ?> alert-dismissible">

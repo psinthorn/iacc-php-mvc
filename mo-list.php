@@ -1,12 +1,39 @@
 <?php 
-// session_start();
-// require_once("inc/sys.configs.php");
-// require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
-// $db=new DbConn($config);
-// $db->checkSecurity();
+
+// Get search parameters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+// Build search condition
+$search_cond = '';
+if (!empty($search)) {
+    $search_escaped = sql_escape($search);
+    $search_cond = " AND (model_name LIKE '%$search_escaped%' OR type.name LIKE '%$search_escaped%' OR brand.brand_name LIKE '%$search_escaped%')";
+}
 ?>
 <h2><i class="fa fa-ticket"></i> <?=$xml->model?></h2>
+
+<!-- Search and Filter Panel -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+    </div>
+    <div class="panel-body">
+        <form method="get" action="" class="form-inline">
+            <input type="hidden" name="page" value="mo_list">
+            
+            <div class="form-group" style="margin-right: 15px;">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> Model, Type, Brand..." 
+                       value="<?=htmlspecialchars($search)?>" style="width: 300px;">
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+            <a href="?page=mo_list" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+        </form>
+    </div>
+</div>
+
 <script type="text/javascript">
 
 function fetbrand(str) {
@@ -87,7 +114,7 @@ function fetbrand(str) {
 </form>
 
 <?php
-$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,brand.brand_name as brand,price from model join type on model.type_id=type.id join brand on model.brand_id=brand.id order by model.id desc");?>
+$query=mysqli_query($db->conn, "select model.id as id,model_name,type.name as type,brand.brand_name as brand,price from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where 1=1 $search_cond order by model.id desc");?>
 
 <div id="fetch_state"></div>
 <table width="100%" class="table"><tr><th><?=$xml->name?></th><th><?=$xml->type?></th><th><?=$xml->brand?></th><th><?=$xml->price?></th><th width="120"></th></tr>

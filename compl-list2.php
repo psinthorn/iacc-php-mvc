@@ -1,15 +1,68 @@
+<?php
+require_once("inc/security.php");
 
-<script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script> <h2><i class="fa fa-thumbs-up"></i> <?=$xml->taxinvoice?></h2><?php
-// // Security already checked in index.php
+// Get search parameters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 
+// Build search condition
+$search_cond = '';
+if (!empty($search)) {
+    $search_escaped = sql_escape($search);
+    $search_cond = " AND (po.name LIKE '%$search_escaped%' OR name_en LIKE '%$search_escaped%' OR texiv_rw LIKE '%$search_escaped%')";
+}
+
+// Build date filter
+$date_cond = '';
+if (!empty($date_from)) {
+    $date_cond .= " AND texiv_create >= '$date_from'";
+}
+if (!empty($date_to)) {
+    $date_cond .= " AND texiv_create <= '$date_to'";
+}
 ?>
+
+<h2><i class="fa fa-thumbs-up"></i> <?=$xml->taxinvoice?></h2>
+
+<!-- Search and Filter Panel -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+    </div>
+    <div class="panel-body">
+        <form method="get" action="" class="form-inline">
+            <input type="hidden" name="page" value="compl_list2">
+            
+            <div class="form-group" style="margin-right: 15px;">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> TAX#, Name, Customer..." 
+                       value="<?=htmlspecialchars($search)?>" style="width: 250px;">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;"><?=$xml->from ?? 'From'?>:</label>
+                <input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;"><?=$xml->to ?? 'To'?>:</label>
+                <input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>">
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+            <a href="?page=compl_list2" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+        </form>
+    </div>
+</div>
 
 <table width="100%" id="table1" class="table table-hover">
 
+<tr><td colspan="6"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->taxinvoice?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
 <tr><th><?=$xml->customer?></th><th><?=$xml->taxno?></th><th><?=$xml->name?></th><th width="100"><?=$xml->createdate?></th><th colspan="2"><?=$xml->status?></th></tr>
 <?php
 
-$query=mysqli_query($db->conn, "select po.id as id,countmailtax, po.name as name,texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id join iv on po.id=iv.tex where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='5' and status_iv='1' order by texiv_rw desc");
+$query=mysqli_query($db->conn, "select po.id as id,countmailtax, po.name as name,texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id join iv on po.id=iv.tex where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='5' and status_iv='1' $search_cond $date_cond order by texiv_rw desc");
 $cot=0;
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
@@ -22,9 +75,10 @@ echo "<tr ".$color."><td>".$data['name_en']."</td><td>TAX-".str_pad($data['texiv
 	
 	}?>
  
+<tr><td colspan="6"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->taxinvoice?> - <?=$xml->in ?? 'In'?></strong></td></tr>
 <tr><th><?=$xml->vender?></th><th><?=$xml->taxno?></th><th><?=$xml->name?></th><th><?=$xml->createdate?></th><th colspan="2"><?=$xml->status?></th></tr>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, iv.id as tax, texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id  join iv on po.id=iv.tex  where  po_id_new='' and pr.cus_id='".$_SESSION['com_id']."' and status='5' and status_iv='1' order by texiv_rw desc ");
+$query=mysqli_query($db->conn, "select po.id as id, po.name as name, iv.id as tax, texiv_rw, DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id  join iv on po.id=iv.tex  where  po_id_new='' and pr.cus_id='".$_SESSION['com_id']."' and status='5' and status_iv='1' $search_cond $date_cond order by texiv_rw desc ");
 $cot=0;
  while($data=mysqli_fetch_array($query)){
 	  $cot++;
@@ -37,19 +91,4 @@ echo "<tr ".$color."><td>".$data['name_en']."</td><td>TAX-".str_pad($data['texiv
 	}?>
 
 </table>
-
- <script type="text/javascript">
- 
-  var table2_Props = {
-    col_0: "select",
-	col_5: "none",
-    col_date_type: [null,null,null,'dmy',null,null],  
-    display_all_text: " [ Show all ] ",
-    on_filters_loaded: function(o){   
-        o.SetFilterValue(3,'>01-09-2014');  
-        o.Filter();  
-    } ,
-    sort_select: true
-};
-var tf2 = setFilterGrid("table1", table2_Props,2);</script>
 <div id="fetch_state"></div>
