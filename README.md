@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 2.8  
+**Version**: 2.9  
 **Status**: Production Ready  
 **Last Updated**: January 3, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,43 @@
 ---
 
 ## 📋 Changelog
+
+### v2.9 (January 3, 2026)
+- **User Account Pages** 👤:
+  - `profile.php` - Personal information and password management
+    - View/edit name and phone
+    - Change password with secure validation
+    - Avatar with user initials
+    - Account info display (role, company, language)
+  - `settings.php` - User preferences and settings
+    - Language selection (English/Thai)
+    - Notification preferences (email, invoice alerts, payment reminders)
+    - Display settings (records per page, date format, compact view)
+    - Security section with password change link
+  - `help.php` - Help center and support
+    - Searchable FAQ accordion
+    - Quick link cards
+    - Documentation section
+    - Contact information (email, phone, live chat)
+    - Version info display
+
+- **Multi-Language Support** 🌐:
+  - New language file system (`inc/lang/en.php`, `inc/lang/th.php`)
+  - Landing page fully translated (EN/TH)
+  - Language switcher in landing page navbar
+  - Session-based language persistence
+  - Sarabun font for Thai text
+
+- **UI/UX Improvements**:
+  - Improved dropdown styling with 48px height
+  - Better font sizing and padding
+  - Toggle switches for settings
+  - Card-based layout for user pages
+  - Purple gradient headers
+
+- **Database Updates**:
+  - Added `name` column to authorize table
+  - Added `phone` column to authorize table
 
 ### v2.8 (January 3, 2026)
 - **Landing Page** 🚀:
