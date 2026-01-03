@@ -116,15 +116,17 @@ $payment_labels_with_icons = getPaymentMethodLabelsWithIcons($db->conn, $lang);
 .filter-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; font-size: 13px; }
 .filter-group input, .filter-group select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
+    height: 44px;
+    box-sizing: border-box;
 }
 .filter-group input:focus, .filter-group select:focus { border-color: #27ae60; outline: none; box-shadow: 0 0 0 3px rgba(39,174,96,0.1); }
-.btn-search { background: #27ae60; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+.btn-search { background: #27ae60; color: #fff; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; }
 .btn-search:hover { background: #219a52; }
-.btn-reset { background: #95a5a6; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; }
+.btn-reset { background: #95a5a6; color: #fff; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; }
 .btn-reset:hover { background: #7f8c8d; color: #fff; }
 
 /* Table Card */
