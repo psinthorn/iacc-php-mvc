@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.2  
+**Version**: 3.3  
 **Status**: Production Ready  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,35 @@
 ---
 
 ## 📋 Changelog
+
+### v3.3 (January 4, 2026)
+- **Master Data CRUD Fully Functional** ✅:
+  - Fixed all INSERT operations for Category, Type, Brand, Model
+  - MySQL strict mode compatibility (NULL for auto-increment IDs)
+  - Added `deleted_at` column support for soft deletes
+  - Fixed map_type_to_brand insert with CSRF token exclusion
+  - All CRUD operations now working with company filtering
+
+- **Professional UX/UI Redesign** 🎨:
+  - Complete CSS rewrite with CSS variables design system
+  - Modern color palette: Indigo primary (#4f46e5), Emerald success (#10b981)
+  - 48px form controls with 2px borders and focus glow
+  - Custom select dropdown arrows with SVG
+  - Gradient buttons with hover transformations
+  - SlideDown animation for inline forms
+  - Responsive breakpoints for mobile devices
+  - System font stack for cross-platform consistency
+
+- **Brand Management Improvements**:
+  - Own company as default vendor selection
+  - Vendor dropdown shows "(Own Company)" label
+  - Logo preview for existing images
+
+- **Database Fixes**:
+  - Category: id, company_id, cat_name, des, deleted_at
+  - Type: id, company_id, name, des, cat_id, deleted_at
+  - Brand: id, company_id, brand_name, des, logo, ven_id, deleted_at
+  - Model: id, company_id, type_id, brand_id, model_name, des, price, deleted_at
 
 ### v3.2 (January 4, 2026)
 - **Master Data UI Redesign** 🎨:

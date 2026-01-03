@@ -21,6 +21,7 @@ $db = $users; // Alias for compatibility with legacy code
 // Security already checked in index.php
 
 $har=new HardClass();
+$har->setConnection($db->conn); // Explicitly set connection
 $har->keeplog($_REQUEST);
 switch($_REQUEST['page']){	
 	
@@ -89,17 +90,17 @@ case "company" : {
 	
 }break;		
 case "type" : {
-	$company_id = $companyFilter->getSafeCompanyId();
+	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 	if($_REQUEST['method']=="A"){
 		$args['table']="type";
 		
 	
-	$args['value']="'','".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."'";
+	$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."',NULL";
 	$max_id=$har->insertDbMax($args);	
 	while(list($key, $val) = each($_POST))
 		{
-			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
-			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES('','".$company_id."','".sql_int($max_id)."','".sql_int($key)."')");
+			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id")||($key=="csrf_token"))){
+			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES(NULL,'".$company_id."','".sql_int($max_id)."','".sql_int($key)."')");
 		}}
 		}else if($_REQUEST['method']=="D"){
 			mysqli_query($db->conn, "DELETE FROM type WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
@@ -129,11 +130,13 @@ case "type" : {
 	exit;
 }break;	
 case "category" : {
-	$company_id = $companyFilter->getSafeCompanyId();
+	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 	if($_REQUEST['method']=="A"){
 		$args['table']="category";
-	$args['value']="'','".$company_id."','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."'";
-	$har->insertDB($args);	
+		$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."',NULL";
+		$har->insertDB($args);
+		// Debug: Log the insert
+		error_log("Category INSERT: table=".$args['table'].", value=".$args['value'].", company_id=".$company_id);
 		}else if($_REQUEST['method']=="D"){
 			mysqli_query($users->conn, "DELETE FROM category WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
 		
@@ -222,10 +225,10 @@ case "payment" : {
 		
 case "mo_list" : {
 		$args['table']="model";
-	$company_id = $companyFilter->getSafeCompanyId();
+	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 
 	if($_REQUEST['method']=="A"){
-		$args['value']="'','".$company_id."','".sql_int($_REQUEST['type'])."','".sql_int($_REQUEST['brand'])."','".sql_escape($_REQUEST['model_name'])."','".sql_escape($_REQUEST['des'])."','".sql_escape($_REQUEST['price'])."'";
+		$args['value']="NULL,'".$company_id."','".sql_int($_REQUEST['type'])."','".sql_int($_REQUEST['brand'])."','".sql_escape($_REQUEST['model_name'])."','".sql_escape($_REQUEST['des'])."','".sql_escape($_REQUEST['price'])."',NULL";
 	$har->insertDB($args);	
 		}
 	if($_REQUEST['method']=="E"){
@@ -247,7 +250,7 @@ case "mo_list" : {
 
 case "brand" : {
 	$args['table']="brand";
-	$company_id = $companyFilter->getSafeCompanyId();
+	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 	
 	if($_REQUEST['method']=="A"){
 		if (($_FILES["logo"] != "") && 
@@ -260,7 +263,7 @@ case "brand" : {
 		$tmpupdate=",'".$filepath."'";
 	}else{$tmpupdate=",''";}
 	
-	$args['value']="'','".$company_id."','".sql_escape($_REQUEST['brand_name'])."','".sql_escape($_REQUEST['des'])."'".$tmpupdate.",'".sql_int($_REQUEST['ven_id'])."'";
+	$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['brand_name'])."','".sql_escape($_REQUEST['des'])."'".$tmpupdate.",'".sql_int($_REQUEST['ven_id'])."',NULL";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
 			mysqli_query($db->conn, "DELETE FROM brand WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());

@@ -18,15 +18,23 @@ class HardClass {
 	}
 	
 	/**
-	 * Get connection (uses global $db if not set)
+	 * Get connection (uses global $db or $users if not set)
 	 */
 	private function getConn() {
 		if ($this->conn) {
 			return $this->conn;
 		}
-		global $db;
-		if (isset($db) && isset($db->conn)) {
+		global $db, $users;
+		if (isset($db) && is_object($db) && isset($db->conn)) {
 			return $db->conn;
+		}
+		if (isset($users) && is_object($users) && isset($users->conn)) {
+			return $users->conn;
+		}
+		// Last resort: try the compatibility layer
+		global $__MYSQL_COMPAT_CONNECTION;
+		if (isset($__MYSQL_COMPAT_CONNECTION) && is_object($__MYSQL_COMPAT_CONNECTION) && isset($__MYSQL_COMPAT_CONNECTION->conn)) {
+			return $__MYSQL_COMPAT_CONNECTION->conn;
 		}
 		return null;
 	}
@@ -444,11 +452,18 @@ class HardClass {
 	 */
 	function insertDb($args){
 		$conn = $this->getConn();
+		if (!$conn) {
+			error_log("insertDb ERROR: No database connection available");
+			return false;
+		}
 		// Note: This still uses string concat for backward compatibility
 		// New code should use insertSafe() instead
 		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (".$args['value'].")";
-		$conn->query($sql);
-		//echo "INSERT INTO ".$args['table']." VALUES (".$args['value'].")";
+		$result = $conn->query($sql);
+		if (!$result) {
+			error_log("insertDb ERROR: " . $conn->error . " | SQL: " . $sql);
+		}
+		return $result;
 		}
 	
 	

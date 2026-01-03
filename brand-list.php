@@ -45,8 +45,12 @@ if ($edit_id > 0) {
 }
 $show_form = isset($_GET['new']) || $edit_data;
 
-// Get vendors for dropdown
-$vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE vender='1' AND company_id = '$com_id' ORDER BY name_en");
+// Get logged-in company info for default vendor
+$own_company_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE id = '$com_id'");
+$own_company = mysqli_fetch_assoc($own_company_query);
+
+// Get vendors for dropdown (excluding own company to avoid duplicate)
+$vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE vender='1' AND company_id = '$com_id' AND id != '$com_id' ORDER BY name_en");
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 
@@ -120,6 +124,11 @@ $vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE 
                 <label for="ven_id"><i class="fa fa-truck"></i> <?=$xml->owner ?? 'Owner/Vendor'?></label>
                 <select class="form-control" id="ven_id" name="ven_id">
                     <option value="0">-- <?=$xml->no_owner ?? 'No Owner'?> --</option>
+                    <?php if ($own_company): ?>
+                    <option value="<?=$own_company['id']?>" <?=($edit_data['ven_id'] ?? $own_company['id']) == $own_company['id'] ? 'selected' : ''?>>
+                        <?=htmlspecialchars($own_company['name_en'])?> (<?=$xml->own_company ?? 'Own Company'?>)
+                    </option>
+                    <?php endif; ?>
                     <?php while($vendor = mysqli_fetch_array($vendors_query)): ?>
                     <option value="<?=$vendor['id']?>" <?=($edit_data['ven_id'] ?? 0) == $vendor['id'] ? 'selected' : ''?>>
                         <?=htmlspecialchars($vendor['name_en'])?>
@@ -130,7 +139,7 @@ $vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE 
             <div class="form-group">
                 <label for="logo"><i class="fa fa-image"></i> <?=$xml->logo ?? 'Logo'?></label>
                 <?php if (!empty($edit_data['logo'])): ?>
-                <div style="margin-bottom: 5px;">
+                <div style="margin-bottom: 8px;">
                     <img src="upload/<?=htmlspecialchars($edit_data['logo'])?>" class="logo-preview-large">
                 </div>
                 <?php endif; ?>
