@@ -121,15 +121,29 @@ usort($report_data, function($a, $b) use ($sort_by, $sort_dir) {
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <strong>Filter by Period:</strong>
-        <div class="btn-group" style="margin-left: 15px;">
-            <a href="?page=report&period=today&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'today' ? 'btn-primary' : 'btn-default'; ?>">Today</a>
-            <a href="?page=report&period=week&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'week' ? 'btn-primary' : 'btn-default'; ?>">7 Days</a>
-            <a href="?page=report&period=month&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'month' ? 'btn-primary' : 'btn-default'; ?>">30 Days</a>
-            <a href="?page=report&period=year&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'year' ? 'btn-primary' : 'btn-default'; ?>">This Year</a>
-            <a href="?page=report&period=all&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'all' ? 'btn-primary' : 'btn-default'; ?>">All Time</a>
+        <div class="row">
+            <div class="col-md-8">
+                <strong>Filter by Period:</strong>
+                <div class="btn-group" style="margin-left: 15px;">
+                    <a href="?page=report&period=today&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'today' ? 'btn-primary' : 'btn-default'; ?>">Today</a>
+                    <a href="?page=report&period=week&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'week' ? 'btn-primary' : 'btn-default'; ?>">7 Days</a>
+                    <a href="?page=report&period=month&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'month' ? 'btn-primary' : 'btn-default'; ?>">30 Days</a>
+                    <a href="?page=report&period=year&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'year' ? 'btn-primary' : 'btn-default'; ?>">This Year</a>
+                    <a href="?page=report&period=all&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'all' ? 'btn-primary' : 'btn-default'; ?>">All Time</a>
+                </div>
+                <span style="margin-left: 15px; color: #666;">Showing: <strong><?php echo $period_label; ?></strong></span>
+            </div>
+            <div class="col-md-4 text-right">
+                <strong>Export:</strong>
+                <a href="report-export.php?period=<?php echo $report_period; ?>&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" 
+                   class="btn btn-sm btn-success" title="Export to Excel/CSV">
+                    <i class="fa fa-file-excel-o"></i> Excel
+                </a>
+                <button onclick="window.print();" class="btn btn-sm btn-info" title="Print Report">
+                    <i class="fa fa-print"></i> Print
+                </button>
+            </div>
         </div>
-        <span style="margin-left: 15px; color: #666;">Showing: <strong><?php echo $period_label; ?></strong></span>
     </div>
 </div>
 

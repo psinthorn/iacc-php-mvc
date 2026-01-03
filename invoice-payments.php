@@ -67,6 +67,16 @@ if ($com_id > 0) {
             
             <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
             <a href="?page=invoice_payments" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+            
+            <span style="margin-left: 20px;">
+                <a href="invoice-payments-export.php?status=<?=urlencode($status_filter)?>&search=<?=urlencode($search)?>" 
+                   class="btn btn-success" title="Export to Excel/CSV">
+                    <i class="fa fa-file-excel-o"></i> Export Excel
+                </a>
+                <button onclick="window.print();" class="btn btn-info" title="Print">
+                    <i class="fa fa-print"></i> Print
+                </button>
+            </span>
         </form>
     </div>
 </div>
