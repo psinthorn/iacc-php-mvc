@@ -3,10 +3,7 @@
  * Master Data Guide
  * Documentation for Category, Brand, Product Type, and Model management
  */
-session_start();
-include_once 'inc/db.inc.php';
-include_once 'inc/session.inc.php';
-include_once 'lang.php';
+require_once("inc/security.php");
 
 $page_title = "Master Data Guide";
 ?>
