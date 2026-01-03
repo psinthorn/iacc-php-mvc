@@ -223,7 +223,11 @@
                             
                                <?php if($_SESSION['com_id']!=""){?>   <li>
                                 <a href="index.php?page=payment"><?=$xml->payment?></a>
-                            </li> <?php } ?>
+                            </li>
+                            <li>
+                                <a href="index.php?page=invoice_payments"><i class="fa fa-credit-card"></i> Payment Tracking</a>
+                            </li>
+                            <?php } ?>
                    </ul>
                     </li>
                   <?php if($_SESSION['com_id']!=""){?> 

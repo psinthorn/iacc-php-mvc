@@ -117,11 +117,12 @@ $routes = [
     'qa_list'       => 'qa-list.php',
     
     // Payment & Reports
-    'payment'       => 'payment-list.php',
-    'mo_list'       => 'mo-list.php',
-    'report'        => 'report.php',
-    'receipt_list'  => 'rep-list.php',
-    'rep_make'      => 'rep-make.php',
+    'payment'           => 'payment-list.php',
+    'invoice_payments'  => 'invoice-payments.php',
+    'mo_list'           => 'mo-list.php',
+    'report'            => 'report.php',
+    'receipt_list'      => 'rep-list.php',
+    'rep_make'          => 'rep-make.php',
 ];
 
 // Get requested page (sanitized)
