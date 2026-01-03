@@ -1,14 +1,36 @@
 <?php
-	// require_once("inc/sys.configs.php");
-	// require_once("inc/class.dbconn.php");
+/**
+ * Invoice List
+ * Mobile-first responsive with pagination and default date filters
+ */
 require_once("inc/security.php");
-	// $dbconn = new DbConn($config);
+require_once("inc/pagination.php");
+
+$com_id = sql_int($_SESSION['com_id']);
+
+// Get pagination parameters
+$current_page = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
+$per_page = isset($_GET['per_page']) ? intval($_GET['per_page']) : 20;
+if (!in_array($per_page, [10, 20, 50, 100])) $per_page = 20;
 
 // Get search parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$date_preset = isset($_GET['date_preset']) ? $_GET['date_preset'] : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+
+// Apply default date preset (MTD) on first load
+if (empty($date_from) && empty($date_to) && empty($_GET['date_preset']) && !isset($_GET['search'])) {
+    $date_preset = 'mtd';
+    $date_range = get_date_range('mtd');
+    $date_from = $date_range['from'];
+    $date_to = $date_range['to'];
+} elseif (!empty($date_preset) && empty($date_from) && empty($date_to)) {
+    $date_range = get_date_range($date_preset);
+    $date_from = $date_range['from'];
+    $date_to = $date_range['to'];
+}
 
 // Build search condition
 $search_cond = '';
@@ -33,92 +55,271 @@ if ($status_filter === 'pending') {
 } elseif ($status_filter === 'completed') {
     $status_cond = " AND status='5'";
 }
+
+// Count total records for OUT
+$count_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.cus_id=company.id 
+    JOIN iv ON po.id=iv.tex 
+    WHERE po_id_new='' AND pr.ven_id='$com_id' AND status>='4' $search_cond $date_cond $status_cond");
+$total_out = mysqli_fetch_assoc($count_query)['total'];
+
+// Count total records for IN
+$count_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.ven_id=company.id 
+    JOIN iv ON po.id=iv.tex 
+    WHERE po_id_new='' AND pr.cus_id='$com_id' AND status>='4' $search_cond $date_cond $status_cond");
+$total_in = mysqli_fetch_assoc($count_query)['total'];
+
+$total_records = $total_out + $total_in;
+$pagination = paginate($total_records, $per_page, $current_page);
+$offset = $pagination['offset'];
+$limit = $pagination['per_page'];
+
+// Preserve query params for pagination
+$query_params = $_GET;
+unset($query_params['pg']);
 ?>
 
 <h2><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></h2>
 
-<!-- Search and Filter Panel -->
-<div class="panel panel-default">
+<!-- Search and Filter Panel (Mobile-First) -->
+<div class="panel panel-default filter-panel">
     <div class="panel-heading">
         <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+        <span class="pull-right">
+            <small class="text-muted"><?=$total_records?> records</small>
+        </span>
     </div>
     <div class="panel-body">
         <form method="get" action="" class="form-inline">
             <input type="hidden" name="page" value="compl_list">
             
-            <div class="form-group" style="margin-right: 15px;">
-                <input type="text" class="form-control" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Name, Customer..." 
-                       value="<?=htmlspecialchars($search)?>" style="width: 250px;">
+            <!-- Date Preset Buttons -->
+            <div style="margin-bottom: 10px;">
+                <?= render_date_presets($date_preset, 'compl_list') ?>
             </div>
             
-            <div class="form-group" style="margin-right: 10px;">
-                <label style="margin-right: 5px;">Status:</label>
+            <!-- Search Input -->
+            <div class="form-group">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Name..." 
+                       value="<?=htmlspecialchars($search)?>">
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="form-group">
+                <label>Status:</label>
                 <select name="status" class="form-control">
-                    <option value="">All</option>
-                    <option value="pending" <?=$status_filter=='pending'?'selected':''?>>Pending</option>
-                    <option value="completed" <?=$status_filter=='completed'?'selected':''?>>Completed</option>
+                    <option value=""><?=$xml->all ?? 'All'?></option>
+                    <option value="pending" <?=$status_filter=='pending'?'selected':''?>><?=$xml->pending ?? 'Pending'?></option>
+                    <option value="completed" <?=$status_filter=='completed'?'selected':''?>><?=$xml->completed ?? 'Completed'?></option>
                 </select>
             </div>
             
-            <div class="form-group" style="margin-right: 10px;">
-                <label style="margin-right: 5px;"><?=$xml->from ?? 'From'?>:</label>
+            <!-- Custom Date Range -->
+            <div class="form-group">
+                <label><?=$xml->from ?? 'From'?>:</label>
                 <input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>">
             </div>
             
-            <div class="form-group" style="margin-right: 10px;">
-                <label style="margin-right: 5px;"><?=$xml->to ?? 'To'?>:</label>
+            <div class="form-group">
+                <label><?=$xml->to ?? 'To'?>:</label>
                 <input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>">
             </div>
             
-            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
-            <a href="?page=compl_list" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+            <!-- Per Page Selector -->
+            <?= render_per_page_selector($per_page) ?>
+            
+            <!-- Action Buttons -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-search"></i> <span class="hidden-xs"><?=$xml->search ?? 'Search'?></span>
+                </button>
+                <a href="?page=compl_list&date_preset=all" class="btn btn-default">
+                    <i class="fa fa-refresh"></i> <span class="hidden-xs"><?=$xml->clear ?? 'Clear'?></span>
+                </a>
+            </div>
         </form>
     </div>
 </div>
 
-<table width="100%" id="table1" class="table table-hover">
+<!-- Summary Cards -->
+<div class="row" style="margin-bottom: 15px;">
+    <div class="col-xs-6 col-sm-3">
+        <div class="summary-card" style="background: #dff0d8;">
+            <span class="number text-success"><?=$total_out?></span>
+            <span class="label-text"><?=$xml->invoice?> <?=$xml->out ?? 'Out'?></span>
+        </div>
+    </div>
+    <div class="col-xs-6 col-sm-3">
+        <div class="summary-card" style="background: #d9edf7;">
+            <span class="number text-primary"><?=$total_in?></span>
+            <span class="label-text"><?=$xml->invoice?> <?=$xml->in ?? 'In'?></span>
+        </div>
+    </div>
+</div>
 
-<tr><td colspan="7"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->invoice?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
-<tr><th width="24%"><?=$xml->customer?></th><th width="10%"><?=$xml->inno?></th><th width="20%"><?=$xml->name?></th><th width="13%"><?=$xml->duedate?></th><th width="13%"><?=$xml->deliverydate?></th><th width="20%" colspan="2"><?=$xml->status?></th></tr>
+<!-- Invoice List - OUT -->
+<div class="section-header out">
+    <i class="fa fa-arrow-up"></i> <?=$xml->invoice?> - <?=$xml->out ?? 'Out'?>
+    <span class="badge"><?=$total_out?></span>
+</div>
+
+<div class="table-responsive-mobile">
+<table class="table table-hover table-cards">
+    <thead>
+        <tr>
+            <th><?=$xml->customer?></th>
+            <th><?=$xml->inno?></th>
+            <th class="hidden-xs"><?=$xml->name?></th>
+            <th><?=$xml->duedate?></th>
+            <th class="hidden-xs"><?=$xml->status?></th>
+            <th width="100"></th>
+        </tr>
+    </thead>
+    <tbody>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id,	countmailinv, po.name as name, taxrw as tax,status_iv,  DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date ,status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id join iv on po.id=iv.tex where  po_id_new='' and pr.ven_id='".$_SESSION['com_id']."' and status>='4' $search_cond $date_cond $status_cond order by iv.id desc ");
-$cot=0;
- while($data=mysqli_fetch_array($query)){
-	  $cot++;
-	 if($cot%2)$color=" bgcolor='#eee'";else $color=" bgcolor='#fff'";
-	
-	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	 if(($data['status_iv']=="2")&&($data['status']=="4")){$statusiv="void";}
-	 else if(($data['status']=="4")&&($data['valid_pay']<date("d-m-Y")))
-	 {$statusiv="overdue";}else{$statusiv=decodenum($data['status']);}
-echo "<tr ".$color."><td>".$data['name_en']."</td><td>INV-".$data['tax']."</td><td>".$data['name']."</td><td>".$data['valid_pay']."</td><td>".$data['deliver_date']."</td><td>".$xml->$statusiv."</td><td width='10%' align='right'>";
-if($data['status']!="5") echo "
-<a href='index.php?page=compl_view&id=".$data['id']."'><i class=\"fa fa-search-plus\"></i></a>&nbsp;&nbsp;&nbsp;";
-echo "<a href='inv.php?id=".$data['id']."' target='blank'>IV</a>&nbsp;&nbsp;&nbsp;<a data-toggle='modal' href='model_mail.php?page=inv&id=".$data['id']."'   data-target='.bs-example-modal-lg'><i class='glyphicon glyphicon-envelope'></i><span class='badge'>".$data['	countmailinv']."</span></a></td>
-</tr>";
-	
-	}?>
- 
-<tr><td colspan="7"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->invoice?> - <?=$xml->in ?? 'In'?></strong></td></tr>
-<tr><th><?=$xml->vender?></th><th><?=$xml->inno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th colspan="2"><?=$xml->status?></th></tr>
-<?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name,  taxrw as tax,  DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date ,status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id join iv on po.id=iv.tex where  po_id_new='' and pr.cus_id='".$_SESSION['com_id']."' and status>='4' $search_cond $date_cond $status_cond order by iv.id desc ");
-$cot=0;
-$var=decodenum($data['status']);
- while($data=mysqli_fetch_array($query)){
-	  $cot++;
-	 if($cot%2)$color=" bgcolor='#eee'";else $color=" bgcolor='#fff'";
-	
-echo "<tr ".$color."><td>".$data['name_en']."</td><td>INV-".$data['tax']."</td><td>".$data['name']."</td><td>".$data['valid_pay']."</td><td>".$data['deliver_date']."</td><td>".$xml->$var."</td><td align='right'>";
+$query = mysqli_query($db->conn, "SELECT po.id as id, countmailinv, po.name as name, taxrw as tax, status_iv,  
+    DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, 
+    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status 
+    FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.cus_id=company.id 
+    JOIN iv ON po.id=iv.tex 
+    WHERE po_id_new='' AND pr.ven_id='$com_id' AND status>='4' $search_cond $date_cond $status_cond 
+    ORDER BY iv.id DESC 
+    LIMIT $offset, $limit");
 
+$row_count = 0;
+while($data = mysqli_fetch_array($query)) {
+    $row_count++;
+    
+    // Determine status
+    if(($data['status_iv']=="2") && ($data['status']=="4")){
+        $statusiv = "void";
+        $status_class = "cancelled";
+    } else if(($data['status']=="4") && ($data['valid_pay'] < date("d-m-Y"))) {
+        $statusiv = "overdue";
+        $status_class = "overdue";
+    } else {
+        $statusiv = decodenum($data['status']);
+        $status_class = ($data['status'] == '5') ? 'completed' : 'pending';
+    }
+?>
+        <tr>
+            <td data-label="<?=$xml->customer?>"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->inno?>">INV-<?=e($data['tax'])?></td>
+            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
+            <td data-label="<?=$xml->status?>" class="hidden-xs">
+                <span class="status-badge <?=$status_class?>"><?=$xml->$statusiv?></span>
+            </td>
+            <td class="actions">
+                <?php if($data['status'] != "5"): ?>
+                <a href="index.php?page=compl_view&id=<?=e($data['id'])?>" class="action-btn" title="View">
+                    <i class="fa fa-search-plus"></i>
+                </a>
+                <?php endif; ?>
+                <a href="inv.php?id=<?=e($data['id'])?>" target="_blank" class="action-btn" title="Invoice">IV</a>
+                <a data-toggle="modal" href="model_mail.php?page=inv&id=<?=e($data['id'])?>" data-target=".bs-example-modal-lg" class="action-btn" title="Email">
+                    <i class="glyphicon glyphicon-envelope"></i>
+                    <?php if($data['countmailinv'] > 0): ?>
+                    <span class="badge"><?=e($data['countmailinv'])?></span>
+                    <?php endif; ?>
+                </a>
+            </td>
+        </tr>
+<?php } 
 
-if($data['status']!="5") echo "
-<a href='index.php?page=compl_view&id=".$data['id']."'><i class=\"fa fa-search-plus\"></i></a>&nbsp;&nbsp;&nbsp;";
-echo "<a href='inv.php?id=".$data['id']."' target='blank'>IV</a></td>
-</tr>";	
-	
-	}?>
-
+if ($row_count == 0): ?>
+        <tr>
+            <td colspan="6">
+                <div class="empty-state">
+                    <i class="fa fa-inbox"></i>
+                    <h4><?=$xml->nodata ?? 'No data found'?></h4>
+                    <p><?=$xml->tryadjust ?? 'Try adjusting your search or date filters'?></p>
+                </div>
+            </td>
+        </tr>
+<?php endif; ?>
+    </tbody>
 </table>
+</div>
+
+<!-- Invoice List - IN -->
+<div class="section-header in">
+    <i class="fa fa-arrow-down"></i> <?=$xml->invoice?> - <?=$xml->in ?? 'In'?>
+    <span class="badge"><?=$total_in?></span>
+</div>
+
+<div class="table-responsive-mobile">
+<table class="table table-hover table-cards">
+    <thead>
+        <tr>
+            <th><?=$xml->vender?></th>
+            <th><?=$xml->inno?></th>
+            <th class="hidden-xs"><?=$xml->name?></th>
+            <th><?=$xml->duedate?></th>
+            <th class="hidden-xs"><?=$xml->status?></th>
+            <th width="80"></th>
+        </tr>
+    </thead>
+    <tbody>
+<?php
+$query = mysqli_query($db->conn, "SELECT po.id as id, po.name as name, taxrw as tax,  
+    DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, 
+    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status 
+    FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.ven_id=company.id 
+    JOIN iv ON po.id=iv.tex 
+    WHERE po_id_new='' AND pr.cus_id='$com_id' AND status>='4' $search_cond $date_cond $status_cond 
+    ORDER BY iv.id DESC 
+    LIMIT $offset, $limit");
+
+$row_count = 0;
+while($data = mysqli_fetch_array($query)) {
+    $row_count++;
+    $var = decodenum($data['status']);
+    $status_class = ($data['status'] == '5') ? 'completed' : 'pending';
+?>
+        <tr>
+            <td data-label="<?=$xml->vender?>"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->inno?>">INV-<?=e($data['tax'])?></td>
+            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
+            <td data-label="<?=$xml->status?>" class="hidden-xs">
+                <span class="status-badge <?=$status_class?>"><?=$xml->$var?></span>
+            </td>
+            <td class="actions">
+                <?php if($data['status'] != "5"): ?>
+                <a href="index.php?page=compl_view&id=<?=e($data['id'])?>" class="action-btn" title="View">
+                    <i class="fa fa-search-plus"></i>
+                </a>
+                <?php endif; ?>
+                <a href="inv.php?id=<?=e($data['id'])?>" target="_blank" class="action-btn" title="Invoice">IV</a>
+            </td>
+        </tr>
+<?php } 
+
+if ($row_count == 0): ?>
+        <tr>
+            <td colspan="6">
+                <div class="empty-state">
+                    <i class="fa fa-inbox"></i>
+                    <h4><?=$xml->nodata ?? 'No data found'?></h4>
+                    <p><?=$xml->tryadjust ?? 'Try adjusting your search or date filters'?></p>
+                </div>
+            </td>
+        </tr>
+<?php endif; ?>
+    </tbody>
+</table>
+</div>
+
+<!-- Pagination -->
+<?= render_pagination($pagination, '?page=compl_list', $query_params) ?>
+
 <div id="fetch_state"></div>

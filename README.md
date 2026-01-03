@@ -1,13 +1,56 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.5  
+**Version**: 2.6  
 **Status**: Production Ready  
 **Last Updated**: January 3, 2026  
-**Project Size**: 172 MB
+**Project Size**: 172 MB  
+**Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v2.6 (January 3, 2026)
+- **Mobile-First Design Priority** 🎯:
+  - All new development follows mobile-first design principles
+  - Base styles target mobile devices, enhanced for larger screens
+  - Touch-friendly action buttons (44px minimum touch target)
+  - Responsive tables convert to cards on mobile
+  
+- **Pagination System**:
+  - New `inc/pagination.php` reusable component
+  - Mobile-responsive pagination controls
+  - Per-page selector (10, 20, 50, 100 records)
+  - Record count display
+  
+- **Default Date Filters**:
+  - Month-to-Date (MTD) as default view
+  - Quick preset buttons: MTD, YTD, 30 Days, Last Month, All
+  - Reduces initial data load for better performance
+  
+- **Responsive CSS Framework**:
+  - New `css/mobile-first.css` with breakpoints:
+    - Mobile: < 576px (base)
+    - Small tablets: >= 576px
+    - Tablets: >= 768px
+    - Desktops: >= 992px
+    - Large desktops: >= 1200px
+  - Card-style table rows on mobile
+  - Status badges with color coding
+  - Empty state placeholders
+  
+- **Updated List Pages**:
+  - `po-list.php`: Full mobile-first redesign with pagination
+  - `compl-list.php`: Full mobile-first redesign with pagination
+  - Summary cards showing counts
+  - Section headers with direction indicators
+  - Touch-friendly action buttons
+  
+- **Search/Filter on All List Pages**:
+  - `compl-list2.php`, `mo-list.php`, `vou-list.php`
+  - `payment-list.php`, `type-list.php`, `brand-list.php`
+  - `category-list.php`, `user-list.php`
+  - Removed old TableFilter JavaScript library
 
 ### v2.5 (January 3, 2026)
 - **Invoice Payment Tracking**:

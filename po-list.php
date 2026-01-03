@@ -1,13 +1,35 @@
-<h2><i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder?></h2><?php
+<?php
+/**
+ * Purchase Order List
+ * Mobile-first responsive with pagination and default date filters
+ */
+require_once("inc/pagination.php");
+
 // Security already checked in index.php
-// Use session variable (already validated) for queries
 $com_id = sql_int($_SESSION['com_id']);
+
+// Get pagination parameters
+$current_page = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
+$per_page = isset($_GET['per_page']) ? intval($_GET['per_page']) : 20;
+if (!in_array($per_page, [10, 20, 50, 100])) $per_page = 20;
 
 // Get search and filter parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+$date_preset = isset($_GET['date_preset']) ? $_GET['date_preset'] : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+
+// Apply default date preset (MTD) on first load
+if (empty($date_from) && empty($date_to) && empty($_GET['date_preset']) && !isset($_GET['search'])) {
+    $date_preset = 'mtd';
+    $date_range = get_date_range('mtd');
+    $date_from = $date_range['from'];
+    $date_to = $date_range['to'];
+} elseif (!empty($date_preset) && empty($date_from) && empty($date_to)) {
+    $date_range = get_date_range($date_preset);
+    $date_from = $date_range['from'];
+    $date_to = $date_range['to'];
+}
 
 // Build search condition
 $search_cond = '';
@@ -24,84 +46,262 @@ if (!empty($date_from)) {
 if (!empty($date_to)) {
     $date_cond .= " AND po.date <= '$date_to'";
 }
+
+// Count total records for OUT
+$count_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.cus_id=company.id 
+    WHERE po_id_new='' AND ven_id='$com_id' AND status='2' $search_cond $date_cond");
+$total_out = mysqli_fetch_assoc($count_query)['total'];
+
+// Count total records for IN  
+$count_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.ven_id=company.id 
+    WHERE po_id_new='' AND cus_id='$com_id' AND status='2' $search_cond $date_cond");
+$total_in = mysqli_fetch_assoc($count_query)['total'];
+
+$total_records = $total_out + $total_in;
+$pagination = paginate($total_records, $per_page, $current_page);
+
+// Preserve query params for pagination
+$query_params = $_GET;
+unset($query_params['pg']);
 ?>
 
-<!-- Search and Filter Panel -->
-<div class="panel panel-default">
+<h2><i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder?></h2>
+
+<!-- Search and Filter Panel (Mobile-First) -->
+<div class="panel panel-default filter-panel">
     <div class="panel-heading">
         <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+        <span class="pull-right">
+            <small class="text-muted"><?=$total_records?> records</small>
+        </span>
     </div>
     <div class="panel-body">
         <form method="get" action="" class="form-inline">
             <input type="hidden" name="page" value="po_list">
-            <div class="form-group" style="margin-right: 15px;">
-                <label for="search" style="margin-right: 5px;"><i class="fa fa-search"></i></label>
-                <input type="text" class="form-control" id="search" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> PO#, Name, Customer..." 
-                       value="<?=htmlspecialchars($search)?>" style="width: 250px;">
+            
+            <!-- Date Preset Buttons -->
+            <div style="margin-bottom: 10px;">
+                <?= render_date_presets($date_preset, 'po_list') ?>
             </div>
-            <div class="form-group" style="margin-right: 15px;">
-                <label for="date_from" style="margin-right: 5px;"><?=$xml->from ?? 'From'?>:</label>
+            
+            <!-- Search Input -->
+            <div class="form-group">
+                <label class="sr-only" for="search"><?=$xml->search ?? 'Search'?></label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> PO#, Name..." 
+                       value="<?=htmlspecialchars($search)?>">
+            </div>
+            
+            <!-- Custom Date Range -->
+            <div class="form-group">
+                <label for="date_from"><?=$xml->from ?? 'From'?>:</label>
                 <input type="date" class="form-control" id="date_from" name="date_from" 
                        value="<?=htmlspecialchars($date_from)?>">
             </div>
-            <div class="form-group" style="margin-right: 15px;">
-                <label for="date_to" style="margin-right: 5px;"><?=$xml->to ?? 'To'?>:</label>
+            
+            <div class="form-group">
+                <label for="date_to"><?=$xml->to ?? 'To'?>:</label>
                 <input type="date" class="form-control" id="date_to" name="date_to" 
                        value="<?=htmlspecialchars($date_to)?>">
             </div>
-            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
-            <a href="?page=po_list" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+            
+            <!-- Per Page Selector -->
+            <?= render_per_page_selector($per_page) ?>
+            
+            <!-- Action Buttons -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-search"></i> <span class="hidden-xs"><?=$xml->search ?? 'Search'?></span>
+                </button>
+                <a href="?page=po_list&date_preset=all" class="btn btn-default">
+                    <i class="fa fa-refresh"></i> <span class="hidden-xs"><?=$xml->clear ?? 'Clear'?></span>
+                </a>
+            </div>
         </form>
     </div>
 </div>
 
-<table width="100%" class="table table-hover">
-<tr><td colspan="6"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->purchasingorder?> - <?=$xml->out?></strong></td></tr>
-<tr><th><?=$xml->customer?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>
+<!-- Summary Cards -->
+<div class="row" style="margin-bottom: 15px;">
+    <div class="col-xs-6 col-sm-3">
+        <div class="summary-card" style="background: #dff0d8;">
+            <span class="number text-success"><?=$total_out?></span>
+            <span class="label-text">PO <?=$xml->out ?? 'Out'?></span>
+        </div>
+    </div>
+    <div class="col-xs-6 col-sm-3">
+        <div class="summary-card" style="background: #d9edf7;">
+            <span class="number text-primary"><?=$total_in?></span>
+            <span class="label-text">PO <?=$xml->in ?? 'In'?></span>
+        </div>
+    </div>
+</div>
+
+<!-- PO List - OUT -->
+<div class="section-header out">
+    <i class="fa fa-arrow-up"></i> <?=$xml->purchasingorder?> - <?=$xml->out?> 
+    <span class="badge"><?=$total_out?></span>
+</div>
+
+<div class="table-responsive-mobile">
+<table class="table table-hover table-cards">
+    <thead>
+        <tr>
+            <th><?=$xml->customer?></th>
+            <th><?=$xml->pono?></th>
+            <th class="hidden-xs"><?=$xml->name?></th>
+            <th><?=$xml->duedate?></th>
+            <th class="hidden-xs"><?=$xml->status?></th>
+            <th width="100"></th>
+        </tr>
+    </thead>
+    <tbody>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id,cancel, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$com_id."' and status='2' $search_cond $date_cond order by cancel,po.id desc");
+$offset = $pagination['offset'];
+$limit = $pagination['per_page'];
 
- while($data=mysqli_fetch_array($query)){
-	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	 
-echo "<tr><td>".e($data['name'])."</td><td>PO-".e($data['tax'])."</td><td>".e($data['name_en'])."</td><td>".e($data['valid_pay'])."</td>";
+$query = mysqli_query($db->conn, "SELECT po.id as id, cancel, po.name as name, po.tax as tax, 
+    DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, 
+    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status 
+    FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.cus_id=company.id 
+    WHERE po_id_new='' AND ven_id='$com_id' AND status='2' $search_cond $date_cond 
+    ORDER BY cancel, po.id DESC 
+    LIMIT $offset, $limit");
 
-$var=decodenum($data['status']);
-if($data['cancel']=="1"){
-echo "<td><font color='red'>".$xml->$var."</font></td><td><!--<a href='index.php?page=".$pg."&id=".e($data['id'])."&action=m'><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;--><a href='index.php?page=".$pg."&id=".e($data['id'])."&action=c'><i class=\"fa fa-magic\"></i></a></td>
-</tr>";}else
-{echo "<td>".$xml->$var."</td><td><!--<a href='index.php?page=".$pg."&id=".e($data['id'])."&action=m'><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;--><a href='index.php?page=".$pg."&id=".e($data['id'])."&action=c'><i class=\"fa fa-magic\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' title='Cancel' href='core-function.php?page=po_list&id=".e($data['id'])."&method=D'><span class=\"glyphicon glyphicon-trash\"></span></a></td>
-</tr>";
-	}
+$row_count = 0;
+while($data = mysqli_fetch_array($query)) {
+    $row_count++;
+    $pg = ($data['status'] == 2) ? "po_deliv" : "po_edit";
+    $var = decodenum($data['status']);
+    $is_cancelled = ($data['cancel'] == "1");
+    $status_class = $is_cancelled ? 'cancelled' : 'pending';
+?>
+        <tr>
+            <td data-label="<?=$xml->customer?>"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->pono?>">PO-<?=e($data['tax'])?></td>
+            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
+            <td data-label="<?=$xml->status?>" class="hidden-xs">
+                <span class="status-badge <?=$status_class?>">
+                    <?=$is_cancelled ? $xml->$var : $xml->$var?>
+                </span>
+            </td>
+            <td class="actions">
+                <a href="index.php?page=<?=$pg?>&id=<?=e($data['id'])?>&action=c" class="action-btn" title="Process">
+                    <i class="fa fa-magic"></i>
+                </a>
+                <?php if (!$is_cancelled): ?>
+                <a onclick="return Conf(this)" href="core-function.php?page=po_list&id=<?=e($data['id'])?>&method=D" 
+                   class="action-btn danger" title="Cancel">
+                    <i class="glyphicon glyphicon-trash"></i>
+                </a>
+                <?php endif; ?>
+            </td>
+        </tr>
+<?php } 
 
-
-	}?>
- 
- <tr>
-   <td colspan="6"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->purchasingorder?> - <?=$xml->in?></strong></td></tr>
- 
-<tr><th><?=$xml->vender?></th><th><?=$xml->pono?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->status?></th><th width="120"></th></tr>
-<?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,cancel, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$com_id."' and status='2' $search_cond $date_cond order by cancel,po.id desc ");
-
- while($data=mysqli_fetch_array($query)){
-	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	 
-echo "<tr><td>".e($data['name_en'])."</td><td>PO-".e($data['tax'])."</td><td>".e($data['name'])."</td><td>".e($data['valid_pay'])."</td>";
-
-
-
-$var=decodenum($data['status']);
-if($data['cancel']=="1"){
-echo "<td><font color='red'>".$xml->$var."</font></td><td><a href='index.php?page=po_view&id=".e($data['id'])."'><i class=\"fa fa-dropbox\"></i></a></td>
-</tr>";}else
-{echo "<td>".$xml->$var."</td><td><a href='index.php?page=po_view&id=".e($data['id'])."'><i class=\"fa fa-dropbox\"></i></a>&nbsp;&nbsp;&nbsp;--><a href='index.php?page=".$pg."&id=".e($data['id'])."&action=c'><i class=\"fa fa-magic\"></i></a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' title='Cancel' href='core-function.php?page=po_list&id=".e($data['id'])."&method=D'><span class=\"glyphicon glyphicon-trash\"></span></a></td>
-</tr>";
-	}
-	
-	}?>
- 
-
+if ($row_count == 0): ?>
+        <tr>
+            <td colspan="6">
+                <div class="empty-state">
+                    <i class="fa fa-inbox"></i>
+                    <h4><?=$xml->nodata ?? 'No data found'?></h4>
+                    <p><?=$xml->tryadjust ?? 'Try adjusting your search or date filters'?></p>
+                </div>
+            </td>
+        </tr>
+<?php endif; ?>
+    </tbody>
 </table>
+</div>
+
+<!-- PO List - IN -->
+<div class="section-header in">
+    <i class="fa fa-arrow-down"></i> <?=$xml->purchasingorder?> - <?=$xml->in?>
+    <span class="badge"><?=$total_in?></span>
+</div>
+
+<div class="table-responsive-mobile">
+<table class="table table-hover table-cards">
+    <thead>
+        <tr>
+            <th><?=$xml->vender?></th>
+            <th><?=$xml->pono?></th>
+            <th class="hidden-xs"><?=$xml->name?></th>
+            <th><?=$xml->duedate?></th>
+            <th class="hidden-xs"><?=$xml->status?></th>
+            <th width="100"></th>
+        </tr>
+    </thead>
+    <tbody>
+<?php
+$query = mysqli_query($db->conn, "SELECT po.id as id, po.name as name, po.tax as tax, cancel,
+    DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, 
+    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status 
+    FROM po 
+    JOIN pr ON po.ref=pr.id 
+    JOIN company ON pr.ven_id=company.id 
+    WHERE po_id_new='' AND cus_id='$com_id' AND status='2' $search_cond $date_cond 
+    ORDER BY cancel, po.id DESC 
+    LIMIT $offset, $limit");
+
+$row_count = 0;
+while($data = mysqli_fetch_array($query)) {
+    $row_count++;
+    $pg = ($data['status'] == 2) ? "po_deliv" : "po_edit";
+    $var = decodenum($data['status']);
+    $is_cancelled = ($data['cancel'] == "1");
+    $status_class = $is_cancelled ? 'cancelled' : 'pending';
+?>
+        <tr>
+            <td data-label="<?=$xml->vender?>"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->pono?>">PO-<?=e($data['tax'])?></td>
+            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
+            <td data-label="<?=$xml->status?>" class="hidden-xs">
+                <span class="status-badge <?=$status_class?>">
+                    <?=$xml->$var?>
+                </span>
+            </td>
+            <td class="actions">
+                <a href="index.php?page=po_view&id=<?=e($data['id'])?>" class="action-btn" title="View">
+                    <i class="fa fa-dropbox"></i>
+                </a>
+                <?php if (!$is_cancelled): ?>
+                <a href="index.php?page=<?=$pg?>&id=<?=e($data['id'])?>&action=c" class="action-btn" title="Process">
+                    <i class="fa fa-magic"></i>
+                </a>
+                <a onclick="return Conf(this)" href="core-function.php?page=po_list&id=<?=e($data['id'])?>&method=D" 
+                   class="action-btn danger" title="Cancel">
+                    <i class="glyphicon glyphicon-trash"></i>
+                </a>
+                <?php endif; ?>
+            </td>
+        </tr>
+<?php } 
+
+if ($row_count == 0): ?>
+        <tr>
+            <td colspan="6">
+                <div class="empty-state">
+                    <i class="fa fa-inbox"></i>
+                    <h4><?=$xml->nodata ?? 'No data found'?></h4>
+                    <p><?=$xml->tryadjust ?? 'Try adjusting your search or date filters'?></p>
+                </div>
+            </td>
+        </tr>
+<?php endif; ?>
+    </tbody>
+</table>
+</div>
+
+<!-- Pagination -->
+<?= render_pagination($pagination, '?page=po_list', $query_params) ?>
+
 <div id="fetch_state"></div>

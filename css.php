@@ -1,5 +1,5 @@
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 
     <title>CMS</title>
 
@@ -13,6 +13,9 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <?php endif; ?>
     <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+    
+    <!-- Mobile-First Responsive Styles -->
+    <link href="css/mobile-first.css" rel="stylesheet">
 
     <!-- Page-Level Plugin CSS - Dashboard -->
     <link href="css/plugins/morris/morris-0.4.3.min.css" rel="stylesheet">

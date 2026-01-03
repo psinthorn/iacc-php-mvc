@@ -1,0 +1,414 @@
+/**
+ * Mobile-First Responsive Styles
+ * iACC v2.6
+ * 
+ * IMPORTANT: This project follows Mobile-First design principles.
+ * Base styles are for mobile, then we add complexity for larger screens.
+ */
+
+/* =============================================
+   BASE STYLES (Mobile First - < 576px)
+   ============================================= */
+
+/* Filter Panel - Stack vertically on mobile */
+.filter-panel .panel-body {
+    padding: 10px;
+}
+
+.filter-panel .form-inline .form-group {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.filter-panel .form-inline .form-control {
+    width: 100%;
+}
+
+.filter-panel .form-inline label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: normal;
+}
+
+.filter-panel .btn {
+    width: 48%;
+    margin-right: 2%;
+}
+
+.filter-panel .btn:last-child {
+    margin-right: 0;
+}
+
+/* Date Presets - Scrollable on mobile */
+.date-presets {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.date-presets .btn {
+    flex-shrink: 0;
+    width: auto;
+    margin-right: 5px;
+}
+
+/* Responsive Tables */
+.table-responsive-mobile {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive-mobile > .table {
+    margin-bottom: 0;
+}
+
+/* Card-style table rows on mobile */
+.table-cards tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.table-cards thead {
+    display: none;
+}
+
+.table-cards tbody td {
+    display: block;
+    text-align: left;
+    padding: 5px 0;
+    border: none;
+}
+
+.table-cards tbody td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: inline-block;
+    width: 40%;
+    color: #666;
+}
+
+.table-cards tbody td.actions {
+    text-align: right;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.table-cards tbody td.actions:before {
+    display: none;
+}
+
+/* Pagination - Centered and touch-friendly */
+.pagination-wrapper {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.pagination-responsive {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.pagination-responsive > li > a,
+.pagination-responsive > li > span {
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 32px;
+    padding: 6px 12px;
+    margin: 2px;
+    border-radius: 4px !important;
+}
+
+.pagination-info {
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+/* Per Page Selector */
+.per-page-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.per-page-selector select {
+    width: auto;
+    display: inline-block;
+}
+
+/* Quick Actions - Full width buttons */
+.quick-actions {
+    margin-bottom: 15px;
+}
+
+.quick-actions .btn {
+    margin-bottom: 5px;
+}
+
+/* Summary Cards */
+.summary-card {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.summary-card .number {
+    font-size: 24px;
+    font-weight: bold;
+    display: block;
+}
+
+.summary-card .label-text {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Section Headers */
+.section-header {
+    background: #f5f5f5;
+    padding: 10px 15px;
+    margin: 15px -15px;
+    font-weight: bold;
+    border-left: 4px solid #337ab7;
+}
+
+.section-header.out {
+    border-left-color: #5cb85c;
+}
+
+.section-header.in {
+    border-left-color: #337ab7;
+}
+
+/* =============================================
+   SMALL TABLETS (>= 576px)
+   ============================================= */
+@media (min-width: 576px) {
+    .filter-panel .form-inline .form-group {
+        display: inline-block;
+        width: auto;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .filter-panel .form-inline .form-control {
+        width: auto;
+    }
+    
+    .filter-panel .form-inline label {
+        display: inline-block;
+        margin-right: 5px;
+        margin-bottom: 0;
+    }
+    
+    .filter-panel .btn {
+        width: auto;
+    }
+    
+    .date-presets {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+}
+
+/* =============================================
+   TABLETS (>= 768px)
+   ============================================= */
+@media (min-width: 768px) {
+    .filter-panel .panel-body {
+        padding: 15px;
+    }
+    
+    /* Show standard table on tablets */
+    .table-cards thead {
+        display: table-header-group;
+    }
+    
+    .table-cards tbody tr {
+        display: table-row;
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+    
+    .table-cards tbody td {
+        display: table-cell;
+        padding: 8px;
+        border-top: 1px solid #ddd;
+    }
+    
+    .table-cards tbody td:before {
+        display: none;
+    }
+    
+    .table-cards tbody td.actions {
+        text-align: right;
+        border-top: 1px solid #ddd;
+        margin-top: 0;
+        padding-top: 8px;
+    }
+    
+    .summary-card .number {
+        font-size: 32px;
+    }
+    
+    .section-header {
+        margin: 15px 0;
+    }
+}
+
+/* =============================================
+   DESKTOPS (>= 992px)
+   ============================================= */
+@media (min-width: 992px) {
+    .filter-panel .form-inline .form-group {
+        margin-right: 15px;
+    }
+    
+    .pagination-responsive > li > a,
+    .pagination-responsive > li > span {
+        min-width: 36px;
+        min-height: 36px;
+        line-height: 24px;
+    }
+}
+
+/* =============================================
+   LARGE DESKTOPS (>= 1200px)
+   ============================================= */
+@media (min-width: 1200px) {
+    .filter-panel .form-control[type="text"] {
+        min-width: 250px;
+    }
+}
+
+/* =============================================
+   UTILITY CLASSES
+   ============================================= */
+
+/* Hide on mobile */
+.hidden-mobile {
+    display: none !important;
+}
+
+@media (min-width: 768px) {
+    .hidden-mobile {
+        display: block !important;
+    }
+    
+    td.hidden-mobile,
+    th.hidden-mobile {
+        display: table-cell !important;
+    }
+}
+
+/* Show only on mobile */
+.visible-mobile {
+    display: block !important;
+}
+
+@media (min-width: 768px) {
+    .visible-mobile {
+        display: none !important;
+    }
+}
+
+/* Truncate text with ellipsis */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+@media (min-width: 768px) {
+    .text-truncate {
+        max-width: 250px;
+    }
+}
+
+/* Touch-friendly action buttons */
+.action-btn {
+    display: inline-block;
+    min-width: 36px;
+    min-height: 36px;
+    line-height: 36px;
+    text-align: center;
+    padding: 0 8px;
+    margin: 2px;
+    border-radius: 4px;
+    color: #337ab7;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    background: #f5f5f5;
+    text-decoration: none;
+}
+
+.action-btn.danger {
+    color: #d9534f;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.pending {
+    background: #fcf8e3;
+    color: #8a6d3b;
+}
+
+.status-badge.completed {
+    background: #dff0d8;
+    color: #3c763d;
+}
+
+.status-badge.overdue {
+    background: #f2dede;
+    color: #a94442;
+}
+
+.status-badge.cancelled {
+    background: #f5f5f5;
+    color: #777;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.empty-state h4 {
+    margin-bottom: 10px;
+}
