@@ -1,7 +1,7 @@
 <?php
 /**
- * iAcc Landing Page
- * Modern public-facing landing page
+ * iACC Landing Page
+ * Modern public-facing landing page with multi-language support
  */
 session_start();
 
@@ -10,9 +10,32 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     header('Location: index.php?page=dashboard');
     exit;
 }
+
+// Language handling
+$lang = isset($_GET['lang']) ? $_GET['lang'] : (isset($_SESSION['landing_lang']) ? $_SESSION['landing_lang'] : 'en');
+if (!in_array($lang, ['en', 'th'])) {
+    $lang = 'en';
+}
+$_SESSION['landing_lang'] = $lang;
+
+// Load language file
+$langFile = __DIR__ . '/inc/lang/' . $lang . '.php';
+if (file_exists($langFile)) {
+    $t = require $langFile;
+} else {
+    $t = require __DIR__ . '/inc/lang/en.php';
+}
+
+// Helper function
+function __($key) {
+    global $t;
+    return isset($t[$key]) ? $t[$key] : $key;
+}
+
+$htmlLang = $lang === 'th' ? 'th' : 'en';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $htmlLang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +44,9 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php if ($lang === 'th'): ?>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <?php endif; ?>
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
@@ -48,7 +74,7 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: <?= $lang === 'th' ? "'Sarabun', " : "" ?>'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--dark);
             line-height: 1.6;
             overflow-x: hidden;
@@ -129,6 +155,34 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
         
         .nav-menu a:hover {
             color: var(--primary);
+        }
+        
+        .lang-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+            padding-left: 20px;
+            border-left: 1px solid var(--gray-200);
+        }
+        
+        .lang-switcher a {
+            font-size: 13px;
+            color: var(--gray-600);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .lang-switcher a:hover,
+        .lang-switcher a.active {
+            color: var(--primary);
+            background: rgba(142, 68, 173, 0.1);
+        }
+        
+        .lang-switcher span {
+            color: var(--gray-200);
+            font-size: 12px;
         }
         
         .nav-actions {
@@ -703,15 +757,20 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
             </a>
             
             <ul class="nav-menu">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="#features"><?= __('nav_features') ?></a></li>
+                <li><a href="#pricing"><?= __('nav_pricing') ?></a></li>
+                <li><a href="#about"><?= __('nav_about') ?></a></li>
+                <li><a href="#contact"><?= __('nav_contact') ?></a></li>
+                <li class="lang-switcher">
+                    <a href="?lang=en" class="<?= $lang === 'en' ? 'active' : '' ?>">EN</a>
+                    <span>|</span>
+                    <a href="?lang=th" class="<?= $lang === 'th' ? 'active' : '' ?>">TH</a>
+                </li>
             </ul>
             
             <div class="nav-actions">
-                <a href="login.php" class="btn btn-outline">Sign In</a>
-                <a href="login.php" class="btn btn-primary">Get Started</a>
+                <a href="login.php" class="btn btn-outline"><?= __('nav_sign_in') ?></a>
+                <a href="login.php" class="btn btn-primary"><?= __('nav_get_started') ?></a>
             </div>
             
             <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -724,15 +783,15 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
-                <h1>Manage Your Business <span>Finances</span> with Ease</h1>
-                <p>Professional accounting management system designed for modern businesses. Track invoices, manage payments, and grow your business.</p>
+                <h1><?= __('hero_title') ?> <span><?= __('hero_title_highlight') ?></span></h1>
+                <p><?= __('hero_subtitle') ?></p>
                 
                 <div class="hero-buttons">
                     <a href="login.php" class="btn btn-primary btn-lg">
-                        <i class="fa fa-rocket"></i> Start Free Trial
+                        <i class="fa fa-rocket"></i> <?= __('hero_cta_start') ?>
                     </a>
                     <a href="#features" class="btn btn-outline btn-lg">
-                        <i class="fa fa-play-circle"></i> Learn More
+                        <i class="fa fa-play-circle"></i> <?= __('hero_cta_demo') ?>
                     </a>
                 </div>
                 
@@ -787,9 +846,9 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <section class="features" id="features">
         <div class="section-container">
             <div class="section-header">
-                <span class="section-label">Features</span>
-                <h2 class="section-title">Everything You Need</h2>
-                <p class="section-subtitle">Powerful tools to manage your business finances efficiently</p>
+                <span class="section-label"><?= __('nav_features') ?></span>
+                <h2 class="section-title"><?= __('features_title') ?></h2>
+                <p class="section-subtitle"><?= __('features_subtitle') ?></p>
             </div>
             
             <div class="features-grid">
@@ -797,48 +856,48 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
                     <div class="feature-icon">
                         <i class="fa fa-file-text-o"></i>
                     </div>
-                    <h3>Invoice Management</h3>
-                    <p>Create, send, and track professional invoices. Get paid faster with online payment options.</p>
+                    <h3><?= __('feature_1_title') ?></h3>
+                    <p><?= __('feature_1_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-credit-card"></i>
                     </div>
-                    <h3>Payment Gateway</h3>
-                    <p>Accept payments via PayPal, Stripe, and bank transfer. Secure and reliable transactions.</p>
+                    <h3><?= __('feature_2_title') ?></h3>
+                    <p><?= __('feature_2_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-bar-chart"></i>
                     </div>
-                    <h3>Reports & Analytics</h3>
-                    <p>Comprehensive business reports with real-time insights to make informed decisions.</p>
+                    <h3><?= __('feature_3_title') ?></h3>
+                    <p><?= __('feature_3_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-users"></i>
                     </div>
-                    <h3>Multi-User Access</h3>
-                    <p>Role-based access control. Admin, manager, and user roles with custom permissions.</p>
+                    <h3><?= __('feature_4_title') ?></h3>
+                    <p><?= __('feature_4_desc') ?></p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-building"></i>
+                    </div>
+                    <h3><?= __('feature_5_title') ?></h3>
+                    <p><?= __('feature_5_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-globe"></i>
                     </div>
-                    <h3>Multi-Language</h3>
-                    <p>Support for English and Thai languages. Easily switch between languages anytime.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-mobile"></i>
-                    </div>
-                    <h3>Mobile Ready</h3>
-                    <p>Responsive design works perfectly on desktop, tablet, and mobile devices.</p>
+                    <h3><?= __('feature_6_title') ?></h3>
+                    <p><?= __('feature_6_desc') ?></p>
                 </div>
             </div>
         </div>
@@ -848,49 +907,49 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <section class="pricing" id="pricing">
         <div class="section-container">
             <div class="section-header">
-                <span class="section-label">Pricing</span>
-                <h2 class="section-title">Simple, Transparent Pricing</h2>
-                <p class="section-subtitle">Choose the plan that fits your business needs</p>
+                <span class="section-label"><?= __('nav_pricing') ?></span>
+                <h2 class="section-title"><?= __('pricing_title') ?></h2>
+                <p class="section-subtitle"><?= __('pricing_subtitle') ?></p>
             </div>
             
             <div class="pricing-grid">
                 <div class="pricing-card">
-                    <h3>Starter</h3>
-                    <div class="pricing-price">฿0<span>/month</span></div>
+                    <h3><?= __('pricing_free') ?></h3>
+                    <div class="pricing-price">฿0<span><?= __('pricing_month') ?></span></div>
                     <ul class="pricing-features">
-                        <li><i class="fa fa-check"></i> Up to 5 invoices/month</li>
-                        <li><i class="fa fa-check"></i> 1 User</li>
-                        <li><i class="fa fa-check"></i> Basic reports</li>
-                        <li><i class="fa fa-check"></i> Email support</li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_1') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_4') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_2') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_3') ?></li>
                     </ul>
-                    <a href="login.php" class="btn btn-outline" style="width: 100%;">Get Started</a>
+                    <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('nav_get_started') ?></a>
                 </div>
                 
                 <div class="pricing-card featured">
-                    <span class="pricing-badge">Most Popular</span>
-                    <h3>Professional</h3>
-                    <div class="pricing-price">฿990<span>/month</span></div>
+                    <span class="pricing-badge"><?= __('pricing_popular') ?></span>
+                    <h3><?= __('pricing_pro') ?></h3>
+                    <div class="pricing-price">฿990<span><?= __('pricing_month') ?></span></div>
                     <ul class="pricing-features">
-                        <li><i class="fa fa-check"></i> Unlimited invoices</li>
-                        <li><i class="fa fa-check"></i> Up to 10 users</li>
-                        <li><i class="fa fa-check"></i> Advanced reports</li>
-                        <li><i class="fa fa-check"></i> Payment gateway</li>
-                        <li><i class="fa fa-check"></i> Priority support</li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_1') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_4') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_2') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_5') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_3') ?></li>
                     </ul>
-                    <a href="login.php" class="btn btn-white" style="width: 100%;">Start Free Trial</a>
+                    <a href="login.php" class="btn btn-white" style="width: 100%;"><?= __('hero_cta_start') ?></a>
                 </div>
                 
                 <div class="pricing-card">
-                    <h3>Enterprise</h3>
-                    <div class="pricing-price">฿2,990<span>/month</span></div>
+                    <h3><?= __('pricing_enterprise') ?></h3>
+                    <div class="pricing-price"><?= __('pricing_contact') ?></div>
                     <ul class="pricing-features">
-                        <li><i class="fa fa-check"></i> Everything in Pro</li>
-                        <li><i class="fa fa-check"></i> Unlimited users</li>
-                        <li><i class="fa fa-check"></i> Custom branding</li>
-                        <li><i class="fa fa-check"></i> API access</li>
-                        <li><i class="fa fa-check"></i> Dedicated support</li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_1') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_2') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_3') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_4') ?></li>
+                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_5') ?></li>
                     </ul>
-                    <a href="login.php" class="btn btn-outline" style="width: 100%;">Contact Sales</a>
+                    <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('pricing_contact') ?></a>
                 </div>
             </div>
         </div>
@@ -899,10 +958,10 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     <!-- CTA Section -->
     <section class="cta">
         <div class="section-container">
-            <h2>Ready to Get Started?</h2>
-            <p>Join hundreds of businesses already using iACC to manage their finances.</p>
+            <h2><?= __('cta_title') ?></h2>
+            <p><?= __('cta_subtitle') ?></p>
             <a href="login.php" class="btn btn-white btn-lg">
-                <i class="fa fa-rocket"></i> Start Your Free Trial
+                <i class="fa fa-rocket"></i> <?= __('cta_button') ?>
             </a>
         </div>
     </section>
@@ -912,42 +971,42 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
         <div class="footer-container">
             <div class="footer-brand">
                 <h3><span style="color: var(--primary);">iACC</span></h3>
-                <p>Professional accounting management system for modern businesses. Simplify your finances today.</p>
+                <p><?= __('footer_tagline') ?></p>
             </div>
             
             <div class="footer-column">
-                <h4>Product</h4>
+                <h4><?= __('footer_product') ?></h4>
                 <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="#">Updates</a></li>
-                    <li><a href="#">Roadmap</a></li>
+                    <li><a href="#features"><?= __('nav_features') ?></a></li>
+                    <li><a href="#pricing"><?= __('nav_pricing') ?></a></li>
+                    <li><a href="#"><?= __('footer_updates') ?></a></li>
+                    <li><a href="#"><?= __('footer_roadmap') ?></a></li>
                 </ul>
             </div>
             
             <div class="footer-column">
-                <h4>Company</h4>
+                <h4><?= __('footer_company') ?></h4>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Press</a></li>
+                    <li><a href="#"><?= __('footer_about') ?></a></li>
+                    <li><a href="#"><?= __('footer_careers') ?></a></li>
+                    <li><a href="#"><?= __('footer_blog') ?></a></li>
+                    <li><a href="#"><?= __('footer_press') ?></a></li>
                 </ul>
             </div>
             
             <div class="footer-column">
-                <h4>Support</h4>
+                <h4><?= __('footer_support') ?></h4>
                 <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Status</a></li>
-                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#"><?= __('footer_help') ?></a></li>
+                    <li><a href="#"><?= __('footer_contact') ?></a></li>
+                    <li><a href="#"><?= __('footer_status') ?></a></li>
+                    <li><a href="#"><?= __('footer_terms') ?></a></li>
                 </ul>
             </div>
         </div>
         
         <div class="footer-bottom">
-            <p>&copy; 2026 iACC. All rights reserved.</p>
+            <p><?= __('footer_copyright') ?></p>
             <div class="social-links">
                 <a href="#"><i class="fa fa-facebook"></i></a>
                 <a href="#"><i class="fa fa-twitter"></i></a>

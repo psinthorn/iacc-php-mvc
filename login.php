@@ -22,7 +22,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - iAcc</title>
+    <title>Sign In - iACC</title>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -451,8 +451,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
         <div class="login-branding">
             <div class="branding-content">
                 <div class="branding-logo">
-                    <div class="branding-logo-icon">iA</div>
-                    <div class="branding-logo-text">iAcc</div>
+                    <div class="branding-logo-text">iACC</div>
                 </div>
                 
                 <h1>Welcome Back!</h1>
@@ -483,8 +482,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
         <div class="login-form-panel">
             <div class="mobile-logo">
                 <div class="branding-logo">
-                    <div class="branding-logo-icon">iA</div>
-                    <div class="branding-logo-text" style="color: var(--dark);">i<span style="color: var(--primary);">Acc</span></div>
+                    <div class="branding-logo-text" style="color: var(--primary);">iACC</div>
                 </div>
             </div>
             
