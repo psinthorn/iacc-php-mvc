@@ -1,14 +1,57 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.6  
+**Version**: 2.7  
 **Status**: Production Ready  
 **Last Updated**: January 3, 2026  
-**Project Size**: 172 MB  
+**Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v2.7 (January 3, 2026)
+- **Payment Gateway Integration** 💳:
+  - PayPal API integration (Sandbox & Live modes)
+  - Stripe API integration (Test & Live modes)
+  - `payment-gateway-config.php` for admin configuration
+  - Test Connection functionality with real API validation
+  - Webhook handler for payment notifications (`payment-webhook.php`)
+  - Invoice checkout flow (`inv-checkout.php`)
+  - Payment success/cancel handlers
+
+- **Payment Method Management**:
+  - New `payment_method` database table
+  - CRUD operations (`payment-method.php`, `payment-method-list.php`)
+  - Support for both standard and gateway payment methods
+  - Bilingual support (English/Thai names)
+  - Custom icons for each payment method
+  - Sort order management
+  - `payment-method-helper.php` utility functions
+
+- **UI/UX Improvements**:
+  - Upgraded Font Awesome from 4.0.3 to 4.7.0 (CDN)
+  - Fixed FA5-only icons to FA4 equivalents (dashboard)
+  - Custom dropdown styling with purple arrow indicators
+  - Mode indicator badges (TEST MODE/LIVE)
+  - Focus animations and hover effects
+  - Responsive design improvements for mobile
+
+- **User Management Enhancements**:
+  - User list grouped by role (Super Admin/Admin/User)
+  - Color-coded sections (red/blue/green gradients)
+  - Role descriptions and user counts per section
+
+- **Thai Font/Encoding Fixes**:
+  - Fixed UTF-8 encoding for Thai text display
+  - Added UTF-8 headers in `index.php`
+  - Re-encoded payment method Thai names in database
+
+- **New View Pages**:
+  - `rep-view.php` - Professional receipt view
+  - `voc-view.php` - Professional voucher view
+  - Linked invoice data support
+  - Summary calculations with VAT/discount
 
 ### v2.6 (January 3, 2026)
 - **Mobile-First Design Priority** 🎯:
@@ -180,10 +223,44 @@ docker compose down
 | mPDF | 5.7 | ✅ Working |
 | Bootstrap | 3.x / 5.3.3 | ✅ Active |
 | jQuery | 1.10.2 / 3.7.1 | ✅ Active |
+| Font Awesome | 4.7.0 (CDN) | ✅ Active |
 
 ---
 
-## � Dashboard (v2.3)
+## 💳 Payment Gateway Configuration (v2.7)
+
+### Supported Gateways
+
+| Gateway | Modes | Features |
+|---------|-------|----------|
+| PayPal | Sandbox / Live | OAuth2, Webhooks, Returns |
+| Stripe | Test / Live | API Keys, Webhooks, Multi-currency |
+
+### Setup Instructions
+
+**PayPal:**
+1. Go to [PayPal Developer](https://developer.paypal.com)
+2. Create/Login to your account
+3. Dashboard → My Apps & Credentials
+4. Create new app or use existing
+5. Copy Client ID and Secret
+6. Configure webhooks for notifications
+
+**Stripe:**
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com)
+2. Create/Login to your account
+3. Developers → API Keys
+4. Copy Publishable and Secret keys
+5. Set up webhooks under Developers → Webhooks
+
+### Configuration Page
+- URL: `index.php?page=payment_gateway_config`
+- Access: Super Admin only (level >= 2)
+- Features: Save config, Test Connection, Webhook URLs
+
+---
+
+## 🎫 Dashboard (v2.3)
 
 ### Role-Based Views
 
