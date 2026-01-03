@@ -4,9 +4,9 @@
  * Documentation for Category, Brand, Product Type, and Model management
  */
 session_start();
-include_once 'inc/db.inc.php';
-include_once 'inc/session.inc.php';
-include_once 'lang.php';
+include_once '../inc/db.inc.php';
+include_once '../inc/session.inc.php';
+include_once '../lang.php';
 
 $page_title = "Master Data Guide";
 ?>
@@ -16,7 +16,7 @@ $page_title = "Master Data Guide";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?=$page_title?> - iAcc</title>
-    <?php include 'css.php'; ?>
+    <?php include '../css.php'; ?>
     <link rel="stylesheet" href="../css/master-data.css">
     <style>
         .guide-container {
@@ -206,7 +206,7 @@ $page_title = "Master Data Guide";
     </style>
 </head>
 <body>
-<?php include 'menu.php'; ?>
+<?php include '../menu.php'; ?>
 
 <div class="guide-container">
     <a href="javascript:history.back()" class="back-btn">
@@ -679,6 +679,6 @@ function showIndustry(industry) {
 }
 </script>
 
-<?php include 'script.php'; ?>
+<?php include '../script.php'; ?>
 </body>
 </html>
