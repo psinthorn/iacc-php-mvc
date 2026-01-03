@@ -1,17 +1,70 @@
-<script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>  
- <h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2>
- <?php
-//// Security already checked in index.php
+<?php
+// Security already checked in index.php
+
+// Get search parameters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+
+// Build search condition
+$search_cond = '';
+if (!empty($search)) {
+    $search_escaped = sql_escape($search);
+    $search_cond = " AND (po.name LIKE '%$search_escaped%' OR po.tax LIKE '%$search_escaped%' OR company.name_en LIKE '%$search_escaped%')";
+}
+
+// Build date filter  
+$date_cond = '';
+if (!empty($date_from)) {
+    $date_cond .= " AND po.date >= '$date_from'";
+}
+if (!empty($date_to)) {
+    $date_cond .= " AND po.date <= '$date_to'";
+}
 ?>
+
+<script type="text/javascript" language="javascript" src="TableFilter/tablefilter.js"></script>  
+<h2><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></h2>
+
+<!-- Search and Filter Panel -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+    </div>
+    <div class="panel-body">
+        <form method="get" action="" class="form-inline">
+            <input type="hidden" name="page" value="qa_list">
+            
+            <div class="form-group" style="margin-right: 15px;">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> QUO#, Name, Customer..." 
+                       value="<?=htmlspecialchars($search)?>" style="width: 250px;">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;"><?=$xml->from ?? 'From'?>:</label>
+                <input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;"><?=$xml->to ?? 'To'?>:</label>
+                <input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>">
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+            <a href="?page=qa_list" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+        </form>
+    </div>
+</div>
 
 <table width="100%" id="table1" class="table table-hover">
 <thead>
 
-<tr><td colspan="6"><?=$xml->quotation?> - <?=$xml->out?></td></tr>
+<tr><td colspan="6"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->quotation?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
 <tr><th width="30%"><?=$xml->customer?></th><th width="15%"><?=$xml->quono?></th><th width="15%"><?=$xml->price?></th><th width="13%"><?=$xml->duedate?></th><th width="27%" colspan="2"><?=$xml->status?></th></tr></thead>
 <tbody>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1'  order by cancel,po.id  desc ");
+$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id  desc ");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
 	 	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data[id]."'");

@@ -9,25 +9,82 @@
 	else if($status == 5) $condition="and status='5'";
 	else if($status == 6) $condition="";
 	else $condition="and status='0'";
+	
+	// Get search parameters
+	$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+	$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
+	$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+	
+	// Build search condition
+	$search_cond = '';
+	if (!empty($search)) {
+	    $search_escaped = sql_escape($search);
+	    $search_cond = " AND (pr.name LIKE '%$search_escaped%' OR pr.des LIKE '%$search_escaped%' OR company.name_en LIKE '%$search_escaped%' OR company.name_th LIKE '%$search_escaped%')";
+	}
+	
+	// Build date filter
+	$date_cond = '';
+	if (!empty($date_from)) {
+	    $date_cond .= " AND pr.date >= '$date_from'";
+	}
+	if (!empty($date_to)) {
+	    $date_cond .= " AND pr.date <= '$date_to'";
+	}
+	
+	$com_id = intval($_SESSION['com_id']);
 ?>
-<div style="float:left; width:auto"><h2><i class="glyphicon glyphicon-pencil"></i>  <?=$xml->purchasingrequest?></h2></div><form action="index.php?page=pr_list" style="float:right; margin-top:15px;" method="post"><select id="status" name="status" style="width:160px; float:left;" class="form-control">
-<option value='0' <?php if($status == 0)echo "selected";?> ><?=$xml->processpr?></option>
-<option value='1' <?php if($status == 1)echo "selected";?> ><?=$xml->processquo?></option>
-<option value='2' <?php if($status == 2)echo "selected";?> ><?=$xml->processpo?></option>
-<option value='3' <?php if($status == 3)echo "selected";?> ><?=$xml->processdeli?></option>
-<option value='4' <?php if($status == 4)echo "selected";?> ><?=$xml->processpaid?></option>
-<option value='5' <?php if($status == 5)echo "selected";?> ><?=$xml->success?></option>
-<option value='6' <?php if($status == 6)echo "selected";?> ><?=$xml->processall?></option>
 
-</select><input value="<?=$xml->filter?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form><?php
-//// Security already checked in index.php?>
+<h2><i class="glyphicon glyphicon-pencil"></i> <?=$xml->purchasingrequest?></h2>
+
+<!-- Search and Filter Panel -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
+    </div>
+    <div class="panel-body">
+        <form method="get" action="" class="form-inline">
+            <input type="hidden" name="page" value="pr_list">
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> PR, Description, Customer..." 
+                       value="<?=htmlspecialchars($search)?>" style="width: 220px;">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <select name="status" class="form-control">
+                    <option value='0' <?php if($status == 0)echo "selected";?> ><?=$xml->processpr?></option>
+                    <option value='1' <?php if($status == 1)echo "selected";?> ><?=$xml->processquo?></option>
+                    <option value='2' <?php if($status == 2)echo "selected";?> ><?=$xml->processpo?></option>
+                    <option value='3' <?php if($status == 3)echo "selected";?> ><?=$xml->processdeli?></option>
+                    <option value='4' <?php if($status == 4)echo "selected";?> ><?=$xml->processpaid?></option>
+                    <option value='5' <?php if($status == 5)echo "selected";?> ><?=$xml->success?></option>
+                    <option value='6' <?php if($status == 6)echo "selected";?> ><?=$xml->processall?></option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;"><?=$xml->from ?? 'From'?>:</label>
+                <input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>">
+            </div>
+            
+            <div class="form-group" style="margin-right: 10px;">
+                <label style="margin-right: 5px;"><?=$xml->to ?? 'To'?>:</label>
+                <input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>">
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->filter ?? 'Filter'?></button>
+            <a href="?page=pr_list" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
+        </form>
+    </div>
+</div>
 
 <table width="100%" class="table table-hover">
+	<tr><td colspan="6"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->purchasingrequest?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
 	<tr>
-		<th  width="20%"><?=$xml->customer?></th><th width="40%"><?=$xml->description?></th><th  width="10%"><?=$xml->name?></th><th  width="10%"><?=$xml->date?></th><th  width="10%"><?=$xml->status?></th><th  width="10%"></th></tr>
+		<th width="20%"><?=$xml->customer?></th><th width="40%"><?=$xml->description?></th><th width="10%"><?=$xml->name?></th><th width="10%"><?=$xml->date?></th><th width="10%"><?=$xml->status?></th><th width="10%"></th></tr>
 <?php
-$com_id = intval($_SESSION['com_id']);
-$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ven_id='".$com_id."' ".$condition." order by cancel,id desc");
+$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ven_id='".$com_id."' ".$condition." $search_cond $date_cond order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['name'])."</td><td>".htmlspecialchars($data['date'])."</td>";
@@ -57,9 +114,10 @@ echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td
 		 }
 	?>
  
+ <tr><td colspan="6"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->purchasingrequest?> - <?=$xml->in ?? 'In'?></strong></td></tr>
  <tr><th><?=$xml->vender?></th><th><?=$xml->description?></th><th><?=$xml->name?></th><th><?=$xml->date?></th><th><?=$xml->status?></th><th></th></tr>
 <?php
-$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where cus_id='".$_SESSION['com_id']."' ".$condition." order by cancel,id desc");
+$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where cus_id='".$_SESSION['com_id']."' ".$condition." $search_cond $date_cond order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>".$data['name_en']."</td><td>".$data['des']."</td><td>".$data['name']."</td><td>".$data['date']."</td>";
