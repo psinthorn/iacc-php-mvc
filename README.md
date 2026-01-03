@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.1  
+**Version**: 3.2  
 **Status**: Production Ready  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,30 @@
 ---
 
 ## 📋 Changelog
+
+### v3.2 (January 4, 2026)
+- **Master Data UI Redesign** 🎨:
+  - Completely redesigned CRUD pages for Category, Brand, Product, Model, Company
+  - Modern card-based stats display with icons
+  - Inline create/edit forms with smooth animations
+  - Search with icon and filter dropdowns
+  - Pagination with page info
+  - Empty state illustrations
+  - New `css/master-data.css` stylesheet (480+ lines)
+
+- **Master Data Guide Documentation** 📚:
+  - New `master-data-guide.php` - Interactive documentation page
+  - Industry examples: Travel Agency, Electronics, Retail, Food & Beverage
+  - Visual hierarchy diagrams (Category → Brand → Product → Model)
+  - Step-by-step setup guide for travel agencies
+  - Invoicing workflow explanation
+  - Best practices and FAQ section
+  - Guide button added to all master data pages
+
+- **Icon Positioning Fixes**:
+  - Fixed stat card icons using absolute positioning
+  - Fixed search box icon placement inside form
+  - Fixed action button icon alignment with inline-flex
 
 ### v3.1 (January 4, 2026)
 - **Multi-Tenant Architecture** 🏢:
