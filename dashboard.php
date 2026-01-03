@@ -862,34 +862,39 @@ function get_status_badge($status) {
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-money-bill-wave"></i> Recent Payments
+                    <a href="index.php?page=payment_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
+                                <th>PO #</th>
+                                <th>Description</th>
                                 <th>Date</th>
-                                <th>PO / Description</th>
                                 <th>Amount</th>
                                 <th>Payment Method</th>
-                                <th>Action</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
                                 <?php while($payment = mysqli_fetch_assoc($recent_payments)): ?>
                                 <tr>
+                                    <td><strong>#<?php echo $payment['po_id']; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(mb_substr($payment['name'] ?? '', 0, 25)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($payment['date'])); ?></td>
-                                    <td><strong>#<?php echo $payment['po_id']; ?></strong> <?php echo substr($payment['name'] ?? '', 0, 15); ?></td>
-                                    <td><strong><?php echo format_currency($payment['volumn']); ?></strong></td>
+                                    <td><?php echo format_currency($payment['volumn']); ?></td>
                                     <td><?php echo !empty($payment['value']) ? ucfirst($payment['value']) : 'Direct'; ?></td>
                                     <td>
-                                        <a href="index.php?page=po_view&id=<?php echo $payment['po_id']; ?>" class="action-btn">View</a>
+                                        <a href="index.php?page=po_view&id=<?php echo $payment['po_id']; ?>" class="action-btn" title="View Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="6">
                                         <div class="empty-state">
                                             <i class="fa fa-inbox"></i>
                                             <p>No payments recorded yet</p>
@@ -906,9 +911,10 @@ function get_status_badge($status) {
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-shopping-cart"></i> Active Purchase Orders
+                    <a href="index.php?page=po_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover" style="font-size: 12px;">
                         <thead>
                             <tr>
                                 <th>PO #</th>
@@ -916,22 +922,28 @@ function get_status_badge($status) {
                                 <th>Tax Invoice #</th>
                                 <th>Date</th>
                                 <th>Status</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if($pending_pos && mysqli_num_rows($pending_pos) > 0): ?>
                                 <?php while($po = mysqli_fetch_assoc($pending_pos)): ?>
                                 <tr>
-                                    <td><strong><?php echo $po['po_id_new'] ?? $po['id']; ?></strong></td>
-                                    <td><?php echo htmlspecialchars(substr($po['name'], 0, 25)); ?></td>
+                                    <td><strong>#<?php echo $po['po_id_new'] ?? $po['id']; ?></strong></td>
+                                    <td><?php echo htmlspecialchars(mb_substr($po['name'], 0, 25)); ?></td>
                                     <td><code><?php echo $po['tax'] ?: '-'; ?></code></td>
                                     <td><?php echo date('M d, Y', strtotime($po['date'])); ?></td>
                                     <td><?php echo get_status_badge($po['over']); ?></td>
+                                    <td>
+                                        <a href="index.php?page=po_view&id=<?php echo $po['id']; ?>" class="action-btn" title="View Details">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="6">
                                         <div class="empty-state">
                                             <i class="fa fa-check-circle"></i>
                                             <p>✓ All orders completed</p>
