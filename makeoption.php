@@ -4,7 +4,11 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.database.php"); // New prepared statement helper
+require_once("inc/class.company_filter.php");
 new DbConn($config);
+
+// Company filter for multi-tenant data isolation
+$companyFilter = CompanyFilter::getInstance();
 
 // SECURITY FIX: Sanitize user input
 $type = sql_int($_POST['type'] ?? 0);
@@ -20,6 +24,7 @@ $displayName = "mySpan";
 $actionEvent = "onchange";
 $action = "";
 $order = "";
+$companyCondition = "";
 switch($type)
 {
 case "0":exit(); 
@@ -27,13 +32,15 @@ case "1": $referField = "1";
 				$dataTable = "type";
 				$order = "name";
 				$optionValueField = "id";
-				$optionTextField = "name";			
+				$optionTextField = "name";
+				$companyCondition = $companyFilter->andCompanyFilter('type');
 				break;
 case "2":$referField = "type_id";
 				$dataTable = "brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id";
 				$order = "brand_name";
 				$optionValueField = "id";
 				$optionTextField = "brand_name";
+				$companyCondition = $companyFilter->andCompanyFilter('brand');
 				break;
 case "3":$referField = "city_id";
 				$dataTable = "area";
@@ -51,7 +58,7 @@ default :  $referField = "";
 }
 $listName .= $type;
 $nextType = $type+1;
-$sql = "SELECT * FROM $dataTable where $referField = $refer ORDER BY $order";
+$sql = "SELECT * FROM $dataTable where $referField = $refer $companyCondition ORDER BY $order";
 $result = mysqli_query($db->conn, $sql);
 if($type < 3)
 $action = "$actionEvent=\"JavaScript:loadList('$nextType',this.value)\"";

@@ -4,8 +4,13 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.database.php"); // New prepared statement helper
+require_once("inc/class.company_filter.php");
 $users=new DbConn($config);
 // Security already checked in index.php
+
+// Company filter for multi-tenant data isolation
+$companyFilter = CompanyFilter::getInstance();
+$companyId = $companyFilter->getSafeCompanyId();
 
 $type_id = sql_int($_GET['q']);
 
@@ -13,8 +18,8 @@ $type_id = sql_int($_GET['q']);
 $brands = db_fetch_all(
     "SELECT brand.id, brand_name FROM brand 
      JOIN map_type_to_brand ON brand.id = map_type_to_brand.brand_id 
-     WHERE type_id = ?", 
-    [$type_id]
+     WHERE type_id = ? AND brand.company_id = ?", 
+    [$type_id, $companyId]
 );
 
 $tmp = '<select name="brand" class="form-control">';

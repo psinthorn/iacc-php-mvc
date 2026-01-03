@@ -4,6 +4,8 @@
  * Admin interface for configuring PayPal and Stripe API credentials
  */
 
+require_once("inc/class.company_filter.php");
+
 // Check admin access (level >= 2)
 if (!isset($_SESSION['user_level']) || $_SESSION['user_level'] < 2) {
     echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied. Super Admin privileges required.</div>';
@@ -12,6 +14,10 @@ if (!isset($_SESSION['user_level']) || $_SESSION['user_level'] < 2) {
 
 // Get database connection
 $conn = $db->conn;
+
+// Company filter for multi-tenant data isolation
+$companyFilter = CompanyFilter::getInstance();
+$companyId = $companyFilter->getSafeCompanyId();
 
 // Handle form submission
 $message = '';
@@ -31,22 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $key = sql_escape($key);
                 $value = sql_escape($value);
                 
-                // Check if config exists
-                $checkSql = "SELECT id FROM payment_gateway_config WHERE payment_method_id = $gatewayId AND config_key = '$key'";
+                // Check if config exists for this company
+                $checkSql = "SELECT id FROM payment_gateway_config WHERE payment_method_id = $gatewayId AND config_key = '$key' AND company_id = $companyId";
                 $checkResult = mysqli_query($conn, $checkSql);
                 
                 if (mysqli_num_rows($checkResult) > 0) {
                     // Update existing
                     $updateSql = "UPDATE payment_gateway_config SET config_value = '$value', updated_at = NOW() 
-                                  WHERE payment_method_id = $gatewayId AND config_key = '$key'";
+                                  WHERE payment_method_id = $gatewayId AND config_key = '$key' AND company_id = $companyId";
                     if (!mysqli_query($conn, $updateSql)) {
                         $success = false;
                     }
                 } else {
-                    // Insert new
+                    // Insert new with company_id
                     $isEncrypted = in_array($key, ['client_secret', 'secret_key', 'webhook_secret']) ? 1 : 0;
-                    $insertSql = "INSERT INTO payment_gateway_config (payment_method_id, config_key, config_value, is_encrypted) 
-                                  VALUES ($gatewayId, '$key', '$value', $isEncrypted)";
+                    $insertSql = "INSERT INTO payment_gateway_config (payment_method_id, config_key, config_value, is_encrypted, company_id) 
+                                  VALUES ($gatewayId, '$key', '$value', $isEncrypted, $companyId)";
                     if (!mysqli_query($conn, $insertSql)) {
                         $success = false;
                     }
@@ -67,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gatewayCode = $_POST['gateway_code'] ?? '';
         $gatewayId = intval($_POST['gateway_id'] ?? 0);
         
-        // Get current configs
-        $configResult = mysqli_query($conn, "SELECT config_key, config_value FROM payment_gateway_config WHERE payment_method_id = $gatewayId");
+        // Get current configs for this company
+        $configResult = mysqli_query($conn, "SELECT config_key, config_value FROM payment_gateway_config WHERE payment_method_id = $gatewayId AND company_id = $companyId");
         $testConfigs = [];
         while ($row = mysqli_fetch_assoc($configResult)) {
             $testConfigs[$row['config_key']] = $row['config_value'];
@@ -165,13 +171,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $gateways = [];
 $gatewayConfigs = [];
 
-$sql = "SELECT pm.* FROM payment_method pm WHERE pm.is_gateway = 1 ORDER BY pm.sort_order, pm.name";
+$sql = "SELECT pm.* FROM payment_method pm WHERE pm.is_gateway = 1 AND pm.company_id = $companyId ORDER BY pm.sort_order, pm.name";
 $result = mysqli_query($conn, $sql);
 while ($row = mysqli_fetch_assoc($result)) {
     $gateways[] = $row;
     
     // Get configs for this gateway
-    $configSql = "SELECT config_key, config_value FROM payment_gateway_config WHERE payment_method_id = " . intval($row['id']);
+    $configSql = "SELECT config_key, config_value FROM payment_gateway_config WHERE payment_method_id = " . intval($row['id']) . " AND company_id = $companyId";
     $configResult = mysqli_query($conn, $configSql);
     $configs = [];
     while ($configRow = mysqli_fetch_assoc($configResult)) {

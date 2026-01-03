@@ -3,12 +3,16 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
 $users=new DbConn($config);
 // Security already checked in index.php
 
+// Company filter for multi-tenant data isolation
+$companyFilter = CompanyFilter::getInstance();
+
 // SECURITY FIX: Use sql_int() to sanitize user input (prevents SQL injection)
 $p_id = sql_int($_REQUEST['p_id'] ?? 0);
-$query=mysqli_query($db->conn, "select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$p_id."'");
+$query=mysqli_query($db->conn, "select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$p_id."'" . $companyFilter->andCompanyFilter('model'));
 	 if(mysqli_num_rows($query)>0){
 		 $data=mysqli_fetch_array($query);
 		 
