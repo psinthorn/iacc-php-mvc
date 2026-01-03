@@ -21,10 +21,16 @@ $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Apply date preset if selected (no default - show all data initially)
-if (!empty($date_preset) && $date_preset !== 'all') {
-    $date_range = get_date_range($date_preset);
-    $date_from = $date_range['from'];
-    $date_to = $date_range['to'];
+if (!empty($date_preset)) {
+    if ($date_preset === 'all') {
+        // Clear date filters when 'All' is selected
+        $date_from = '';
+        $date_to = '';
+    } else {
+        $date_range = get_date_range($date_preset);
+        $date_from = $date_range['from'];
+        $date_to = $date_range['to'];
+    }
 }
 
 // Build search condition
@@ -159,19 +165,20 @@ unset($query_params['pg']);
 <table class="table table-hover table-cards">
     <thead>
         <tr>
-            <th><?=$xml->customer?></th>
-            <th><?=$xml->inno?></th>
-            <th class="hidden-xs"><?=$xml->name?></th>
-            <th><?=$xml->duedate?></th>
-            <th class="hidden-xs"><?=$xml->status?></th>
-            <th width="100"></th>
+            <th width="120"><?=$xml->inno?></th>
+            <th width="230"><?=$xml->customer?></th>
+            <th class="hidden-xs" width="230"><?=$xml->description ?? 'Description'?></th>
+            <th width="100"><?=$xml->duedate?></th>
+            <th class="hidden-xs" width="90"><?=$xml->status?></th>
+            <th width="130"></th>
         </tr>
     </thead>
     <tbody>
 <?php
 $query = mysqli_query($db->conn, "SELECT po.id as id, countmailinv, po.name as name, taxrw as tax, status_iv,  
     DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, 
-    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status 
+    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status,
+    iv.payment_status
     FROM po 
     JOIN pr ON po.ref=pr.id 
     JOIN company ON pr.cus_id=company.id 
@@ -197,9 +204,9 @@ while($data = mysqli_fetch_array($query)) {
     }
 ?>
         <tr>
-            <td data-label="<?=$xml->customer?>"><?=e($data['name_en'])?></td>
             <td data-label="<?=$xml->inno?>">INV-<?=e($data['tax'])?></td>
-            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->customer?>"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->description ?? 'Description'?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
             <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
             <td data-label="<?=$xml->status?>" class="hidden-xs">
                 <span class="status-badge <?=$status_class?>"><?=$xml->$statusiv?></span>
@@ -211,6 +218,15 @@ while($data = mysqli_fetch_array($query)) {
                 </a>
                 <?php endif; ?>
                 <a href="inv.php?id=<?=e($data['id'])?>" target="_blank" class="action-btn" title="Invoice">IV</a>
+                <?php if(($data['payment_status'] ?? 'pending') !== 'paid'): ?>
+                <a href="index.php?page=inv_checkout&id=<?=e($data['id'])?>" target="_blank" class="action-btn" title="Payment Link" style="background:#27ae60;color:#fff;">
+                    <i class="fa fa-credit-card"></i>
+                </a>
+                <?php else: ?>
+                <span class="action-btn" style="background:#27ae60;color:#fff;cursor:default;" title="Paid">
+                    <i class="fa fa-check"></i>
+                </span>
+                <?php endif; ?>
                 <a data-toggle="modal" href="model_mail.php?page=inv&id=<?=e($data['id'])?>" data-target=".bs-example-modal-lg" class="action-btn" title="Email">
                     <i class="glyphicon glyphicon-envelope"></i>
                     <?php if($data['countmailinv'] > 0): ?>
@@ -246,19 +262,20 @@ if ($row_count == 0): ?>
 <table class="table table-hover table-cards">
     <thead>
         <tr>
-            <th><?=$xml->vender?></th>
-            <th><?=$xml->inno?></th>
-            <th class="hidden-xs"><?=$xml->name?></th>
-            <th><?=$xml->duedate?></th>
-            <th class="hidden-xs"><?=$xml->status?></th>
-            <th width="80"></th>
+            <th width="120"><?=$xml->inno?></th>
+            <th width="230"><?=$xml->vender?></th>
+            <th class="hidden-xs" width="230"><?=$xml->description ?? 'Description'?></th>
+            <th width="100"><?=$xml->duedate?></th>
+            <th class="hidden-xs" width="90"><?=$xml->status?></th>
+            <th width="130"></th>
         </tr>
     </thead>
     <tbody>
 <?php
 $query = mysqli_query($db->conn, "SELECT po.id as id, po.name as name, taxrw as tax,  
     DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, 
-    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status 
+    DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status,
+    iv.payment_status
     FROM po 
     JOIN pr ON po.ref=pr.id 
     JOIN company ON pr.ven_id=company.id 
@@ -274,9 +291,9 @@ while($data = mysqli_fetch_array($query)) {
     $status_class = ($data['status'] == '5') ? 'completed' : 'pending';
 ?>
         <tr>
-            <td data-label="<?=$xml->vender?>"><?=e($data['name_en'])?></td>
             <td data-label="<?=$xml->inno?>">INV-<?=e($data['tax'])?></td>
-            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->vender?>"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->description ?? 'Description'?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
             <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
             <td data-label="<?=$xml->status?>" class="hidden-xs">
                 <span class="status-badge <?=$status_class?>"><?=$xml->$var?></span>
@@ -288,6 +305,15 @@ while($data = mysqli_fetch_array($query)) {
                 </a>
                 <?php endif; ?>
                 <a href="inv.php?id=<?=e($data['id'])?>" target="_blank" class="action-btn" title="Invoice">IV</a>
+                <?php if(($data['payment_status'] ?? 'pending') !== 'paid'): ?>
+                <a href="index.php?page=inv_checkout&id=<?=e($data['id'])?>" target="_blank" class="action-btn" title="Pay Now" style="background:#27ae60;color:#fff;">
+                    <i class="fa fa-credit-card"></i>
+                </a>
+                <?php else: ?>
+                <span class="action-btn" style="background:#27ae60;color:#fff;cursor:default;" title="Paid">
+                    <i class="fa fa-check"></i>
+                </span>
+                <?php endif; ?>
             </td>
         </tr>
 <?php } 

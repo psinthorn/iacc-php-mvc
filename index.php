@@ -9,6 +9,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+// Set UTF-8 encoding for proper Thai/Unicode support
+header('Content-Type: text/html; charset=utf-8');
+mb_internal_encoding('UTF-8');
+
 session_start();
 
 // Load core files
@@ -103,6 +107,8 @@ $routes = [
     // Voucher
     'voucher_list'  => 'vou-list.php',
     'voc_make'      => 'voc-make.php',
+    'voc_view'      => 'voc-view.php',
+    'vou_print'     => 'vou-print.php',
     
     // Delivery
     'deliv_list'    => 'deliv-list.php',
@@ -123,9 +129,23 @@ $routes = [
     'report'            => 'report.php',
     'receipt_list'      => 'rep-list.php',
     'rep_make'          => 'rep-make.php',
+    'rep_view'          => 'rep-view.php',
+    'rep_print'         => 'rep-print.php',
     
     // Admin Tools
-    'audit_log'         => 'audit-log.php',
+    'audit_log'             => 'audit-log.php',
+    'payment_method_list'   => 'payment-method-list.php',
+    'payment_method'        => 'payment-method.php',
+    
+    // Payment Gateway
+    'payment_gateway_config' => 'payment-gateway-config.php',
+    'payment_gateway_test'   => 'payment-gateway-test.php',
+    'payment_webhook'        => 'payment-webhook.php',
+    
+    // Invoice Payment
+    'inv_checkout'           => 'inv-checkout.php',
+    'inv_payment_success'    => 'inv-payment-success.php',
+    'inv_payment_cancel'     => 'inv-payment-cancel.php',
 ];
 
 // Get requested page (sanitized)

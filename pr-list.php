@@ -82,12 +82,12 @@
 <table width="100%" class="table table-hover">
 	<tr><td colspan="6"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->purchasingrequest?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
 	<tr>
-		<th width="20%"><?=$xml->customer?></th><th width="40%"><?=$xml->description?></th><th width="10%"><?=$xml->name?></th><th width="10%"><?=$xml->date?></th><th width="10%"><?=$xml->status?></th><th width="10%"></th></tr>
+		<th width="120"><?=$xml->prno ?? 'PR#'?></th><th width="230"><?=$xml->customer?></th><th width="230"><?=$xml->description?></th><th width="100"><?=$xml->date?></th><th width="90"><?=$xml->status?></th><th width="130"></th></tr>
 <?php
 $query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ven_id='".$com_id."' ".$condition." $search_cond $date_cond order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
-echo "<tr><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['name'])."</td><td>".htmlspecialchars($data['date'])."</td>";
+echo "<tr><td>PR-".str_pad($data['id'], 6, "0", STR_PAD_LEFT)."</td><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['date'])."</td>";
 $var=decodenum($data['status']);
 if($data['cancel']=="1"){
 echo "<td><font color='red'>".$xml->$var."</font></td><td><a href='index.php?page=po_make&id=".$data['id']."'><i class=\"glyphicon glyphicon-pencil\"></i></a>";}
@@ -115,12 +115,12 @@ echo "<tr><td>Send out</td><td>".$data['tmp']."</td><td>".$data['name_sh']."</td
 	?>
  
  <tr><td colspan="6"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->purchasingrequest?> - <?=$xml->in ?? 'In'?></strong></td></tr>
- <tr><th><?=$xml->vender?></th><th><?=$xml->description?></th><th><?=$xml->name?></th><th><?=$xml->date?></th><th><?=$xml->status?></th><th></th></tr>
+ <tr><th width="120"><?=$xml->prno ?? 'PR#'?></th><th width="230"><?=$xml->vender?></th><th width="230"><?=$xml->description?></th><th width="100"><?=$xml->date?></th><th width="90"><?=$xml->status?></th><th width="130"></th></tr>
 <?php
 $query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where cus_id='".$_SESSION['com_id']."' ".$condition." $search_cond $date_cond order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
-echo "<tr><td>".$data['name_en']."</td><td>".$data['des']."</td><td>".$data['name']."</td><td>".$data['date']."</td>";
+echo "<tr><td>PR-".str_pad($data['id'], 6, "0", STR_PAD_LEFT)."</td><td>".$data['name_en']."</td><td>".$data['des']."</td><td>".$data['date']."</td>";
 
 $val=decodenum($data['status']);
 if($data['cancel']=="1"){

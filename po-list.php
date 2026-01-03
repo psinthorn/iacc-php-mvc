@@ -20,10 +20,16 @@ $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 
 // Apply date preset if selected (no default - show all data initially)
-if (!empty($date_preset) && $date_preset !== 'all') {
-    $date_range = get_date_range($date_preset);
-    $date_from = $date_range['from'];
-    $date_to = $date_range['to'];
+if (!empty($date_preset)) {
+    if ($date_preset === 'all') {
+        // Clear date filters when 'All' is selected
+        $date_from = '';
+        $date_to = '';
+    } else {
+        $date_range = get_date_range($date_preset);
+        $date_from = $date_range['from'];
+        $date_to = $date_range['to'];
+    }
 }
 
 // Build search condition
@@ -147,12 +153,12 @@ unset($query_params['pg']);
 <table class="table table-hover table-cards">
     <thead>
         <tr>
-            <th><?=$xml->customer?></th>
-            <th><?=$xml->pono?></th>
-            <th class="hidden-xs"><?=$xml->name?></th>
-            <th><?=$xml->duedate?></th>
-            <th class="hidden-xs"><?=$xml->status?></th>
-            <th width="100"></th>
+            <th width="120"><?=$xml->pono?></th>
+            <th width="230"><?=$xml->customer?></th>
+            <th class="hidden-xs" width="230"><?=$xml->description ?? 'Description'?></th>
+            <th width="100"><?=$xml->duedate?></th>
+            <th class="hidden-xs" width="90"><?=$xml->status?></th>
+            <th width="130"></th>
         </tr>
     </thead>
     <tbody>
@@ -179,9 +185,9 @@ while($data = mysqli_fetch_array($query)) {
     $status_class = $is_cancelled ? 'cancelled' : 'pending';
 ?>
         <tr>
-            <td data-label="<?=$xml->customer?>"><?=e($data['name'])?></td>
             <td data-label="<?=$xml->pono?>">PO-<?=e($data['tax'])?></td>
-            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->customer?>"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->description ?? 'Description'?>" class="hidden-xs text-truncate"><?=e($data['name_en'])?></td>
             <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
             <td data-label="<?=$xml->status?>" class="hidden-xs">
                 <span class="status-badge <?=$status_class?>">
@@ -227,12 +233,12 @@ if ($row_count == 0): ?>
 <table class="table table-hover table-cards">
     <thead>
         <tr>
-            <th><?=$xml->vender?></th>
-            <th><?=$xml->pono?></th>
-            <th class="hidden-xs"><?=$xml->name?></th>
-            <th><?=$xml->duedate?></th>
-            <th class="hidden-xs"><?=$xml->status?></th>
-            <th width="100"></th>
+            <th width="120"><?=$xml->pono?></th>
+            <th width="230"><?=$xml->vender?></th>
+            <th class="hidden-xs" width="230"><?=$xml->description ?? 'Description'?></th>
+            <th width="100"><?=$xml->duedate?></th>
+            <th class="hidden-xs" width="90"><?=$xml->status?></th>
+            <th width="130"></th>
         </tr>
     </thead>
     <tbody>
@@ -256,9 +262,9 @@ while($data = mysqli_fetch_array($query)) {
     $status_class = $is_cancelled ? 'cancelled' : 'pending';
 ?>
         <tr>
-            <td data-label="<?=$xml->vender?>"><?=e($data['name_en'])?></td>
             <td data-label="<?=$xml->pono?>">PO-<?=e($data['tax'])?></td>
-            <td data-label="<?=$xml->name?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
+            <td data-label="<?=$xml->vender?>"><?=e($data['name_en'])?></td>
+            <td data-label="<?=$xml->description ?? 'Description'?>" class="hidden-xs text-truncate"><?=e($data['name'])?></td>
             <td data-label="<?=$xml->duedate?>"><?=e($data['valid_pay'])?></td>
             <td data-label="<?=$xml->status?>" class="hidden-xs">
                 <span class="status-badge <?=$status_class?>">

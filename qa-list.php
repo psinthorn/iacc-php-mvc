@@ -60,7 +60,7 @@ if (!empty($date_to)) {
 <thead>
 
 <tr><td colspan="6"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->quotation?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
-<tr><th width="30%"><?=$xml->customer?></th><th width="15%"><?=$xml->quono?></th><th width="15%"><?=$xml->price?></th><th width="13%"><?=$xml->duedate?></th><th width="27%" colspan="2"><?=$xml->status?></th></tr></thead>
+<tr><th width="120"><?=$xml->quono?></th><th width="230"><?=$xml->customer?></th><th width="150"><?=$xml->price?></th><th width="100"><?=$xml->duedate?></th><th width="90"><?=$xml->status?></th><th width="130"></th></tr></thead>
 <tbody>
 <?php
 $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id  desc ");
@@ -87,7 +87,7 @@ $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as t
  	$total=$stotal+$vat;
 	 
 	 
-echo "<tr><td>".$data['name_en']."</td><td>QUO-".$data['tax']."</td><td>".number_format($stotal,2)." / ".number_format($total,2)."</td><td>".$data['valid_pay']."</td>";
+echo "<tr><td>QUO-".$data['tax']."</td><td>".$data['name_en']."</td><td>".number_format($stotal,2)." / ".number_format($total,2)."</td><td>".$data['valid_pay']."</td>";
 
 
 $var=decodenum($data['status']);
@@ -101,9 +101,9 @@ echo "<td><font color='red'>".$xml->$var."</font></td><td><a href='index.php?pag
 	}?>
  
  <tr>
-   <td colspan="6"><?=$xml->quotation?> - <?=$xml->in?></td></tr>
+   <td colspan="6"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->quotation?> - <?=$xml->in?></strong></td></tr>
  
-<tr><th><?=$xml->vender?></th><th><?=$xml->quono?></th><th><?=$xml->price?></th><th><?=$xml->duedate?></th><th width="30%" colspan="2"><?=$xml->status?></th></tr>
+<tr><th width="120"><?=$xml->quono?></th><th width="230"><?=$xml->vender?></th><th width="150"><?=$xml->price?></th><th width="100"><?=$xml->duedate?></th><th width="90"><?=$xml->status?></th><th width="130"></th></tr>
 <?php
 $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$_SESSION['com_id']."' and status='1'  order by cancel,po.id desc ");
  while($data=mysqli_fetch_array($query)){
@@ -127,7 +127,7 @@ $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as t
 		$vat=$stotal*$data['vat']/100;
 		$total=$stotal+$vat;
 		
-		echo "<tr><td>".$data['name_en']."</td><td>QUO-".$data['tax']."</td><td>".number_format($stotal,2)." / ".number_format($total,2)."</td><td>".$data['valid_pay']."</td>";
+		echo "<tr><td>QUO-".$data['tax']."</td><td>".$data['name_en']."</td><td>".number_format($stotal,2)." / ".number_format($total,2)."</td><td>".$data['valid_pay']."</td>";
 
 
 

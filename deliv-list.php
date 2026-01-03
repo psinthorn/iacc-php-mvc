@@ -63,14 +63,14 @@ if (!empty($date_to)) {
 <table width="100%" class="table table-hover">
 
 <tr><td colspan="7"><strong><i class="fa fa-arrow-up text-success"></i> <?=$xml->deliverynote?> - <?=$xml->out ?? 'Out'?></strong></td></tr>
-<tr><th><?=$xml->customer?></th><th><?=$xml->dnno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th><?=$xml->status?></th><th></th></tr>
+<tr><th width="120"><?=$xml->dnno?></th><th width="200"><?=$xml->customer?></th><th width="200"><?=$xml->description ?? 'Description'?></th><th width="100"><?=$xml->duedate?></th><th width="100"><?=$xml->deliverydate?></th><th width="90"><?=$xml->status?></th><th width="130"></th></tr>
 <?php
 $query=mysqli_query($db->conn, "select deliver.id as id2,po.id as id, po.name as name,  DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id join deliver on po.id=deliver.po_id  where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='3' $search_cond $date_cond order by deliver.id desc ");
 
  while($data=mysqli_fetch_array($query)){
 
 	 $var=decodenum($data[status]);
-echo "<tr><td>".$data[name_en]."</td><td>DN-".str_pad($data[id2], 8, "0", STR_PAD_LEFT)."</td><td>".$data[name]."</td><td>".$data[valid_pay]."</td><td>".$data[deliver_date]."</td><td>".$xml->$var."</td><td><a href='index.php?page=deliv_view&id=".$data[id2]."'><i class=\"fa fa-search-plus\"></i></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id2]."' target='blank'>DN</a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' title='Cancel' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td>
+echo "<tr><td>DN-".str_pad($data[id2], 8, "0", STR_PAD_LEFT)."</td><td>".$data[name_en]."</td><td>".$data[name]."</td><td>".$data[valid_pay]."</td><td>".$data[deliver_date]."</td><td>".$xml->$var."</td><td><a href='index.php?page=deliv_view&id=".$data[id2]."'><i class=\"fa fa-search-plus\"></i></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id2]."' target='blank'>DN</a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' title='Cancel' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td>
 </tr>";
 	
 	}?>
@@ -86,19 +86,19 @@ $query=mysqli_query($db->conn, "select sendoutitem.id as id2,deliver.id as id,se
  while($data=mysqli_fetch_array($query)){
 
 	 
-echo "<tr><td>".$data[name_en]."</td><td>DN-".str_pad($data[id], 8, "0", STR_PAD_LEFT)."(make)</td><td>".$data[des]."</td><td></td><td>".$data[deliver_date]."</td><td>".$xml->processdeli."</td><td><a href='index.php?page=deliv_view&id=".$data[id]."&modep=ad'><i class=\"fa fa-search-plus\"></i></a>&nbsp;&nbsp;&nbsp;<a href='index.php?page=deliv_edit&id=".$data[id]."&modep=ad'><span class='glyphicon glyphicon-edit'></span></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id]."&modep=ad' target='blank'>DN</a></td>
+echo "<tr><td>DN-".str_pad($data[id], 8, "0", STR_PAD_LEFT)."(make)</td><td>".$data[name_en]."</td><td>".$data[des]."</td><td></td><td>".$data[deliver_date]."</td><td>".$xml->processdeli."</td><td><a href='index.php?page=deliv_view&id=".$data[id]."&modep=ad'><i class=\"fa fa-search-plus\"></i></a>&nbsp;&nbsp;&nbsp;<a href='index.php?page=deliv_edit&id=".$data[id]."&modep=ad'><span class='glyphicon glyphicon-edit'></span></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id]."&modep=ad' target='blank'>DN</a></td>
 </tr>";
 	
 	}?>
  
 <tr><td colspan="7"><strong><i class="fa fa-arrow-down text-primary"></i> <?=$xml->deliverynote?> - <?=$xml->in ?? 'In'?></strong></td></tr>
-<tr><th><?=$xml->vender?></th><th><?=$xml->dnno?></th><th><?=$xml->name?></th><th><?=$xml->duedate?></th><th><?=$xml->deliverydate?></th><th><?=$xml->status?></th><th></th></tr>
+<tr><th width="120"><?=$xml->dnno?></th><th width="200"><?=$xml->vender?></th><th width="200"><?=$xml->description ?? 'Description'?></th><th width="100"><?=$xml->duedate?></th><th width="100"><?=$xml->deliverydate?></th><th width="90"><?=$xml->status?></th><th width="130"></th></tr>
 <?php
 $query=mysqli_query($db->conn, "select deliver.id as id2,po.id as id, po.name as name, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id join deliver on po.id=deliver.po_id where po_id_new='' and pr.cus_id='".$_SESSION['com_id']."' and status='3' $search_cond $date_cond order by deliver.id desc");
 
 $var=decodenum($data[status]);
  while($data=mysqli_fetch_array($query)){
-echo "<tr><td>".$data[name_en]."</td><td>DN-".str_pad($data[id2], 8, "0", STR_PAD_LEFT)."</td><td>".$data[name]."</td><td>".$data[valid_pay]."</td><td>".$data[deliver_date]."</td><td>".$xml->$var."</td><td><a href='index.php?page=deliv_view&id=".$data[id2]."'><i class=\"fa fa-dropbox\"></i></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id2]."' target='blank'>R</a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' title='Cancel' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td>
+echo "<tr><td>DN-".str_pad($data[id2], 8, "0", STR_PAD_LEFT)."</td><td>".$data[name_en]."</td><td>".$data[name]."</td><td>".$data[valid_pay]."</td><td>".$data[deliver_date]."</td><td>".$xml->$var."</td><td><a href='index.php?page=deliv_view&id=".$data[id2]."'><i class=\"fa fa-dropbox\"></i></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id2]."' target='blank'>R</a>&nbsp;&nbsp;&nbsp;<a onClick='return Conf(this)' title='Cancel' href=\"#\"><span class=\"glyphicon glyphicon-trash\"></span></a></td>
 </tr>";	
 	
 	}?>
@@ -107,7 +107,7 @@ $query=mysqli_query($db->conn, "select sendoutitem.id as id2,deliver.id as id,se
 
  while($data=mysqli_fetch_array($query)){
 
-	echo "<tr><td>".$data[name_en]."</td><td>DN-".str_pad($data[id], 7, "0", STR_PAD_LEFT)."(make)</td><td>".$data[des]."</td><td></td><td>".$data[deliver_date]."</td><td>".$xml->processdeli."</td><td><a href='index.php?page=deliv_view&id=".$data[id]."&modep=ad'><i class=\"fa fa-dropbox\"></i></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id]."&modep=ad' target='blank'>DN</a></td>
+	echo "<tr><td>DN-".str_pad($data[id], 7, "0", STR_PAD_LEFT)."(make)</td><td>".$data[name_en]."</td><td>".$data[des]."</td><td></td><td>".$data[deliver_date]."</td><td>".$xml->processdeli."</td><td><a href='index.php?page=deliv_view&id=".$data[id]."&modep=ad'><i class=\"fa fa-dropbox\"></i></a>&nbsp;&nbsp;&nbsp;<a href='rec.php?id=".$data[id]."&modep=ad' target='blank'>DN</a></td>
 </tr>";
 	
 	

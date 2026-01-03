@@ -197,14 +197,30 @@ if ($company_filter !== '') {
     $company_cond = " AND a.company_id = " . intval($company_filter);
 }
 
-// Fetch all users with company info
+// Fetch all users with company info - grouped by role
 $sql = "SELECT a.id, a.email, a.level, a.company_id, a.lang, a.password_migrated, a.locked_until, a.failed_attempts, 
         c.name_en as company_name 
         FROM authorize a 
         LEFT JOIN company c ON a.company_id = c.id 
         WHERE 1=1 $search_cond $role_cond $company_cond
-        ORDER BY a.id ASC";
+        ORDER BY a.level DESC, a.id ASC";
 $result = $db->conn->query($sql);
+
+// Group users by role
+$usersByRole = [
+    2 => ['label' => 'Super Admins', 'class' => 'danger', 'icon' => 'fa-shield', 'users' => [], 'desc' => 'Full system access and configuration'],
+    1 => ['label' => 'Admins', 'class' => 'info', 'icon' => 'fa-user-secret', 'users' => [], 'desc' => 'Can access all companies'],
+    0 => ['label' => 'Users', 'class' => 'default', 'icon' => 'fa-user', 'users' => [], 'desc' => 'Locked to assigned company']
+];
+
+while ($row = $result->fetch_assoc()) {
+    $level = intval($row['level']);
+    if (isset($usersByRole[$level])) {
+        $usersByRole[$level]['users'][] = $row;
+    } else {
+        $usersByRole[0]['users'][] = $row;
+    }
+}
 
 // Fetch all companies for dropdown
 $companiesResult = $db->conn->query("SELECT id, name_en FROM company ORDER BY name_en ASC");
@@ -281,125 +297,238 @@ $roles = [
 </div>
 
 <!-- Users Table -->
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Company</th>
-                <th>Password</th>
-                <th>Status</th>
-                <th width="200">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($user = $result->fetch_assoc()): 
-                $isLocked = $user['locked_until'] && strtotime($user['locked_until']) > time();
-                $isSelf = intval($user['id']) === intval($_SESSION['user_id']);
-            ?>
-            <tr <?= $isSelf ? 'class="info"' : '' ?>>
-                <td><?= e($user['id']) ?></td>
-                <td>
-                    <?= e($user['email']) ?>
-                    <?php if ($isSelf): ?>
-                        <span class="label label-primary">You</span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if (!$isSelf): ?>
-                    <form method="post" style="display: inline;">
-                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                        <input type="hidden" name="action" value="update_level">
-                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                        <select name="level" class="form-control input-sm" style="width: auto; display: inline;" onchange="this.form.submit()">
-                            <option value="0" <?= $user['level'] == 0 ? 'selected' : '' ?>>User</option>
-                            <option value="1" <?= $user['level'] == 1 ? 'selected' : '' ?>>Admin</option>
-                            <option value="2" <?= $user['level'] == 2 ? 'selected' : '' ?>>Super Admin</option>
-                        </select>
-                    </form>
-                    <?php else: 
-                        $role = isset($roles[$user['level']]) ? $roles[$user['level']] : $roles[0];
-                    ?>
-                        <span class="label label-<?= $role['class'] ?>"><?= $role['label'] ?></span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if ($user['level'] == 0): // Only show company for normal users ?>
-                        <?php if (!$isSelf): ?>
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                            <input type="hidden" name="action" value="update_company">
-                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                            <select name="company_id" class="form-control input-sm" style="width: 150px; display: inline;" onchange="this.form.submit()">
-                                <option value="">-- Select --</option>
-                                <?php foreach ($companies as $company): ?>
-                                <option value="<?= $company['id'] ?>" <?= $user['company_id'] == $company['id'] ? 'selected' : '' ?>>
-                                    <?= e($company['name_en']) ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </form>
-                        <?php else: ?>
-                            <?= e($user['company_name'] ?? '-') ?>
+<style>
+.role-section {
+    margin-bottom: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.role-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.role-header.super-admin {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    color: white;
+}
+
+.role-header.admin {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    color: white;
+}
+
+.role-header.user {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+}
+
+.role-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.role-title i {
+    font-size: 22px;
+}
+
+.role-title h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.role-title .role-desc {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.role-count {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.role-body {
+    padding: 0;
+}
+
+.role-body .table {
+    margin: 0;
+}
+
+.role-body .table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    border-top: none;
+}
+
+.empty-role {
+    padding: 30px;
+    text-align: center;
+    color: #7f8c8d;
+}
+
+.empty-role i {
+    font-size: 40px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+</style>
+
+<?php foreach ($usersByRole as $level => $roleData): 
+    $roleClass = ($level == 2) ? 'super-admin' : (($level == 1) ? 'admin' : 'user');
+    $userCount = count($roleData['users']);
+    
+    // Skip empty role sections if filtering
+    if ($role_filter !== '' && intval($role_filter) !== $level) continue;
+?>
+<div class="role-section">
+    <div class="role-header <?= $roleClass ?>">
+        <div class="role-title">
+            <i class="fa <?= $roleData['icon'] ?>"></i>
+            <div>
+                <h4><?= $roleData['label'] ?></h4>
+                <div class="role-desc"><?= $roleData['desc'] ?></div>
+            </div>
+        </div>
+        <span class="role-count"><?= $userCount ?> <?= $userCount == 1 ? 'user' : 'users' ?></span>
+    </div>
+    
+    <div class="role-body">
+        <?php if ($userCount > 0): ?>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="60">ID</th>
+                        <th>Email</th>
+                        <?php if ($level == 0): ?>
+                        <th>Company</th>
                         <?php endif; ?>
-                    <?php else: ?>
-                        <span class="text-muted">All Companies</span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if ($user['password_migrated']): ?>
-                        <span class="label label-success" title="Using bcrypt">Secure</span>
-                    <?php else: ?>
-                        <span class="label label-warning" title="Using legacy MD5 - will migrate on next login">Legacy</span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if ($isLocked): ?>
-                        <span class="label label-danger">Locked</span>
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                            <input type="hidden" name="action" value="unlock">
-                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                            <button type="submit" class="btn btn-xs btn-warning" title="Unlock account">
-                                <i class="fa fa-unlock"></i>
+                        <th width="100">Password</th>
+                        <th width="100">Status</th>
+                        <th width="250">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($roleData['users'] as $user): 
+                        $isLocked = $user['locked_until'] && strtotime($user['locked_until']) > time();
+                        $isSelf = intval($user['id']) === intval($_SESSION['user_id']);
+                    ?>
+                    <tr <?= $isSelf ? 'style="background: #fffde7;"' : '' ?>>
+                        <td><?= e($user['id']) ?></td>
+                        <td>
+                            <?= e($user['email']) ?>
+                            <?php if ($isSelf): ?>
+                                <span class="label label-primary">You</span>
+                            <?php endif; ?>
+                        </td>
+                        <?php if ($level == 0): ?>
+                        <td>
+                            <?php if (!$isSelf): ?>
+                            <form method="post" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <input type="hidden" name="action" value="update_company">
+                                <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                <select name="company_id" class="form-control input-sm" style="width: 150px; display: inline;" onchange="this.form.submit()">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($companies as $company): ?>
+                                    <option value="<?= $company['id'] ?>" <?= $user['company_id'] == $company['id'] ? 'selected' : '' ?>>
+                                        <?= e($company['name_en']) ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </form>
+                            <?php else: ?>
+                                <?= e($user['company_name'] ?? '-') ?>
+                            <?php endif; ?>
+                        </td>
+                        <?php endif; ?>
+                        <td>
+                            <?php if ($user['password_migrated']): ?>
+                                <span class="label label-success" title="Using bcrypt">Secure</span>
+                            <?php else: ?>
+                                <span class="label label-warning" title="Using legacy MD5 - will migrate on next login">Legacy</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($isLocked): ?>
+                                <span class="label label-danger">Locked</span>
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                    <input type="hidden" name="action" value="unlock">
+                                    <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                    <button type="submit" class="btn btn-xs btn-warning" title="Unlock account">
+                                        <i class="fa fa-unlock"></i>
+                                    </button>
+                                </form>
+                            <?php elseif ($user['failed_attempts'] > 0): ?>
+                                <span class="label label-warning"><?= $user['failed_attempts'] ?> failed</span>
+                            <?php else: ?>
+                                <span class="label label-success">Active</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (!$isSelf): ?>
+                            <!-- Change Role -->
+                            <form method="post" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <input type="hidden" name="action" value="update_level">
+                                <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                <select name="level" class="form-control input-sm" style="width: 100px; display: inline;" onchange="this.form.submit()" title="Change role">
+                                    <option value="0" <?= $user['level'] == 0 ? 'selected' : '' ?>>User</option>
+                                    <option value="1" <?= $user['level'] == 1 ? 'selected' : '' ?>>Admin</option>
+                                    <option value="2" <?= $user['level'] == 2 ? 'selected' : '' ?>>Super Admin</option>
+                                </select>
+                            </form>
+                            
+                            <!-- Reset Password -->
+                            <button type="button" class="btn btn-xs btn-info" data-toggle="modal" 
+                                    data-target="#resetPasswordModal" 
+                                    data-userid="<?= $user['id'] ?>" 
+                                    data-email="<?= e($user['email']) ?>" title="Reset Password">
+                                <i class="fa fa-key"></i>
                             </button>
-                        </form>
-                    <?php elseif ($user['failed_attempts'] > 0): ?>
-                        <span class="label label-warning"><?= $user['failed_attempts'] ?> failed</span>
-                    <?php else: ?>
-                        <span class="label label-success">Active</span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if (!$isSelf): ?>
-                    <!-- Reset Password -->
-                    <button type="button" class="btn btn-xs btn-info" data-toggle="modal" 
-                            data-target="#resetPasswordModal" 
-                            data-userid="<?= $user['id'] ?>" 
-                            data-email="<?= e($user['email']) ?>">
-                        <i class="fa fa-key"></i> Reset
-                    </button>
-                    
-                    <!-- Delete -->
-                    <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                        <button type="submit" class="btn btn-xs btn-danger">
-                            <i class="fa fa-trash"></i> Delete
-                        </button>
-                    </form>
-                    <?php else: ?>
-                        <span class="text-muted">-</span>
-                    <?php endif; ?>
-                </td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+                            
+                            <!-- Delete -->
+                            <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                <button type="submit" class="btn btn-xs btn-danger" title="Delete User">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </form>
+                            <?php else: ?>
+                                <span class="text-muted">-</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php else: ?>
+        <div class="empty-role">
+            <i class="fa <?= $roleData['icon'] ?>"></i>
+            <p>No <?= strtolower($roleData['label']) ?> found</p>
+        </div>
+        <?php endif; ?>
+    </div>
 </div>
+<?php endforeach; ?>
 
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog">

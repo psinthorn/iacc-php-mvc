@@ -12,7 +12,9 @@
     <?php else: ?>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <?php endif; ?>
-    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+    
+    <!-- Font Awesome 4.7.0 - Use CDN for complete icon set -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
     <!-- Mobile-First Responsive Styles -->
     <link href="css/mobile-first.css" rel="stylesheet">

@@ -1,163 +1,399 @@
 <?php
+/**
+ * Receipt PDF Generator
+ * Professional design matching Invoice template
+ */
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
-$users=new DbConn($config);
-// Security already checked in index.php
-	$filename="";
+require_once("inc/payment-method-helper.php");
+
+$db = new DbConn($config);
+$db->checkSecurity();
 
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 
- $query=mysqli_query($db->conn, "select * from receipt where id='".$id."' and vender='".$com_id."'");
-if(mysqli_num_rows($query)=="1"){
-	$data=mysqli_fetch_array($query);
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$com_id."' and valid_end='0000-00-00'"));
-		$filename=$data['rep_rw'];
-	
-	if($data[brandven]==0){$logo=$vender[logo];}else{
-		$bandlogo=mysqli_fetch_array(mysqli_query($db->conn, "select logo from brand where id='".$data[brandven]."'"));
-		$logo=$bandlogo[logo];
-		
-		}
+$query = mysqli_query($db->conn, "SELECT * FROM receipt WHERE id='".$id."' AND vender='".$com_id."'");
+
+if (mysqli_num_rows($query) != 1) {
+    die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Receipt Not Found</h2><p>The requested receipt does not exist or you do not have permission to view it.</p></div>');
+}
+
+$data = mysqli_fetch_array($query);
+$filename = $data['rep_rw'];
+
+// Fetch vendor info
+$vender = mysqli_fetch_array(mysqli_query($db->conn, "
+    SELECT name_en, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email, logo, term 
+    FROM company 
+    JOIN company_addr ON company.id = company_addr.com_id 
+    WHERE company.id = '".$com_id."' AND valid_end = '0000-00-00'
+"));
+
+// Get logo
+if ($data['brand'] == 0) {
+    $logo = $vender['logo'] ?? '';
+} else {
+    $bandlogo = mysqli_fetch_array(mysqli_query($db->conn, "SELECT logo FROM brand WHERE id = '".$data['brand']."'"));
+    $logo = $bandlogo['logo'] ?? '';
+}
+
+// Check if receipt is linked to an invoice
+$linked_invoice = null;
+$invoice_products = [];
+$use_invoice_data = false;
+$customer = null;
+
+if (!empty($data['invoice_id'])) {
+    $inv_query = mysqli_query($db->conn, "
+        SELECT po.id, iv.taxrw as inv_no, DATE_FORMAT(iv.createdate, '%d/%m/%Y') as inv_date, 
+               po.vat as inv_vat, po.dis as inv_dis, po.over as inv_over,
+               company.name_en as cust_name, company.phone as cust_phone, 
+               company.email as cust_email, company_addr.adr_tax, company_addr.city_tax,
+               company_addr.district_tax, company_addr.province_tax, company_addr.zip_tax, 
+               company.tax as cust_tax, company.fax as cust_fax
+        FROM po
+        JOIN pr ON po.ref = pr.id
+        JOIN company ON pr.cus_id = company.id
+        LEFT JOIN company_addr ON company.id = company_addr.com_id AND company_addr.valid_end = '0000-00-00'
+        JOIN iv ON po.id = iv.tex
+        WHERE po.id = '".$data['invoice_id']."' AND pr.ven_id = '".$com_id."'
+    ");
+    
+    if (mysqli_num_rows($inv_query) > 0) {
+        $linked_invoice = mysqli_fetch_array($inv_query);
+        $use_invoice_data = true;
+        
+        // Get invoice products
+        $inv_prod_query = mysqli_query($db->conn, "
+            SELECT type.name as name, model.model_name as model, product.quantity, product.price, product.des
+            FROM product
+            JOIN type ON product.type = type.id
+            LEFT JOIN model ON product.model = model.id
+            WHERE product.po_id = '".$data['invoice_id']."'
+        ");
+        while ($inv_prod = mysqli_fetch_array($inv_prod_query)) {
+            $invoice_products[] = $inv_prod;
+        }
+        
+        $customer = [
+            'name' => $linked_invoice['cust_name'],
+            'phone' => $linked_invoice['cust_phone'],
+            'email' => $linked_invoice['cust_email'],
+            'fax' => $linked_invoice['cust_fax'],
+            'adr_tax' => $linked_invoice['adr_tax'],
+            'city_tax' => $linked_invoice['city_tax'],
+            'district_tax' => $linked_invoice['district_tax'],
+            'province_tax' => $linked_invoice['province_tax'],
+            'zip_tax' => $linked_invoice['zip_tax'],
+            'tax' => $linked_invoice['cust_tax']
+        ];
+    }
+}
+
+// If no linked invoice, use receipt data
+if (!$customer) {
+    $customer = [
+        'name' => $data['name'],
+        'phone' => $data['phone'],
+        'email' => $data['email'],
+        'fax' => '',
+        'adr_tax' => '',
+        'city_tax' => '',
+        'district_tax' => '',
+        'province_tax' => '',
+        'zip_tax' => '',
+        'tax' => ''
+    ];
+}
+
+// Payment method - get display name from database
+$payment_display = getPaymentMethodDisplayName($db->conn, $data['payment_method'], 'en');
+
+// Status labels
+$status_labels = [
+    'draft' => 'Draft',
+    'confirmed' => 'Confirmed',
+    'cancelled' => 'Cancelled'
+];
+$status_display = $status_labels[$data['status']] ?? 'Confirmed';
+
+// Build products array and calculate totals
+$products = [];
+$summary = 0;
+
+if ($use_invoice_data && count($invoice_products) > 0) {
+    foreach ($invoice_products as $prod) {
+        $total = floatval($prod['price']) * floatval($prod['quantity']);
+        $summary += $total;
+        $products[] = [
+            'model' => $prod['model'] ?? '',
+            'name' => $prod['name'],
+            'quantity' => $prod['quantity'],
+            'price' => $prod['price'],
+            'total' => $total,
+            'des' => $prod['des']
+        ];
+    }
+    $dis = $linked_invoice['inv_dis'];
+    $vat_rate = $linked_invoice['inv_vat'];
+    $over = $linked_invoice['inv_over'];
+} else {
+    // Use receipt's own products
+    $que_pro = mysqli_query($db->conn, "
+        SELECT type.name as name, model.model_name as model, quantity, product.price as price, product.des as des 
+        FROM product 
+        JOIN type ON product.type = type.id 
+        LEFT JOIN model ON product.model = model.id
+        WHERE re_id='".$id."' AND po_id='0' AND so_id='0'
+    ");
+    while ($prod = mysqli_fetch_array($que_pro)) {
+        $total = floatval($prod['price']) * floatval($prod['quantity']);
+        $summary += $total;
+        $products[] = [
+            'model' => $prod['model'] ?? '',
+            'name' => $prod['name'],
+            'quantity' => $prod['quantity'],
+            'price' => $prod['price'],
+            'total' => $total,
+            'des' => $prod['des']
+        ];
+    }
+    $dis = $data['dis'] ?? 0;
+    $vat_rate = $data['vat'] ?? 7;
+    $over = $data['over'] ?? 0;
+}
+
+// Calculate totals
+$disco = $summary * $dis / 100;
+$stotal = $summary - $disco;
+
+$overh = 0;
+if ($over > 0) {
+    $overh = $stotal * $over / 100;
+    $stotal = $stotal + $overh;
+}
+
+$vat = $stotal * $vat_rate / 100;
+$grandTotal = round($stotal, 2) + round($vat, 2);
+
+// Professional Receipt Template matching Invoice design
 $html = '
-<div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
-<small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
+<style>
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #333; }
+    
+    /* Header */
+    .header { text-align: center; margin-bottom: 10px; }
+    .header img { width: 50px; height: 50px; }
+    .company-name { font-size: 14px; font-weight: bold; color: #27ae60; margin-top: 5px; }
+    .company-addr { font-size: 10px; color: #444; line-height: 1.4; }
+    
+    /* Title */
+    .title { background: #27ae60; color: #fff; text-align: center; padding: 8px; font-size: 16px; font-weight: bold; letter-spacing: 2px; margin: 10px 0; }
+    
+    /* Info Section */
+    .info-table { width: 100%; margin-bottom: 10px; }
+    .info-table td { vertical-align: top; font-size: 10px; }
+    .info-left { width: 55%; }
+    .info-right { width: 45%; padding-left: 20px; }
+    .rec-box { padding: 4px 0; margin-bottom: 6px; }
+    .rec-num { font-size: 13px; font-weight: bold; color: #27ae60; margin: 0; }
+    .rec-meta { font-size: 9px; color: #666; margin-top: 2px; }
+    .lbl { font-weight: bold; color: #555; width: 60px; }
+    .cust-name { font-weight: bold; }
+    
+    /* Items Table */
+    .items { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .items th { background: #27ae60; color: #fff; padding: 6px 8px; font-size: 10px; text-align: left; }
+    .items th.r { text-align: right; }
+    .items th.c { text-align: center; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 10px; vertical-align: top; }
+    .items td.r { text-align: right; }
+    .items td.c { text-align: center; }
+    .items tr:nth-child(even) { background: #f8f9fa; }
+    .desc { font-size: 9px; color: #666; margin-top: 3px; line-height: 1.3; }
+    
+    /* Totals */
+    .summary-section { width: 100%; margin-top: 10px; }
+    .summary-section td { vertical-align: top; }
+    .payment-info { width: 55%; font-size: 10px; }
+    .payment-title { font-weight: bold; color: #27ae60; margin-bottom: 5px; }
+    .payment-item { margin-bottom: 4px; line-height: 1.3; }
+    .totals-wrap { width: 45%; text-align: right; }
+    .totals { width: 220px; margin-left: auto; }
+    .totals td { padding: 4px 0; font-size: 10px; }
+    .totals .lbl { text-align: right; padding-right: 12px; color: #555; white-space: nowrap; }
+    .totals .val { text-align: right; }
+    .totals .grand { border-top: 2px solid #27ae60; }
+    .totals .grand td { padding: 8px 0; font-size: 12px; font-weight: bold; color: #27ae60; }
+    
+    /* Words */
+    .words { background: #e8f8f5; padding: 8px 10px; font-size: 10px; color: #333; margin: 10px 0; }
+    
+    /* Terms */
+    .terms { border-top: 1px solid #ccc; padding-top: 8px; margin-top: 15px; }
+    .terms-title { font-weight: bold; font-size: 10px; color: #27ae60; margin-bottom: 5px; }
+    .terms-content { font-size: 9px; color: #555; line-height: 1.4; }
+    
+    /* Signatures */
+    .sigs { margin-top: 30px; }
+    .sigs td { width: 50%; text-align: center; padding: 0 10px; vertical-align: bottom; }
+    .sig-space { height: 40px; }
+    .sig-line { font-size: 10px; font-weight: bold; padding-top: 5px; border-top: 1px solid #333; }
+    .sig-name { font-size: 9px; color: #666; margin-top: 3px; }
+    .sig-date { font-size: 9px; color: #888; margin-top: 3px; }
+    
+    /* Status Badge */
+    .status { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: bold; }
+    .status-confirmed { background: #27ae60; color: #fff; }
+    .status-draft { background: #f39c12; color: #fff; }
+    .status-cancelled { background: #e74c3c; color: #fff; }
+</style>
 
-<div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
-<div style="width:100%; margin-top:10px; margin-bottom:5px; padding:5px; background-color:#000; text-align:center; font-weight:bold; color:#FFF;font-size:18px;">RECEIPT</div>
-<div style="width:10%; float:left; font-weight:bold;">Customer</div>
-<div style="width:54%; float:left;">'.$data[name].'</div>
-<div style="width:14%; float:left; text-align:left; padding-left:3px; font-weight:bold;">Create Date</div>
-<div style="width:20%; float:left; text-align:left;">'.$data['createdate'].'</div>
-<div style="width:10%; float:left; font-weight:bold;">Email</div>
-<div style="width:27%; float:left;">'.$data[email].'</div>
-
-<div style="width:5%; float:left; font-weight:bold;">Tel.</div>
-<div style="width:22%; float:left;">'.$data[phone].'</div>
-
-
-
-<div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">Reciept No.</div>
-
-<div style="width:20%; float:left; ">REP-'.$data['rep_rw'].'</div>
-
-
+<!-- Header -->
+<div class="header">
+    <img src="upload/'.htmlspecialchars($logo).'" width="50" height="50"><br>
+    <div class="company-name">'.htmlspecialchars($vender['name_en'] ?? '').'</div>
+    <div class="company-addr">
+        '.htmlspecialchars($vender['adr_tax'] ?? '').' '.htmlspecialchars($vender['city_tax'] ?? '').' '.htmlspecialchars($vender['district_tax'] ?? '').' '.htmlspecialchars($vender['province_tax'] ?? '').' '.htmlspecialchars($vender['zip_tax'] ?? '').'<br>
+        Tel: '.htmlspecialchars($vender['phone'] ?? '').' &nbsp; Fax: '.htmlspecialchars($vender['fax'] ?? '').' &nbsp; Email: '.htmlspecialchars($vender['email'] ?? '').' &nbsp; Tax ID: '.htmlspecialchars($vender['tax'] ?? '').'
+    </div>
 </div>
 
+<!-- Title -->
+<div class="title">RECEIPT</div>
 
-<div id="all_font" style="font-size:12px; height:430px;">
+<!-- Info Section -->
+<table class="info-table">
+    <tr>
+        <td class="info-left">
+            <div class="rec-box">
+                <div class="rec-num">REC-'.htmlspecialchars($data['rep_rw']).' <span class="status status-'.strtolower($data['status'] ?? 'confirmed').'">'.htmlspecialchars($status_display).'</span></div>
+                <div class="rec-meta">Date: '.htmlspecialchars($data['createdate']).($use_invoice_data ? ' &nbsp;|&nbsp; Invoice Ref: INV-'.htmlspecialchars($linked_invoice['inv_no']) : '').'</div>
+            </div>
+            <table>
+                <tr><td class="lbl">Customer</td><td class="cust-name">'.htmlspecialchars($customer['name']).'</td></tr>';
 
-
-<div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
-<div style="width:4%; float:left;">No.</div>';
-
-$html .= '
-<div style="width:68%;float:left;">Product Name</div>
-<div style="width:5%; float:left;text-align:center;">QTY</div>
-<div style="width:11%; float:left;text-align:right;">Price</div>
-<div style="width:11%; float:left;text-align:right;">Amount</div>';
-
-$html .= '
-</div>
-';
-
-$html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysqli_query($db->conn, "select type.name as name,quantity,product.price as price,product.des as des from product join type on product.type=type.id where re_id='".$id."' and po_id='0' and so_id='0' ");$summary=0;
-$cot=1;
-while($data_pro=mysqli_fetch_array($que_pro))
-	{
-	{
-$total=$data_pro[price]*$data_pro[quantity];
-
-$summary+=$total;
-$html .= '
-<div style="width:4%; float:left;">'.$cot.'</div>
-<div style="width:68%;float:left;">'.$data_pro[name].'</div>
-<div style="width:5%; float:left;text-align:right;">'.($data_pro[quantity]).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($data_pro[price],2).'</div>
-<div style="width:11%; float:left;text-align:right;">'.number_format($total,2).'</div>';
-if($data_pro[des]!="")$html .= '
-<div style="width:98%; margin-left:2%;font-size:10px;"># '.$data_pro[des].'</div>';	
-	
-	}
-$cot++;
- }
- $disco=$summary*$data[discount]/100;
- $stotal=$summary-$disco;
-$html .= '</div>
-<hr>
-
-<div id="all_font" style="font-size:12px;">
-
-
-<div style="width:12%; float:right;text-align:right;">'.number_format($summary,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Total</div>
-<br>
-
-<div style="width:12%; float:right;text-align:right;">- '.number_format($disco,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Discount '.$data[discount].'%</div>
-<br>
-
-
-<div style="width:12%; float:right;text-align:right;">'.number_format($stotal,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Sub Total</div>
-<br>';
-
-if($data[over]>0){
-	$overh=$stotal*$data[over]/100;
-	$stotal=$stotal+$overh;
-$html .= '
-<div style="width:12%; float:right;text-align:right;">+ '.number_format($overh,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Overhead '.$data[over].'%</div>
-<br>
-
-
-<div style="width:12%; float:right;text-align:right;">'.number_format($stotal,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Total</div>
-<br>';}
-
-
- $vat=$stotal*$data[vat]/100;
- $total=$stotal+$vat;
+if (!empty($customer['adr_tax'])) {
+    $html .= '<tr><td class="lbl">Address</td><td>'.htmlspecialchars($customer['adr_tax']).' '.htmlspecialchars($customer['city_tax']).' '.htmlspecialchars($customer['district_tax']).' '.htmlspecialchars($customer['province_tax']).' '.htmlspecialchars($customer['zip_tax']).'</td></tr>';
+}
+if (!empty($customer['tax'])) {
+    $html .= '<tr><td class="lbl">Tax ID</td><td>'.htmlspecialchars($customer['tax']).'</td></tr>';
+}
 
 $html .= '
-<div style="width:12%; float:right;text-align:right;">+ '.number_format($vat,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Vat '.$data[vat].'%</div>
-<br>
+            </table>
+        </td>
+        <td class="info-right">
+            <table>
+                <tr><td class="lbl">Tel</td><td>'.htmlspecialchars($customer['phone'] ?? '').'</td></tr>
+                <tr><td class="lbl">Email</td><td>'.htmlspecialchars($customer['email'] ?? '').'</td></tr>
+                <tr><td class="lbl">Payment</td><td><b>'.htmlspecialchars($payment_display).'</b></td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
+<!-- Items -->
+<table class="items">
+    <tr>
+        <th style="width:4%">#</th>
+        <th style="width:14%">Model</th>
+        <th style="width:48%">Description</th>
+        <th class="c" style="width:8%">Qty</th>
+        <th class="r" style="width:12%">Price</th>
+        <th class="r" style="width:14%">Amount</th>
+    </tr>';
 
-<div style="width:70%; float:left;text-align:left;">('.bahtEng($total).')</div>
-<div style="width:12%; float:right;text-align:right;">'.number_format($total,2).'</div>
-<div style="width:12%; float:right;text-align:right;">Grand Total</div>
+$cot = 1;
+foreach ($products as $prod) {
+    $html .= '<tr>
+        <td>'.$cot.'</td>
+        <td>'.htmlspecialchars($prod['model']).'</td>
+        <td>'.htmlspecialchars($prod['name']);
+    if (!empty($prod['des'])) {
+        $safe_des = strip_tags($prod['des'], '<br><b><strong><i><em><u>');
+        $html .= '<div class="desc">'.$safe_des.'</div>';
+    }
+    $html .= '</td>
+        <td class="c">'.intval($prod['quantity']).'</td>
+        <td class="r">'.number_format($prod['price'], 2).'</td>
+        <td class="r">'.number_format($prod['total'], 2).'</td>
+    </tr>';
+    $cot++;
+}
 
+$html .= '</table>
 
-<br>
-<hr>
-<b>Term & Condition</b><br>'.$vender[term].'<br>
-<hr>
-<div style="width:33%; height:100px; float:right; text-align:center;">Approved By<br><br>Sinthorn Pradutnam<br> 087-938-8-938<br>____________________________<br>Signature<BR>Date '.date("d").' / '.date("m").' / '.date("Y").'</div>
-</div>
+<!-- Summary Section -->
+<table class="summary-section">
+    <tr>
+        <td class="payment-info">
+            <div class="payment-title">Payment Received</div>
+            <div class="payment-item">
+                <b>Method:</b> '.htmlspecialchars($payment_display).'<br>
+                <b>Status:</b> '.htmlspecialchars($status_display).'<br>
+                <b>Date:</b> '.htmlspecialchars($data['createdate']).'
+            </div>
+        </td>
+        <td class="totals-wrap">
+            <table class="totals">
+                <tr><td class="lbl">Subtotal</td><td class="val">'.number_format($summary, 2).'</td></tr>';
 
-';	
+if ($dis > 0) {
+    $html .= '<tr><td class="lbl">Discount '.htmlspecialchars($dis).'%</td><td class="val">-'.number_format($disco, 2).'</td></tr>';
+}
 
+if ($over > 0) {
+    $html .= '<tr><td class="lbl">Overhead '.htmlspecialchars($over).'%</td><td class="val">+'.number_format($overh, 2).'</td></tr>';
+}
 
-//==============================================================
-//==============================================================
+$html .= '
+                <tr><td class="lbl">Net Amount</td><td class="val">'.number_format($stotal, 2).'</td></tr>
+                <tr><td class="lbl">VAT '.htmlspecialchars($vat_rate).'%</td><td class="val">+'.number_format($vat, 2).'</td></tr>
+                <tr class="grand"><td class="lbl">Total Received</td><td class="val">'.number_format($grandTotal, 2).'</td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- Amount in Words -->
+<div class="words"><b>Amount in words:</b> '.bahtEng($grandTotal).'</div>
+
+<!-- Terms -->
+'.(!empty($vender['term']) ? '
+<div class="terms">
+    <div class="terms-title">Terms & Conditions</div>
+    <div class="terms-content">'.nl2br(htmlspecialchars($vender['term'])).'</div>
+</div>' : '').'
+
+<!-- Signatures -->
+<table class="sigs" width="100%">
+    <tr>
+        <td>
+            <div class="sig-space"></div>
+            <div class="sig-line">Received By</div>
+            <div class="sig-name">'.htmlspecialchars($customer['name']).'</div>
+            <div class="sig-date">Date: ____/____/________</div>
+        </td>
+        <td>
+            <div class="sig-space"></div>
+            <div class="sig-line">Authorized Signature</div>
+            <div class="sig-name">'.htmlspecialchars($vender['name_en'] ?? '').'</div>
+            <div class="sig-date">Date: '.date("d/m/Y").'</div>
+        </td>
+    </tr>
+</table>';
+
+// Generate PDF
 include("MPDF/mpdf.php");
 
-$mpdf= new mPdf('th', 'A4', '0');
-
-
+$mpdf = new mPDF('th', 'A4', 0, 'Arial', 12, 12, 12, 12, 0, 0);
+$mpdf->SetDisplayMode('fullpage');
 $mpdf->WriteHTML($html);
-
-
-
-$mpdf->Output("REC-".	$filename.".pdf","I");
+$mpdf->Output("REC-".$filename.".pdf", "I");
 exit;
-//==============================================================
-//==============================================================
-
-}else echo "<center>ERROR</center>";?>
+?>

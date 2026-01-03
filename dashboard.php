@@ -502,7 +502,7 @@ function get_status_badge($status) {
     <!-- Dashboard Header -->
     <div class="dashboard-header">
         <div>
-            <h2 class="dashboard-title"><i class="fa fa-tachometer-alt"></i> Dashboard</h2>
+            <h2 class="dashboard-title"><i class="fa fa-tachometer"></i> Dashboard</h2>
             <div class="dashboard-subtitle">
                 <?php if ($is_admin && $com_id == 0): ?>
                     <i class="fa fa-globe"></i> System Administration - Global View
@@ -510,7 +510,7 @@ function get_status_badge($status) {
                 <?php elseif ($is_admin && $com_id > 0): ?>
                     <i class="fa fa-building"></i> Viewing: <?php echo htmlspecialchars($com_name); ?>
                     <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">
-                        <a href="index.php?page=remote" style="color: rgba(255,255,255,0.9);"><i class="fa fa-exchange-alt"></i> Switch company</a> | 
+                        <a href="index.php?page=remote" style="color: rgba(255,255,255,0.9);"><i class="fa fa-exchange"></i> Switch company</a> | 
                         <a href="index.php?page=remote&clear=1" style="color: rgba(255,255,255,0.9);"><i class="fa fa-times"></i> Clear selection</a>
                     </div>
                 <?php elseif ($com_id > 0): ?>
@@ -542,7 +542,7 @@ function get_status_badge($status) {
         <div class="col-md-12">
             <div class="content-card" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; margin-bottom: 20px;">
                 <h5 style="color: #fff; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">
-                    <i class="fa fa-shield-alt"></i> Admin Control Panel
+                    <i class="fa fa-shield"></i> Admin Control Panel
                 </h5>
                 <div class="row">
                     <div class="col-md-2 col-sm-4">

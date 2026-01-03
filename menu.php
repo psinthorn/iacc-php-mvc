@@ -191,109 +191,131 @@
                         <!-- /input-group -->
                     </li>
                   
+                  <!-- Dashboard -->
                   <li>
                         <a href="index.php?page=dashboard"><i class="fa fa-dashboard"></i> <?= isset($xml->dashboard) ? $xml->dashboard : 'Dashboard' ?></a>
                   </li>
                   
-                 <li>
-                        <a href="#"><i class="fa fa-cogs"></i> 
-<?=$xml->generalinformation?><span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level">
-                            <li>
-                                <a href="index.php?page=company"><?=$xml->company?></a>
-                            </li>
-                            <?php if (isset($_SESSION['user_level']) && $_SESSION['user_level'] >= 2): ?>
-                            <li>
-                                <a href="index.php?page=user"><?=$xml->user?></a>
-                            </li>
-                            <li>
-                                <a href="index.php?page=audit_log"><i class="fa fa-history"></i> Audit Log</a>
-                            </li>
-                            <?php endif; ?>
-                             <li>
-                             
-                                <a href="index.php?page=category"><?=$xml->category?></a>
-                            </li>
-                             <li>
-                                <a href="index.php?page=brand"><?=$xml->brand?></a>
-                            </li>
-                              <li>
-                                <a href="index.php?page=type"><?=$xml->product?></a>
-                            </li>
-                               <li>
-                                <a href="index.php?page=mo_list"><?=$xml->model?></a>
-                            </li>
-                            
-                               <?php if($_SESSION['com_id']!=""){?>   <li>
-                                <a href="index.php?page=payment"><?=$xml->payment?></a>
-                            </li>
-                            <li>
-                                <a href="index.php?page=invoice_payments"><i class="fa fa-credit-card"></i> Payment Tracking</a>
-                            </li>
-                            <?php } ?>
-                   </ul>
-                    </li>
-                  <?php if($_SESSION['com_id']!=""){?> 
+                  <?php if($_SESSION['com_id']!=""){?>
+                  
+                  <!-- Purchasing Request -->
                   <li>
-                    <a href="#"><i class="fa fa-pencil-square-o"></i> <?=$xml->purchasingrequest?><span class="fa arrow"></span></a>
+                    <a href="#"><i class="fa fa-pencil-square-o"></i> <?=$xml->purchasingrequest ?? 'Purchase Request'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
                             <li>
-                                <a href="index.php?page=pr_list"> <?=$xml->listpr?></a>
+                                <a href="index.php?page=pr_list"><i class="fa fa-list"></i> <?=$xml->listpr ?? 'PR List'?></a>
                             </li>
                             <li>
-                                <a href="index.php?page=pr_create"> <?=$xml->prforvender?></a>
+                                <a href="index.php?page=pr_create"><i class="fa fa-plus"></i> <?=$xml->prforvender ?? 'PR for Vendor'?></a>
                             </li>
                             <li>
-                                <a href="index.php?page=pr_make"> <?=$xml->prforcustomer?></a>
+                                <a href="index.php?page=pr_make"><i class="fa fa-plus-circle"></i> <?=$xml->prforcustomer ?? 'PR for Customer'?></a>
                             </li>
                         </ul>
                     </li>
+                    
+                    <!-- Sales & Orders -->
                     <li>
-                        <a href="index.php?page=qa_list"><i class="fa fa-shopping-cart"></i> <?=$xml->quotation?></span></a>
-                    </li>
-                    <li>
-                        <a href="index.php?page=po_list"><i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder?></span></a>
-                       
-                    </li>
-                    <li>
-                        <a href="index.php?page=deliv_list"><i class="fa fa-truck"></i> <?=$xml->deliverynote?></a>
-                       
-                    </li>
-                    <li>
-                        <a href="index.php?page=voucher_list"><i class="glyphicon glyphicon-tags"></i> <?=$xml->voucher?></a></li>
-                          <li>
-                        <a href="index.php?page=receipt_list"><i class="glyphicon glyphicon-usd"></i> <?=$xml->receipt?></a>
-                       
-                    </li>     
-                 
-                 
-                    <li>
-                        <a href="index.php?page=billing"><i class="glyphicon glyphicon-calendar"></i> <?=$xml->billingnote?></a>
-                      
-                    </li>
-                    <li>
-                        <a href="index.php?page=compl_list"><i class="fa fa-thumbs-up"></i> <?=$xml->invoice?></a>
-                       
+                        <a href="#"><i class="fa fa-shopping-cart"></i> <?=$xml->salesorders ?? 'Sales & Orders'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=qa_list"><i class="fa fa-file-text-o"></i> <?=$xml->quotation ?? 'Quotation'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=po_list"><i class="fa fa-shopping-cart"></i> <?=$xml->purchasingorder ?? 'Purchase Order'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=deliv_list"><i class="fa fa-truck"></i> <?=$xml->deliverynote ?? 'Delivery Note'?></a>
+                            </li>
+                        </ul>
                     </li>
                     
+                    <!-- Billing & Invoices -->
+                    <li>
+                        <a href="#"><i class="fa fa-file-text"></i> <?=$xml->billinginvoices ?? 'Billing & Invoices'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=billing"><i class="glyphicon glyphicon-calendar"></i> <?=$xml->billingnote ?? 'Billing Note'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=compl_list"><i class="fa fa-file-text-o"></i> <?=$xml->invoice ?? 'Invoice'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=compl_list2"><i class="fa fa-file"></i> <?=$xml->taxinvoice ?? 'Tax Invoice'?></a>
+                            </li>
+                        </ul>
+                    </li>
                     
-
+                    <!-- Payments -->
+                    <li>
+                        <a href="#"><i class="fa fa-credit-card"></i> <?=$xml->payments ?? 'Payments'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=voucher_list"><i class="glyphicon glyphicon-tags" style="color:#e74c3c;"></i> <?=$xml->voucher ?? 'Voucher'?> <small class="text-muted">(Out)</small></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=receipt_list"><i class="glyphicon glyphicon-usd" style="color:#27ae60;"></i> <?=$xml->receipt ?? 'Receipt'?> <small class="text-muted">(In)</small></a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=invoice_payments"><i class="fa fa-money"></i> <?=$xml->paymenttracking ?? 'Payment Tracking'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=payment"><i class="fa fa-bank"></i> <?=$xml->payment ?? 'Bank Accounts'?></a>
+                            </li>
+                        </ul>
+                    </li>
                     
-                    
-                   <li>
-                        <a href="index.php?page=compl_list2"><i class="fa fa-thumbs-up"></i> <?=$xml->taxinvoice?></a>
-                    
+                    <!-- Reports -->
+                    <li>
+                        <a href="index.php?page=report"><i class="glyphicon glyphicon-book"></i> <?=$xml->report ?? 'Reports'?></a>
                     </li>  
+                    
+                    <?php } ?>
+                    
+                    <!-- Master Data / Settings -->
                     <li>
-                        <a href="index.php?page=report"><i class="glyphicon glyphicon-book"></i> <?=$xml->report?></a>
+                        <a href="#"><i class="fa fa-database"></i> <?=$xml->masterdata ?? 'Master Data'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=company"><i class="fa fa-building"></i> <?=$xml->company ?? 'Company'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=category"><i class="fa fa-folder"></i> <?=$xml->category ?? 'Category'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=brand"><i class="fa fa-bookmark"></i> <?=$xml->brand ?? 'Brand'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=type"><i class="fa fa-cube"></i> <?=$xml->product ?? 'Product'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=mo_list"><i class="fa fa-cubes"></i> <?=$xml->model ?? 'Model'?></a>
+                            </li>
+                        </ul>
+                    </li>
                     
-                    </li>  
-                    
-                    
-                    
-                    
-                     <?php }?>
-                  
+                    <!-- Admin Section (Level 2+) -->
+                    <?php if (isset($_SESSION['user_level']) && $_SESSION['user_level'] >= 2): ?>
+                    <li>
+                        <a href="#"><i class="fa fa-shield"></i> <?=$xml->admin ?? 'Admin'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=user"><i class="fa fa-users"></i> <?=$xml->user ?? 'Users'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=audit_log"><i class="fa fa-history"></i> <?=$xml->auditlog ?? 'Audit Log'?></a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=payment_method_list"><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=payment_gateway_config"><i class="fa fa-cogs"></i> <?=$xml->gatewayconfig ?? 'Gateway Config'?></a>
+                            </li>
+                        </ul>
+                    </li>
+                    <?php endif; ?>
                   
                 </ul>
                 <!-- /#side-menu -->

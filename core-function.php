@@ -388,7 +388,14 @@ case "receipt_list" : {
 	$max_no=mysqli_fetch_array(mysqli_query($db->conn, "select max(rep_no) as maxrep from receipt where vender='".$_SESSION['com_id']."'"));
 	$new_rw=$max_no[maxrep]+1;
 	
-	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['phone']."','".$_REQUEST['email']."','".date("Y-m-d")."','".$_REQUEST['des']."','".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[dis]."'";
+	// Get new fields with defaults
+	$payment_method = isset($_REQUEST['payment_method']) ? mysqli_real_escape_string($db->conn, $_REQUEST['payment_method']) : 'cash';
+	$status = isset($_REQUEST['status']) ? mysqli_real_escape_string($db->conn, $_REQUEST['status']) : 'confirmed';
+	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
+	$invoice_id_val = $invoice_id === NULL ? 'NULL' : "'".$invoice_id."'";
+	
+	// Column order: id, name, phone, email, createdate, description, payment_method, status, invoice_id, vender, rep_no, rep_rw, brand, vat, dis, deleted_at
+	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['phone']."','".$_REQUEST['email']."','".date("Y-m-d")."','".$_REQUEST['des']."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[dis]."',NULL";
 	 
 	$rep_id=$har->insertDbMax($args);
 	
@@ -405,8 +412,15 @@ case "receipt_list" : {
 	
 		}else if($_REQUEST['method']=="E"){
 		
-		$args['table']="receipt";	
-	$args['value']="name='".$_REQUEST['name']."',phone='".$_REQUEST['phone']."',email='".$_REQUEST['email']."',description='".$_REQUEST['des']."',brand='".$_REQUEST[brandven]."',vat='".$_REQUEST[vat]."',dis='".$_REQUEST[dis]."'";
+		$args['table']="receipt";
+	
+	// Get new fields with defaults
+	$payment_method = isset($_REQUEST['payment_method']) ? mysqli_real_escape_string($db->conn, $_REQUEST['payment_method']) : 'cash';
+	$status = isset($_REQUEST['status']) ? mysqli_real_escape_string($db->conn, $_REQUEST['status']) : 'confirmed';
+	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
+	$invoice_id_sql = $invoice_id === NULL ? 'invoice_id=NULL' : "invoice_id='".$invoice_id."'";
+	
+	$args['value']="name='".$_REQUEST['name']."',phone='".$_REQUEST['phone']."',email='".$_REQUEST['email']."',description='".$_REQUEST['des']."',brand='".$_REQUEST[brandven]."',vat='".$_REQUEST[vat]."',dis='".$_REQUEST[dis]."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
 				
 	$args['condition']="id='".$_REQUEST['id']."' and vender='".$_SESSION['com_id']."'";
 	$har->updateDb($args);	
@@ -442,7 +456,14 @@ case "voucher_list" : {
 	$max_no=mysqli_fetch_array(mysqli_query($db->conn, "select max(vou_no) as maxvou from voucher where vender='".$_SESSION['com_id']."'"));
 	$new_rw=$max_no[maxvou]+1;
 	
-	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['phone']."','".$_REQUEST['email']."','".date("Y-m-d")."','".$_REQUEST['des']."','".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[dis]."'";
+	// Get new fields with defaults
+	$payment_method = isset($_REQUEST['payment_method']) ? mysqli_real_escape_string($db->conn, $_REQUEST['payment_method']) : 'cash';
+	$status = isset($_REQUEST['status']) ? mysqli_real_escape_string($db->conn, $_REQUEST['status']) : 'confirmed';
+	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
+	$invoice_id_val = $invoice_id === NULL ? 'NULL' : "'".$invoice_id."'";
+	
+	// Column order: id, name, phone, email, createdate, description, payment_method, status, invoice_id, vender, vou_no, vou_rw, brand, vat, discount, deleted_at
+	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['phone']."','".$_REQUEST['email']."','".date("Y-m-d")."','".$_REQUEST['des']."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[dis]."',NULL";
 	 
 	$vou_id=$har->insertDbMax($args);
 	
@@ -459,8 +480,15 @@ case "voucher_list" : {
 	
 		}else if($_REQUEST['method']=="E"){
 		
-		$args['table']="voucher";	
-	$args['value']="name='".$_REQUEST['name']."',phone='".$_REQUEST['phone']."',email='".$_REQUEST['email']."',description='".$_REQUEST['des']."',brand='".$_REQUEST[brandven]."',vat='".$_REQUEST[vat]."',discount='".$_REQUEST[dis]."'";
+		$args['table']="voucher";
+	
+	// Get new fields with defaults
+	$payment_method = isset($_REQUEST['payment_method']) ? mysqli_real_escape_string($db->conn, $_REQUEST['payment_method']) : 'cash';
+	$status = isset($_REQUEST['status']) ? mysqli_real_escape_string($db->conn, $_REQUEST['status']) : 'confirmed';
+	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
+	$invoice_id_sql = $invoice_id === NULL ? 'invoice_id=NULL' : "invoice_id='".$invoice_id."'";
+	
+	$args['value']="name='".$_REQUEST['name']."',phone='".$_REQUEST['phone']."',email='".$_REQUEST['email']."',description='".$_REQUEST['des']."',brand='".$_REQUEST[brandven]."',vat='".$_REQUEST[vat]."',discount='".$_REQUEST[dis]."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
 			
 			
 	$args['condition']="id='".$_REQUEST['id']."' and vender='".$_SESSION['com_id']."'";
