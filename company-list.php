@@ -133,7 +133,7 @@ $show_form = isset($_GET['new']);
         <a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'company.php', true);" class="btn btn-add">
             <i class="fa fa-plus"></i> <?=$xml->create ?? 'Add New'?>
         </a>
-        <a href="docs/master-data-guide.php" class="btn btn-info" style="border-radius:20px;"><i class="fa fa-book"></i> <?=$xml->guide ?? 'Guide'?></a>
+        <a href="master-data-guide.php" class="btn btn-info" style="border-radius:20px;"><i class="fa fa-book"></i> <?=$xml->guide ?? 'Guide'?></a>
     </div>
 </div>
 

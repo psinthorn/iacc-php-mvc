@@ -4,9 +4,9 @@
  * Documentation for Category, Brand, Product Type, and Model management
  */
 session_start();
-include_once '../inc/db.inc.php';
-include_once '../inc/session.inc.php';
-include_once '../lang.php';
+include_once 'inc/db.inc.php';
+include_once 'inc/session.inc.php';
+include_once 'lang.php';
 
 $page_title = "Master Data Guide";
 ?>
@@ -16,8 +16,8 @@ $page_title = "Master Data Guide";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?=$page_title?> - iAcc</title>
-    <?php include '../css.php'; ?>
-    <link rel="stylesheet" href="../css/master-data.css">
+    <?php include 'css.php'; ?>
+    <link rel="stylesheet" href="css/master-data.css">
     <style>
         .guide-container {
             max-width: 1200px;
@@ -206,7 +206,7 @@ $page_title = "Master Data Guide";
     </style>
 </head>
 <body>
-<?php include '../menu.php'; ?>
+<?php include 'menu.php'; ?>
 
 <div class="guide-container">
     <a href="javascript:history.back()" class="back-btn">
@@ -222,16 +222,16 @@ $page_title = "Master Data Guide";
     <div class="guide-section">
         <h2><i class="fa fa-link"></i> Quick Links</h2>
         <div class="quick-links">
-            <a href="../category-list.php?page=category" class="quick-link">
+            <a href="category-list.php?page=category" class="quick-link">
                 <i class="fa fa-folder icon-category"></i> Manage Categories
             </a>
-            <a href="../brand-list.php?page=brand" class="quick-link">
+            <a href="brand-list.php?page=brand" class="quick-link">
                 <i class="fa fa-certificate icon-brand"></i> Manage Brands
             </a>
-            <a href="../type-list.php?page=type" class="quick-link">
+            <a href="type-list.php?page=type" class="quick-link">
                 <i class="fa fa-cube icon-product"></i> Manage Products
             </a>
-            <a href="../mo-list.php?page=mo_list" class="quick-link">
+            <a href="mo-list.php?page=mo_list" class="quick-link">
                 <i class="fa fa-barcode icon-model"></i> Manage Models
             </a>
         </div>
@@ -530,7 +530,7 @@ $page_title = "Master Data Guide";
                 <li><strong>Insurance</strong> - Travel insurance products</li>
                 <li><strong>Visa Services</strong> - Visa processing and documentation</li>
             </ul>
-            <p><a href="../category-list.php?page=category" class="btn btn-sm btn-primary">
+            <p><a href="category-list.php?page=category" class="btn btn-sm btn-primary">
                 <i class="fa fa-plus"></i> Add Categories
             </a></p>
         </div>
@@ -545,10 +545,10 @@ $page_title = "Master Data Guide";
             </ul>
             <p>Example suppliers: Thai Airways, Marriott Hotels, Klook, AXA Insurance</p>
             <p>
-                <a href="../company-list.php?page=company&type=vendor" class="btn btn-sm btn-info">
+                <a href="company-list.php?page=company&type=vendor" class="btn btn-sm btn-info">
                     <i class="fa fa-building"></i> Add Vendors First
                 </a>
-                <a href="../brand-list.php?page=brand" class="btn btn-sm btn-primary">
+                <a href="brand-list.php?page=brand" class="btn btn-sm btn-primary">
                     <i class="fa fa-plus"></i> Add Brands
                 </a>
             </p>
@@ -562,7 +562,7 @@ $page_title = "Master Data Guide";
                 <li><strong>Under Transportation:</strong> Flight Ticket, Bus Ticket, Train Ticket, Car Rental</li>
                 <li><strong>Under Accommodation:</strong> Hotel Booking, Resort Stay, Vacation Rental, Hostel</li>
             </ul>
-            <p><a href="../type-list.php?page=type" class="btn btn-sm btn-primary">
+            <p><a href="type-list.php?page=type" class="btn btn-sm btn-primary">
                 <i class="fa fa-plus"></i> Add Product Types
             </a></p>
         </div>
@@ -576,7 +576,7 @@ $page_title = "Master Data Guide";
                 <li>Enter model name (e.g., "Phuket 4D3N Premium Package")</li>
                 <li>Set the price</li>
             </ul>
-            <p><a href="../mo-list.php?page=mo_list" class="btn btn-sm btn-primary">
+            <p><a href="mo-list.php?page=mo_list" class="btn btn-sm btn-primary">
                 <i class="fa fa-plus"></i> Add Models
             </a></p>
         </div>
@@ -679,6 +679,6 @@ function showIndustry(industry) {
 }
 </script>
 
-<?php include '../script.php'; ?>
+<?php include 'script.php'; ?>
 </body>
 </html>
