@@ -4,10 +4,14 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/audit.php");
 $db = new DbConn($config);
 
 // Handle logout first
 if(isset($_SESSION['user_id']) && $_SESSION['user_id'] != ""){
+	// Log logout event
+	audit_logout($db->conn);
+	
 	// Clear remember me token
 	clear_remember_token($db->conn, $_SESSION['user_id']);
 	session_destroy();
@@ -89,6 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		    // Regenerate CSRF token
 		    csrf_regenerate();
 		    
+		    // Log successful login
+		    audit_login($db->conn, $tmp['id'], $_POST['m_user'], true);
+		    
 		    echo "<script>window.location='index.php';</script>";
 		    exit;
 		}
@@ -96,6 +103,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
 	// Record failed login attempt
 	record_login_attempt($db->conn, $_POST['m_user'], false);
+	
+	// Log failed login attempt
+	audit_log($db->conn, 'login_failed', 'session', null, $_POST['m_user']);
 	
 	// Increment failed attempts and check for lockout
 	$isLocked = increment_failed_attempts($db->conn, $_POST['m_user'], 10, 30);

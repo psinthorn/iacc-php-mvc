@@ -123,6 +123,9 @@ $routes = [
     'report'            => 'report.php',
     'receipt_list'      => 'rep-list.php',
     'rep_make'          => 'rep-make.php',
+    
+    // Admin Tools
+    'audit_log'         => 'audit-log.php',
 ];
 
 // Get requested page (sanitized)

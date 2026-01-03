@@ -10,10 +10,14 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/audit.php");
 
 // Initialize database and check authentication
 $db = new DbConn($config);
 $db->checkSecurity();
+
+// Log export action
+audit_export($db->conn, 'invoice_payments', 'Invoice Payments Export');
 
 // Get parameters
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';

@@ -10,10 +10,14 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/audit.php");
 
 // Initialize database and check authentication
 $db = new DbConn($config);
 $db->checkSecurity();
+
+// Log export action
+audit_export($db->conn, 'report', 'Business Report Export');
 
 // Get parameters
 $report_period = isset($_GET['period']) ? $_GET['period'] : 'all';

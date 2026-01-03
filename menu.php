@@ -206,6 +206,9 @@
                             <li>
                                 <a href="index.php?page=user"><?=$xml->user?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=audit_log"><i class="fa fa-history"></i> Audit Log</a>
+                            </li>
                             <?php endif; ?>
                              <li>
                              
