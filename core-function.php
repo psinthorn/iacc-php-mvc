@@ -94,7 +94,7 @@ case "type" : {
 		$args['table']="type";
 		
 	
-	$args['value']="'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."'";
+	$args['value']="'','".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."'";
 	$max_id=$har->insertDbMax($args);	
 	while(list($key, $val) = each($_POST))
 		{
@@ -132,7 +132,7 @@ case "category" : {
 	$company_id = $companyFilter->getSafeCompanyId();
 	if($_REQUEST['method']=="A"){
 		$args['table']="category";
-	$args['value']="'','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."','".$company_id."'";
+	$args['value']="'','".$company_id."','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
 			mysqli_query($users->conn, "DELETE FROM category WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
