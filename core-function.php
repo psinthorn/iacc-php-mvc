@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $companyFilter = CompanyFilter::getInstance();
 
 $users=new DbConn($config);
+$db = $users; // Alias for compatibility with legacy code
 // Security already checked in index.php
 
 $har=new HardClass();
@@ -124,6 +125,8 @@ case "type" : {
 	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
 	$har->updateDb($args);	
 		}
+	header("Location: index.php?page=type");
+	exit;
 }break;	
 case "category" : {
 	$company_id = $companyFilter->getSafeCompanyId();
@@ -132,7 +135,7 @@ case "category" : {
 	$args['value']="'','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."','".$company_id."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "DELETE FROM category WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
+			mysqli_query($users->conn, "DELETE FROM category WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
 		
 			}
 	else if($_REQUEST['method']=="E"){
@@ -141,6 +144,8 @@ case "category" : {
 	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
 	$har->updateDb($args);	
 		}
+	header("Location: index.php?page=category");
+	exit;
 }break;
 
 
@@ -233,10 +238,11 @@ case "mo_list" : {
 		}	
 		
 		
-			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($db->conn, "select * from product where model='".sql_int($_REQUEST['p_id'])."'"))==0)){
-	mysqli_query($db->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter());
+			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($users->conn, "select * from product where model='".sql_int($_REQUEST['p_id'])."'"))==0)){
+	mysqli_query($users->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter());
 		}
-
+	header("Location: index.php?page=mo_list");
+	exit;
 }break;
 
 case "brand" : {
@@ -276,6 +282,8 @@ case "brand" : {
 	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
 	$har->updateDb($args);	
 		}
+	header("Location: index.php?page=brand");
+	exit;
 }break;
 case "pr_list" : {
 	$args['table']="pr";
