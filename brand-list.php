@@ -267,8 +267,11 @@ $vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE 
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('formContainer');
     if (form && form.classList.contains('active')) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
         var nameInput = document.getElementById('brand_name');
-        if (nameInput) nameInput.focus();
+        if (nameInput) {
+            setTimeout(function() { nameInput.focus(); }, 300);
+        }
     }
 });
 </script>

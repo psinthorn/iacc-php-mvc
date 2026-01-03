@@ -220,12 +220,15 @@ $show_form = isset($_GET['new']) || $edit_data;
 </div>
 
 <script>
-// Auto-focus on form when visible
+// Auto-focus on form when visible and scroll to it
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('formContainer');
     if (form && form.classList.contains('active')) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
         var nameInput = document.getElementById('cat_name');
-        if (nameInput) nameInput.focus();
+        if (nameInput) {
+            setTimeout(function() { nameInput.focus(); }, 300);
+        }
     }
 });
 </script>
