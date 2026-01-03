@@ -96,6 +96,7 @@ $show_form = isset($_GET['new']) || $edit_data;
         <a href="?page=category" class="btn-close-form">&times;</a>
     </div>
     <form action="core-function.php" method="post" id="categoryForm">
+        <?=csrf_field()?>
         <div class="form-row">
             <div class="form-group">
                 <label for="cat_name"><i class="fa fa-tag"></i> <?=$xml->name ?? 'Name'?> <span class="text-danger">*</span></label>

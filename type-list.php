@@ -130,6 +130,7 @@ $all_brands_query = mysqli_query($db->conn, "SELECT id, brand_name FROM brand " 
         <a href="?page=type" class="btn-close-form">&times;</a>
     </div>
     <form action="core-function.php" method="post" id="productForm">
+        <?=csrf_field()?>
         <div class="form-row">
             <div class="form-group">
                 <label for="type_name"><i class="fa fa-tag"></i> <?=$xml->name ?? 'Name'?> <span class="text-danger">*</span></label>

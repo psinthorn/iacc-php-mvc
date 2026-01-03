@@ -100,6 +100,7 @@ $vendors_query = mysqli_query($db->conn, "SELECT id, name_en FROM company WHERE 
         <a href="?page=brand" class="btn-close-form">&times;</a>
     </div>
     <form action="core-function.php" method="post" enctype="multipart/form-data" id="brandForm">
+        <?=csrf_field()?>
         <div class="form-row">
             <div class="form-group">
                 <label for="brand_name"><i class="fa fa-tag"></i> <?=$xml->name ?? 'Name'?> <span class="text-danger">*</span></label>

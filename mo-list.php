@@ -130,6 +130,7 @@ $show_form = isset($_GET['new']) || $edit_data;
         <a href="?page=mo_list" class="btn-close-form">&times;</a>
     </div>
     <form action="core-function.php" method="post" id="modelForm">
+        <?=csrf_field()?>
         <div class="form-row">
             <div class="form-group">
                 <label for="model_name"><i class="fa fa-tag"></i> <?=$xml->model ?? 'Model'?> <?=$xml->name ?? 'Name'?> <span class="text-danger">*</span></label>
