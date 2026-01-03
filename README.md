@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.0  
+**Version**: 3.1  
 **Status**: Production Ready  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,44 @@
 ---
 
 ## 📋 Changelog
+
+### v3.1 (January 4, 2026)
+- **Multi-Tenant Architecture** 🏢:
+  - Complete company-based data isolation
+  - `company_id` column added to 17 tables (brand, category, type, model, map_type_to_brand, payment_method, payment_gateway_config, po, iv, product, deliver, pay, pr, voucher, receipt, store, sendoutitem, receive)
+  - New `CompanyFilter` helper class (`inc/class.company_filter.php`)
+  - Session-based company filtering via `$_SESSION['com_id']`
+  - Default company: F2 Co.,Ltd (company_id = 95)
+
+- **Master Data Company Isolation**:
+  - Brand management filtered by company
+  - Category management filtered by company
+  - Type management filtered by company
+  - Model management filtered by company
+  - Payment method management filtered by company
+
+- **Transaction Files Updated**:
+  - `makeoptionindex.php` - AJAX brand/model lookups filter by company
+  - `makeoption.php` - Type/brand cascading selects filter by company
+  - `voc-make.php` - Voucher creation filters master data by company
+  - `po-edit.php` - PO edit filters master data by company
+  - `rep-make.php` - Receipt creation filters master data by company
+  - `model.php` - Brand lookup filters by company
+  - `modal_molist.php` - Model details filter by company
+  - `payment-gateway-config.php` - Full CRUD with company_id
+
+- **Database Migrations**:
+  - `migrations/010_add_company_id_multi_tenant.sql` - Add company_id columns
+  - `migrations/011_fix_master_data_relationships.sql` - Fix data types, add foreign keys
+  - `product.model` changed from VARCHAR(30) to INT (foreign key)
+  - `product.quantity` and `product.pack_quantity` changed from VARCHAR to DECIMAL
+  - Composite indexes for multi-tenant query optimization
+
+- **Data Integrity Improvements**:
+  - Foreign key constraints for type→category, type→company
+  - Foreign key constraints for brand→company, category→company
+  - Cleaned orphaned model records (9 records fixed)
+  - Validated all product→model relationships
 
 ### v3.0 (January 4, 2026)
 - **Docker Container Monitoring** 🐳:
