@@ -1,6 +1,6 @@
 # iAcc - Accounting Management System
 
-**Version**: 2.4  
+**Version**: 2.5  
 **Status**: Production Ready  
 **Last Updated**: January 3, 2026  
 **Project Size**: 172 MB
@@ -8,6 +8,33 @@
 ---
 
 ## 📋 Changelog
+
+### v2.5 (January 3, 2026)
+- **Invoice Payment Tracking**:
+  - New `invoice-payments.php` page with payment status tracking
+  - Summary cards: Total Invoices, Fully Paid, Partial, Unpaid
+  - Outstanding amount calculation
+  - Status filters (Paid/Partial/Unpaid)
+  - Progress bars showing payment percentage
+- **PO List Enhancements**:
+  - Search box for PO#, Name, Customer
+  - Date range filters (From/To)
+  - Direction indicators (↑ Out / ↓ In)
+- **Export Functionality**:
+  - Excel/CSV export for Business Report
+  - Excel/CSV export for Invoice Payment Tracking
+  - Print button for all reports
+  - UTF-8 BOM for Excel compatibility with Thai text
+- **Audit Logging System**:
+  - New `audit_log` database table
+  - Tracks: login, logout, login_failed, create, update, delete, view, export
+  - `audit-log.php` viewer for Super Admin
+  - Filters by user, action, entity, date range
+  - Detailed change history with old/new values
+  - IP address and user agent logging
+- **Bug Fixes**:
+  - Fixed 9 files with undefined `$users->checkSecurity()` error
+  - All PHP files now compatible with PHP 7.4+
 
 ### v2.4 (January 3, 2026)
 - **MySQLi Migration**:
