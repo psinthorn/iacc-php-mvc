@@ -39,7 +39,7 @@ $data=mysqli_fetch_array($query);
 			<?php 
 			echo "<option value='0' >Non Owner</option>";
 			
-			$querycustomer=mysqli_query($db->conn, "select name_en,id from company where vender='1' ");
+			$querycustomer=mysqli_query($db->conn, "select name_en,id from company where vender='1' AND company_id = '" . intval($_SESSION['com_id']) . "'");
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){

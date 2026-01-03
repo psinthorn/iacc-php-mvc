@@ -24,13 +24,17 @@ $har->keeplog($_REQUEST);
 switch($_REQUEST['page']){	
 	
 case "company" : {
+	$owner_company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 	if($_REQUEST['method']=="A"){
 		$args['table']="company";
 		$args2['table']="company_addr";
 		//$args3['table']="company_credit";
-	$args['value']="'".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".sql_escape($_REQUEST['customer'])."','".sql_escape($_REQUEST['vender'])."','','".sql_escape($_REQUEST['term'])."'";
-
-	$tmpid=$har->insertDbMax($args);	
+		// Include company_id for multi-tenant: assign new customer/vendor to logged-in company
+		$id = $har->Maxid('company');
+		$sql = "INSERT INTO company (id, name_en, name_th, name_sh, contact, email, phone, fax, tax, customer, vender, logo, term, company_id) 
+		        VALUES ('".$id."', '".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".sql_escape($_REQUEST['customer'])."','".sql_escape($_REQUEST['vender'])."','','".sql_escape($_REQUEST['term'])."','".$owner_company_id."')";
+		mysqli_query($db->conn, $sql);
+	$tmpid = $id;	
 	
 	if($_REQUEST['adr_bil']=="")$_REQUEST['adr_bil']=$_REQUEST['adr_tax'];
 	if($_REQUEST['city_bil']=="")$_REQUEST['city_bil']=$_REQUEST['city_tax'];
@@ -213,14 +217,15 @@ case "payment" : {
 		
 case "mo_list" : {
 		$args['table']="model";
+	$company_id = $companyFilter->getSafeCompanyId();
 
 	if($_REQUEST['method']=="A"){
-		$args['value']="'','".sql_int($_REQUEST['type'])."','".sql_int($_REQUEST['brand'])."','".sql_escape($_REQUEST['model_name'])."','".sql_escape($_REQUEST['des'])."','".sql_escape($_REQUEST['price'])."'";
+		$args['value']="'','".$company_id."','".sql_int($_REQUEST['type'])."','".sql_int($_REQUEST['brand'])."','".sql_escape($_REQUEST['model_name'])."','".sql_escape($_REQUEST['des'])."','".sql_escape($_REQUEST['price'])."'";
 	$har->insertDB($args);	
 		}
 	if($_REQUEST['method']=="E"){
 	$args['value']="model_name='".sql_escape($_REQUEST['model_name'])."',des='".sql_escape($_REQUEST['des'])."',price='".sql_escape($_REQUEST['price'])."'";
-		$args['condition']="id='".sql_int($_REQUEST['p_id'])."'";
+		$args['condition']="id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter();
 
 	$har->updateDb($args);	
 	
@@ -229,7 +234,7 @@ case "mo_list" : {
 		
 		
 			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($db->conn, "select * from product where model='".sql_int($_REQUEST['p_id'])."'"))==0)){
-	mysqli_query($db->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."'");
+	mysqli_query($db->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter());
 		}
 
 }break;

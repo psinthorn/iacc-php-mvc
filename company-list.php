@@ -67,20 +67,17 @@ if ($type_filter === 'vendor') {
 $com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 
 if($com_id > 0){
-	// For logged-in company user: show self + business partners (vendors and customers from transactions)
-	$sql = "SELECT DISTINCT c.id, c.name_en, c.contact, c.vender, c.customer, c.email, c.phone,
+	// For logged-in company user: show self (owner company) + customers/vendors belonging to this company
+	$sql = "SELECT c.id, c.name_en, c.contact, c.vender, c.customer, c.email, c.phone,
 	        CASE 
 	            WHEN c.id = $com_id THEN 'self'
-	            WHEN EXISTS (SELECT 1 FROM pr WHERE pr.ven_id = c.id AND pr.cus_id = $com_id) THEN 'vendor'
-	            WHEN EXISTS (SELECT 1 FROM pr WHERE pr.cus_id = c.id AND pr.ven_id = $com_id) THEN 'customer'
+	            WHEN c.vender = '1' THEN 'vendor'
+	            WHEN c.customer = '1' THEN 'customer'
 	            ELSE 'partner'
 	        END as relationship
 	        FROM company c
-	        WHERE c.deleted_at IS NULL $search_cond $type_cond AND (
-	            c.id = $com_id
-	            OR c.id IN (SELECT DISTINCT ven_id FROM pr WHERE cus_id = $com_id)
-	            OR c.id IN (SELECT DISTINCT cus_id FROM pr WHERE ven_id = $com_id)
-	        )
+	        WHERE c.deleted_at IS NULL $search_cond $type_cond 
+	        AND (c.id = $com_id OR c.company_id = $com_id)
 	        ORDER BY 
 	            CASE WHEN c.id = $com_id THEN 0 ELSE 1 END,
 	            c.name_en ASC";
