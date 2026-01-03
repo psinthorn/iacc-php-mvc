@@ -20,13 +20,8 @@ $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
 
-// Apply default date preset (MTD) on first load
-if (empty($date_from) && empty($date_to) && empty($_GET['date_preset']) && !isset($_GET['search'])) {
-    $date_preset = 'mtd';
-    $date_range = get_date_range('mtd');
-    $date_from = $date_range['from'];
-    $date_to = $date_range['to'];
-} elseif (!empty($date_preset) && empty($date_from) && empty($date_to)) {
+// Apply date preset if selected (no default - show all data initially)
+if (!empty($date_preset) && $date_preset !== 'all') {
     $date_range = get_date_range($date_preset);
     $date_from = $date_range['from'];
     $date_to = $date_range['to'];
@@ -93,7 +88,7 @@ unset($query_params['pg']);
         </span>
     </div>
     <div class="panel-body">
-        <form method="get" action="" class="form-inline">
+        <form method="get" action="">
             <input type="hidden" name="page" value="compl_list">
             
             <!-- Date Preset Buttons -->
@@ -101,45 +96,38 @@ unset($query_params['pg']);
                 <?= render_date_presets($date_preset, 'compl_list') ?>
             </div>
             
-            <!-- Search Input -->
-            <div class="form-group">
-                <input type="text" class="form-control" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Name..." 
-                       value="<?=htmlspecialchars($search)?>">
-            </div>
-            
-            <!-- Status Filter -->
-            <div class="form-group">
-                <label>Status:</label>
-                <select name="status" class="form-control">
-                    <option value=""><?=$xml->all ?? 'All'?></option>
-                    <option value="pending" <?=$status_filter=='pending'?'selected':''?>><?=$xml->pending ?? 'Pending'?></option>
-                    <option value="completed" <?=$status_filter=='completed'?'selected':''?>><?=$xml->completed ?? 'Completed'?></option>
-                </select>
-            </div>
-            
-            <!-- Custom Date Range -->
-            <div class="form-group">
-                <label><?=$xml->from ?? 'From'?>:</label>
-                <input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>">
-            </div>
-            
-            <div class="form-group">
-                <label><?=$xml->to ?? 'To'?>:</label>
-                <input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>">
-            </div>
-            
-            <!-- Per Page Selector -->
-            <?= render_per_page_selector($per_page) ?>
-            
-            <!-- Action Buttons -->
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa fa-search"></i> <span class="hidden-xs"><?=$xml->search ?? 'Search'?></span>
-                </button>
-                <a href="?page=compl_list&date_preset=all" class="btn btn-default">
-                    <i class="fa fa-refresh"></i> <span class="hidden-xs"><?=$xml->clear ?? 'Clear'?></span>
-                </a>
+            <!-- Search Row -->
+            <div class="row">
+                <div class="col-xs-12 col-sm-3" style="margin-bottom: 10px;">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Name..." 
+                           value="<?=htmlspecialchars($search)?>">
+                </div>
+                <div class="col-xs-6 col-sm-2" style="margin-bottom: 10px;">
+                    <select name="status" class="form-control">
+                        <option value=""><?=$xml->all ?? 'All Status'?></option>
+                        <option value="pending" <?=$status_filter=='pending'?'selected':''?>><?=$xml->pending ?? 'Pending'?></option>
+                        <option value="completed" <?=$status_filter=='completed'?'selected':''?>><?=$xml->completed ?? 'Completed'?></option>
+                    </select>
+                </div>
+                <div class="col-xs-6 col-sm-2" style="margin-bottom: 10px;">
+                    <input type="date" class="form-control" name="date_from" 
+                           placeholder="<?=$xml->from ?? 'From'?>" 
+                           value="<?=htmlspecialchars($date_from)?>">
+                </div>
+                <div class="col-xs-6 col-sm-2" style="margin-bottom: 10px;">
+                    <input type="date" class="form-control" name="date_to" 
+                           placeholder="<?=$xml->to ?? 'To'?>" 
+                           value="<?=htmlspecialchars($date_to)?>">
+                </div>
+                <div class="col-xs-6 col-sm-3" style="margin-bottom: 10px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?>
+                    </button>
+                    <a href="?page=compl_list" class="btn btn-default">
+                        <i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?>
+                    </a>
+                </div>
             </div>
         </form>
     </div>

@@ -19,13 +19,8 @@ $date_preset = isset($_GET['date_preset']) ? $_GET['date_preset'] : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 
-// Apply default date preset (MTD) on first load
-if (empty($date_from) && empty($date_to) && empty($_GET['date_preset']) && !isset($_GET['search'])) {
-    $date_preset = 'mtd';
-    $date_range = get_date_range('mtd');
-    $date_from = $date_range['from'];
-    $date_to = $date_range['to'];
-} elseif (!empty($date_preset) && empty($date_from) && empty($date_to)) {
+// Apply date preset if selected (no default - show all data initially)
+if (!empty($date_preset) && $date_preset !== 'all') {
     $date_range = get_date_range($date_preset);
     $date_from = $date_range['from'];
     $date_to = $date_range['to'];
@@ -80,7 +75,7 @@ unset($query_params['pg']);
         </span>
     </div>
     <div class="panel-body">
-        <form method="get" action="" class="form-inline">
+        <form method="get" action="">
             <input type="hidden" name="page" value="po_list">
             
             <!-- Date Preset Buttons -->
@@ -88,38 +83,39 @@ unset($query_params['pg']);
                 <?= render_date_presets($date_preset, 'po_list') ?>
             </div>
             
-            <!-- Search Input -->
-            <div class="form-group">
-                <label class="sr-only" for="search"><?=$xml->search ?? 'Search'?></label>
-                <input type="text" class="form-control" id="search" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> PO#, Name..." 
-                       value="<?=htmlspecialchars($search)?>">
-            </div>
-            
-            <!-- Custom Date Range -->
-            <div class="form-group">
-                <label for="date_from"><?=$xml->from ?? 'From'?>:</label>
-                <input type="date" class="form-control" id="date_from" name="date_from" 
-                       value="<?=htmlspecialchars($date_from)?>">
-            </div>
-            
-            <div class="form-group">
-                <label for="date_to"><?=$xml->to ?? 'To'?>:</label>
-                <input type="date" class="form-control" id="date_to" name="date_to" 
-                       value="<?=htmlspecialchars($date_to)?>">
-            </div>
-            
-            <!-- Per Page Selector -->
-            <?= render_per_page_selector($per_page) ?>
-            
-            <!-- Action Buttons -->
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa fa-search"></i> <span class="hidden-xs"><?=$xml->search ?? 'Search'?></span>
-                </button>
-                <a href="?page=po_list&date_preset=all" class="btn btn-default">
-                    <i class="fa fa-refresh"></i> <span class="hidden-xs"><?=$xml->clear ?? 'Clear'?></span>
-                </a>
+            <!-- Search Row -->
+            <div class="row">
+                <div class="col-xs-12 col-sm-4 col-md-3" style="margin-bottom: 10px;">
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="<?=$xml->search ?? 'Search'?> PO#, Name..." 
+                           value="<?=htmlspecialchars($search)?>">
+                </div>
+                <div class="col-xs-6 col-sm-3 col-md-2" style="margin-bottom: 10px;">
+                    <input type="date" class="form-control" id="date_from" name="date_from" 
+                           placeholder="<?=$xml->from ?? 'From'?>" 
+                           value="<?=htmlspecialchars($date_from)?>">
+                </div>
+                <div class="col-xs-6 col-sm-3 col-md-2" style="margin-bottom: 10px;">
+                    <input type="date" class="form-control" id="date_to" name="date_to" 
+                           placeholder="<?=$xml->to ?? 'To'?>" 
+                           value="<?=htmlspecialchars($date_to)?>">
+                </div>
+                <div class="col-xs-6 col-sm-2 col-md-2" style="margin-bottom: 10px;">
+                    <select name="per_page" class="form-control" onchange="this.form.submit()">
+                        <option value="10" <?=$per_page==10?'selected':''?>>10</option>
+                        <option value="20" <?=$per_page==20?'selected':''?>>20</option>
+                        <option value="50" <?=$per_page==50?'selected':''?>>50</option>
+                        <option value="100" <?=$per_page==100?'selected':''?>>100</option>
+                    </select>
+                </div>
+                <div class="col-xs-6 col-sm-12 col-md-3" style="margin-bottom: 10px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?>
+                    </button>
+                    <a href="?page=po_list" class="btn btn-default">
+                        <i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?>
+                    </a>
+                </div>
             </div>
         </form>
     </div>
