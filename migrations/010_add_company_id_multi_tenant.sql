@@ -134,8 +134,7 @@ ALTER TABLE audit_log
 -- PHASE 2: DATA MIGRATION - POPULATE company_id
 -- ============================================================================
 
--- Note: Default company_id = 7 (Direct Booking Co.,Ltd.) as the main operating company
--- For F2 Co.,Ltd. = 95
+-- Note: Default company_id = 95 (F2 Co.,Ltd.) as the main operating company
 -- Adjust based on your actual data ownership
 
 -- ----------------------------------------------------------------------------
@@ -147,46 +146,46 @@ UPDATE brand b
 LEFT JOIN company c ON b.ven_id = c.id AND c.vender = 1
 SET b.company_id = COALESCE(
     CASE WHEN b.ven_id > 0 AND c.id IS NOT NULL THEN b.ven_id ELSE NULL END,
-    7  -- Default to Direct Booking
+    95  -- Default to F2 Co.,Ltd.
 )
 WHERE b.company_id IS NULL;
 
 -- Categories: Default to main company
-UPDATE category SET company_id = 7 WHERE company_id IS NULL;
+UPDATE category SET company_id = 95 WHERE company_id IS NULL;
 
 -- Types: Default to main company  
-UPDATE type SET company_id = 7 WHERE company_id IS NULL;
+UPDATE type SET company_id = 95 WHERE company_id IS NULL;
 
 -- Models: Default to main company
-UPDATE model SET company_id = 7 WHERE company_id IS NULL;
+UPDATE model SET company_id = 95 WHERE company_id IS NULL;
 
 -- Map type to brand: Default to main company
-UPDATE map_type_to_brand SET company_id = 7 WHERE company_id IS NULL;
+UPDATE map_type_to_brand SET company_id = 95 WHERE company_id IS NULL;
 
 -- ----------------------------------------------------------------------------
 -- 2.2 CONFIGURATION DATA
 -- ----------------------------------------------------------------------------
 
 -- Payment methods (legacy table): Try to derive from payment table or default
-UPDATE payment_methods SET company_id = 7 WHERE company_id IS NULL;
+UPDATE payment_methods SET company_id = 95 WHERE company_id IS NULL;
 
 -- Payment method (new table): Default to main company
-UPDATE payment_method SET company_id = 7 WHERE company_id IS NULL;
+UPDATE payment_method SET company_id = 95 WHERE company_id IS NULL;
 
 -- Payment gateway config: Default to main company
-UPDATE payment_gateway_config SET company_id = 7 WHERE company_id IS NULL;
+UPDATE payment_gateway_config SET company_id = 95 WHERE company_id IS NULL;
 
 -- ----------------------------------------------------------------------------
 -- 2.3 TRANSACTION DATA - Derive from existing relationships
 -- ----------------------------------------------------------------------------
 
 -- POs: Derive company from the vendor (bandven) or default
--- POs created by Direct Booking (vendor company_id 7)
-UPDATE po SET company_id = 7 WHERE company_id IS NULL;
+-- POs created by F2 Co.,Ltd. (company_id 95)
+UPDATE po SET company_id = 95 WHERE company_id IS NULL;
 
 -- Invoices: Set company_id based on which company issued it
--- For now, default to company 7 (Direct Booking) as the issuing company
-UPDATE iv SET company_id = 7 WHERE company_id IS NULL;
+-- For now, default to company 95 (F2 Co.,Ltd.) as the issuing company
+UPDATE iv SET company_id = 95 WHERE company_id IS NULL;
 
 -- Products: Inherit from their PO
 UPDATE product p
@@ -207,31 +206,32 @@ SET p.company_id = po.company_id
 WHERE p.company_id IS NULL;
 
 -- Purchase Requests: Default to main company
-UPDATE pr SET company_id = 7 WHERE company_id IS NULL;
+UPDATE pr SET company_id = 95 WHERE company_id IS NULL;
 
 -- Vouchers: Default to main company
-UPDATE voucher SET company_id = 7 WHERE company_id IS NULL;
+UPDATE voucher SET company_id = 95 WHERE company_id IS NULL;
 
 -- Receipts: Default to main company  
-UPDATE receipt SET company_id = 7 WHERE company_id IS NULL;
+UPDATE receipt SET company_id = 95 WHERE company_id IS NULL;
 
 -- Store/Inventory
-UPDATE store SET company_id = 7 WHERE company_id IS NULL;
+UPDATE store SET company_id = 95 WHERE company_id IS NULL;
 
 -- Send out items
-UPDATE sendoutitem SET company_id = 7 WHERE company_id IS NULL;
+UPDATE sendoutitem SET company_id = 95 WHERE company_id IS NULL;
 
 -- Receive items
-UPDATE receive SET company_id = 7 WHERE company_id IS NULL;
+UPDATE receive SET company_id = 95 WHERE company_id IS NULL;
 
 -- ----------------------------------------------------------------------------
 -- 2.4 AUDIT DATA - Set based on user's company
 -- ----------------------------------------------------------------------------
 
-UPDATE audit_log al
-LEFT JOIN authorize a ON al.user_id = a.id
-SET al.company_id = COALESCE(a.company_id, 7)
-WHERE al.company_id IS NULL;
+-- Note: audit_log table may not exist, skip if not present
+-- UPDATE audit_log al
+-- LEFT JOIN authorize a ON al.user_id = a.id
+-- SET al.company_id = COALESCE(a.company_id, 95)
+-- WHERE al.company_id IS NULL;
 
 -- ============================================================================
 -- PHASE 3: ADD FOREIGN KEY CONSTRAINTS (Optional - for data integrity)
