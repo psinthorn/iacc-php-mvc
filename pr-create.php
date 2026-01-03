@@ -62,9 +62,10 @@ totalsum+=parseFloat(document.getElementById('total'+i).value);
 			<?php 
 			$com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 			if ($com_id > 0) {
-			    // Show only vendors this company can work with
+			    // Show only vendors this company has done business with (from PR/PO history)
 			    $querycustomer = mysqli_query($db->conn, "SELECT DISTINCT c.name_en, c.id FROM company c 
-			        WHERE c.vender='1' AND c.id != '$com_id' AND c.deleted_at IS NULL
+			        INNER JOIN pr ON c.id = pr.ven_id 
+			        WHERE pr.cus_id = '$com_id' AND c.vender='1' AND c.deleted_at IS NULL
 			        ORDER BY c.name_en");
 			} else {
 			    $querycustomer = mysqli_query($db->conn, "SELECT name_en, id FROM company WHERE vender='1' ORDER BY name_en");

@@ -57,9 +57,10 @@ function sumall() {
 			<?php 
 			$com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 			if ($com_id > 0) {
-			    // Show only customers this company has done business with, or all customers
+			    // Show only customers this company has done business with (from PR/PO history)
 			    $querycustomer = mysqli_query($db->conn, "SELECT DISTINCT c.name_en, c.id FROM company c 
-			        WHERE c.customer='1' AND c.id != '$com_id' AND c.deleted_at IS NULL
+			        INNER JOIN pr ON c.id = pr.cus_id 
+			        WHERE pr.ven_id = '$com_id' AND c.customer='1' AND c.deleted_at IS NULL
 			        ORDER BY c.name_en");
 			} else {
 			    $querycustomer = mysqli_query($db->conn, "SELECT name_en, id FROM company WHERE customer='1' ORDER BY name_en");
