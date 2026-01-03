@@ -162,7 +162,7 @@ $pageFile = isset($routes[$page]) ? $routes[$page] : null;
 	<?php include_once "css.php";?>
 </head>
 
-<body >
+<body class="has-top-nav">
 
     <div id="wrapper">
 		<?php include_once "menu.php";?>

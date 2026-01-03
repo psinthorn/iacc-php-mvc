@@ -50,4 +50,40 @@
 	#box2{ width:100%;}
 	#box3{ width:100%;}
 	}
+    
+    /* Top Navbar Layout Adjustments */
+    body.has-top-nav {
+        padding-top: 60px;
+    }
+    
+    body.has-top-nav .navbar-static-side {
+        position: fixed;
+        top: 60px;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+        overflow-y: auto;
+        background-color: #222;
+        width: 250px;
+    }
+    
+    body.has-top-nav #page-wrapper {
+        margin-left: 250px;
+        min-height: calc(100vh - 60px);
+    }
+    
+    @media (max-width: 768px) {
+        body.has-top-nav .navbar-static-side {
+            left: -250px;
+            transition: left 0.3s ease;
+        }
+        
+        body.has-top-nav .navbar-static-side.mobile-visible {
+            left: 0;
+        }
+        
+        body.has-top-nav #page-wrapper {
+            margin-left: 0;
+        }
+    }
     </style>

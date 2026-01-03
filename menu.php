@@ -1,5 +1,14 @@
+<?php
+/**
+ * Menu Component
+ * Includes top navbar and sidebar navigation
+ */
 
-        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+// Include the new top navbar component
+include_once 'inc/top-navbar.php';
+?>
+
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; display: none;">
             <div class="navbar-header">
               <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
                     <span class="sr-only">Toggle navigation</span>
