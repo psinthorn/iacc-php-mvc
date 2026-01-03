@@ -3,10 +3,12 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.database.php"); // New prepared statement helper
 new DbConn($config);
 
-$type = $_POST['type'];
-$refer = $_POST['refer'];
+// SECURITY FIX: Sanitize user input
+$type = sql_int($_POST['type'] ?? 0);
+$refer = sql_int($_POST['refer'] ?? 0);
 
 $referField = "";
 $dataTable = "";

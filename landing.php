@@ -979,34 +979,34 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 <ul>
                     <li><a href="#features"><?= __('nav_features') ?></a></li>
                     <li><a href="#pricing"><?= __('nav_pricing') ?></a></li>
-                    <li><a href="#"><?= __('footer_updates') ?></a></li>
-                    <li><a href="#"><?= __('footer_roadmap') ?></a></li>
+                    <li><a href="blog.php?lang=<?= $lang ?>"><?= __('footer_updates') ?></a></li>
+                    <li><a href="roadmap.php?lang=<?= $lang ?>"><?= __('footer_roadmap') ?></a></li>
                 </ul>
             </div>
             
             <div class="footer-column">
                 <h4><?= __('footer_company') ?></h4>
                 <ul>
-                    <li><a href="#"><?= __('footer_about') ?></a></li>
-                    <li><a href="#"><?= __('footer_careers') ?></a></li>
-                    <li><a href="#"><?= __('footer_blog') ?></a></li>
-                    <li><a href="#"><?= __('footer_press') ?></a></li>
+                    <li><a href="about.php?lang=<?= $lang ?>"><?= __('footer_about') ?></a></li>
+                    <li><a href="careers.php?lang=<?= $lang ?>"><?= __('footer_careers') ?></a></li>
+                    <li><a href="blog.php?lang=<?= $lang ?>"><?= __('footer_blog') ?></a></li>
+                    <li><a href="press.php?lang=<?= $lang ?>"><?= __('footer_press') ?></a></li>
                 </ul>
             </div>
             
             <div class="footer-column">
                 <h4><?= __('footer_support') ?></h4>
                 <ul>
-                    <li><a href="#"><?= __('footer_help') ?></a></li>
-                    <li><a href="#"><?= __('footer_contact') ?></a></li>
-                    <li><a href="#"><?= __('footer_status') ?></a></li>
-                    <li><a href="#"><?= __('footer_terms') ?></a></li>
+                    <li><a href="login.php"><?= __('footer_help') ?></a></li>
+                    <li><a href="contact.php?lang=<?= $lang ?>"><?= __('footer_contact') ?></a></li>
+                    <li><a href="privacy.php?lang=<?= $lang ?>"><?= __('footer_status') ?></a></li>
+                    <li><a href="terms.php?lang=<?= $lang ?>"><?= __('footer_terms') ?></a></li>
                 </ul>
             </div>
         </div>
         
         <div class="footer-bottom">
-            <p><?= __('footer_copyright') ?></p>
+            <p><?= __('footer_copyright') ?> | <?= $lang === 'th' ? 'พัฒนาโดย' : 'Developed by' ?> <a href="#" style="color: var(--primary);">F2 Co.,Ltd.</a></p>
             <div class="social-links">
                 <a href="#"><i class="fa fa-facebook"></i></a>
                 <a href="#"><i class="fa fa-twitter"></i></a>

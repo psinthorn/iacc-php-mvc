@@ -129,14 +129,14 @@ $j++;
     
     </table>
    
-	<input type="hidden"  name="method" value="<?php echo e($_GET['action']);?>">
-    <input type="hidden" name="ref" value="<?php echo $data[ref];?>">
+	<input type="hidden"  name="method" value="<?php echo e($_GET['action'] ?? '');?>">
+    <input type="hidden" name="ref" value="<?php echo e($data['ref'] ?? '');?>">
 	<input type="hidden" name="page" value="deliv_list">
-    <input type="hidden" name="po_id" value="<?php echo $id;?>">
-    <input type="hidden" name="cus_id" value="<?php echo $data[cus_id];?>">
-    
+    <input type="hidden" name="po_id" value="<?php echo e($id);?>">
+    <input type="hidden" name="cus_id" value="<?php echo e($data['cus_id'] ?? '');?>">
+    <?= csrf_field() ?>
 	
-	<?php if($data[status]=="2"){?><input type="submit" value="<?=$xml->save;?>" class="btn btn-primary"><?php }?>
+	<?php if($data['status']=="2"){?><input type="submit" value="<?=$xml->save;?>" class="btn btn-primary"><?php }?>
 </form>
 
 

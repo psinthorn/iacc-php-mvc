@@ -1,11 +1,27 @@
 version: '3.8'
 
+# =========================================================
+# DEVELOPMENT DOCKER COMPOSE
+# =========================================================
+# This configuration is for LOCAL DEVELOPMENT only.
+# 
+# For PRODUCTION, use docker-compose.prod.yml which includes:
+# - Docker socket proxy (read-only, secure access)
+# - No direct Docker socket mounting
+# - Container management disabled
+# 
+# Usage:
+#   Development: docker compose up -d
+#   Production:  docker compose -f docker-compose.prod.yml up -d
+# =========================================================
+
 services:
   # PHP-FPM Service
   php:
     build: .
     container_name: iacc_php
     working_dir: /var/www/html
+    user: root
     ports:
       - "9000:9000"
     volumes:
@@ -14,15 +30,22 @@ services:
       # Upload and file directories - for persistence
       - php_uploads:/var/www/html/upload
       - php_files:/var/www/html/file
+      # Docker socket for container monitoring (DEVELOPMENT ONLY)
+      # WARNING: Direct socket access allows full Docker control
+      # For production, use docker-socket-proxy instead
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # Pass environment variables if needed
       - PHP_MAX_EXECUTION_TIME=300
       - PHP_MEMORY_LIMIT=256M
+      - APP_ENV=development
     depends_on:
       - mysql
     networks:
       - iacc-network
     restart: unless-stopped
+    entrypoint: >
+      sh -c "chmod 666 /var/run/docker.sock 2>/dev/null || true; exec docker-php-entrypoint php-fpm"
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 30s

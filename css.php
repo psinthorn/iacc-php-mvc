@@ -105,6 +105,7 @@
     body.has-top-nav #page-wrapper {
         margin-left: 250px;
         min-height: calc(100vh - 60px);
+        padding-top: 24px;
     }
     
     @media (max-width: 768px) {
@@ -119,6 +120,7 @@
         
         body.has-top-nav #page-wrapper {
             margin-left: 0;
+            padding-top: 20px;
         }
     }
     </style>

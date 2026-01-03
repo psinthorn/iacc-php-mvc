@@ -424,31 +424,69 @@ class HardClass {
 		$this->insertDb($syslog);
 		
 		}
+	/**
+	 * @deprecated Use insertSafeMax() instead for prepared statements
+	 * Legacy method kept for backward compatibility - now uses MySQLi
+	 */
 	function insertDbMax($args){
 		$id=$this->Maxid($args['table']);
-		mysql_query("INSERT INTO ".$args['table']." VALUES ('".$id."',".$args['value'].")") ;
+		$conn = $this->getConn();
+		// Note: This still uses string concat for backward compatibility
+		// New code should use insertSafeMax() instead
+		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES ('".$id."',".$args['value'].")";
+		$conn->query($sql);
 		return $id;
 		}
+	
+	/**
+	 * @deprecated Use insertSafe() instead for prepared statements
+	 * Legacy method kept for backward compatibility - now uses MySQLi
+	 */
 	function insertDb($args){
-		mysql_query("INSERT INTO ".$args['table']." VALUES (".$args['value'].")") ;
+		$conn = $this->getConn();
+		// Note: This still uses string concat for backward compatibility
+		// New code should use insertSafe() instead
+		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (".$args['value'].")";
+		$conn->query($sql);
 		//echo "INSERT INTO ".$args['table']." VALUES (".$args['value'].")";
 		}
 	
 	
+	/**
+	 * @deprecated Use updateSafe() instead for prepared statements
+	 * Legacy method kept for backward compatibility - now uses MySQLi
+	 */
 	function updateDb($args){
-		mysql_query("UPDATE ".$args['table']." SET ".$args['value']." WHERE ".$args['condition']);
+		$conn = $this->getConn();
+		// Note: This still uses string concat for backward compatibility
+		// New code should use updateSafe() instead
+		$sql = "UPDATE ".$conn->real_escape_string($args['table'])." SET ".$args['value']." WHERE ".$args['condition'];
+		$conn->query($sql);
 	//echo "UPDATE ".$args['table']." SET ".$args['value']." WHERE ".$args['condition'];
 		}
-		
+	
+	/**
+	 * @deprecated Use deleteSafe() instead for prepared statements
+	 * Legacy method kept for backward compatibility - now uses MySQLi
+	 */
 	function deleteDb($args){
-		mysql_query("Delete FROM ".$args['table']." WHERE ".$args['condition']);
+		$conn = $this->getConn();
+		// Note: This still uses string concat for backward compatibility
+		// New code should use deleteSafe() instead
+		$sql = "DELETE FROM ".$conn->real_escape_string($args['table'])." WHERE ".$args['condition'];
+		$conn->query($sql);
 		//echo "Delete FROM ".$args['table']." WHERE ".$args['condition'];
 		}	
 	
+	/**
+	 * Get max ID from table and return next ID
+	 * Updated to use MySQLi
+	 */
 	function Maxid($args){
-		//echo "select max(id) as id FROM ".$args;
-		$row=mysql_fetch_array(mysql_query("select max(id) as id FROM ".$args));
-		
+		$conn = $this->getConn();
+		$table = $conn->real_escape_string($args);
+		$result = $conn->query("SELECT MAX(id) as id FROM ".$table);
+		$row = $result->fetch_assoc();
 		if($row['id']=="") return 1; else return $row['id']+1;
 		}
 		

@@ -315,6 +315,12 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=audit_log"><i class="fa fa-history"></i> <?=$xml->auditlog ?? 'Audit Log'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=monitoring"><i class="fa fa-dashboard"></i> <?=$xml->monitoring ?? 'System Monitor'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=containers"><i class="fa fa-server"></i> <?=$xml->containers ?? 'Containers'?></a>
+                            </li>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=payment_method_list"><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></a>

@@ -6,7 +6,9 @@ require_once("inc/security.php");
 $users=new DbConn($config);
 // Security already checked in index.php
 
-$query=mysqli_query($db->conn, "select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$_REQUEST[p_id]."'");
+// SECURITY FIX: Use sql_int() to sanitize user input (prevents SQL injection)
+$p_id = sql_int($_REQUEST['p_id'] ?? 0);
+$query=mysqli_query($db->conn, "select model.id as id,price,model_name,type.name as type,model.des as des,brand.brand_name as brand from model join type on model.type_id=type.id join brand on model.brand_id=brand.id where model.id='".$p_id."'");
 	 if(mysqli_num_rows($query)>0){
 		 $data=mysqli_fetch_array($query);
 		 
@@ -85,7 +87,7 @@ return false;
  
             </div>			<!-- /modal-body -->
             <div class="modal-footer">
-              <button type="submit" name="method" value="E" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-saved"></span> <?=$xml->edit?></button><?php if(mysqli_num_rows(mysqli_query($db->conn, "SELECT * FROM  product WHERE 	model='".$_REQUEST[p_id]."'"))==0){?>   <button name="method" value="D" type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> <?=$xml->delete?></button>  <?php }?> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> <?=$xml->close?></button>
+              <button type="submit" name="method" value="E" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-saved"></span> <?=$xml->edit?></button><?php if(mysqli_num_rows(mysqli_query($db->conn, "SELECT * FROM  product WHERE 	model='".$p_id."'"))==0){?>   <button name="method" value="D" type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> <?=$xml->delete?></button>  <?php }?> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> <?=$xml->close?></button>
            
 
             </div>			<!-- /modal-footer -->

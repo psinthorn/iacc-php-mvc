@@ -7,7 +7,11 @@ require_once("inc/class.current.php");
 $users=new DbConn($config);
 // Security already checked in index.php
 
- $query=mysqli_query($db->conn, "select po.name as name,ven_id,dis,tax,cus_id,vat,over,des,ref,mailcount,valid_pay,brandven,DATE_FORMAT(po.date,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$_POST[id]."' and status>'0' and (cus_id='".$_SESSION['com_id']."' or ven_id='".$_SESSION['com_id']."') and po_id_new=''");
+// SECURITY FIX: Sanitize user input to prevent SQL injection
+$post_id = sql_int($_POST['id'] ?? 0);
+$session_com_id = sql_int($_SESSION['com_id'] ?? 0);
+
+ $query=mysqli_query($db->conn, "select po.name as name,ven_id,dis,tax,cus_id,vat,over,des,ref,mailcount,valid_pay,brandven,DATE_FORMAT(po.date,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$post_id."' and status>'0' and (cus_id='".$session_com_id."' or ven_id='".$session_com_id."') and po_id_new=''");
 if(mysqli_num_rows($query)=="1"){
 	$data=mysqli_fetch_array($query);
 	$ct=$data[mailcount]+1;
@@ -64,7 +68,7 @@ $html = '
 <div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>';
-$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_POST[id]."'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$post_id."'"));
 if($cklabour[cklabour]==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -85,7 +89,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_POST[id]."'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$post_id."'");$summary=0;
 $cot=1;
 	while($data_pro=mysqli_fetch_array($que_pro)){
 	

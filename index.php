@@ -134,6 +134,8 @@ $routes = [
     
     // Admin Tools
     'audit_log'             => 'audit-log.php',
+    'monitoring'            => 'admin-monitoring.php',
+    'containers'            => 'admin-containers.php',
     'payment_method_list'   => 'payment-method-list.php',
     'payment_method'        => 'payment-method.php',
     

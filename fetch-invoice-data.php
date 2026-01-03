@@ -7,6 +7,7 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.database.php"); // New prepared statement helper
 
 header('Content-Type: application/json');
 
@@ -27,8 +28,9 @@ if (!$com_id) {
     exit;
 }
 
-// Get invoice header data - simplified query first to debug
-$sql = "SELECT po.id as invoice_id, iv.taxrw as invoice_no, iv.createdate as invoice_date,
+// Get invoice header data - using prepared statement
+$invoice = db_fetch_one(
+    "SELECT po.id as invoice_id, iv.taxrw as invoice_no, iv.createdate as invoice_date,
         po.valid_pay as due_date, po.vat, po.dis as discount, po.over as overhead,
         company.name_en as customer_name, company.phone, company.email,
         company.tax as tax_id, pr.des as description
@@ -36,23 +38,17 @@ $sql = "SELECT po.id as invoice_id, iv.taxrw as invoice_no, iv.createdate as inv
     JOIN pr ON po.ref = pr.id
     JOIN company ON pr.cus_id = company.id
     JOIN iv ON po.id = iv.tex
-    WHERE po.id = '$invoice_id' 
-    AND pr.ven_id = '$com_id'";
+    WHERE po.id = ? 
+    AND pr.ven_id = ?",
+    [$invoice_id, $com_id]
+);
 
-error_log("fetch-invoice-data.php SQL: $sql");
-
-$query = mysqli_query($db->conn, $sql);
-
-if (!$query) {
-    echo json_encode(['error' => 'Database error: ' . mysqli_error($db->conn)]);
-    exit;
-}
-
-if (mysqli_num_rows($query) == 0) {
+if (!$invoice) {
     // Debug - try without vendor filter
-    $debug_sql = "SELECT po.id, pr.ven_id FROM po JOIN pr ON po.ref = pr.id JOIN iv ON po.id = iv.tex WHERE po.id = '$invoice_id'";
-    $debug_query = mysqli_query($db->conn, $debug_sql);
-    $debug_data = mysqli_fetch_assoc($debug_query);
+    $debug_data = db_fetch_one(
+        "SELECT po.id, pr.ven_id FROM po JOIN pr ON po.ref = pr.id JOIN iv ON po.id = iv.tex WHERE po.id = ?",
+        [$invoice_id]
+    );
     echo json_encode([
         'error' => 'Invoice not found',
         'debug' => [
@@ -64,12 +60,10 @@ if (mysqli_num_rows($query) == 0) {
     exit;
 }
 
-$invoice = mysqli_fetch_assoc($query);
-
-// Get invoice products
+// Get invoice products - using prepared statement
 $products = [];
-$product_sql = "
-    SELECT 
+$product_results = db_fetch_all(
+    "SELECT 
         product.pro_id as product_id,
         type.name as product_name,
         brand.brand_name,
@@ -84,19 +78,12 @@ $product_sql = "
     JOIN type ON product.type = type.id
     LEFT JOIN brand ON product.ban_id = brand.id
     LEFT JOIN model ON product.model = model.id
-    WHERE product.po_id = '$invoice_id'
-";
-
-error_log("Product SQL: $product_sql");
-
-$product_query = mysqli_query($db->conn, $product_sql);
-
-if (!$product_query) {
-    error_log("Product query error: " . mysqli_error($db->conn));
-}
+    WHERE product.po_id = ?",
+    [$invoice_id]
+);
 
 $subtotal = 0;
-while ($prod = mysqli_fetch_assoc($product_query)) {
+foreach ($product_results as $prod) {
     $amount = floatval($prod['quantity']) * floatval($prod['price']);
     $subtotal += $amount;
     $products[] = [

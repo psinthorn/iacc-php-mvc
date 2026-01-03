@@ -48,15 +48,16 @@ else $method="A3";
 	</div>
 	<div id="box">
 		<lable for="limit_day"><?=$xml->limitday?></lable>
-		<input id="limit_day" name="limit_day" class="form-control" required type="number" value="<?php echo $data[limit_day];?>">
+		<input id="limit_day" name="limit_day" class="form-control" required type="number" value="<?php echo e($data['limit_day'] ?? '');?>">
 	</div>
 	
-	<input type="hidden" name="method" value="<?php echo $method;?>">
+	<input type="hidden" name="method" value="<?php echo e($method);?>">
 	<input type="hidden" name="page" value="company">
     
-    <input type="hidden" name="ven_id" value="<?php echo $ven_id;?>">
-	<input type="hidden" name="id" value="<?php echo $id;?>">
-	<input type="hidden" name="valid_start" value="<?php echo sql_escape($_REQUEST['valid_start']);?>">
+    <input type="hidden" name="ven_id" value="<?php echo e($ven_id);?>">
+	<input type="hidden" name="id" value="<?php echo e($id);?>">
+	<input type="hidden" name="valid_start" value="<?php echo e($_REQUEST['valid_start'] ?? '');?>">
+	<?= csrf_field() ?>
 	<div id="box" style="padding-top:20px;"><input type="submit" value="<?php if($method=="A4")echo $xml->save;else echo $xml->add;?>" class="btn btn-primary"></div>
 </form>
 </body>

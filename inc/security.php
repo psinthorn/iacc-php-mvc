@@ -965,3 +965,107 @@ function cleanup_expired_tokens($conn) {
     $conn->query("DELETE FROM password_resets WHERE expires_at < NOW() OR used = 1");
     $conn->query("DELETE FROM remember_tokens WHERE expires_at < NOW()");
 }
+
+/**
+ * Secure file upload handler
+ * Validates file type using finfo (server-side), not client MIME type
+ * 
+ * @param array $file The $_FILES array element
+ * @param string $destination Directory to save file (without trailing slash)
+ * @param array $allowed_types Allowed MIME types (e.g., ['image/jpeg', 'image/png'])
+ * @param int $max_size Maximum file size in bytes (default 2MB)
+ * @param string|null $prefix Optional filename prefix
+ * @return array ['success' => bool, 'filename' => string|null, 'error' => string|null]
+ * 
+ * Usage:
+ * $result = secure_upload($_FILES['logo'], 'upload', ['image/jpeg', 'image/png'], 2*1024*1024, 'logo');
+ * if ($result['success']) { $filepath = $result['filename']; }
+ */
+function secure_upload($file, $destination, $allowed_types = ['image/jpeg', 'image/png'], $max_size = 2097152, $prefix = 'file') {
+    // Check for upload errors
+    if (!isset($file['tmp_name']) || empty($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
+        return ['success' => false, 'filename' => null, 'error' => 'No file uploaded or upload error'];
+    }
+    
+    // Check file size
+    if ($file['size'] > $max_size) {
+        return ['success' => false, 'filename' => null, 'error' => 'File too large. Max: ' . ($max_size / 1024 / 1024) . 'MB'];
+    }
+    
+    // Verify actual file type using finfo (server-side check)
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $actual_type = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($actual_type, $allowed_types)) {
+        return ['success' => false, 'filename' => null, 'error' => 'Invalid file type: ' . $actual_type];
+    }
+    
+    // Determine file extension based on actual MIME type
+    $extensions = [
+        'image/jpeg' => '.jpg',
+        'image/png' => '.png',
+        'image/gif' => '.gif',
+        'application/pdf' => '.pdf',
+        'application/msword' => '.doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => '.docx',
+        'application/vnd.ms-excel' => '.xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => '.xlsx'
+    ];
+    
+    $extension = $extensions[$actual_type] ?? '';
+    if (empty($extension)) {
+        return ['success' => false, 'filename' => null, 'error' => 'Unknown file type'];
+    }
+    
+    // Generate secure random filename
+    $filename = $prefix . '_' . bin2hex(random_bytes(16)) . $extension;
+    $filepath = rtrim($destination, '/') . '/' . $filename;
+    
+    // Move uploaded file
+    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+        return ['success' => true, 'filename' => $filename, 'error' => null];
+    }
+    
+    return ['success' => false, 'filename' => null, 'error' => 'Failed to save file'];
+}
+
+/**
+ * Secure image upload helper (shorthand)
+ * Only allows common image formats
+ * 
+ * @param array $file The $_FILES array element
+ * @param string $destination Directory to save file
+ * @param string $prefix Optional filename prefix
+ * @return string|false Filename on success, false on failure
+ */
+function secure_image_upload($file, $destination = 'upload', $prefix = 'img') {
+    $result = secure_upload(
+        $file, 
+        $destination, 
+        ['image/jpeg', 'image/png', 'image/gif'],
+        5 * 1024 * 1024, // 5MB max for images
+        $prefix
+    );
+    return $result['success'] ? $result['filename'] : false;
+}
+
+/**
+ * Secure document upload helper (shorthand)
+ * Allows PDF and common document formats
+ * 
+ * @param array $file The $_FILES array element
+ * @param string $destination Directory to save file
+ * @param string $prefix Optional filename prefix
+ * @return string|false Filename on success, false on failure
+ */
+function secure_document_upload($file, $destination = 'upload', $prefix = 'doc') {
+    $result = secure_upload(
+        $file, 
+        $destination, 
+        ['application/pdf', 'image/jpeg', 'image/png'],
+        10 * 1024 * 1024, // 10MB max for documents
+        $prefix
+    );
+    return $result['success'] ? $result['filename'] : false;
+}

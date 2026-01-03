@@ -7,12 +7,15 @@ require_once("inc/class.current.php");
 $users=new DbConn($config);
 // Security already checked in index.php
 
+// SECURITY FIX: Sanitize user input to prevent SQL injection
+$post_id = sql_int($_POST['id'] ?? 0);
+$session_com_id = sql_int($_SESSION['com_id'] ?? 0);
 
- $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis,vat,countmailinv, taxrw as tax2,tax,pr.cus_id as cus_id,payby,des,brandven,valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$_POST[id]."' and status>'2' and ven_id='".$_SESSION['com_id']."' and po_id_new=''");
+ $query=mysqli_query($db->conn, "select po.name as name,over,ven_id,dis,vat,countmailinv, taxrw as tax2,tax,pr.cus_id as cus_id,payby,des,brandven,valid_pay, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as date,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  join iv on po.id=iv.tex where po.id='".$post_id."' and status>'2' and ven_id='".$session_com_id."' and po_id_new=''");
 if(mysqli_num_rows($query)=="1"){
 	$data=mysqli_fetch_array($query);
 	$ct=$data[countmailinv]+1;
-	mysqli_query($db->conn, "update iv set countmailinv='".$ct."' where tex='".$_POST[id]."' and cus_id='".$_SESSION['com_id']."'");
+	mysqli_query($db->conn, "update iv set countmailinv='".$ct."' where tex='".$post_id."' and cus_id='".$session_com_id."'");
 	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,term,logo from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
 	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[payby]."' and valid_end='0000-00-00'"));
 	
@@ -72,7 +75,7 @@ $html = '
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>
 ';
-$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$_POST[id]."'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$post_id."'"));
 if($cklabour[cklabour]==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -93,7 +96,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,product.des as des,valuelabour,activelabour,discount,model.model_name as model,quantity,pack_quantity from product join type on product.type=type.id join model on product.model=model.id where po_id='".$_POST[id]."'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,product.des as des,valuelabour,activelabour,discount,model.model_name as model,quantity,pack_quantity from product join type on product.type=type.id join model on product.model=model.id where po_id='".$post_id."'");$summary=0;
 $cot=1;
 	while($data_pro=mysqli_fetch_array($que_pro)){
 

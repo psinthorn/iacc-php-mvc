@@ -1,6 +1,44 @@
 version: '3.9'
 
 services:
+  # Docker Socket Proxy (Secure read-only access to Docker API)
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: iacc-docker-proxy-prod
+    restart: always
+    environment:
+      # Read-only permissions
+      - CONTAINERS=1          # Allow listing containers
+      - SERVICES=0            # Disable swarm services
+      - TASKS=0               # Disable swarm tasks
+      - NETWORKS=0            # Disable network listing
+      - NODES=0               # Disable node listing
+      - BUILD=0               # Disable building images
+      - COMMIT=0              # Disable committing containers
+      - CONFIGS=0             # Disable configs
+      - DISTRIBUTION=0        # Disable distribution
+      - EXEC=0                # Disable exec into containers
+      - GRPC=0                # Disable gRPC
+      - IMAGES=0              # Disable image operations
+      - INFO=1                # Allow info endpoint
+      - PLUGINS=0             # Disable plugins
+      - POST=0                # CRITICAL: Block all POST requests (no write operations)
+      - SECRETS=0             # Disable secrets
+      - SESSION=0             # Disable sessions
+      - SWARM=0               # Disable swarm
+      - SYSTEM=0              # Disable system operations
+      - VOLUMES=0             # Disable volume operations
+      - LOG_LEVEL=warning
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - iacc-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
   # Nginx web server
   nginx:
     image: nginx:1.25-alpine

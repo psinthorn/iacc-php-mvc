@@ -123,9 +123,10 @@ $data=mysqli_fetch_array($query);
 	<div id="box" style="padding-top:20px;">
 		<input type="checkbox" name="customer" <?php if($data['customer']=="1")echo "checked"; ?> value="1"> <?=$xml->customer?> &nbsp;
 		<input type="checkbox" name="vender" <?php if($data['vender']=="1")echo "checked"; ?> value="1"> <?=$xml->vender?> &nbsp;
-	<input type="hidden" name="method" value="<?php echo $method;?>">
+	<input type="hidden" name="method" value="<?php echo e($method);?>">
 	<input type="hidden" name="page" value="company">
-	<input type="hidden" name="id" value="<?php echo $_REQUEST['id'];?>">
+	<input type="hidden" name="id" value="<?php echo e($_REQUEST['id'] ?? '');?>">
+	<?= csrf_field() ?>
 	<input type="submit" value="<?php if($method=="E")echo $xml->save; else echo $xml->add?>" class="btn btn-primary"></div>
 </form>
 <div class="clearfix" style="margin-bottom:40px;"></div>

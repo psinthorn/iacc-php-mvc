@@ -4,6 +4,14 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/class.hard.php");
 require_once("inc/security.php");
+
+// CSRF protection for all POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_verify()) {
+        die('CSRF token validation failed. Please refresh the page and try again.');
+    }
+}
+
 $users=new DbConn($config);
 // Security already checked in index.php
 
@@ -165,7 +173,7 @@ case "compl_list2" : {
 	$har->updateDb($args);
 	
 	 $argsiv['table']="iv";
-	$po_id=mysqli_fetch_array(mysqli_query($db->conn, "select po.id as po_id,ven_id from pr join po on pr.id=po.ref where po_id_new='' and pr.id='".$_REQUEST['id']."'"));
+	$po_id=mysqli_fetch_array(mysqli_query($db->conn, "select po.id as po_id,ven_id from pr join po on pr.id=po.ref where po_id_new='' and pr.id='".sql_int($_REQUEST['id'])."'"));
 	 $maxtaxiv=mysqli_fetch_array(mysqli_query($db->conn, "select max(texiv) as max_id from iv where cus_id='".$po_id[ven_id]."'"));
 	
 	
@@ -183,13 +191,13 @@ case "compl_list2" : {
 case "payment" : {
 	if($_REQUEST['method']=="A"){
 		$args['table']="payment";
-	$args['value']="'','".$_REQUEST['payment_name']."','".$_REQUEST['payment_des']."','".$_SESSION['com_id']."'";
+	$args['value']="'','".sql_escape($_REQUEST['payment_name'])."','".sql_escape($_REQUEST['payment_des'])."','".$_SESSION['com_id']."'";
 	$har->insertDB($args);	
 		}
 	else if($_REQUEST['method']=="E"){
 	$args['table']="payment";
-	$args['value']="payment_name='".$_REQUEST['payment_name']."',payment_des='".$_REQUEST['payment_des']."'";
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['value']="payment_name='".sql_escape($_REQUEST['payment_name'])."',payment_des='".sql_escape($_REQUEST['payment_des'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);	
 		}
 }break;
@@ -201,12 +209,12 @@ case "mo_list" : {
 		$args['table']="model";
 
 	if($_REQUEST['method']=="A"){
-		$args['value']="'','".$_REQUEST['type']."','".$_REQUEST['brand']."','".$_REQUEST['model_name']."','".$_REQUEST['des']."','".$_REQUEST['price']."'";
+		$args['value']="'','".sql_int($_REQUEST['type'])."','".sql_int($_REQUEST['brand'])."','".sql_escape($_REQUEST['model_name'])."','".sql_escape($_REQUEST['des'])."','".sql_escape($_REQUEST['price'])."'";
 	$har->insertDB($args);	
 		}
 	if($_REQUEST['method']=="E"){
-	$args['value']="model_name='".$_REQUEST['model_name']."',des='".$_REQUEST['des']."',price='".$_REQUEST['price']."'";
-		$args['condition']="id='".$_REQUEST['p_id']."'";
+	$args['value']="model_name='".sql_escape($_REQUEST['model_name'])."',des='".sql_escape($_REQUEST['des'])."',price='".sql_escape($_REQUEST['price'])."'";
+		$args['condition']="id='".sql_int($_REQUEST['p_id'])."'";
 
 	$har->updateDb($args);	
 	
@@ -214,8 +222,8 @@ case "mo_list" : {
 		}	
 		
 		
-			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($db->conn, "select * from product where model='".$_REQUEST['p_id']."'"))==0)){
-	mysqli_query($db->conn, "delete from model where id='".$_REQUEST['p_id']."'");
+			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($db->conn, "select * from product where model='".sql_int($_REQUEST['p_id'])."'"))==0)){
+	mysqli_query($db->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."'");
 		}
 
 }break;
@@ -234,11 +242,11 @@ case "brand" : {
 		$tmpupdate=",'".$filepath."'";
 	}else{$tmpupdate=",''";}
 	
-	$args['value']="'','".$_REQUEST['brand_name']."','".$_REQUEST['des']."'".$tmpupdate.",'".$_REQUEST['ven_id']."'";
+	$args['value']="'','".sql_escape($_REQUEST['brand_name'])."','".sql_escape($_REQUEST['des'])."'".$tmpupdate.",'".sql_int($_REQUEST['ven_id'])."'";
 	$har->insertDB($args);	
 		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "delete from brand where id='".$_REQUEST['id']."'");
-			mysqli_query($db->conn, "delete from  map_type_to_brand where 	brand_id='".$_REQUEST['id']."'");
+			mysqli_query($db->conn, "delete from brand where id='".sql_int($_REQUEST['id'])."'");
+			mysqli_query($db->conn, "delete from  map_type_to_brand where 	brand_id='".sql_int($_REQUEST['id'])."'");
 			}
 	else if($_REQUEST['method']=="E"){
 			if (($_FILES["logo"] != "") && 
@@ -251,9 +259,9 @@ case "brand" : {
 		$tmpupdate=",logo='".$filepath."'";
 	}else{$tmpupdate="";}
 		
-	$args['value']="brand_name='".$_REQUEST['brand_name']."',des='".$_REQUEST['des']."'".$tmpupdate.",ven_id='".$_REQUEST['ven_id']."'";
+	$args['value']="brand_name='".sql_escape($_REQUEST['brand_name'])."',des='".sql_escape($_REQUEST['des'])."'".$tmpupdate.",ven_id='".sql_int($_REQUEST['ven_id'])."'";
 	
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);	
 		}
 }break;
@@ -286,7 +294,7 @@ case "pr_list" : {
 case "po_list" : {
 	$args['table']="po";
 	if($_REQUEST['method']=="D"){
-		$dataref=mysqli_fetch_array(mysqli_query($db->conn, "select ref,status from po join pr on po.ref=pr.id where po.id='".$_REQUEST['id']."'"));
+		$dataref=mysqli_fetch_array(mysqli_query($db->conn, "select ref,status from po join pr on po.ref=pr.id where po.id='".sql_int($_REQUEST['id'])."'"));
 			$args['table']="pr";
 	$args['value']="cancel='1'";
 	$args['condition']="id='".$dataref[ref]."' and (ven_id='".$_SESSION['com_id']."' or cus_id='".$_SESSION['com_id']."')";
@@ -395,7 +403,7 @@ case "receipt_list" : {
 	$invoice_id_val = $invoice_id === NULL ? 'NULL' : "'".$invoice_id."'";
 	
 	// Column order: id, name, phone, email, createdate, description, payment_method, status, invoice_id, vender, rep_no, rep_rw, brand, vat, dis, deleted_at
-	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['phone']."','".$_REQUEST['email']."','".date("Y-m-d")."','".$_REQUEST['des']."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[dis]."',NULL";
+	$args['value']="'".sql_escape($_REQUEST['name'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['email'])."','".date("Y-m-d")."','".sql_escape($_REQUEST['des'])."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".sql_int($_REQUEST['brandven'])."','".sql_escape($_REQUEST['vat'])."','".sql_escape($_REQUEST['dis'])."',NULL";
 	 
 	$rep_id=$har->insertDbMax($args);
 	
@@ -420,14 +428,14 @@ case "receipt_list" : {
 	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
 	$invoice_id_sql = $invoice_id === NULL ? 'invoice_id=NULL' : "invoice_id='".$invoice_id."'";
 	
-	$args['value']="name='".$_REQUEST['name']."',phone='".$_REQUEST['phone']."',email='".$_REQUEST['email']."',description='".$_REQUEST['des']."',brand='".$_REQUEST[brandven]."',vat='".$_REQUEST[vat]."',dis='".$_REQUEST[dis]."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
+	$args['value']="name='".sql_escape($_REQUEST['name'])."',phone='".sql_escape($_REQUEST['phone'])."',email='".sql_escape($_REQUEST['email'])."',description='".sql_escape($_REQUEST['des'])."',brand='".sql_int($_REQUEST['brandven'])."',vat='".sql_escape($_REQUEST['vat'])."',dis='".sql_escape($_REQUEST['dis'])."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
 				
-	$args['condition']="id='".$_REQUEST['id']."' and vender='".$_SESSION['com_id']."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."' and vender='".$_SESSION['com_id']."'";
 	$har->updateDb($args);	
 	
 		$args['table']="product";
 	$i=0;
-	mysqli_query($db->conn, "delete from product where re_id='".$_REQUEST['id']."' and po_id='0' and so_id='0'");
+	mysqli_query($db->conn, "delete from product where re_id='".sql_int($_REQUEST['id'])."' and po_id='0' and so_id='0'");
 	foreach ($_REQUEST[type] as $key => $type) {
 		
 		$args['value']="'','0','".$_REQUEST[price][$key]."','0','".$_REQUEST[ban_id][$key]."','".$_REQUEST[model][$key]."','".$type."','".$_REQUEST[quantity][$key]."','1','','".$_REQUEST[des][$key]."','".$_REQUEST[a_labour][$key]."','".$_REQUEST[v_labour][$key]."','','".date("Y-m-d",strtotime($_REQUEST[warranty][$key]))."','".$_REQUEST['id']."'";
@@ -463,7 +471,7 @@ case "voucher_list" : {
 	$invoice_id_val = $invoice_id === NULL ? 'NULL' : "'".$invoice_id."'";
 	
 	// Column order: id, name, phone, email, createdate, description, payment_method, status, invoice_id, vender, vou_no, vou_rw, brand, vat, discount, deleted_at
-	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['phone']."','".$_REQUEST['email']."','".date("Y-m-d")."','".$_REQUEST['des']."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[dis]."',NULL";
+	$args['value']="'".sql_escape($_REQUEST['name'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['email'])."','".date("Y-m-d")."','".sql_escape($_REQUEST['des'])."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".sql_int($_REQUEST['brandven'])."','".sql_escape($_REQUEST['vat'])."','".sql_escape($_REQUEST['dis'])."',NULL";
 	 
 	$vou_id=$har->insertDbMax($args);
 	
@@ -488,17 +496,17 @@ case "voucher_list" : {
 	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
 	$invoice_id_sql = $invoice_id === NULL ? 'invoice_id=NULL' : "invoice_id='".$invoice_id."'";
 	
-	$args['value']="name='".$_REQUEST['name']."',phone='".$_REQUEST['phone']."',email='".$_REQUEST['email']."',description='".$_REQUEST['des']."',brand='".$_REQUEST[brandven]."',vat='".$_REQUEST[vat]."',discount='".$_REQUEST[dis]."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
+	$args['value']="name='".sql_escape($_REQUEST['name'])."',phone='".sql_escape($_REQUEST['phone'])."',email='".sql_escape($_REQUEST['email'])."',description='".sql_escape($_REQUEST['des'])."',brand='".sql_int($_REQUEST['brandven'])."',vat='".sql_escape($_REQUEST['vat'])."',discount='".sql_escape($_REQUEST['dis'])."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
 			
 			
-	$args['condition']="id='".$_REQUEST['id']."' and vender='".$_SESSION['com_id']."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."' and vender='".$_SESSION['com_id']."'";
 	$har->updateDb($args);	
 	
 	
 	
 	$args['table']="product";
 	$i=0;
-	mysqli_query($db->conn, "delete from product where vo_id='".$_REQUEST['id']."' and po_id='0' and so_id='0'");
+	mysqli_query($db->conn, "delete from product where vo_id='".sql_int($_REQUEST['id'])."' and po_id='0' and so_id='0'");
 	foreach ($_REQUEST[type] as $type) {
 		
 		$args['value']="'','0','".$_REQUEST[price][$i]."','0','".$_REQUEST[ban_id][$i]."','".$_REQUEST[model][$i]."','".$type."','".$_REQUEST[quantity][$i]."','1','','".$_REQUEST[des][$i]."','".$_REQUEST[a_labour][$i]."','".$_REQUEST[v_labour][$i]."','".$_REQUEST['id']."','".date("Y-m-d",strtotime($_REQUEST[warranty][$i]))."',''";
@@ -563,7 +571,7 @@ $flag=0;
 		}
 	
 	
-$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".$_REQUEST['pro_id'][$ci]."')"));
+$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
 
 
 	$args['value']="'".$_REQUEST['pro_id'][$ci]."','".$sn."','".($maxno[maxno]+1)."'";
@@ -578,11 +586,11 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from 
 	 }
 	 
 	 
-	$args3['value']="'','".$_REQUEST['po_id']."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."',''";	$har->insertDB($args3);	
+	$args3['value']="'','".sql_int($_REQUEST['po_id'])."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."',''";	$har->insertDB($args3);	
 	
 	$args['table']="pr";
-	$args['value']="status='3',payby='".$_REQUEST['payby']."'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
+	$args['value']="status='3',payby='".sql_int($_REQUEST['payby'])."'";
+	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);	
 	 
 	 
@@ -597,7 +605,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from 
 	 
 	 	
 	
-$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".$_REQUEST['pro_id'][$ci]."')"));
+$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
 
 
 	
@@ -633,7 +641,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from 
 		}
 		
 		else if($_REQUEST['method']=="ED"){
-			$fetoutid=mysqli_fetch_array(mysqli_query($db->conn, "select out_id from deliver where id='".$_REQUEST['deliv_id']."'"));
+			$fetoutid=mysqli_fetch_array(mysqli_query($db->conn, "select out_id from deliver where id='".sql_int($_REQUEST['deliv_id'])."'"));
 	$args4['table']="sendoutitem";	 
 	$args4['value']="tmp='".$_REQUEST['des']."',cus_id='".$_REQUEST[cus_id]."'";	
 	$args4['condition']="id='".$fetoutid[out_id]."'";
@@ -691,7 +699,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from 
 	$har->insertDB($args3);		
 	
 	 $argsiv['table']="iv";
-	 $veniv=mysqli_fetch_array(mysqli_query($db->conn, "select ven_id from pr join po on pr.id=po.ref where po.id='".$_REQUEST['po_id']."'"));
+	 $veniv=mysqli_fetch_array(mysqli_query($db->conn, "select ven_id from pr join po on pr.id=po.ref where po.id='".sql_int($_REQUEST['po_id'])."'"));
 	 $maxiv=mysqli_fetch_array(mysqli_query($db->conn, "select max(id) as max_id from iv where cus_id='".$veniv[ven_id]."'"));
 		$argsiv['value']="'".(($maxiv[max_id]*1)+1)."','".$_REQUEST['po_id']."','".$veniv[ven_id]."','".date("Y-m-d")."','".(date("y")+43).str_pad(($maxiv[max_id]+1), 6, '0', STR_PAD_LEFT)."','','','','0','',''";
 		$har->insertDB($argsiv);	

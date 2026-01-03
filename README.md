@@ -1,14 +1,51 @@
 # iACC - Accounting Management System
 
-**Version**: 2.9  
+**Version**: 3.0  
 **Status**: Production Ready  
-**Last Updated**: January 3, 2026  
+**Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v3.0 (January 4, 2026)
+- **Docker Container Monitoring** 🐳:
+  - New `admin-containers.php` - Container monitoring dashboard
+  - Real-time container status (running/stopped)
+  - CPU and memory usage statistics
+  - Container logs viewer with modal popup
+  - Start/Stop/Restart container actions (development only)
+  - Modern card-based UI with status badges
+
+- **Development vs Production Mode**:
+  - **Development** (`docker-compose.yml`):
+    - Direct Docker socket access for full control
+    - Container management enabled (start/stop/restart)
+    - Environment badge shows "Development" mode
+  - **Production** (`docker-compose.prod.yml`):
+    - Docker Socket Proxy (`tecnativa/docker-socket-proxy`)
+    - Read-only access - blocks all POST requests
+    - Container management disabled for security
+    - Environment badge shows "Production (Read-only)"
+
+- **Audit Log Redesign** 📋:
+  - Modern timeline-style view
+  - Color-coded action icons (CREATE/UPDATE/DELETE)
+  - Stats cards showing action counts
+  - Expandable details for old/new values
+  - Fixed column mismatch (table_name, record_id)
+  - Uniform 44px filter input heights
+
+- **UI Improvements**:
+  - Added 24px padding between top navbar and page content
+  - Updated `css.php` and `css/sb-admin.css` for consistent spacing
+
+- **Security Improvements**:
+  - Docker socket proxy for production environments
+  - Blocks write operations in production mode
+  - Read-only container monitoring for production
 
 ### v2.9 (January 3, 2026)
 - **User Account Pages** 👤:
