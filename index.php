@@ -146,6 +146,11 @@ $routes = [
     'inv_checkout'           => 'inv-checkout.php',
     'inv_payment_success'    => 'inv-payment-success.php',
     'inv_payment_cancel'     => 'inv-payment-cancel.php',
+    
+    // User Account
+    'profile'                => 'profile.php',
+    'settings'               => 'settings.php',
+    'help'                   => 'help.php',
 ];
 
 // Get requested page (sanitized)
