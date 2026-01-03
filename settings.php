@@ -162,15 +162,30 @@ if (isset($_GET['updated']) && $_GET['updated'] == '1') {
 .custom-select {
     appearance: none;
     -webkit-appearance: none;
-    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238e44ad'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 12px center;
+    -moz-appearance: none;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238e44ad'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
     background-size: 20px;
     border: 2px solid #e9ecef;
     border-radius: 8px;
-    padding: 10px 40px 10px 14px;
-    font-size: 14px;
+    padding: 14px 45px 14px 16px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #333;
     cursor: pointer;
     transition: border-color 0.3s, box-shadow 0.3s;
-    min-width: 150px;
+    min-width: 180px;
+    height: 48px;
+    line-height: 1.4;
+}
+
+.custom-select option {
+    padding: 12px;
+    color: #333;
+    background: #fff;
+    font-size: 15px;
 }
 
 .custom-select:focus {
