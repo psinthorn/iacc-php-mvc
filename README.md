@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.5  
+**Version**: 3.6  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,19 @@
 ---
 
 ## 📋 Changelog
+
+### v3.6 (January 4, 2026)
+- **Application Footer** 📄:
+  - Added global footer component (`inc/footer.php`)
+  - Shows copyright, developer credit, and auto-versioning
+  - Version and last updated date auto-read from README.md
+  - Developer credit: "Developed by F2 Co.,Ltd." with link to www.f2.co.th
+  - Responsive design for mobile devices
+
+- **Developer Tools UI Improvements** 🎨:
+  - Changed background from dark gradient to white for better readability
+  - Moved padding from body to container for cleaner layout
+  - Updated disabled Docker tools message with light theme
 
 ### v3.5 (January 4, 2026)
 - **Developer Tools Dashboard** 🛠️:

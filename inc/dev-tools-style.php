@@ -31,13 +31,13 @@ function check_docker_tools_access() {
         
         echo get_dev_tools_css();
         echo <<<HTML
-        <div style="min-height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px;">
-            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 50px; max-width: 600px; margin: 40px auto; text-align: center;">
+        <div style="min-height: 100vh; background: #ffffff; padding: 40px;">
+            <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 12px; padding: 50px; max-width: 600px; margin: 40px auto; text-align: center;">
                 <i class="fa fa-server" style="font-size: 64px; color: #6c757d; margin-bottom: 25px;"></i>
-                <h2 style="color: #fff; margin-bottom: 15px;">Docker Tools Disabled</h2>
-                <p style="color: #adb5bd; margin-bottom: 20px;">
+                <h2 style="color: #333; margin-bottom: 15px;">Docker Tools Disabled</h2>
+                <p style="color: #6c757d; margin-bottom: 20px;">
                     This feature is currently disabled.<br>
-                    <strong style="color: #fff;">Current mode:</strong> {$docker_status['mode_text']}
+                    <strong style="color: #333;">Current mode:</strong> {$docker_status['mode_text']}
                 </p>
                 <p style="color: #6c757d; margin-bottom: 30px;">
                     Docker tools are designed for Docker environments only.<br>
@@ -123,16 +123,17 @@ function get_dev_tools_css() {
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: #ffffff;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             color: #333;
         }
         
         .dev-tools-container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
         
         /* Header */
@@ -655,5 +656,91 @@ function format_json_html($data) {
     $json = preg_replace('/: (\d+)/', ': <span class="number">$1</span>', $json);
     $json = preg_replace('/: (true|false)/', ': <span class="boolean">$1</span>', $json);
     return $json;
+}
+
+// Get app version from README.md
+function get_dev_tools_version() {
+    $readme_path = __DIR__ . '/../README.md';
+    $version = '1.0';
+    $last_updated = date('Y');
+    
+    if (file_exists($readme_path)) {
+        $content = file_get_contents($readme_path);
+        
+        if (preg_match('/\*\*Version\*\*:\s*([0-9.]+)/i', $content, $matches)) {
+            $version = $matches[1];
+        }
+        
+        if (preg_match('/\*\*Last Updated\*\*:\s*([A-Za-z]+ \d+, \d{4})/i', $content, $matches)) {
+            $last_updated = $matches[1];
+        }
+    }
+    
+    return ['version' => $version, 'last_updated' => $last_updated];
+}
+
+// Get footer HTML for dev tools pages
+function get_dev_tools_footer() {
+    $app_info = get_dev_tools_version();
+    $current_year = date('Y');
+    
+    return <<<HTML
+    <style>
+    .dev-footer {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 16px 24px;
+        margin-top: 40px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+    .dev-footer-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .dev-footer-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .dev-footer-logo {
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 12px;
+    }
+    .dev-footer-version {
+        background: #e9ecef;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #495057;
+    }
+    </style>
+    <footer class="dev-footer">
+        <div class="dev-footer-content">
+            <div class="dev-footer-left">
+                <div class="dev-footer-logo">iA</div>
+                <span>© {$current_year} iACC. All rights reserved.</span>
+            </div>
+            <div>
+                <span class="dev-footer-version">v{$app_info['version']} • {$app_info['last_updated']}</span>
+                <span style="margin-left: 16px;">Developed by <a href="https://www.f2.co.th" target="_blank" style="color: #e74c3c; text-decoration: none; font-weight: 500;">F2 Co.,Ltd.</a></span>
+            </div>
+        </div>
+    </footer>
+HTML;
 }
 ?>

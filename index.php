@@ -203,7 +203,9 @@ $pageFile = isset($routes[$page]) ? $routes[$page] : null;
             </div>
             <!-- /.row -->
           
-            <!-- /.row -->
+            <!-- Footer -->
+            <?php include_once "inc/footer.php"; ?>
+            
         </div>
         <!-- /#page-wrapper -->
 
