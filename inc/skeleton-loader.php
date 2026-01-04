@@ -232,18 +232,29 @@ CSS;
 /**
  * Generate JavaScript for removing skeleton loading
  * Include this at the end of your page's script section
+ * Works for both standalone pages and included files
  */
 function get_skeleton_js($container_id = 'pageContainer', $delay = 300) {
     return <<<JS
 // Remove skeleton loading after content is ready
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        var container = document.getElementById('{$container_id}');
-        if (container) {
-            container.classList.remove('skeleton-loading');
-        }
-    }, {$delay});
-});
+// Uses IIFE for included files (DOMContentLoaded may have already fired)
+(function() {
+    function removeSkeleton() {
+        setTimeout(function() {
+            var container = document.getElementById('{$container_id}');
+            if (container) {
+                container.classList.remove('skeleton-loading');
+            }
+        }, {$delay});
+    }
+    
+    // If DOM is already loaded, run immediately; otherwise wait for it
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeSkeleton);
+    } else {
+        removeSkeleton();
+    }
+})();
 JS;
 }
 

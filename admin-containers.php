@@ -1066,13 +1066,13 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Remove skeleton loading after content is ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Simulate minimum loading time for smooth UX (300ms)
+// Use immediate execution since this is an included file (DOMContentLoaded already fired)
+(function() {
     setTimeout(function() {
         const monitor = document.getElementById('containerMonitor');
         if (monitor) {
             monitor.classList.remove('skeleton-loading');
         }
     }, 300);
-});
+})();
 </script>

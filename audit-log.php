@@ -360,13 +360,13 @@ function toggleDetails(id) {
     el.classList.toggle('show');
 }
 
-// Remove skeleton loading
-document.addEventListener('DOMContentLoaded', function() {
+// Remove skeleton loading - use IIFE for included files
+(function() {
     setTimeout(function() {
         var container = document.getElementById('pageContainer');
         if (container) {
             container.classList.remove('skeleton-loading');
         }
     }, 300);
-});
+})();
 </script>

@@ -713,15 +713,15 @@ $lang = $_SESSION['lang'] ?? 'en';
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script>
-// Remove skeleton loading
-document.addEventListener('DOMContentLoaded', function() {
+// Remove skeleton loading - use IIFE for included files
+(function() {
     setTimeout(function() {
         var container = document.getElementById('pageContainer');
         if (container) {
             container.classList.remove('skeleton-loading');
         }
     }, 300);
-});
+})();
 
 // Auto-refresh every 60 seconds
 let countdown = 60;
