@@ -355,6 +355,10 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=audit_log"><i class="fa fa-history"></i> <?=$xml->auditlog ?? 'Audit Log'?></a>
+                            </li>
                         </ul>
                     </li>
                     <?php endif; ?>

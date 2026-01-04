@@ -806,6 +806,10 @@ function get_status_badge($status) {
                             <i class="fa fa-language" style="color: #2980b9;"></i> <strong>Language Debug</strong>
                             <br><small style="color: #6c757d;">Debug language/localization API</small>
                         </a>
+                        <a href="index.php?page=audit_log" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-history" style="color: #c0392b;"></i> <strong>Audit Log</strong>
+                            <br><small style="color: #6c757d;">View system activity history</small>
+                        </a>
                     </div>
                     
                     <!-- Docker/Infrastructure Tools -->
