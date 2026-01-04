@@ -274,9 +274,9 @@ $payment_labels_with_icons = getPaymentMethodLabelsWithIcons($db->conn, $lang);
             <tr>
                 <th style="width:120px;"><?=$xml->receiptno ?? 'Receipt #'?></th>
                 <th><?=$xml->customer ?? 'Customer'?></th>
-                <th style="width:120px;"><?=$xml->invoicelink ?? 'Invoice'?></th>
+                <th style="width:140px;"><?=$xml->linkedsource ?? 'Source'?></th>
                 <th style="width:120px;"><?=$xml->paymentmethod ?? 'Payment'?></th>
-                <th style="width:80px;"><?=$xml->source ?? 'Source'?></th>
+                <th style="width:60px;"><?=$xml->vat ?? 'VAT'?></th>
                 <th style="width:90px;"><?=$xml->status ?? 'Status'?></th>
                 <th style="width:100px;"><?=$xml->createdate ?? 'Date'?></th>
                 <th style="width:140px;"><?=$xml->actions ?? 'Actions'?></th>
@@ -284,7 +284,7 @@ $payment_labels_with_icons = getPaymentMethodLabelsWithIcons($db->conn, $lang);
         </thead>
         <tbody>
 <?php
-$query = mysqli_query($db->conn, "SELECT r.id, r.name, r.email, r.phone, DATE_FORMAT(r.createdate,'%d-%m-%Y') as createdate, r.description, r.rep_rw, r.brand, r.vender, r.payment_method, r.status, r.invoice_id, r.payment_source, r.payment_transaction_id, c.inv_rw as invoice_no FROM receipt r LEFT JOIN complain c ON r.invoice_id = c.id WHERE r.vender='".$com_id."' $search_cond $date_cond $status_cond ORDER BY r.id DESC");
+$query = mysqli_query($db->conn, "SELECT r.id, r.name, r.email, r.phone, DATE_FORMAT(r.createdate,'%d-%m-%Y') as createdate, r.description, r.rep_rw, r.brand, r.vender, r.payment_method, r.status, r.invoice_id, r.quotation_id, r.source_type, r.include_vat, r.payment_source, r.payment_transaction_id, c.inv_rw as invoice_no, p.tax as quotation_no FROM receipt r LEFT JOIN complain c ON r.invoice_id = c.id LEFT JOIN po p ON r.quotation_id = p.id WHERE r.vender='".$com_id."' $search_cond $date_cond $status_cond ORDER BY r.id DESC");
 
 $count = mysqli_num_rows($query);
 if($count > 0):
@@ -292,18 +292,36 @@ if($count > 0):
         // Payment method display
         $payment_display = $payment_labels_with_icons[$data['payment_method']] ?? getPaymentMethodDisplayName($db->conn, $data['payment_method'], $lang);
         
-        // Payment source badge
-        $source = $data['payment_source'] ?? 'manual';
+        // Source type badge (quotation/invoice/manual)
+        $source_type = $data['source_type'] ?? 'manual';
         $source_badge = '';
-        switch($source) {
-            case 'paypal':
-                $source_badge = '<span class="label" style="background:#003087;color:#fff;"><i class="fa fa-paypal"></i> PayPal</span>';
+        switch($source_type) {
+            case 'quotation':
+                $source_badge = '<span class="label" style="background:#f59e0b;color:#fff;"><i class="fa fa-file-text-o"></i> QA-'.e($data['quotation_no']).'</span>';
                 break;
-            case 'stripe':
-                $source_badge = '<span class="label" style="background:#635bff;color:#fff;"><i class="fa fa-cc-stripe"></i> Stripe</span>';
+            case 'invoice':
+                $invoice_display = $data['invoice_no'] ? 'INV-'.$data['invoice_no'] : 'INV-'.$data['invoice_id'];
+                $source_badge = '<span class="label" style="background:#27ae60;color:#fff;"><i class="fa fa-file-text"></i> '.e($invoice_display).'</span>';
                 break;
             default:
-                $source_badge = '<span class="label label-default"><i class="fa fa-user"></i> Manual</span>';
+                $source_badge = '<span class="label label-default"><i class="fa fa-edit"></i> Manual</span>';
+        }
+        
+        // VAT badge
+        $vat_badge = $data['include_vat'] ? '<span class="label label-success">VAT</span>' : '<span class="label label-default">-</span>';
+        
+        // Legacy payment source badge (PayPal/Stripe/Manual) - only for payment gateway receipts
+        $payment_source = $data['payment_source'] ?? 'manual';
+        $source_icon = '';
+        switch($payment_source) {
+            case 'paypal':
+                $source_icon = ' <i class="fa fa-paypal" style="color:#003087;" title="PayPal"></i>';
+                break;
+            case 'stripe':
+                $source_icon = ' <i class="fa fa-cc-stripe" style="color:#635bff;" title="Stripe"></i>';
+                break;
+            default:
+                $source_icon = '';
         }
         
         // Status badge
@@ -316,23 +334,12 @@ if($count > 0):
             default: $status_class = 'success'; $status_label = $xml->confirmed ?? 'Confirmed';
         }
         
-        // Invoice link - also check iv table
-        $invoice_display = '-';
-        if(!empty($data['invoice_id'])) {
-            if(!empty($data['invoice_no'])) {
-                $invoice_display = '<a href="?page=compl_view&id='.e($data['invoice_id']).'">INV-'.e($data['invoice_no']).'</a>';
-            } else {
-                // Invoice from iv table
-                $invoice_display = '<a href="inv.php?id='.e($data['invoice_id']).'" target="_blank">INV-'.e($data['invoice_id']).'</a>';
-            }
-        }
-        
         echo "<tr>
             <td class='rec-number'>REC-".e($data['rep_rw'])."</td>
             <td class='customer-name'>".e($data['name'])."</td>
-            <td class='invoice-link'>".$invoice_display."</td>
-            <td>".$payment_display."</td>
             <td>".$source_badge."</td>
+            <td>".$payment_display.$source_icon."</td>
+            <td>".$vat_badge."</td>
             <td><span class='label label-".$status_class."'>".$status_label."</span></td>
             <td>".e($data['createdate'])."</td>
             <td>

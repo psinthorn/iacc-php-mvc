@@ -426,21 +426,30 @@ case "receipt_list" : {
 	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
 	$invoice_id_val = $invoice_id === NULL ? 'NULL' : "'".$invoice_id."'";
 	
-	// Column order: id, name, phone, email, createdate, description, payment_method, status, invoice_id, vender, rep_no, rep_rw, brand, vat, dis, deleted_at
-	$args['value']="'".sql_escape($_REQUEST['name'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['email'])."','".date("Y-m-d")."','".sql_escape($_REQUEST['des'])."','".$payment_method."','".$status."',".$invoice_id_val.",'".$_SESSION['com_id']."','".$new_rw."','".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."','".sql_int($_REQUEST['brandven'])."','".sql_escape($_REQUEST['vat'])."','".sql_escape($_REQUEST['dis'])."',NULL";
-	 
-	$rep_id=$har->insertDbMax($args);
+	// New fields for quotation support
+	$quotation_id = isset($_REQUEST['quotation_id']) && !empty($_REQUEST['quotation_id']) ? intval($_REQUEST['quotation_id']) : NULL;
+	$quotation_id_val = $quotation_id === NULL ? 'NULL' : "'".$quotation_id."'";
+	$source_type = isset($_REQUEST['source_type']) ? mysqli_real_escape_string($db->conn, $_REQUEST['source_type']) : 'manual';
+	$include_vat = isset($_REQUEST['include_vat']) ? 1 : 0;
+	$payment_ref = isset($_REQUEST['payment_ref']) ? mysqli_real_escape_string($db->conn, $_REQUEST['payment_ref']) : '';
+	$payment_date = isset($_REQUEST['payment_date']) && !empty($_REQUEST['payment_date']) ? date('Y-m-d', strtotime($_REQUEST['payment_date'])) : date('Y-m-d');
 	
+	// Build insert query with all fields
+	$sql = "INSERT INTO receipt (name, phone, email, createdate, description, payment_method, payment_ref, payment_date, status, invoice_id, quotation_id, source_type, include_vat, vender, rep_no, rep_rw, brand, vat, dis, deleted_at) 
+	        VALUES ('".sql_escape($_REQUEST['name'])."', '".sql_escape($_REQUEST['phone'])."', '".sql_escape($_REQUEST['email'])."', '".date("Y-m-d")."', '".sql_escape($_REQUEST['des'])."', '".$payment_method."', '".$payment_ref."', '".$payment_date."', '".$status."', ".$invoice_id_val.", ".$quotation_id_val.", '".$source_type."', '".$include_vat."', '".$_SESSION['com_id']."', '".$new_rw."', '".(date("y")+43).str_pad($new_rw, 6, '0', STR_PAD_LEFT)."', '".sql_int($_REQUEST['brandven'])."', '".sql_escape($_REQUEST['vat'])."', '".sql_escape($_REQUEST['dis'])."', NULL)";
+	mysqli_query($db->conn, $sql);
+	$rep_id = mysqli_insert_id($db->conn);
 	
-	
-	$args['table']="product";
-	$i=0;
-	foreach ($_REQUEST[type] as $type) {
-		
-		$args['value']="'','0','".$_REQUEST[price][$i]."','0','".$_REQUEST[ban_id][$i]."','".$_REQUEST[model][$i]."','".$type."','".$_REQUEST[quantity][$i]."','1','','".$_REQUEST[des][$i]."','".$_REQUEST[a_labour][$i]."','".$_REQUEST[v_labour][$i]."','','".date("Y-m-d",strtotime($_REQUEST[warranty][$i]))."','".$rep_id."'";
-		$har->insertDB($args);	
-		$i++;
+	// Only insert products if not linked to invoice/quotation (manual entry)
+	if ($source_type == 'manual' && isset($_REQUEST['type']) && is_array($_REQUEST['type'])) {
+		$args['table']="product";
+		$i=0;
+		foreach ($_REQUEST['type'] as $type) {
+			$args['value']="'','0','".$_REQUEST['price'][$i]."','0','".$_REQUEST['ban_id'][$i]."','".$_REQUEST['model'][$i]."','".$type."','".$_REQUEST['quantity'][$i]."','1','','".$_REQUEST['des'][$i]."','".$_REQUEST['a_labour'][$i]."','".$_REQUEST['v_labour'][$i]."','','".date("Y-m-d",strtotime($_REQUEST['warranty'][$i]))."','".$rep_id."'";
+			$har->insertDB($args);	
+			$i++;
 		}
+	}
 	
 		}else if($_REQUEST['method']=="E"){
 		
@@ -452,20 +461,42 @@ case "receipt_list" : {
 	$invoice_id = isset($_REQUEST['invoice_id']) && !empty($_REQUEST['invoice_id']) ? intval($_REQUEST['invoice_id']) : NULL;
 	$invoice_id_sql = $invoice_id === NULL ? 'invoice_id=NULL' : "invoice_id='".$invoice_id."'";
 	
-	$args['value']="name='".sql_escape($_REQUEST['name'])."',phone='".sql_escape($_REQUEST['phone'])."',email='".sql_escape($_REQUEST['email'])."',description='".sql_escape($_REQUEST['des'])."',brand='".sql_int($_REQUEST['brandven'])."',vat='".sql_escape($_REQUEST['vat'])."',dis='".sql_escape($_REQUEST['dis'])."',payment_method='".$payment_method."',status='".$status."',".$invoice_id_sql;
-				
-	$args['condition']="id='".sql_int($_REQUEST['id'])."' and vender='".$_SESSION['com_id']."'";
-	$har->updateDb($args);	
+	// New fields for quotation support (edit mode)
+	$quotation_id = isset($_REQUEST['quotation_id']) && !empty($_REQUEST['quotation_id']) ? intval($_REQUEST['quotation_id']) : NULL;
+	$quotation_id_sql = $quotation_id === NULL ? 'quotation_id=NULL' : "quotation_id='".$quotation_id."'";
+	$source_type = isset($_REQUEST['source_type']) ? mysqli_real_escape_string($db->conn, $_REQUEST['source_type']) : 'manual';
+	$include_vat = isset($_REQUEST['include_vat']) ? 1 : 0;
+	$payment_ref = isset($_REQUEST['payment_ref']) ? mysqli_real_escape_string($db->conn, $_REQUEST['payment_ref']) : '';
+	$payment_date = isset($_REQUEST['payment_date']) && !empty($_REQUEST['payment_date']) ? date('Y-m-d', strtotime($_REQUEST['payment_date'])) : date('Y-m-d');
 	
+	$sql = "UPDATE receipt SET 
+		name='".sql_escape($_REQUEST['name'])."',
+		phone='".sql_escape($_REQUEST['phone'])."',
+		email='".sql_escape($_REQUEST['email'])."',
+		description='".sql_escape($_REQUEST['des'])."',
+		brand='".sql_int($_REQUEST['brandven'])."',
+		vat='".sql_escape($_REQUEST['vat'])."',
+		dis='".sql_escape($_REQUEST['dis'])."',
+		payment_method='".$payment_method."',
+		payment_ref='".$payment_ref."',
+		payment_date='".$payment_date."',
+		status='".$status."',
+		".$invoice_id_sql.",
+		".$quotation_id_sql.",
+		source_type='".$source_type."',
+		include_vat='".$include_vat."'
+		WHERE id='".sql_int($_REQUEST['id'])."' AND vender='".$_SESSION['com_id']."'";
+	mysqli_query($db->conn, $sql);
+	
+	// Only update products for manual entry
+	if ($source_type == 'manual' && isset($_REQUEST['type']) && is_array($_REQUEST['type'])) {
 		$args['table']="product";
-	$i=0;
-	mysqli_query($db->conn, "delete from product where re_id='".sql_int($_REQUEST['id'])."' and po_id='0' and so_id='0'");
-	foreach ($_REQUEST[type] as $key => $type) {
-		
-		$args['value']="'','0','".$_REQUEST[price][$key]."','0','".$_REQUEST[ban_id][$key]."','".$_REQUEST[model][$key]."','".$type."','".$_REQUEST[quantity][$key]."','1','','".$_REQUEST[des][$key]."','".$_REQUEST[a_labour][$key]."','".$_REQUEST[v_labour][$key]."','','".date("Y-m-d",strtotime($_REQUEST[warranty][$key]))."','".$_REQUEST['id']."'";
-		$har->insertDB($args);	
-	
+		mysqli_query($db->conn, "delete from product where re_id='".sql_int($_REQUEST['id'])."' and po_id='0' and so_id='0'");
+		foreach ($_REQUEST['type'] as $key => $type) {
+			$args['value']="'','0','".$_REQUEST['price'][$key]."','0','".$_REQUEST['ban_id'][$key]."','".$_REQUEST['model'][$key]."','".$type."','".$_REQUEST['quantity'][$key]."','1','','".$_REQUEST['des'][$key]."','".$_REQUEST['a_labour'][$key]."','".$_REQUEST['v_labour'][$key]."','','".date("Y-m-d",strtotime($_REQUEST['warranty'][$key]))."','".$_REQUEST['id']."'";
+			$har->insertDB($args);	
 		}
+	}
 		
 
 

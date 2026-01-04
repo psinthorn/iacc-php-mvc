@@ -2,6 +2,7 @@
 /**
  * Receipt View Page
  * Read-only professional view of receipt details
+ * Supports receipts from quotations, invoices, or manual entry
  */
 session_start();
 require_once("inc/sys.configs.php");
@@ -13,21 +14,32 @@ $db = new DbConn($config);
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 
-// Fetch receipt data
-$query = mysqli_query($db->conn, "SELECT r.*, c.inv_rw as invoice_no FROM receipt r LEFT JOIN complain c ON r.invoice_id = c.id WHERE r.id='".$id."' AND r.vender='".$com_id."'");
+// Fetch receipt data with quotation join
+$query = mysqli_query($db->conn, "SELECT r.*, c.inv_rw as invoice_no, p.tax as quotation_no 
+    FROM receipt r 
+    LEFT JOIN complain c ON r.invoice_id = c.id 
+    LEFT JOIN po p ON r.quotation_id = p.id 
+    WHERE r.id='".$id."' AND r.vender='".$com_id."'");
 if(mysqli_num_rows($query) != 1) {
     echo '<div class="alert alert-danger" style="margin:20px;">Receipt not found or access denied.</div>';
     exit;
 }
 $data = mysqli_fetch_assoc($query);
 
-// Check for linked invoice data
-$linked_invoice = null;
-$use_invoice_data = false;
-if (!empty($data['invoice_id'])) {
+// Determine source type
+$source_type = $data['source_type'] ?? 'manual';
+$include_vat = $data['include_vat'] ?? 1;
+
+// Check for linked invoice or quotation data
+$linked_source = null;
+$use_source_data = false;
+$source_id = null;
+
+if ($source_type === 'invoice' && !empty($data['invoice_id'])) {
+    $source_id = $data['invoice_id'];
     $inv_query = mysqli_query($db->conn, "
-        SELECT po.id, iv.taxrw as inv_no, DATE_FORMAT(iv.createdate, '%d/%m/%Y') as inv_date, 
-               po.vat as inv_vat, po.dis as inv_dis,
+        SELECT po.id, iv.taxrw as doc_no, DATE_FORMAT(iv.createdate, '%d/%m/%Y') as doc_date, 
+               po.vat as doc_vat, po.dis as doc_dis,
                company.name_en as cust_name, company.phone as cust_phone, company.email as cust_email
         FROM po
         JOIN pr ON po.ref = pr.id
@@ -36,20 +48,35 @@ if (!empty($data['invoice_id'])) {
         WHERE po.id = '".$data['invoice_id']."' AND pr.ven_id = '".$com_id."'
     ");
     if (mysqli_num_rows($inv_query) > 0) {
-        $linked_invoice = mysqli_fetch_array($inv_query);
-        $use_invoice_data = true;
+        $linked_source = mysqli_fetch_array($inv_query);
+        $use_source_data = true;
+    }
+} elseif ($source_type === 'quotation' && !empty($data['quotation_id'])) {
+    $source_id = $data['quotation_id'];
+    $qa_query = mysqli_query($db->conn, "
+        SELECT po.id, po.tax as doc_no, DATE_FORMAT(po.date, '%d/%m/%Y') as doc_date, 
+               po.vat as doc_vat, po.dis as doc_dis,
+               company.name_en as cust_name, company.phone as cust_phone, company.email as cust_email
+        FROM po
+        JOIN pr ON po.ref = pr.id
+        JOIN company ON pr.cus_id = company.id
+        WHERE po.id = '".$data['quotation_id']."' AND pr.ven_id = '".$com_id."' AND po.status = '1'
+    ");
+    if (mysqli_num_rows($qa_query) > 0) {
+        $linked_source = mysqli_fetch_array($qa_query);
+        $use_source_data = true;
     }
 }
 
-// Fetch products (from receipt or invoice)
-if ($use_invoice_data && !empty($data['invoice_id'])) {
+// Fetch products (from source document or receipt)
+if ($use_source_data && $source_id) {
     $products_query = mysqli_query($db->conn, "
         SELECT p.*, t.name as type_name, b.brand_name, m.model_name 
         FROM product p 
         LEFT JOIN type t ON p.type = t.id 
         LEFT JOIN brand b ON p.ban_id = b.id 
         LEFT JOIN model m ON p.model = m.id 
-        WHERE p.po_id = '".$data['invoice_id']."'
+        WHERE p.po_id = '".$source_id."'
     ");
 } else {
     $products_query = mysqli_query($db->conn, "
@@ -72,13 +99,20 @@ while($prod = mysqli_fetch_assoc($products_query)) {
     $products[] = $prod;
 }
 
-$vat = $use_invoice_data ? ($linked_invoice['inv_vat'] ?? 7) : ($data['vat'] ?? 7);
-$discount = $use_invoice_data ? ($linked_invoice['inv_dis'] ?? 0) : ($data['dis'] ?? 0);
+$vat = $use_source_data ? ($linked_source['doc_vat'] ?? 7) : ($data['vat'] ?? 7);
+$discount = $use_source_data ? ($linked_source['doc_dis'] ?? 0) : ($data['dis'] ?? 0);
 
 $discount_amount = $subtotal * ($discount / 100);
 $after_discount = $subtotal - $discount_amount;
-$vat_amount = $after_discount * ($vat / 100);
-$grand_total = $after_discount + $vat_amount;
+
+// Only calculate VAT if include_vat is enabled
+if ($include_vat) {
+    $vat_amount = $after_discount * ($vat / 100);
+    $grand_total = $after_discount + $vat_amount;
+} else {
+    $vat_amount = 0;
+    $grand_total = $after_discount;
+}
 
 // Get payment method display name
 $lang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'th' : 'en';
@@ -91,6 +125,14 @@ $status_classes = [
     'cancelled' => ['class' => 'danger', 'icon' => 'glyphicon-remove-circle']
 ];
 $status_info = $status_classes[$data['status']] ?? $status_classes['confirmed'];
+
+// Source type display
+$source_labels = [
+    'quotation' => ['label' => 'Quotation', 'color' => '#f59e0b', 'prefix' => 'QA-'],
+    'invoice' => ['label' => 'Invoice', 'color' => '#27ae60', 'prefix' => 'INV-'],
+    'manual' => ['label' => 'Manual Entry', 'color' => '#6b7280', 'prefix' => '']
+];
+$source_info = $source_labels[$source_type] ?? $source_labels['manual'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -217,15 +259,19 @@ $status_info = $status_classes[$data['status']] ?? $status_classes['confirmed'];
     </div>
 </div>
 
-<?php if ($linked_invoice): ?>
-<!-- Linked Invoice Banner -->
-<div class="invoice-banner">
-    <i class="glyphicon glyphicon-link"></i>
+<?php if ($linked_source): ?>
+<!-- Linked Source Banner (Invoice or Quotation) -->
+<div class="invoice-banner" style="background: linear-gradient(135deg, <?=$source_info['color']?> 0%, <?=$source_info['color']?>dd 100%);">
+    <i class="<?=$source_type === 'quotation' ? 'fa fa-file-text-o' : 'glyphicon glyphicon-link'?>"></i>
     <div class="info">
-        <strong><?=$xml->linkedtoinvoice ?? 'Linked to Invoice'?></strong>
-        <span>Invoice #<?=htmlspecialchars($linked_invoice['inv_no'])?> - <?=$linked_invoice['inv_date']?></span>
+        <strong><?=$source_type === 'quotation' ? ($xml->linkedtoquotation ?? 'Linked to Quotation') : ($xml->linkedtoinvoice ?? 'Linked to Invoice')?></strong>
+        <span><?=$source_info['prefix']?><?=htmlspecialchars($linked_source['doc_no'])?> - <?=$linked_source['doc_date']?></span>
     </div>
+    <?php if ($source_type === 'quotation'): ?>
+    <a href="index.php?page=qa_list" target="_blank"><i class="fa fa-eye"></i> <?=$xml->viewquotation ?? 'View Quotation'?></a>
+    <?php else: ?>
     <a href="index.php?page=compl_view&id=<?=$data['invoice_id']?>" target="_blank"><i class="glyphicon glyphicon-eye-open"></i> <?=$xml->viewinvoice ?? 'View Invoice'?></a>
+    <?php endif; ?>
 </div>
 <?php endif; ?>
 
@@ -237,16 +283,16 @@ $status_info = $status_classes[$data['status']] ?? $status_classes['confirmed'];
             <div class="info-grid">
                 <div class="info-item">
                     <label><?=$xml->name ?? 'Name'?></label>
-                    <div class="value"><?=htmlspecialchars($use_invoice_data ? $linked_invoice['cust_name'] : $data['name'])?></div>
+                    <div class="value"><?=htmlspecialchars($use_source_data ? $linked_source['cust_name'] : $data['name'])?></div>
                 </div>
                 <div class="info-item">
                     <label><?=$xml->email ?? 'Email'?></label>
-                    <?php $email = $use_invoice_data ? $linked_invoice['cust_email'] : $data['email']; ?>
+                    <?php $email = $use_source_data ? $linked_source['cust_email'] : $data['email']; ?>
                     <div class="value"><?=$email ? '<a href="mailto:'.$email.'">'.$email.'</a>' : '-'?></div>
                 </div>
                 <div class="info-item">
                     <label><?=$xml->phone ?? 'Phone'?></label>
-                    <div class="value"><?=($use_invoice_data ? $linked_invoice['cust_phone'] : $data['phone']) ?: '-'?></div>
+                    <div class="value"><?=($use_source_data ? $linked_source['cust_phone'] : $data['phone']) ?: '-'?></div>
                 </div>
                 <div class="info-item">
                     <label><?=$xml->status ?? 'Status'?></label>
@@ -270,8 +316,27 @@ $status_info = $status_classes[$data['status']] ?? $status_classes['confirmed'];
                     <div class="value" style="font-weight:700; color:#27ae60;">REC-<?=htmlspecialchars($data['rep_rw'])?></div>
                 </div>
                 <div class="info-item">
+                    <label><?=$xml->sourcetype ?? 'Source Type'?></label>
+                    <div class="value">
+                        <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:15px; background:<?=$source_info['color']?>22; color:<?=$source_info['color']?>; font-weight:600; font-size:12px;">
+                            <i class="<?=$source_type === 'quotation' ? 'fa fa-file-text-o' : ($source_type === 'invoice' ? 'fa fa-file-text' : 'fa fa-edit')?>"></i>
+                            <?=$source_info['label']?>
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
                     <label><?=$xml->createdate ?? 'Date'?></label>
                     <div class="value"><?=date('d M Y', strtotime($data['createdate']))?></div>
+                </div>
+                <div class="info-item">
+                    <label><?=$xml->vatmode ?? 'VAT Mode'?></label>
+                    <div class="value">
+                        <?php if ($include_vat): ?>
+                        <span style="color:#27ae60; font-weight:600;"><i class="fa fa-check-circle"></i> <?=$xml->includevat ?? 'Include VAT'?> (<?=$vat?>%)</span>
+                        <?php else: ?>
+                        <span style="color:#e74c3c; font-weight:600;"><i class="fa fa-times-circle"></i> <?=$xml->novat ?? 'No VAT'?></span>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <div class="info-item">
                     <label><?=$xml->paymentmethod ?? 'Payment Method'?></label>
@@ -336,10 +401,17 @@ $status_info = $status_classes[$data['status']] ?? $status_classes['confirmed'];
             <span class="value">-<?=number_format($discount_amount, 2)?></span>
         </div>
         <?php endif; ?>
+        <?php if($include_vat): ?>
         <div class="summary-row">
             <span class="label"><?=$xml->vat ?? 'VAT'?> (<?=$vat?>%)</span>
             <span class="value"><?=number_format($vat_amount, 2)?></span>
         </div>
+        <?php else: ?>
+        <div class="summary-row">
+            <span class="label" style="color:#e74c3c;"><?=$xml->novat ?? 'No VAT'?></span>
+            <span class="value" style="color:#e74c3c;">-</span>
+        </div>
+        <?php endif; ?>
         <div class="summary-row total">
             <span class="label"><?=$xml->grandtotal ?? 'Grand Total'?></span>
             <span class="value"><?=number_format($grand_total, 2)?> <?=$xml->baht ?? 'THB'?></span>

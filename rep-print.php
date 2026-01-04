@@ -2,6 +2,7 @@
 /**
  * Receipt PDF Generator
  * Professional design matching Invoice template
+ * Supports receipts from quotations, invoices, or manual entry
  */
 session_start();
 require_once("inc/sys.configs.php");
@@ -25,6 +26,10 @@ if (mysqli_num_rows($query) != 1) {
 $data = mysqli_fetch_array($query);
 $filename = $data['rep_rw'];
 
+// Get source type and VAT mode
+$source_type = $data['source_type'] ?? 'manual';
+$include_vat = $data['include_vat'] ?? 1;
+
 // Fetch vendor info
 $vender = mysqli_fetch_array(mysqli_query($db->conn, "
     SELECT name_en, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email, logo, term 
@@ -41,16 +46,65 @@ if ($data['brand'] == 0) {
     $logo = $bandlogo['logo'] ?? '';
 }
 
-// Check if receipt is linked to an invoice
-$linked_invoice = null;
-$invoice_products = [];
-$use_invoice_data = false;
+// Check source type and fetch linked data
+$linked_source = null;
+$source_products = [];
+$use_source_data = false;
 $customer = null;
+$source_doc_no = '';
 
-if (!empty($data['invoice_id'])) {
+// Handle quotation source
+if ($source_type === 'quotation' && !empty($data['quotation_id'])) {
+    $qa_query = mysqli_query($db->conn, "
+        SELECT po.id, po.tax as doc_no, DATE_FORMAT(po.date, '%d/%m/%Y') as doc_date, 
+               po.vat as doc_vat, po.dis as doc_dis, po.over as doc_over,
+               company.name_en as cust_name, company.phone as cust_phone, 
+               company.email as cust_email, company_addr.adr_tax, company_addr.city_tax,
+               company_addr.district_tax, company_addr.province_tax, company_addr.zip_tax, 
+               company.tax as cust_tax, company.fax as cust_fax
+        FROM po
+        JOIN pr ON po.ref = pr.id
+        JOIN company ON pr.cus_id = company.id
+        LEFT JOIN company_addr ON company.id = company_addr.com_id AND company_addr.valid_end = '0000-00-00'
+        WHERE po.id = '".$data['quotation_id']."' AND pr.ven_id = '".$com_id."' AND po.status = '1'
+    ");
+    
+    if (mysqli_num_rows($qa_query) > 0) {
+        $linked_source = mysqli_fetch_array($qa_query);
+        $use_source_data = true;
+        $source_doc_no = 'QA-' . $linked_source['doc_no'];
+        
+        // Get quotation products
+        $prod_query = mysqli_query($db->conn, "
+            SELECT type.name as name, model.model_name as model, product.quantity, product.price, product.des
+            FROM product
+            JOIN type ON product.type = type.id
+            LEFT JOIN model ON product.model = model.id
+            WHERE product.po_id = '".$data['quotation_id']."'
+        ");
+        while ($prod = mysqli_fetch_array($prod_query)) {
+            $source_products[] = $prod;
+        }
+        
+        $customer = [
+            'name' => $linked_source['cust_name'],
+            'phone' => $linked_source['cust_phone'],
+            'email' => $linked_source['cust_email'],
+            'fax' => $linked_source['cust_fax'],
+            'adr_tax' => $linked_source['adr_tax'],
+            'city_tax' => $linked_source['city_tax'],
+            'district_tax' => $linked_source['district_tax'],
+            'province_tax' => $linked_source['province_tax'],
+            'zip_tax' => $linked_source['zip_tax'],
+            'tax' => $linked_source['cust_tax']
+        ];
+    }
+}
+// Handle invoice source
+elseif ($source_type === 'invoice' && !empty($data['invoice_id'])) {
     $inv_query = mysqli_query($db->conn, "
-        SELECT po.id, iv.taxrw as inv_no, DATE_FORMAT(iv.createdate, '%d/%m/%Y') as inv_date, 
-               po.vat as inv_vat, po.dis as inv_dis, po.over as inv_over,
+        SELECT po.id, iv.taxrw as doc_no, DATE_FORMAT(iv.createdate, '%d/%m/%Y') as doc_date, 
+               po.vat as doc_vat, po.dis as doc_dis, po.over as doc_over,
                company.name_en as cust_name, company.phone as cust_phone, 
                company.email as cust_email, company_addr.adr_tax, company_addr.city_tax,
                company_addr.district_tax, company_addr.province_tax, company_addr.zip_tax, 
@@ -64,37 +118,38 @@ if (!empty($data['invoice_id'])) {
     ");
     
     if (mysqli_num_rows($inv_query) > 0) {
-        $linked_invoice = mysqli_fetch_array($inv_query);
-        $use_invoice_data = true;
+        $linked_source = mysqli_fetch_array($inv_query);
+        $use_source_data = true;
+        $source_doc_no = 'INV-' . $linked_source['doc_no'];
         
         // Get invoice products
-        $inv_prod_query = mysqli_query($db->conn, "
+        $prod_query = mysqli_query($db->conn, "
             SELECT type.name as name, model.model_name as model, product.quantity, product.price, product.des
             FROM product
             JOIN type ON product.type = type.id
             LEFT JOIN model ON product.model = model.id
             WHERE product.po_id = '".$data['invoice_id']."'
         ");
-        while ($inv_prod = mysqli_fetch_array($inv_prod_query)) {
-            $invoice_products[] = $inv_prod;
+        while ($prod = mysqli_fetch_array($prod_query)) {
+            $source_products[] = $prod;
         }
         
         $customer = [
-            'name' => $linked_invoice['cust_name'],
-            'phone' => $linked_invoice['cust_phone'],
-            'email' => $linked_invoice['cust_email'],
-            'fax' => $linked_invoice['cust_fax'],
-            'adr_tax' => $linked_invoice['adr_tax'],
-            'city_tax' => $linked_invoice['city_tax'],
-            'district_tax' => $linked_invoice['district_tax'],
-            'province_tax' => $linked_invoice['province_tax'],
-            'zip_tax' => $linked_invoice['zip_tax'],
-            'tax' => $linked_invoice['cust_tax']
+            'name' => $linked_source['cust_name'],
+            'phone' => $linked_source['cust_phone'],
+            'email' => $linked_source['cust_email'],
+            'fax' => $linked_source['cust_fax'],
+            'adr_tax' => $linked_source['adr_tax'],
+            'city_tax' => $linked_source['city_tax'],
+            'district_tax' => $linked_source['district_tax'],
+            'province_tax' => $linked_source['province_tax'],
+            'zip_tax' => $linked_source['zip_tax'],
+            'tax' => $linked_source['cust_tax']
         ];
     }
 }
 
-// If no linked invoice, use receipt data
+// If no linked source, use receipt data
 if (!$customer) {
     $customer = [
         'name' => $data['name'],
@@ -121,12 +176,20 @@ $status_labels = [
 ];
 $status_display = $status_labels[$data['status']] ?? 'Confirmed';
 
+// Source type labels
+$source_labels = [
+    'quotation' => 'From Quotation',
+    'invoice' => 'From Invoice',
+    'manual' => 'Manual Entry'
+];
+$source_display = $source_labels[$source_type] ?? 'Manual Entry';
+
 // Build products array and calculate totals
 $products = [];
 $summary = 0;
 
-if ($use_invoice_data && count($invoice_products) > 0) {
-    foreach ($invoice_products as $prod) {
+if ($use_source_data && count($source_products) > 0) {
+    foreach ($source_products as $prod) {
         $total = floatval($prod['price']) * floatval($prod['quantity']);
         $summary += $total;
         $products[] = [
@@ -138,9 +201,9 @@ if ($use_invoice_data && count($invoice_products) > 0) {
             'des' => $prod['des']
         ];
     }
-    $dis = $linked_invoice['inv_dis'];
-    $vat_rate = $linked_invoice['inv_vat'];
-    $over = $linked_invoice['inv_over'];
+    $dis = $linked_source['doc_dis'];
+    $vat_rate = $linked_source['doc_vat'];
+    $over = $linked_source['doc_over'];
 } else {
     // Use receipt's own products
     $que_pro = mysqli_query($db->conn, "
@@ -177,8 +240,14 @@ if ($over > 0) {
     $stotal = $stotal + $overh;
 }
 
-$vat = $stotal * $vat_rate / 100;
-$grandTotal = round($stotal, 2) + round($vat, 2);
+// Only calculate VAT if include_vat is enabled
+if ($include_vat) {
+    $vat = $stotal * $vat_rate / 100;
+    $grandTotal = round($stotal, 2) + round($vat, 2);
+} else {
+    $vat = 0;
+    $grandTotal = round($stotal, 2);
+}
 
 // Professional Receipt Template matching Invoice design
 $html = '
@@ -251,6 +320,13 @@ $html = '
     .status-confirmed { background: #27ae60; color: #fff; }
     .status-draft { background: #f39c12; color: #fff; }
     .status-cancelled { background: #e74c3c; color: #fff; }
+    .source-tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: bold; margin-left: 5px; }
+    .source-quotation { background: #f59e0b; color: #fff; }
+    .source-invoice { background: #27ae60; color: #fff; }
+    .source-manual { background: #6b7280; color: #fff; }
+    .vat-mode { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: bold; margin-left: 5px; }
+    .vat-included { background: #d4edda; color: #155724; }
+    .vat-excluded { background: #f8d7da; color: #721c24; }
 </style>
 
 <!-- Header -->
@@ -271,8 +347,11 @@ $html = '
     <tr>
         <td class="info-left">
             <div class="rec-box">
-                <div class="rec-num">REC-'.htmlspecialchars($data['rep_rw']).' <span class="status status-'.strtolower($data['status'] ?? 'confirmed').'">'.htmlspecialchars($status_display).'</span></div>
-                <div class="rec-meta">Date: '.htmlspecialchars($data['createdate']).($use_invoice_data ? ' &nbsp;|&nbsp; Invoice Ref: INV-'.htmlspecialchars($linked_invoice['inv_no']) : '').'</div>
+                <div class="rec-num">REC-'.htmlspecialchars($data['rep_rw']).' <span class="status status-'.strtolower($data['status'] ?? 'confirmed').'">'.htmlspecialchars($status_display).'</span>
+                    <span class="source-tag source-'.$source_type.'">'.htmlspecialchars($source_display).'</span>
+                    <span class="vat-mode '.($include_vat ? 'vat-included' : 'vat-excluded').'">'.($include_vat ? 'VAT '.$vat_rate.'%' : 'NO VAT').'</span>
+                </div>
+                <div class="rec-meta">Date: '.htmlspecialchars($data['createdate']).($source_doc_no ? ' &nbsp;|&nbsp; Ref: '.htmlspecialchars($source_doc_no) : '').'</div>
             </div>
             <table>
                 <tr><td class="lbl">Customer</td><td class="cust-name">'.htmlspecialchars($customer['name']).'</td></tr>';
@@ -336,7 +415,8 @@ $html .= '</table>
             <div class="payment-item">
                 <b>Method:</b> '.htmlspecialchars($payment_display).'<br>
                 <b>Status:</b> '.htmlspecialchars($status_display).'<br>
-                <b>Date:</b> '.htmlspecialchars($data['createdate']).'
+                <b>Date:</b> '.htmlspecialchars($data['createdate']).'<br>
+                <b>Source:</b> '.htmlspecialchars($source_display).($source_doc_no ? ' ('.$source_doc_no.')' : '').'
             </div>
         </td>
         <td class="totals-wrap">
@@ -352,8 +432,16 @@ if ($over > 0) {
 }
 
 $html .= '
-                <tr><td class="lbl">Net Amount</td><td class="val">'.number_format($stotal, 2).'</td></tr>
-                <tr><td class="lbl">VAT '.htmlspecialchars($vat_rate).'%</td><td class="val">+'.number_format($vat, 2).'</td></tr>
+                <tr><td class="lbl">Net Amount</td><td class="val">'.number_format($stotal, 2).'</td></tr>';
+
+// Only show VAT row if include_vat is enabled
+if ($include_vat) {
+    $html .= '<tr><td class="lbl">VAT '.htmlspecialchars($vat_rate).'%</td><td class="val">+'.number_format($vat, 2).'</td></tr>';
+} else {
+    $html .= '<tr><td class="lbl" style="color:#e74c3c;">No VAT</td><td class="val" style="color:#e74c3c;">-</td></tr>';
+}
+
+$html .= '
                 <tr class="grand"><td class="lbl">Total Received</td><td class="val">'.number_format($grandTotal, 2).'</td></tr>
             </table>
         </td>

@@ -1,14 +1,101 @@
 # iACC - Accounting Management System
 
-**Version**: 3.8  
+**Version**: 4.0  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 4, 2026  
+**Last Updated**: January 5, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v4.0 (January 5, 2026)
+- **AI Chatbot Integration** 🤖:
+  - New agentic AI chatbot powered by Ollama (local LLM)
+  - Self-hosted llama3.2:3b model (2GB, runs locally)
+  - Natural language queries for invoices, POs, payments, and more
+  - Supports Thai and English languages
+  - Database CRUD operations via conversational interface
+  - Confirmation workflow for write operations (safety first)
+
+- **AI Agent Tools** 🛠️:
+  - `search_invoices` - Search and filter invoices
+  - `get_invoice_details` - View invoice line items
+  - `mark_invoice_paid` - Update payment status
+  - `search_purchase_orders` - Search POs
+  - `update_po_status` - Change PO status
+  - `search_payments` - Find payment records
+  - `search_customers` - Customer lookup
+  - `search_products` - Product catalog search
+  - `get_dashboard_stats` - Summary statistics
+  - Plus 6 more specialized tools
+
+- **AI Security & Audit** 🔐:
+  - Session-based authentication required
+  - Multi-tenant isolation (company_id filtering on all queries)
+  - Permission checks per tool based on user_level
+  - Confirmation required for all write operations
+  - Full audit logging in `ai_action_log` table
+  - Rate limiting configuration available
+
+- **AI Chat Widget** 💬:
+  - Floating chat bubble on all authenticated pages
+  - Modern UI with message history
+  - Quick action buttons for common queries
+  - Typing indicator during AI processing
+  - Confirmation dialogs for database changes
+  - Responsive design for mobile
+
+- **New Files**:
+  - `ai/config.php` - Ollama and agent configuration
+  - `ai/ollama-client.php` - PHP wrapper for Ollama API
+  - `ai/agent-tools.php` - Tool definitions for CRUD operations
+  - `ai/agent-executor.php` - Safe execution with audit logging
+  - `ai/chat-handler.php` - Main API endpoint
+  - `ai/prompts/system-prompt.txt` - AI behavior instructions
+  - `js/ai-chat-widget.js` - Frontend chat UI
+  - `css/ai-chat.css` - Chat widget styling
+  - `migrations/004_ai_conversations.sql` - Database schema
+
+- **Docker Updates** 🐳:
+  - Added Ollama service to `docker-compose.yml`
+  - New `ollama_models` volume for model persistence
+  - Port 11434 exposed for Ollama API
+  - 8GB memory limit for AI container
+
+### v3.9 (January 4, 2026)
+- **Receipt System Enhancement** 🧾:
+  - Added quotation support to receipt form (`rep-make.php`)
+  - New source type selector: Manual Entry / From Quotation / From Invoice
+  - Quotation dropdown with `QUO-` prefix (changed from `QA-`)
+  - Full product description display (removed 80-char truncation)
+  - Fixed quotation query - uses `pr.status='1'` instead of `po.status`
+  
+- **VAT Toggle Feature** 💰:
+  - New include/exclude VAT toggle switch
+  - Clean inline layout with switch on left, label on right
+  - Green color for "Include VAT", red for "No VAT"
+  - Auto-updates when selecting quotation vs invoice source
+  
+- **Database Migration** 🗄️:
+  - Added `migrations/003_create_receipt_table.sql`
+  - New columns: `quotation_id`, `source_type`, `include_vat`
+  - Payment tracking: `payment_ref`, `payment_date`
+  - Amount breakdown: `subtotal`, `after_discount`, `vat_amount`, `total_amount`
+  - Fixed MySQL 5.7 compatibility (removed `IF NOT EXISTS` in ALTER TABLE)
+
+- **UI/UX Improvements** 🎨:
+  - Fixed input heights to consistent 42px across all form controls
+  - Fixed width layout: Source Type (200px), Quotation/Invoice (400px)
+  - Removed flexible sizing to prevent layout shifts
+  - VAT switch container matches input height
+  - Proper flexbox alignment with `align-items: flex-end`
+
+- **Backend Fixes** 🔧:
+  - Fixed `fetch-invoice-data.php` quotation query (`pr.status` not `po.status`)
+  - Added quotation data loading via AJAX
+  - Customer info auto-population from quotation
 
 ### v3.8 (January 4, 2026)
 - **Unified Pagination System** 📄:
@@ -558,10 +645,91 @@ docker compose down
 | PHP | 7.4.33 FPM | ✅ Running |
 | MySQL | 5.7 | ✅ Running |
 | Nginx | Alpine | ✅ Running |
+| Ollama | Latest | ✅ AI Engine |
+| llama3.2 | 3B | ✅ AI Model |
 | mPDF | 5.7 | ✅ Working |
 | Bootstrap | 3.x / 5.3.3 | ✅ Active |
 | jQuery | 1.10.2 / 3.7.1 | ✅ Active |
 | Font Awesome | 4.7.0 (CDN) | ✅ Active |
+
+---
+
+## 🤖 AI Chatbot (v4.0)
+
+### Overview
+iACC includes an integrated AI assistant powered by Ollama, a local LLM that runs entirely on your server. No data is sent to external APIs - everything stays private.
+
+### Features
+- **Natural Language Queries**: Ask questions in Thai or English
+- **Database Operations**: Search, view, and update records via conversation
+- **Multi-Tenant Safe**: All queries filtered by company_id
+- **Audit Trail**: Every AI action is logged for compliance
+
+### Quick Start
+
+**1. Start Ollama Container:**
+```bash
+docker compose up -d ollama
+```
+
+**2. Pull AI Model (first time only):**
+```bash
+docker exec iacc_ollama ollama pull llama3.2:3b
+```
+
+**3. Verify Installation:**
+```bash
+curl http://localhost/ai/chat-handler.php?action=ping
+```
+
+### Usage
+Once logged in, click the 💬 chat bubble in the bottom-right corner. Example queries:
+
+| Query | Action |
+|-------|--------|
+| "แสดงใบแจ้งหนี้ 5 รายการล่าสุด" | Shows 5 latest invoices |
+| "Show unpaid invoices" | Lists invoices pending payment |
+| "ยอดรวม PO เดือนนี้" | Total PO amount this month |
+| "Mark invoice IV-001 as paid" | Updates invoice status (with confirmation) |
+| "Customer with highest outstanding" | Dashboard analytics |
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/ai/chat-handler.php?action=ping` | GET | Health check (public) |
+| `/ai/chat-handler.php?action=chat` | POST | Send message (requires auth) |
+| `/ai/chat-handler.php?action=history` | GET | Get conversation history |
+| `/ai/chat-handler.php?action=confirm` | POST | Confirm pending action |
+| `/ai/chat-handler.php?action=cancel` | POST | Cancel pending action |
+
+### Configuration
+
+Edit `ai/config.php` to customize:
+```php
+'ollama' => [
+    'base_url' => 'http://ollama:11434',
+    'model' => 'llama3.2:3b',  // or llama3.1:8b for better quality
+    'timeout' => 120,
+    'temperature' => 0.7,
+],
+'agent' => [
+    'require_confirmation' => true,  // Always confirm writes
+    'max_results' => 50,             // Limit query results
+    'rate_limit' => 30,              // Requests per minute
+]
+```
+
+### Upgrading AI Model
+
+For better quality responses, use a larger model:
+```bash
+# Pull 8B model (4.7GB download)
+docker exec iacc_ollama ollama pull llama3.1:8b
+
+# Update ai/config.php
+'model' => 'llama3.1:8b',
+```
 
 ---
 

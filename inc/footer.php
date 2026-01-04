@@ -57,12 +57,11 @@ $current_year = date('Y');
 .footer-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .footer-logo {
-    width: 24px;
-    height: 24px;
+    padding: 4px 8px;
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     border-radius: 6px;
     display: flex;
@@ -70,7 +69,8 @@ $current_year = date('Y');
     justify-content: center;
     color: #fff;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
 }
 
 .footer-copyright {
@@ -122,7 +122,7 @@ $current_year = date('Y');
 <footer class="app-footer">
     <div class="footer-content">
         <div class="footer-left">
-            <div class="footer-logo">iA</div>
+            <div class="footer-logo">iACC</div>
             <span class="footer-copyright">
                 © <?= $current_year ?> iACC. All rights reserved.
             </span>
@@ -137,3 +137,12 @@ $current_year = date('Y');
         </div>
     </div>
 </footer>
+
+<?php
+// AI Chat Widget - Only show for logged-in users
+if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])):
+?>
+<!-- AI Chat Widget -->
+<link rel="stylesheet" href="css/ai-chat.css">
+<script src="js/ai-chat-widget.js"></script>
+<?php endif; ?>

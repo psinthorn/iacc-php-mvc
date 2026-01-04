@@ -1178,8 +1178,8 @@ function get_status_badge($status) {
                                         <a href="index.php?page=compl_view&id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="View Details">
                                             <i class="fa fa-eye"></i>
                                         </a>
-                                        <a href="inv.php?id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank" style="background: #28a745;">
-                                            <i class="fa fa-file-text-o"></i>
+                                        <a href="inv.php?id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank">
+                                            <i class="fa fa-file-pdf-o"></i>
                                         </a>
                                     </td>
                                 </tr>

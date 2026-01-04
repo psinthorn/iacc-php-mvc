@@ -220,15 +220,13 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
 <table class="table table-modern">
     <thead>
         <tr>
-            <th>Invoice #</th>
+            <th width="100">Invoice #</th>
             <th><?=$xml->customer ?? 'Customer'?></th>
-            <th><?=$xml->name ?? 'Description'?></th>
-            <th><?=$xml->date ?? 'Date'?></th>
-            <th class="text-right"><?=$xml->amount ?? 'Amount'?></th>
-            <th class="text-right"><?=$xml->paid ?? 'Paid'?></th>
-            <th class="text-right">Outstanding</th>
-            <th class="text-center"><?=$xml->status ?? 'Status'?></th>
-            <th width="80"><?=$xml->action ?? 'Actions'?></th>
+            <th><?=$xml->descriptions ?? 'Descriptions'?></th>
+            <th width="90"><?=$xml->date ?? 'Date'?></th>
+            <th width="120" class="text-right">Outstanding</th>
+            <th width="100" class="text-center"><?=$xml->status ?? 'Status'?></th>
+            <th width="120"><?=$xml->action ?? 'Actions'?></th>
         </tr>
     </thead>
     <tbody>
@@ -310,9 +308,7 @@ if ($result && mysqli_num_rows($result) > 0):
             <td><?=htmlspecialchars($row['customer_name'] ?: $row['customer_name_th'])?></td>
             <td><?=htmlspecialchars($row['description'])?></td>
             <td><?=date('d/m/Y', strtotime($row['createdate']))?></td>
-            <td class="text-right"><?=number_format($row['total_amount'], 2)?></td>
-            <td class="text-right" style="color: #16a34a;"><?=number_format($row['paid_amount'], 2)?></td>
-            <td class="text-right" style="color: <?= $outstanding_row > 0 ? '#dc2626' : '#16a34a' ?>;">
+            <td class="text-right" style="font-weight:600; color: <?= $outstanding_row > 0 ? '#dc2626' : '#16a34a' ?>;">
                 <?=number_format($outstanding_row, 2)?>
             </td>
             <td class="text-center">

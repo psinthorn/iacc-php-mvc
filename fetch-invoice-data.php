@@ -1,7 +1,11 @@
 <?php
 /**
- * AJAX endpoint to fetch invoice data for receipt form
- * Returns JSON with invoice details including customer info, products, and totals
+ * AJAX endpoint to fetch invoice or quotation data for receipt form
+ * Returns JSON with details including customer info, products, and totals
+ * 
+ * Supports:
+ * - ?invoice_id=X  - Fetch from invoice (iv table)
+ * - ?quotation_id=X - Fetch from quotation (po table with status=1)
  */
 session_start();
 require_once("inc/sys.configs.php");
@@ -14,12 +18,13 @@ header('Content-Type: application/json');
 $db = new DbConn($config);
 $com_id = sql_int($_SESSION['com_id'] ?? 0);
 $invoice_id = sql_int($_GET['invoice_id'] ?? 0);
+$quotation_id = sql_int($_GET['quotation_id'] ?? 0);
 
 // Debug logging
-error_log("fetch-invoice-data.php: invoice_id=$invoice_id, com_id=$com_id, session_id=".session_id());
+error_log("fetch-invoice-data.php: invoice_id=$invoice_id, quotation_id=$quotation_id, com_id=$com_id");
 
-if (!$invoice_id) {
-    echo json_encode(['error' => 'No invoice ID provided']);
+if (!$invoice_id && !$quotation_id) {
+    echo json_encode(['error' => 'No invoice or quotation ID provided']);
     exit;
 }
 
@@ -28,39 +33,65 @@ if (!$com_id) {
     exit;
 }
 
-// Get invoice header data - using prepared statement
-$invoice = db_fetch_one(
-    "SELECT po.id as invoice_id, iv.taxrw as invoice_no, iv.createdate as invoice_date,
-        po.valid_pay as due_date, po.vat, po.dis as discount, po.over as overhead,
-        company.name_en as customer_name, company.phone, company.email,
-        company.tax as tax_id, pr.des as description
-    FROM po
-    JOIN pr ON po.ref = pr.id
-    JOIN company ON pr.cus_id = company.id
-    JOIN iv ON po.id = iv.tex
-    WHERE po.id = ? 
-    AND pr.ven_id = ?",
-    [$invoice_id, $com_id]
-);
+// Determine source type and fetch appropriate data
+$source_type = $quotation_id ? 'quotation' : 'invoice';
+$source_id = $quotation_id ?: $invoice_id;
 
-if (!$invoice) {
-    // Debug - try without vendor filter
-    $debug_data = db_fetch_one(
-        "SELECT po.id, pr.ven_id FROM po JOIN pr ON po.ref = pr.id JOIN iv ON po.id = iv.tex WHERE po.id = ?",
-        [$invoice_id]
+if ($source_type === 'quotation') {
+    // Fetch quotation data (po table with pr.status=1 for quotations)
+    $data = db_fetch_one(
+        "SELECT po.id as doc_id, po.tax as doc_no, po.date as doc_date,
+            po.valid_pay as due_date, po.vat, po.dis as discount, po.over as overhead,
+            company.name_en as customer_name, company.phone, company.email,
+            company.tax as tax_id, pr.des as description
+        FROM po
+        JOIN pr ON po.ref = pr.id
+        JOIN company ON pr.cus_id = company.id
+        WHERE po.id = ? 
+        AND pr.ven_id = ?
+        AND pr.status = '1'",
+        [$quotation_id, $com_id]
     );
-    echo json_encode([
-        'error' => 'Invoice not found',
-        'debug' => [
-            'invoice_id' => $invoice_id,
-            'com_id' => $com_id,
-            'actual_ven_id' => $debug_data['ven_id'] ?? 'not found'
-        ]
-    ]);
-    exit;
+    
+    if (!$data) {
+        echo json_encode(['error' => 'Quotation not found or access denied']);
+        exit;
+    }
+} else {
+    // Fetch invoice data (original logic)
+    $data = db_fetch_one(
+        "SELECT po.id as doc_id, iv.taxrw as doc_no, iv.createdate as doc_date,
+            po.valid_pay as due_date, po.vat, po.dis as discount, po.over as overhead,
+            company.name_en as customer_name, company.phone, company.email,
+            company.tax as tax_id, pr.des as description
+        FROM po
+        JOIN pr ON po.ref = pr.id
+        JOIN company ON pr.cus_id = company.id
+        JOIN iv ON po.id = iv.tex
+        WHERE po.id = ? 
+        AND pr.ven_id = ?",
+        [$invoice_id, $com_id]
+    );
+    
+    if (!$data) {
+        // Debug - try without vendor filter
+        $debug_data = db_fetch_one(
+            "SELECT po.id, pr.ven_id FROM po JOIN pr ON po.ref = pr.id JOIN iv ON po.id = iv.tex WHERE po.id = ?",
+            [$invoice_id]
+        );
+        echo json_encode([
+            'error' => 'Invoice not found',
+            'debug' => [
+                'invoice_id' => $invoice_id,
+                'com_id' => $com_id,
+                'actual_ven_id' => $debug_data['ven_id'] ?? 'not found'
+            ]
+        ]);
+        exit;
+    }
 }
 
-// Get invoice products - using prepared statement
+// Get products - using prepared statement
 $products = [];
 $product_results = db_fetch_all(
     "SELECT 
@@ -79,7 +110,7 @@ $product_results = db_fetch_all(
     LEFT JOIN brand ON product.ban_id = brand.id
     LEFT JOIN model ON product.model = model.id
     WHERE product.po_id = ?",
-    [$invoice_id]
+    [$source_id]
 );
 
 $subtotal = 0;
@@ -102,51 +133,52 @@ foreach ($product_results as $prod) {
 }
 
 // Calculate totals
-$discount_amount = $subtotal * floatval($invoice['discount']) / 100;
+$discount_amount = $subtotal * floatval($data['discount']) / 100;
 $after_discount = $subtotal - $discount_amount;
 
 $overhead_amount = 0;
-if ($invoice['overhead'] > 0) {
-    $overhead_amount = $after_discount * floatval($invoice['overhead']) / 100;
+if ($data['overhead'] > 0) {
+    $overhead_amount = $after_discount * floatval($data['overhead']) / 100;
 }
 $after_overhead = $after_discount + $overhead_amount;
 
-$vat_amount = $after_overhead * floatval($invoice['vat']) / 100;
+$vat_amount = $after_overhead * floatval($data['vat']) / 100;
 $grand_total = $after_overhead + $vat_amount;
 
-// Prepare response
+// Prepare response (unified for both invoice and quotation)
 $response = [
     'success' => true,
-    'invoice' => [
-        'id' => $invoice['invoice_id'],
-        'invoice_no' => $invoice['invoice_no'],
-        'invoice_date' => $invoice['invoice_date'],
-        'due_date' => $invoice['due_date'],
-        'vat' => $invoice['vat'],
-        'discount' => $invoice['discount'],
-        'overhead' => $invoice['overhead'],
-        'description' => $invoice['description']
+    'source_type' => $source_type,
+    'invoice' => [  // Keep key name for backward compatibility
+        'id' => $data['doc_id'],
+        'invoice_no' => $data['doc_no'],
+        'invoice_date' => $data['doc_date'],
+        'due_date' => $data['due_date'],
+        'vat' => $data['vat'],
+        'discount' => $data['discount'],
+        'overhead' => $data['overhead'],
+        'description' => $data['description']
     ],
     'customer' => [
-        'name' => $invoice['customer_name'],
-        'phone' => $invoice['phone'],
-        'email' => $invoice['email'],
-        'address' => $invoice['adr_tax'],
-        'city' => $invoice['city_tax'],
-        'district' => $invoice['district_tax'],
-        'province' => $invoice['province_tax'],
-        'zip' => $invoice['zip_tax'],
-        'tax_id' => $invoice['tax_id']
+        'name' => $data['customer_name'],
+        'phone' => $data['phone'],
+        'email' => $data['email'],
+        'address' => $data['adr_tax'] ?? '',
+        'city' => $data['city_tax'] ?? '',
+        'district' => $data['district_tax'] ?? '',
+        'province' => $data['province_tax'] ?? '',
+        'zip' => $data['zip_tax'] ?? '',
+        'tax_id' => $data['tax_id']
     ],
     'products' => $products,
     'totals' => [
         'subtotal' => number_format($subtotal, 2),
-        'discount_percent' => $invoice['discount'],
+        'discount_percent' => $data['discount'],
         'discount_amount' => number_format($discount_amount, 2),
         'after_discount' => number_format($after_discount, 2),
-        'overhead_percent' => $invoice['overhead'],
+        'overhead_percent' => $data['overhead'],
         'overhead_amount' => number_format($overhead_amount, 2),
-        'vat_percent' => $invoice['vat'],
+        'vat_percent' => $data['vat'],
         'vat_amount' => number_format($vat_amount, 2),
         'grand_total' => number_format($grand_total, 2),
         'grand_total_raw' => $grand_total

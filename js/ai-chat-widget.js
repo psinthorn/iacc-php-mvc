@@ -1,0 +1,548 @@
+/**
+ * AI Chat Widget
+ * 
+ * Frontend chat interface for iACC AI Assistant
+ * 
+ * @version 1.0
+ * @date 2026-01-04
+ */
+
+(function() {
+    'use strict';
+
+    // Configuration
+    const CONFIG = {
+        apiEndpoint: '/ai/chat-handler.php',
+        position: 'bottom-right',
+        theme: 'light',
+        quickActions: [
+            { label: '📊 สรุปวันนี้', prompt: 'สรุปข้อมูลวันนี้' },
+            { label: '💰 ใบแจ้งหนี้ค้างชำระ', prompt: 'แสดงใบแจ้งหนี้ที่ยังไม่ได้ชำระ' },
+            { label: '⏰ เกินกำหนด', prompt: 'แสดงใบแจ้งหนี้ที่เกินกำหนดชำระ' },
+        ]
+    };
+
+    // State
+    let state = {
+        isOpen: false,
+        isLoading: false,
+        sessionId: null,
+        messages: [],
+        pendingConfirmation: null,
+    };
+
+    // DOM Elements
+    let elements = {};
+
+    /**
+     * Initialize the chat widget
+     */
+    function init() {
+        createWidget();
+        bindEvents();
+        checkHealth();
+    }
+
+    /**
+     * Create the widget DOM structure
+     */
+    function createWidget() {
+        // Create container
+        const container = document.createElement('div');
+        container.id = 'ai-chat-widget';
+        container.className = 'ai-chat-widget';
+        container.innerHTML = `
+            <!-- Toggle Button -->
+            <button class="ai-chat-toggle" id="ai-chat-toggle" title="AI Assistant">
+                <svg class="ai-chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                <span class="ai-chat-badge" id="ai-chat-badge" style="display:none">!</span>
+            </button>
+
+            <!-- Chat Window -->
+            <div class="ai-chat-window" id="ai-chat-window">
+                <!-- Header -->
+                <div class="ai-chat-header">
+                    <div class="ai-chat-header-info">
+                        <div class="ai-chat-avatar">🤖</div>
+                        <div class="ai-chat-header-text">
+                            <div class="ai-chat-title">iACC Assistant</div>
+                            <div class="ai-chat-status" id="ai-chat-status">
+                                <span class="status-dot"></span>
+                                <span class="status-text">กำลังเชื่อมต่อ...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ai-chat-header-actions">
+                        <button class="ai-chat-btn-icon" id="ai-chat-clear" title="เริ่มใหม่">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                        <button class="ai-chat-btn-icon" id="ai-chat-close" title="ปิด">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="ai-chat-messages" id="ai-chat-messages">
+                    <!-- Welcome message -->
+                    <div class="ai-chat-message assistant">
+                        <div class="ai-chat-message-avatar">🤖</div>
+                        <div class="ai-chat-message-content">
+                            <div class="ai-chat-message-text">
+                                สวัสดีครับ! ผมเป็นผู้ช่วย AI ของระบบ iACC 
+                                <br><br>
+                                คุณสามารถถามเกี่ยวกับใบแจ้งหนี้ ใบสั่งซื้อ การชำระเงิน หรือข้อมูลลูกค้าได้เลยครับ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="ai-chat-quick-actions" id="ai-chat-quick-actions">
+                        ${CONFIG.quickActions.map(action => `
+                            <button class="ai-quick-action-btn" data-prompt="${action.prompt}">
+                                ${action.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="ai-chat-input-container">
+                    <div class="ai-chat-input-wrapper">
+                        <textarea 
+                            class="ai-chat-input" 
+                            id="ai-chat-input" 
+                            placeholder="พิมพ์ข้อความ..."
+                            rows="1"
+                        ></textarea>
+                        <button class="ai-chat-send" id="ai-chat-send" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="ai-chat-powered">
+                        Powered by Ollama 🦙
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        // Store element references
+        elements = {
+            container: container,
+            toggle: document.getElementById('ai-chat-toggle'),
+            window: document.getElementById('ai-chat-window'),
+            messages: document.getElementById('ai-chat-messages'),
+            input: document.getElementById('ai-chat-input'),
+            send: document.getElementById('ai-chat-send'),
+            close: document.getElementById('ai-chat-close'),
+            clear: document.getElementById('ai-chat-clear'),
+            status: document.getElementById('ai-chat-status'),
+            badge: document.getElementById('ai-chat-badge'),
+            quickActions: document.getElementById('ai-chat-quick-actions'),
+        };
+    }
+
+    /**
+     * Bind event listeners
+     */
+    function bindEvents() {
+        // Toggle chat
+        elements.toggle.addEventListener('click', toggleChat);
+        elements.close.addEventListener('click', closeChat);
+
+        // Send message
+        elements.send.addEventListener('click', sendMessage);
+        elements.input.addEventListener('keydown', handleInputKeydown);
+        elements.input.addEventListener('input', handleInputChange);
+
+        // Clear chat
+        elements.clear.addEventListener('click', clearChat);
+
+        // Quick actions
+        document.querySelectorAll('.ai-quick-action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const prompt = btn.dataset.prompt;
+                elements.input.value = prompt;
+                sendMessage();
+            });
+        });
+
+        // Auto-resize textarea
+        elements.input.addEventListener('input', autoResize);
+    }
+
+    /**
+     * Toggle chat window
+     */
+    function toggleChat() {
+        state.isOpen = !state.isOpen;
+        elements.window.classList.toggle('open', state.isOpen);
+        elements.toggle.classList.toggle('active', state.isOpen);
+        
+        if (state.isOpen) {
+            elements.input.focus();
+            elements.badge.style.display = 'none';
+        }
+    }
+
+    /**
+     * Close chat window
+     */
+    function closeChat() {
+        state.isOpen = false;
+        elements.window.classList.remove('open');
+        elements.toggle.classList.remove('active');
+    }
+
+    /**
+     * Clear chat history
+     */
+    function clearChat() {
+        state.messages = [];
+        state.sessionId = null;
+        state.pendingConfirmation = null;
+        
+        // Keep only welcome message
+        elements.messages.innerHTML = `
+            <div class="ai-chat-message assistant">
+                <div class="ai-chat-message-avatar">🤖</div>
+                <div class="ai-chat-message-content">
+                    <div class="ai-chat-message-text">
+                        เริ่มการสนทนาใหม่แล้วครับ มีอะไรให้ช่วยไหมครับ?
+                    </div>
+                </div>
+            </div>
+            <div class="ai-chat-quick-actions">
+                ${CONFIG.quickActions.map(action => `
+                    <button class="ai-quick-action-btn" data-prompt="${action.prompt}">
+                        ${action.label}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        // Re-bind quick actions
+        document.querySelectorAll('.ai-quick-action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const prompt = btn.dataset.prompt;
+                elements.input.value = prompt;
+                sendMessage();
+            });
+        });
+    }
+
+    /**
+     * Handle input keydown
+     */
+    function handleInputKeydown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    /**
+     * Handle input change
+     */
+    function handleInputChange() {
+        elements.send.disabled = elements.input.value.trim() === '' || state.isLoading;
+    }
+
+    /**
+     * Auto-resize textarea
+     */
+    function autoResize() {
+        elements.input.style.height = 'auto';
+        elements.input.style.height = Math.min(elements.input.scrollHeight, 120) + 'px';
+    }
+
+    /**
+     * Send message to API
+     */
+    async function sendMessage() {
+        const message = elements.input.value.trim();
+        if (!message || state.isLoading) return;
+
+        // Add user message to UI
+        addMessage('user', message);
+        elements.input.value = '';
+        elements.input.style.height = 'auto';
+        elements.send.disabled = true;
+
+        // Hide quick actions after first message
+        const quickActions = elements.messages.querySelector('.ai-chat-quick-actions');
+        if (quickActions) {
+            quickActions.style.display = 'none';
+        }
+
+        // Show loading
+        setLoading(true);
+
+        try {
+            const response = await fetch(CONFIG.apiEndpoint + '?action=chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: state.sessionId,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                state.sessionId = data.data.session_id;
+                addMessage('assistant', data.data.message);
+
+                // Handle confirmation
+                if (data.data.requires_confirmation) {
+                    state.pendingConfirmation = data.data.confirmation_id;
+                    addConfirmationButtons(data.data.confirmation_id);
+                }
+            } else {
+                addMessage('assistant', '❌ เกิดข้อผิดพลาด: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Chat error:', error);
+            addMessage('assistant', '❌ ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    /**
+     * Add message to UI
+     */
+    function addMessage(role, content) {
+        const messageEl = document.createElement('div');
+        messageEl.className = `ai-chat-message ${role}`;
+        
+        const avatar = role === 'user' ? '👤' : '🤖';
+        
+        messageEl.innerHTML = `
+            <div class="ai-chat-message-avatar">${avatar}</div>
+            <div class="ai-chat-message-content">
+                <div class="ai-chat-message-text">${formatMessage(content)}</div>
+                <div class="ai-chat-message-time">${formatTime(new Date())}</div>
+            </div>
+        `;
+
+        // Remove loading indicator if exists
+        const loadingEl = elements.messages.querySelector('.ai-chat-loading');
+        if (loadingEl) {
+            loadingEl.remove();
+        }
+
+        elements.messages.appendChild(messageEl);
+        scrollToBottom();
+
+        // Save to state
+        state.messages.push({ role, content, time: new Date() });
+    }
+
+    /**
+     * Add confirmation buttons
+     */
+    function addConfirmationButtons(confirmationId) {
+        const buttonsEl = document.createElement('div');
+        buttonsEl.className = 'ai-chat-confirmation';
+        buttonsEl.innerHTML = `
+            <button class="ai-confirm-btn confirm" data-id="${confirmationId}">
+                ✓ ยืนยัน
+            </button>
+            <button class="ai-confirm-btn cancel" data-id="${confirmationId}">
+                ✕ ยกเลิก
+            </button>
+        `;
+
+        elements.messages.appendChild(buttonsEl);
+        scrollToBottom();
+
+        // Bind events
+        buttonsEl.querySelector('.confirm').addEventListener('click', () => confirmAction(confirmationId));
+        buttonsEl.querySelector('.cancel').addEventListener('click', () => cancelAction(confirmationId));
+    }
+
+    /**
+     * Confirm action
+     */
+    async function confirmAction(confirmationId) {
+        setLoading(true);
+        
+        try {
+            const response = await fetch(CONFIG.apiEndpoint + '?action=confirm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    confirmation_id: confirmationId,
+                    session_id: state.sessionId,
+                }),
+            });
+
+            const data = await response.json();
+
+            // Remove confirmation buttons
+            const confirmEl = elements.messages.querySelector('.ai-chat-confirmation');
+            if (confirmEl) confirmEl.remove();
+
+            if (data.success) {
+                addMessage('assistant', data.data.message);
+            } else {
+                addMessage('assistant', '❌ ' + (data.error || 'Action failed'));
+            }
+        } catch (error) {
+            addMessage('assistant', '❌ เกิดข้อผิดพลาด');
+        } finally {
+            setLoading(false);
+            state.pendingConfirmation = null;
+        }
+    }
+
+    /**
+     * Cancel action
+     */
+    async function cancelAction(confirmationId) {
+        setLoading(true);
+
+        try {
+            await fetch(CONFIG.apiEndpoint + '?action=cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    confirmation_id: confirmationId,
+                    session_id: state.sessionId,
+                }),
+            });
+
+            // Remove confirmation buttons
+            const confirmEl = elements.messages.querySelector('.ai-chat-confirmation');
+            if (confirmEl) confirmEl.remove();
+
+            addMessage('assistant', '❌ ยกเลิกการดำเนินการแล้ว');
+        } catch (error) {
+            console.error('Cancel error:', error);
+        } finally {
+            setLoading(false);
+            state.pendingConfirmation = null;
+        }
+    }
+
+    /**
+     * Set loading state
+     */
+    function setLoading(loading) {
+        state.isLoading = loading;
+        elements.send.disabled = loading || elements.input.value.trim() === '';
+
+        if (loading) {
+            // Add loading indicator
+            const loadingEl = document.createElement('div');
+            loadingEl.className = 'ai-chat-message assistant ai-chat-loading';
+            loadingEl.innerHTML = `
+                <div class="ai-chat-message-avatar">🤖</div>
+                <div class="ai-chat-message-content">
+                    <div class="ai-chat-typing">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            elements.messages.appendChild(loadingEl);
+            scrollToBottom();
+        }
+    }
+
+    /**
+     * Check API health
+     */
+    async function checkHealth() {
+        try {
+            const response = await fetch(CONFIG.apiEndpoint + '?action=health');
+            const data = await response.json();
+
+            if (data.success && data.data.ollama?.available) {
+                setStatus('online', 'ออนไลน์');
+            } else {
+                setStatus('offline', 'ไม่พร้อมใช้งาน');
+            }
+        } catch (error) {
+            setStatus('offline', 'ไม่สามารถเชื่อมต่อได้');
+        }
+    }
+
+    /**
+     * Set status indicator
+     */
+    function setStatus(status, text) {
+        elements.status.className = 'ai-chat-status ' + status;
+        elements.status.querySelector('.status-text').textContent = text;
+    }
+
+    /**
+     * Format message content
+     */
+    function formatMessage(content) {
+        if (!content) return '';
+        
+        // Escape HTML
+        let formatted = content
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Convert markdown-like formatting
+        // Bold
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Italic
+        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Code
+        formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+        // Line breaks
+        formatted = formatted.replace(/\n/g, '<br>');
+
+        return formatted;
+    }
+
+    /**
+     * Format time
+     */
+    function formatTime(date) {
+        return date.toLocaleTimeString('th-TH', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    }
+
+    /**
+     * Scroll to bottom of messages
+     */
+    function scrollToBottom() {
+        elements.messages.scrollTop = elements.messages.scrollHeight;
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

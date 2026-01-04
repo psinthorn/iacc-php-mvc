@@ -129,9 +129,9 @@ function loadInvoiceData(invoiceId) {
                     var productsHtml = '';
                     for (var i = 0; i < data.products.length; i++) {
                         var p = data.products[i];
-                        productsHtml += '<tr><td>' + (i+1) + '</td><td>' + p.product_name;
+                        productsHtml += '<tr><td>' + (i+1) + '</td><td><strong>' + p.product_name + '</strong>';
                         if (p.description) {
-                            productsHtml += '<br><small class="text-muted">' + p.description.substring(0, 80) + '</small>';
+                            productsHtml += '<br><span class="text-muted" style="white-space:pre-wrap;">' + p.description + '</span>';
                         }
                         productsHtml += '</td><td class="text-center">' + p.quantity + '</td>';
                         productsHtml += '<td class="text-right">' + parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits: 2}) + '</td>';
@@ -305,12 +305,49 @@ $hasLinkedInvoice = !empty($fetvou['invoice_id']);
 
 <!-- Invoice Link Section -->
 <div class="invoice-link-card">
-    <div class="form-row">
-        <div class="form-col form-col-6">
-            <div class="form-group">
-                <label for="invoice_id"><i class="glyphicon glyphicon-link"></i> <?=$xml->linkedinvoice ?? 'Link to Invoice'?></label>
-                <select id="invoice_id" name="invoice_id" class="form-control" onchange="loadInvoiceData(this.value)">
-                    <option value=""><?=$xml->none ?? '-- Select Invoice (Optional) --'?></option>
+    <div class="form-row" style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
+        <!-- Source Type Selection -->
+        <div style="width:200px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="source_type"><i class="glyphicon glyphicon-tag"></i> <?=$xml->sourcetype ?? 'Source Type'?></label>
+                <select id="source_type" name="source_type" class="form-control input-lg" style="height:42px;" onchange="toggleSourceType(this.value)">
+                    <option value="manual" <?=($fetvou['source_type']=='manual' || !$fetvou['source_type'])?'selected':''?>><?=$xml->manual ?? 'Manual Entry'?></option>
+                    <option value="quotation" <?=$fetvou['source_type']=='quotation'?'selected':''?>><?=$xml->quotation ?? 'From Quotation'?></option>
+                    <option value="invoice" <?=$fetvou['source_type']=='invoice'?'selected':''?>><?=$xml->invoice ?? 'From Invoice'?></option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Quotation Selector (shown when source_type = quotation) -->
+        <div id="quotation_selector" style="width:400px; display:<?=$fetvou['source_type']=='quotation'?'block':'none'?>;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="quotation_id"><i class="fa fa-file-text-o"></i> <?=$xml->linkedquotation ?? 'Select Quotation'?></label>
+                <select id="quotation_id" name="quotation_id" class="form-control input-lg" style="height:42px;" onchange="loadQuotationData(this.value)">
+                    <option value=""><?=$xml->selectquotation ?? '-- Select Quotation --'?></option>
+                    <?php 
+                    // Query quotations (pr.status=1 means quotation)
+                    $qa_query = mysqli_query($db->conn, "SELECT po.id, po.tax as qa_no, company.name_en,
+                        DATE_FORMAT(po.date, '%d-%m-%Y') as qa_date
+                        FROM po 
+                        JOIN pr ON po.ref=pr.id 
+                        JOIN company ON pr.cus_id=company.id 
+                        WHERE pr.ven_id='".$com_id."' AND pr.status='1' AND po.po_id_new=''
+                        ORDER BY po.id DESC LIMIT 100");
+                    while($qa = mysqli_fetch_array($qa_query)) {
+                        $selected = ($fetvou['quotation_id'] == $qa['id']) ? 'selected' : '';
+                        echo "<option value='".e($qa['id'])."' $selected>QUO-".e($qa['qa_no'])." - ".e($qa['name_en'])." (".$qa['qa_date'].")</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Invoice Selector (shown when source_type = invoice) -->
+        <div id="invoice_selector" style="width:400px; display:<?=$fetvou['source_type']=='invoice'?'block':'none'?>;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="invoice_id"><i class="glyphicon glyphicon-link"></i> <?=$xml->linkedinvoice ?? 'Select Invoice'?></label>
+                <select id="invoice_id" name="invoice_id" class="form-control input-lg" style="height:42px;" onchange="loadInvoiceData(this.value)">
+                    <option value=""><?=$xml->selectinvoice ?? '-- Select Invoice --'?></option>
                     <?php 
                     $inv_query = mysqli_query($db->conn, "SELECT po.id, iv.taxrw as inv_no, company.name_en,
                         DATE_FORMAT(iv.createdate, '%d-%m-%Y') as inv_date
@@ -326,11 +363,255 @@ $hasLinkedInvoice = !empty($fetvou['invoice_id']);
                     }
                     ?>
                 </select>
-                <small style="color:#666; margin-top:5px; display:block;"><i class="glyphicon glyphicon-info-sign"></i> Linking to an invoice will auto-fill customer and product data</small>
+            </div>
+        </div>
+        
+        <!-- VAT Include/Exclude Toggle -->
+        <div style="width:auto;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="display:block; margin-bottom:8px;"><i class="fa fa-percent"></i> <?=$xml->vatmode ?? 'VAT Mode'?></label>
+                <div class="vat-switch-container">
+                    <label class="vat-switch">
+                        <input type="checkbox" name="include_vat" value="1" id="include_vat" <?=($fetvou['include_vat']===null || $fetvou['include_vat']==1)?'checked':''?> onchange="updateVatDisplay()">
+                        <span class="vat-switch-track">
+                            <span class="vat-switch-thumb"></span>
+                        </span>
+                    </label>
+                    <span class="vat-switch-label" id="vat_label"><?=($fetvou['include_vat']===null || $fetvou['include_vat']==1) ? ($xml->includevat ?? 'Include VAT') : ($xml->excludevat ?? 'No VAT')?></span>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* VAT Switch Styles */
+.vat-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    background: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    height: 42px;
+    box-sizing: border-box;
+}
+.vat-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    margin: 0;
+    flex-shrink: 0;
+}
+.vat-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+.vat-switch-track {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e74c3c;
+    border-radius: 24px;
+    transition: background-color 0.3s;
+}
+.vat-switch-thumb {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.vat-switch input:checked + .vat-switch-track {
+    background-color: #27ae60;
+}
+.vat-switch input:checked + .vat-switch-track .vat-switch-thumb {
+    transform: translateX(20px);
+}
+.vat-switch-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+}
+
+/* Source type selector card styling */
+.invoice-link-card {
+    border: 2px dashed #27ae60;
+    background: #f0fff4;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+#quotation_selector .form-group small { color: #f59e0b; }
+#invoice_selector .form-group small { color: #27ae60; }
+</style>
+
+<script>
+// Toggle between source types
+function toggleSourceType(sourceType) {
+    var quotationSelector = document.getElementById('quotation_selector');
+    var invoiceSelector = document.getElementById('invoice_selector');
+    var productSection = document.getElementById('product-section');
+    var formContainer = document.getElementById('receipt-form-container');
+    
+    // Hide both selectors first
+    quotationSelector.style.display = 'none';
+    invoiceSelector.style.display = 'none';
+    
+    // Clear selections when switching
+    document.getElementById('quotation_id').value = '';
+    document.getElementById('invoice_id').value = '';
+    document.getElementById('invoice_info').style.display = 'none';
+    
+    // Show appropriate selector
+    if (sourceType === 'quotation') {
+        quotationSelector.style.display = 'block';
+        // For quotations, default to no VAT
+        document.getElementById('include_vat').checked = false;
+        updateVatDisplay();
+    } else if (sourceType === 'invoice') {
+        invoiceSelector.style.display = 'block';
+        // For invoices, always include VAT
+        document.getElementById('include_vat').checked = true;
+        updateVatDisplay();
+    }
+    
+    // Show product section for manual entry
+    if (sourceType === 'manual') {
+        formContainer.classList.remove('invoice-linked');
+        productSection.style.display = 'block';
+    }
+}
+
+// Load quotation data (similar to invoice data)
+function loadQuotationData(quotationId) {
+    var formContainer = document.getElementById('receipt-form-container');
+    var productSection = document.getElementById('product-section');
+    
+    if (!quotationId) {
+        document.getElementById('name').value = '';
+        document.getElementById('invoice_info').style.display = 'none';
+        if (formContainer) formContainer.classList.remove('invoice-linked');
+        if (productSection) productSection.style.display = 'block';
+        return;
+    }
+    
+    // Hide product section when quotation is linked
+    if (formContainer) formContainer.classList.add('invoice-linked');
+    if (productSection) productSection.style.display = 'none';
+    
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    // Populate customer info
+                    document.getElementById('name').value = data.customer.name || '';
+                    if (document.getElementById('email')) {
+                        document.getElementById('email').value = data.customer.email || '';
+                    }
+                    if (document.getElementById('phone')) {
+                        document.getElementById('phone').value = data.customer.phone || '';
+                    }
+                    
+                    // Update VAT and discount from quotation
+                    if (document.querySelector('input[name="vat"]')) {
+                        document.querySelector('input[name="vat"]').value = data.invoice.vat || '0';
+                    }
+                    if (document.querySelector('input[name="dis"]')) {
+                        document.querySelector('input[name="dis"]').value = data.invoice.discount || '0';
+                    }
+                    
+                    // Build product table
+                    var productsHtml = '';
+                    for (var i = 0; i < data.products.length; i++) {
+                        var p = data.products[i];
+                        productsHtml += '<tr><td>' + (i+1) + '</td><td><strong>' + p.product_name + '</strong>';
+                        if (p.description) {
+                            productsHtml += '<br><span class="text-muted" style="white-space:pre-wrap;">' + p.description + '</span>';
+                        }
+                        productsHtml += '</td><td class="text-center">' + p.quantity + '</td>';
+                        productsHtml += '<td class="text-right">' + parseFloat(p.price).toLocaleString('en-US', {minimumFractionDigits: 2}) + '</td>';
+                        productsHtml += '<td class="text-right">' + p.amount + '</td></tr>';
+                    }
+                    
+                    // Show quotation info summary
+                    var vatText = document.getElementById('include_vat').checked ? 
+                        '<p><strong>VAT ' + data.totals.vat_percent + '%:</strong> +฿' + data.totals.vat_amount + '</p>' : 
+                        '<p><em style="color:#e74c3c;">No VAT (Personal Receipt)</em></p>';
+                    
+                    var infoHtml = '<div class="panel panel-warning">' +
+                        '<div class="panel-heading" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none;">' +
+                        '<strong><i class="fa fa-file-text-o"></i> Linked Quotation: QUO-' + data.invoice.invoice_no + '</strong></div>' +
+                        '<div class="panel-body">' +
+                        '<div class="row">' +
+                        '<div class="col-md-6">' +
+                        '<p><strong>Customer:</strong> ' + data.customer.name + '</p>' +
+                        '<p><strong>Quotation Date:</strong> ' + (data.invoice.invoice_date || '-') + '</p>' +
+                        '</div>' +
+                        '<div class="col-md-6 text-right">' +
+                        '<p><strong>Subtotal:</strong> ฿' + data.totals.subtotal + '</p>';
+                    
+                    if (parseFloat(data.totals.discount_percent) > 0) {
+                        infoHtml += '<p><strong>Discount ' + data.totals.discount_percent + '%:</strong> -฿' + data.totals.discount_amount + '</p>';
+                    }
+                    
+                    infoHtml += vatText +
+                        '<p class="text-warning" style="font-size:18px;"><strong>Total: ฿' + data.totals.grand_total + '</strong></p>' +
+                        '</div></div><hr>' +
+                        '<table class="table table-condensed table-striped">' +
+                        '<thead><tr><th>#</th><th>Product</th><th class="text-center">Qty</th><th class="text-right">Price</th><th class="text-right">Amount</th></tr></thead>' +
+                        '<tbody>' + productsHtml + '</tbody></table>' +
+                        '</div></div>';
+                    
+                    document.getElementById('invoice_info').innerHTML = infoHtml;
+                    document.getElementById('invoice_info').style.display = 'block';
+                } else {
+                    alert('Error loading quotation: ' + data.error);
+                }
+            } catch(e) {
+                console.error('Error parsing response:', e);
+            }
+        }
+    };
+    // Use the same endpoint but with quotation_id parameter
+    xhr.open("GET", "fetch-invoice-data.php?quotation_id=" + quotationId, true);
+    xhr.withCredentials = true;
+    xhr.send();
+}
+
+// Update VAT display when toggle changes
+function updateVatDisplay() {
+    var isChecked = document.getElementById('include_vat').checked;
+    var label = document.getElementById('vat_label');
+    var hint = document.getElementById('vat_hint');
+    var vatInput = document.querySelector('input[name="vat"]');
+    
+    if (isChecked) {
+        label.textContent = '<?=$xml->includevat ?? "Include VAT"?>';
+        hint.textContent = '<?=$xml->includevathint ?? "VAT will be included in total"?>';
+        if (vatInput) vatInput.closest('.form-col').style.opacity = '1';
+    } else {
+        label.textContent = '<?=$xml->excludevat ?? "No VAT"?>';
+        hint.textContent = '<?=$xml->excludevathint ?? "No VAT will be charged"?>';
+        if (vatInput) vatInput.closest('.form-col').style.opacity = '0.5';
+    }
+}
+</script>
 
 <!-- Invoice Info Display -->
 <div id="invoice_info" class="clearfix" style="margin-bottom:20px; display:<?=$fetvou['invoice_id']?'block':'none'?>;">

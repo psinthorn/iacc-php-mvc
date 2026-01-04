@@ -1,10 +1,14 @@
 <?php
 // Security already checked in index.php
+require_once("inc/pagination.php");
 
 // Get search parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+$current_page_out = isset($_GET['pg_out']) ? max(1, intval($_GET['pg_out'])) : 1;
+$current_page_in = isset($_GET['pg_in']) ? max(1, intval($_GET['pg_in'])) : 1;
+$per_page = 15;
 
 // Build search condition
 $search_cond = '';
@@ -21,6 +25,20 @@ if (!empty($date_from)) {
 if (!empty($date_to)) {
     $date_cond .= " AND po.date <= '$date_to'";
 }
+
+// Count total records for OUT
+$count_out = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po JOIN pr ON po.ref=pr.id JOIN company ON pr.cus_id=company.id WHERE po_id_new='' AND ven_id='".$_SESSION['com_id']."' AND status='1' $search_cond $date_cond");
+$total_out = mysqli_fetch_assoc($count_out)['total'] ?? 0;
+$pagination_out = paginate($total_out, $per_page, $current_page_out);
+
+// Count total records for IN
+$count_in = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po JOIN pr ON po.ref=pr.id JOIN company ON pr.ven_id=company.id WHERE po_id_new='' AND cus_id='".$_SESSION['com_id']."' AND status='1' $search_cond $date_cond");
+$total_in = mysqli_fetch_assoc($count_in)['total'] ?? 0;
+$pagination_in = paginate($total_in, $per_page, $current_page_in);
+
+// Preserve query params for pagination
+$query_params = $_GET;
+unset($query_params['pg_out'], $query_params['pg_in']);
 ?>
 
 <!-- Modern Font -->
@@ -246,6 +264,59 @@ if (!empty($date_to)) {
         font-size: 10px;
         margin-left: 2px;
     }
+    
+    /* Pagination Styling */
+    .pagination-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: #f9fafb;
+        border-top: 1px solid #e5e7eb;
+        gap: 12px;
+    }
+    
+    .pagination-wrapper .pagination {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 6px;
+        list-style: none;
+    }
+    
+    .pagination-wrapper .pagination li a,
+    .pagination-wrapper .pagination li span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 2px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .pagination-wrapper .pagination li.active span {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: #f59e0b;
+        color: white;
+    }
+    
+    .pagination-wrapper .pagination li a:hover {
+        border-color: #f59e0b;
+        color: #f59e0b;
+    }
+    
+    .pagination-wrapper .pagination-info {
+        font-size: 13px;
+        color: #6b7280;
+    }
 </style>
 
 <div class="list-wrapper">
@@ -304,7 +375,8 @@ if (!empty($date_to)) {
             </thead>
             <tbody>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id  desc ");
+$offset_out = $pagination_out['offset'];
+$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id desc LIMIT $per_page OFFSET $offset_out");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
 	 	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data[id]."'");
@@ -351,6 +423,7 @@ echo "<td><span class='status-badge cancelled'>".$xml->$var."</span></td><td>
 	}?>
             </tbody>
         </table>
+        <?= render_pagination($pagination_out, '?page=qa_list', $query_params, 'pg_out') ?>
     </div>
 
     <!-- Quotation In Table -->
@@ -371,7 +444,8 @@ echo "<td><span class='status-badge cancelled'>".$xml->$var."</span></td><td>
             </thead>
             <tbody>
 <?php
-$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$_SESSION['com_id']."' and status='1'  order by cancel,po.id desc ");
+$offset_in = $pagination_in['offset'];
+$query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id desc LIMIT $per_page OFFSET $offset_in");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
 	  	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data['id']."'");
@@ -413,6 +487,7 @@ $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as t
 ?>
             </tbody>
         </table>
+        <?= render_pagination($pagination_in, '?page=qa_list', $query_params, 'pg_in') ?>
     </div>
 </div>
 <div id="fetch_state"></div>

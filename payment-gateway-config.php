@@ -370,23 +370,25 @@ $gatewayFields = [
 
 .config-form .form-control {
     width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    height: 48px;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
     font-size: 14px;
-    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
     background-color: #fff;
     color: #333;
     box-sizing: border-box;
 }
 
 .config-form .form-control:hover {
-    border-color: #b0b0b0;
+    border-color: #cbd5e1;
 }
 
 .config-form .form-control:focus {
-    border-color: #8e44ad;
-    box-shadow: 0 0 0 4px rgba(142, 68, 173, 0.15);
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     outline: none;
 }
 
@@ -397,8 +399,8 @@ $gatewayFields = [
     -moz-appearance: none;
     background-color: #fff;
     background-image: 
-        linear-gradient(45deg, transparent 50%, #8e44ad 50%),
-        linear-gradient(135deg, #8e44ad 50%, transparent 50%);
+        linear-gradient(45deg, transparent 50%, #4f46e5 50%),
+        linear-gradient(135deg, #4f46e5 50%, transparent 50%);
     background-position: 
         calc(100% - 20px) calc(50% + 2px),
         calc(100% - 14px) calc(50% + 2px);
@@ -410,17 +412,17 @@ $gatewayFields = [
     cursor: pointer;
     font-weight: 500;
     line-height: 1.5;
-    min-height: 48px;
+    height: 48px;
 }
 
 .config-form select.form-control:hover {
-    background-color: #fafafa;
+    background-color: #f9fafb;
 }
 
 .config-form select.form-control:focus {
     background-image: 
-        linear-gradient(45deg, #8e44ad 50%, transparent 50%),
-        linear-gradient(135deg, transparent 50%, #8e44ad 50%);
+        linear-gradient(45deg, #4f46e5 50%, transparent 50%),
+        linear-gradient(135deg, transparent 50%, #4f46e5 50%);
     background-position: 
         calc(100% - 14px) calc(50% - 2px),
         calc(100% - 20px) calc(50% - 2px);
@@ -435,7 +437,7 @@ $gatewayFields = [
 
 .config-form select.form-control option:hover,
 .config-form select.form-control option:checked {
-    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
     color: #fff;
 }
 
@@ -564,27 +566,35 @@ $gatewayFields = [
 /* Mode indicator badges */
 .mode-indicator {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 4px;
+    padding: 5px 12px;
+    border-radius: 6px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    margin-left: 10px;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
     vertical-align: middle;
 }
 
 .mode-indicator.sandbox,
 .mode-indicator.test {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffc107;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border: 1px solid #f59e0b;
 }
 
 .mode-indicator.live,
 .mode-indicator.production {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #28a745;
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+    border: 1px solid #22c55e;
+}
+
+/* Mode label with badge */
+.mode-label-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
 /* Better form field styling */
@@ -713,6 +723,14 @@ $gatewayFields = [
                                 <?php if ($field['required']): ?>
                                 <span class="required">*</span>
                                 <?php endif; ?>
+                                <?php if ($key === 'mode'): 
+                                    $currentMode = $configs[$key] ?? 'sandbox';
+                                    $isLive = in_array($currentMode, ['live', 'production']);
+                                ?>
+                                <span id="mode-badge-<?= $code ?>" class="mode-indicator <?= $isLive ? 'live' : 'sandbox' ?>">
+                                    <?= $isLive ? 'LIVE MODE' : 'TEST MODE' ?>
+                                </span>
+                                <?php endif; ?>
                             </label>
                             
                             <?php if ($field['type'] === 'select'): ?>
@@ -725,14 +743,6 @@ $gatewayFields = [
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <?php if ($key === 'mode'): 
-                                    $currentMode = $configs[$key] ?? 'sandbox';
-                                    $isLive = in_array($currentMode, ['live', 'production']);
-                                ?>
-                                <span id="mode-badge-<?= $code ?>" class="mode-indicator <?= $isLive ? 'live' : 'sandbox' ?>">
-                                    <?= $isLive ? 'LIVE' : 'TEST MODE' ?>
-                                </span>
-                                <?php endif; ?>
                             </div>
                             
                             <?php elseif ($field['type'] === 'password'): ?>

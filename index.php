@@ -152,6 +152,9 @@ $routes = [
     'test_containers'        => 'test-containers.php',
     'api_lang_debug'         => 'api-lang-debug.php',
     
+    // AI Chat API
+    'ai_chat'                => 'ai/chat-handler.php',
+    
     // Invoice Payment
     'inv_checkout'           => 'inv-checkout.php',
     'inv_payment_success'    => 'inv-payment-success.php',
