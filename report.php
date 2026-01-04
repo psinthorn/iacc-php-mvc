@@ -46,7 +46,7 @@ function sortLink($column, $label, $current_sort, $current_dir, $base_url) {
     } else {
         $icon = ' <i class="fa fa-sort" style="opacity:0.3;"></i>';
     }
-    return '<a href="' . $base_url . '&sort=' . $column . '&dir=' . $new_dir . '" style="color:#333;text-decoration:none;">' . $label . $icon . '</a>';
+    return '<a href="' . $base_url . '&sort=' . $column . '&dir=' . $new_dir . '" class="sort-link">' . $label . $icon . '</a>';
 }
 
 // Check if company is selected
@@ -116,39 +116,121 @@ usort($report_data, function($a, $b) use ($sort_by, $sort_dir) {
     return $sort_dir == 'asc' ? $cmp : -$cmp;
 });
 ?>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Modern Report Styling */
+.report-container { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1400px; margin: 0 auto; }
+.page-header-rep { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; padding: 24px 28px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
+.page-header-rep h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+.page-header-rep .header-actions { display: flex; gap: 10px; }
+.page-header-rep .btn-export { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.page-header-rep .btn-export:hover { background: rgba(255,255,255,0.3); color: #fff; }
 
-<h2><i class="fa fa-bar-chart-o"></i> <?=$xml->report?></h2>
+.filter-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
+.filter-card .filter-body { padding: 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.period-tabs { display: flex; gap: 8px; }
+.period-tabs .btn { border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 500; border: 1px solid #e5e7eb; transition: all 0.2s; background: #fff; color: #374151; }
+.period-tabs .btn.active { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; border-color: #4f46e5; }
+.period-tabs .btn:hover:not(.active) { background: #f3f4f6; }
+.period-label { background: #eef2ff; color: #4338ca; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; }
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <div class="row">
-            <div class="col-md-8">
-                <strong>Filter by Period:</strong>
-                <div class="btn-group" style="margin-left: 15px;">
-                    <a href="?page=report&period=today&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'today' ? 'btn-primary' : 'btn-default'; ?>">Today</a>
-                    <a href="?page=report&period=week&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'week' ? 'btn-primary' : 'btn-default'; ?>">7 Days</a>
-                    <a href="?page=report&period=month&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'month' ? 'btn-primary' : 'btn-default'; ?>">30 Days</a>
-                    <a href="?page=report&period=year&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'year' ? 'btn-primary' : 'btn-default'; ?>">This Year</a>
-                    <a href="?page=report&period=all&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn btn-sm <?php echo $report_period == 'all' ? 'btn-primary' : 'btn-default'; ?>">All Time</a>
-                </div>
-                <span style="margin-left: 15px; color: #666;">Showing: <strong><?php echo $period_label; ?></strong></span>
-            </div>
-            <div class="col-md-4 text-right">
-                <strong>Export:</strong>
-                <a href="report-export.php?period=<?php echo $report_period; ?>&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" 
-                   class="btn btn-sm btn-success" title="Export to Excel/CSV">
-                    <i class="fa fa-file-excel-o"></i> Excel
-                </a>
-                <button onclick="window.print();" class="btn btn-sm btn-info" title="Print Report">
-                    <i class="fa fa-print"></i> Print
-                </button>
-            </div>
-        </div>
+.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+@media (max-width: 992px) { .summary-cards { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 576px) { .summary-cards { grid-template-columns: repeat(2, 1fr); } }
+.summary-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; text-align: center; }
+.summary-card .icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto 12px; }
+.summary-card .icon.pr { background: #fef3c7; color: #d97706; }
+.summary-card .icon.qa { background: #dbeafe; color: #2563eb; }
+.summary-card .icon.po { background: #dcfce7; color: #16a34a; }
+.summary-card .icon.iv { background: #fce7f3; color: #db2777; }
+.summary-card .icon.tx { background: #e0e7ff; color: #4338ca; }
+.summary-card h3 { margin: 0 0 4px 0; font-size: 28px; font-weight: 700; color: #1f2937; }
+.summary-card p { margin: 0; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.data-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
+.data-card .card-header { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; color: #3730a3; }
+
+.table-modern { margin-bottom: 0; }
+.table-modern thead th { background: #f8fafc; color: #374151; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 16px; border-bottom: 2px solid #e5e7eb; }
+.table-modern tbody tr { transition: background-color 0.2s; }
+.table-modern tbody tr:hover { background-color: #eef2ff; }
+.table-modern tbody td { padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+.table-modern tbody th { padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid #f3f4f6; font-size: 14px; font-weight: 500; color: #1f2937; }
+.table-modern tfoot { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+.table-modern tfoot th, .table-modern tfoot td { padding: 14px 16px; font-weight: 700; color: #166534; }
+.sort-link { color: #374151; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.sort-link:hover { color: #4f46e5; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #6b7280; }
+.empty-state i { font-size: 48px; margin-bottom: 16px; color: #d1d5db; }
+</style>
+
+<div class="report-container">
+
+<!-- Page Header -->
+<div class="page-header-rep">
+    <h2><i class="fa fa-bar-chart-o"></i> <?=$xml->report?></h2>
+    <div class="header-actions">
+        <a href="report-export.php?period=<?php echo $report_period; ?>&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn-export">
+            <i class="fa fa-file-excel-o"></i> Excel
+        </a>
+        <button onclick="window.print();" class="btn-export">
+            <i class="fa fa-print"></i> Print
+        </button>
     </div>
 </div>
 
-<table class="table table-bordered table-hover" width="100%">
-<thead style="background: #f5f5f5;">
+<!-- Filter Card -->
+<div class="filter-card">
+    <div class="filter-body">
+        <div class="period-tabs">
+            <a href="?page=report&period=today&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn <?php echo $report_period == 'today' ? 'active' : ''; ?>">Today</a>
+            <a href="?page=report&period=week&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn <?php echo $report_period == 'week' ? 'active' : ''; ?>">7 Days</a>
+            <a href="?page=report&period=month&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn <?php echo $report_period == 'month' ? 'active' : ''; ?>">30 Days</a>
+            <a href="?page=report&period=year&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn <?php echo $report_period == 'year' ? 'active' : ''; ?>">This Year</a>
+            <a href="?page=report&period=all&sort=<?php echo $sort_by; ?>&dir=<?php echo $sort_dir; ?>" class="btn <?php echo $report_period == 'all' ? 'active' : ''; ?>">All Time</a>
+        </div>
+        <span class="period-label"><i class="fa fa-calendar"></i> <?php echo $period_label; ?></span>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="icon pr"><i class="fa fa-file-text-o"></i></div>
+        <h3><?php echo $prs; ?></h3>
+        <p><?=$xml->purchasingrequest ?? 'PR'?></p>
+    </div>
+    <div class="summary-card">
+        <div class="icon qa"><i class="fa fa-list-alt"></i></div>
+        <h3><?php echo $qas; ?></h3>
+        <p><?=$xml->quotation ?? 'QA'?></p>
+    </div>
+    <div class="summary-card">
+        <div class="icon po"><i class="fa fa-shopping-cart"></i></div>
+        <h3><?php echo $pos; ?></h3>
+        <p><?=$xml->purchasingorder ?? 'PO'?></p>
+    </div>
+    <div class="summary-card">
+        <div class="icon iv"><i class="fa fa-file-text"></i></div>
+        <h3><?php echo $ivs; ?></h3>
+        <p><?=$xml->invoice ?? 'Invoice'?></p>
+    </div>
+    <div class="summary-card">
+        <div class="icon tx"><i class="fa fa-check-circle"></i></div>
+        <h3><?php echo $txs; ?></h3>
+        <p><?=$xml->taxinvoice ?? 'Tax Invoice'?></p>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="data-card">
+    <div class="card-header">
+        <i class="fa fa-table"></i> Customer Transaction Summary
+    </div>
+<div class="table-responsive">
+<table class="table table-modern">
+<thead>
 <tr>
     <th><?php echo sortLink('name', 'Customer', $sort_by, $sort_dir, $base_url); ?></th>
     <th class="text-center"><?php echo sortLink('pr', $xml->purchasingrequest ?? 'PR', $sort_by, $sort_dir, $base_url); ?></th>
@@ -170,20 +252,24 @@ usort($report_data, function($a, $b) use ($sort_by, $sort_dir) {
 </tr>
 <?php endforeach; ?>
 </tbody>
-<tfoot style="background: #e8f5e9; font-weight: bold;">
+<tfoot>
 <tr>
     <th style="text-align:right;"><?=$xml->summary?></th>
     <td class="text-center"><?php echo $prs; ?></td>
     <td class="text-center"><?php echo $qas; ?></td>
     <td class="text-center"><?php echo $pos; ?></td>
     <td class="text-center"><?php echo $ivs; ?></td>
-    <td class="text-center" style="color: #28a745;"><?php echo $txs; ?></td>
+    <td class="text-center"><?php echo $txs; ?></td>
 </tr>
 </tfoot>
 </table>
+</div>
+</div>
 
 <?php if (count($report_data) == 0): ?>
-<div class="alert alert-info">
+<div class="alert alert-info" style="border-radius:12px;border:none;background:#eef2ff;color:#4338ca;">
     <i class="fa fa-info-circle"></i> No transactions found for the selected period.
 </div>
 <?php endif; ?>
+
+</div><!-- /report-container -->

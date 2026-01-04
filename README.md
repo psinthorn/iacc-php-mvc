@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.6  
+**Version**: 3.7  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,40 @@
 ---
 
 ## 📋 Changelog
+
+### v3.7 (January 4, 2026)
+- **UI Modernization - Application-Wide** 🎨:
+  - Applied modern Inter font and consistent styling across 18 pages
+  - Unified design language matching developer tools aesthetic
+
+- **Billing/Invoice Pages**:
+  - `compl-list.php` - Purple gradient header, filter card with date presets, summary cards, table-modern styling
+  - `compl-list2.php` - Green gradient header, matching invoice list structure
+  - `invoice-payments.php` - Blue gradient header, status tabs, amount cards with progress bars
+
+- **Report Page**:
+  - `report.php` - Indigo gradient header, period tabs, summary cards for PR/QA/PO/IV/TX totals
+
+- **Master Data Forms** (Complete Redesign):
+  - `company.php` - Blue gradient header, sectioned cards (Basic Info, Register Address, Billing Address), logo preview
+  - `category.php` - Purple gradient header, clean form card layout
+  - `brand.php` - Orange gradient header, owner select, logo preview styling
+  - `type.php` - Form card with category select and brand checkboxes
+  - `payment.php` - Green gradient header, payment term form
+
+- **User Management**:
+  - `user-list.php` - Indigo gradient page header, modern filter card, enhanced role sections with updated color gradients
+
+- **Modern UI Style System**:
+  - Inter font via Google Fonts CDN
+  - 16px border-radius on cards, 10px on inputs/buttons
+  - Section-specific gradient colors (purple, green, blue, orange, indigo)
+  - 48px height form controls with consistent focus states
+  - Cards with white background, subtle shadows, icon headers
+  - Gradient buttons with hover transform effects
+
+- **Already Modernized (Verified)**:
+  - `vou-list.php`, `mo-list.php`, `audit-log.php`, `payment-method-list.php`, `payment-gateway-config.php`
 
 ### v3.6 (January 4, 2026)
 - **Application Footer** 📄:

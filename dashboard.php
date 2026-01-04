@@ -264,10 +264,18 @@ function get_status_badge($status) {
     return '<span class="badge" style="background: #6c757d; color: white;">Unknown</span>';
 }
 ?>
+<!-- Modern Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    /* Dashboard Page Styles */
+    /* Dashboard Page Styles - Modern Update */
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+    
     .dashboard-wrapper {
         padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
     }
 
     .dashboard-header {
@@ -275,9 +283,10 @@ function get_status_badge($status) {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
-        padding: 20px;
+        padding: 24px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 8px;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25);
         color: white;
     }
 
@@ -295,29 +304,30 @@ function get_status_badge($status) {
 
     .kpi-card {
         background: white;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 20px;
         margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e7eb;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
         border-left: 4px solid #667eea;
     }
 
     .kpi-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
     .kpi-card.alert {
-        border-left-color: #ff6b6b;
+        border-left-color: #ef4444;
     }
 
     .kpi-card.success {
-        border-left-color: #51cf66;
+        border-left-color: #10b981;
     }
 
     .kpi-card.warning {
-        border-left-color: #ffd43b;
+        border-left-color: #f59e0b;
     }
 
     .kpi-icon {
@@ -331,20 +341,20 @@ function get_status_badge($status) {
     }
 
     .kpi-icon.success {
-        color: #51cf66;
+        color: #10b981;
     }
 
     .kpi-icon.warning {
-        color: #ffd43b;
+        color: #f59e0b;
     }
 
     .kpi-icon.danger {
-        color: #ff6b6b;
+        color: #ef4444;
     }
 
     .kpi-label {
         font-size: 12px;
-        color: #6c757d;
+        color: #6b7280;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -354,28 +364,29 @@ function get_status_badge($status) {
     .kpi-value {
         font-size: 28px;
         font-weight: 700;
-        color: #2c3e50;
+        color: #1f2937;
         margin-bottom: 5px;
     }
 
     .kpi-change {
         font-size: 12px;
-        color: #6c757d;
+        color: #6b7280;
     }
 
     .content-card {
         background: white;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 20px;
         margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     .card-title {
-        font-size: 18px;
-        font-weight: 700;
+        font-size: 16px;
+        font-weight: 600;
         margin-bottom: 15px;
-        color: #2c3e50;
+        color: #1f2937;
         padding-bottom: 12px;
         border-bottom: 2px solid #667eea;
     }
@@ -386,7 +397,7 @@ function get_status_badge($status) {
     }
 
     .table-responsive {
-        border-radius: 6px;
+        border-radius: 8px;
         overflow: hidden;
     }
 
@@ -396,50 +407,53 @@ function get_status_badge($status) {
     }
 
     .table thead th {
-        background: #f8f9fa;
-        color: #2c3e50;
+        background: #f9fafb;
+        color: #1f2937;
         font-weight: 600;
         border: none;
-        padding: 12px;
+        padding: 14px 12px;
         text-transform: uppercase;
         font-size: 11px;
         letter-spacing: 0.5px;
     }
 
     .table tbody td {
-        padding: 12px;
-        border-color: #e9ecef;
+        padding: 14px 12px;
+        border-color: #e5e7eb;
         vertical-align: middle;
     }
 
     .table tbody tr:hover {
-        background-color: #f8f9fa;
+        background-color: rgba(102, 126, 234, 0.03);
     }
 
     .quick-link {
         display: flex;
         align-items: center;
-        padding: 12px 15px;
-        border-radius: 6px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
         text-decoration: none;
-        margin-bottom: 8px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
     }
 
     .quick-link:hover {
-        transform: translateX(3px);
-        color: white;
-        box-shadow: 0 3px 12px rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px);
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        color: #1f2937;
+        text-decoration: none;
     }
 
     .quick-link i {
-        font-size: 20px;
+        font-size: 18px;
         margin-right: 12px;
         min-width: 25px;
         text-align: center;
+        color: #667eea;
     }
 
     .quick-link-text {
@@ -451,13 +465,13 @@ function get_status_badge($status) {
     .empty-state {
         text-align: center;
         padding: 30px 20px;
-        color: #6c757d;
+        color: #6b7280;
     }
 
     .empty-state i {
         font-size: 40px;
         margin-bottom: 12px;
-        color: #dee2e6;
+        color: #9ca3af;
     }
 
     .empty-state p {
@@ -473,9 +487,9 @@ function get_status_badge($status) {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 20px;
-        border-radius: 8px;
+        border-radius: 12px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
     }
 
     .stat-value {
@@ -492,37 +506,43 @@ function get_status_badge($status) {
     }
 
     .badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 20px;
         font-size: 11px;
         font-weight: 600;
     }
 
     .badge-success {
-        background-color: #51cf66;
-        color: white;
+        background-color: #d1fae5;
+        color: #10b981;
     }
 
     .badge-warning {
-        background-color: #ffc107;
-        color: #333;
+        background-color: #fef3c7;
+        color: #d97706;
     }
 
     .action-btn {
-        padding: 4px 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
         margin: 0 2px;
-        font-size: 11px;
+        font-size: 12px;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        background: #667eea;
-        color: white;
+        transition: all 0.2s ease;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        text-decoration: none;
     }
 
     .action-btn:hover {
-        background: #764ba2;
+        background: #667eea;
+        color: white;
     }
 </style>
 

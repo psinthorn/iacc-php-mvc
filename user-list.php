@@ -237,44 +237,63 @@ $roles = [
 ];
 ?>
 
-<h2><i class="fa fa-users fa-fw"></i> <?= isset($xml->user) ? $xml->user : 'User Management' ?></h2>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.user-container { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+.page-header-user { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; padding: 24px 28px; border-radius: 16px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
+.page-header-user h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+.btn-add-user { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+.btn-add-user:hover { background: rgba(255,255,255,0.3); color: #fff; text-decoration: none; transform: translateY(-2px); }
+
+.filter-card-user { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
+.filter-card-user .card-header { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.filter-card-user .card-header i { color: #6366f1; }
+.filter-card-user .card-body { padding: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.filter-card-user .form-control { border-radius: 10px; border: 1px solid #e5e7eb; height: 44px; padding: 10px 16px; font-size: 14px; }
+.filter-card-user .form-control:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); outline: none; }
+.filter-card-user .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; }
+.filter-card-user .btn-default { background: #f1f5f9; border: 1px solid #e5e7eb; padding: 10px 20px; border-radius: 10px; font-weight: 500; color: #64748b; }
+</style>
+
+<div class="user-container">
+
+<!-- Page Header -->
+<div class="page-header-user">
+    <h2><i class="fa fa-users"></i> <?= isset($xml->user) ? $xml->user : 'User Management' ?></h2>
+    <button type="button" class="btn-add-user" data-toggle="modal" data-target="#addUserModal">
+        <i class="fa fa-plus"></i> Add New User
+    </button>
+</div>
 
 <!-- Search and Filter Panel -->
-<div class="panel panel-default">
-    <div class="panel-heading">
+<div class="filter-card-user">
+    <div class="card-header">
         <i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?>
     </div>
-    <div class="panel-body">
-        <form method="get" action="" class="form-inline">
+    <div class="card-body">
+        <form method="get" action="" class="form-inline" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
             <input type="hidden" name="page" value="user">
             
             <div class="form-group" style="margin-right: 15px;">
                 <input type="text" class="form-control" name="search" 
                        placeholder="<?=$xml->search ?? 'Search'?> Email, Company..." 
                        value="<?=htmlspecialchars($search)?>" style="width: 200px;">
-            </div>
             
-            <div class="form-group" style="margin-right: 10px;">
-                <label style="margin-right: 5px;">Role:</label>
-                <select name="role" class="form-control">
-                    <option value="">All Roles</option>
-                    <option value="0" <?=$role_filter==='0'?'selected':''?>>User</option>
-                    <option value="1" <?=$role_filter==='1'?'selected':''?>>Admin</option>
-                    <option value="2" <?=$role_filter==='2'?'selected':''?>>Super Admin</option>
-                </select>
-            </div>
+            <select name="role" class="form-control" style="width:130px;">
+                <option value="">All Roles</option>
+                <option value="0" <?=$role_filter==='0'?'selected':''?>>User</option>
+                <option value="1" <?=$role_filter==='1'?'selected':''?>>Admin</option>
+                <option value="2" <?=$role_filter==='2'?'selected':''?>>Super Admin</option>
+            </select>
             
-            <div class="form-group" style="margin-right: 10px;">
-                <label style="margin-right: 5px;">Company:</label>
-                <select name="company_id" class="form-control">
-                    <option value="">All Companies</option>
-                    <?php foreach ($companies as $company): ?>
-                    <option value="<?= $company['id'] ?>" <?=$company_filter==$company['id']?'selected':''?>>
-                        <?= e($company['name_en']) ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+            <select name="company_id" class="form-control" style="width:180px;">
+                <option value="">All Companies</option>
+                <?php foreach ($companies as $company): ?>
+                <option value="<?= $company['id'] ?>" <?=$company_filter==$company['id']?'selected':''?>>
+                    <?= e($company['name_en']) ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
             
             <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
             <a href="?page=user" class="btn btn-default"><i class="fa fa-refresh"></i> <?=$xml->clear ?? 'Clear'?></a>
@@ -283,77 +302,72 @@ $roles = [
 </div>
 
 <?php if ($message): ?>
-<div class="alert alert-<?= $messageType ?> alert-dismissible">
+<div class="alert alert-<?= $messageType ?> alert-dismissible" style="border-radius:10px;border:none;">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <?= e($message) ?>
 </div>
 <?php endif; ?>
-
-<!-- Add User Button -->
-<div class="mb-3" style="margin-bottom: 15px;">
-    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">
-        <i class="fa fa-plus"></i> Add New User
-    </button>
-</div>
-
 <!-- Users Table -->
 <style>
 .role-section {
-    margin-bottom: 30px;
+    margin-bottom: 24px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     overflow: hidden;
+    border: 1px solid #e5e7eb;
 }
 
 .role-header {
-    padding: 15px 20px;
+    padding: 18px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
 .role-header.super-admin {
-    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    background: linear-gradient(135deg, #dc2626, #ef4444);
     color: white;
 }
 
 .role-header.admin {
-    background: linear-gradient(135deg, #2980b9, #3498db);
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
     color: white;
 }
 
 .role-header.user {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    background: linear-gradient(135deg, #10b981, #34d399);
     color: white;
 }
 
 .role-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .role-title i {
-    font-size: 22px;
+    font-size: 24px;
+    opacity: 0.9;
 }
 
 .role-title h4 {
     margin: 0;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .role-title .role-desc {
-    font-size: 12px;
-    opacity: 0.9;
-    margin-top: 2px;
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 3px;
+    font-weight: 400;
 }
 
 .role-count {
     background: rgba(255,255,255,0.2);
-    padding: 5px 15px;
+    padding: 6px 16px;
     border-radius: 20px;
     font-weight: 600;
     font-size: 14px;
@@ -611,6 +625,8 @@ $roles = [
         </div>
     </div>
 </div>
+
+</div><!-- /user-container -->
 
 <script>
 // Toggle company field visibility based on role selection
