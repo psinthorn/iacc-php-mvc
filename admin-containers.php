@@ -595,7 +595,8 @@ if (is_array($containers) && !isset($containers['error']) && $running_count == 0
 /* Skeleton Loading */
 .skeleton-container { display: none; }
 .skeleton-loading .skeleton-container { display: block; }
-.skeleton-loading .content-container { display: none; }
+.skeleton-loading .content-container { display: none !important; }
+.content-container { display: block; }
 
 @keyframes skeleton-pulse {
     0%, 100% { opacity: 1; }
@@ -716,6 +717,12 @@ if (is_array($containers) && !isset($containers['error']) && $running_count == 0
     border-radius: 20px;
 }
 </style>
+
+<!-- Skeleton loading script - runs immediately -->
+<script>
+// This runs immediately when parsed to ensure skeleton is visible
+// before the rest of the page content
+</script>
 
 <div class="container-monitor skeleton-loading" id="containerMonitor">
     <!-- Skeleton Loading State -->
@@ -1066,13 +1073,18 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Remove skeleton loading after content is ready
-// Use immediate execution since this is an included file (DOMContentLoaded already fired)
+// Use requestAnimationFrame to ensure the browser has rendered the skeleton first
 (function() {
-    setTimeout(function() {
-        const monitor = document.getElementById('containerMonitor');
-        if (monitor) {
-            monitor.classList.remove('skeleton-loading');
-        }
-    }, 300);
+    // Wait for next paint cycle, then add delay for smooth UX
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            setTimeout(function() {
+                const monitor = document.getElementById('containerMonitor');
+                if (monitor) {
+                    monitor.classList.remove('skeleton-loading');
+                }
+            }, 600); // 600ms to make skeleton visible
+        });
+    });
 })();
 </script>
