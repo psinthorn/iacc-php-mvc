@@ -775,40 +775,27 @@ function get_status_badge($status) {
                     <i class="fa fa-wrench" style="color: #e74c3c;"></i> Developer Tools
                     <span class="badge" style="background: #e74c3c; color: white; margin-left: 10px;">Super Admin</span>
                 </h5>
-                <p style="color: #6c757d; margin-bottom: 15px;">Testing, debugging, and monitoring tools for system development</p>
+                <p style="color: #6c757d; margin-bottom: 15px;">Testing, debugging, and infrastructure monitoring tools</p>
                 
                 <div class="row">
-                    <!-- Testing Tools -->
-                    <div class="col-md-4">
-                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-flask"></i> Testing</h6>
-                        <a href="index.php?page=test_crud" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
-                            <i class="fa fa-database" style="color: #3498db;"></i> <strong>CRUD Test</strong>
-                            <br><small style="color: #6c757d;">Test database Create/Read/Update/Delete</small>
-                        </a>
-                        <a href="index.php?page=test_containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
-                            <i class="fa fa-cube" style="color: #9b59b6;"></i> <strong>Container Test</strong>
-                            <br><small style="color: #6c757d;">View raw Docker container data</small>
-                        </a>
-                    </div>
-                    
                     <!-- Debug Tools -->
                     <div class="col-md-4">
                         <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-bug"></i> Debug</h6>
+                        <a href="index.php?page=test_crud" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-database" style="color: #3498db;"></i> <strong>CRUD Test</strong>
+                            <br><small style="color: #6c757d;">Test database operations</small>
+                        </a>
                         <a href="index.php?page=debug_session" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-key" style="color: #e67e22;"></i> <strong>Session Debug</strong>
-                            <br><small style="color: #6c757d;">View current session variables</small>
+                            <br><small style="color: #6c757d;">View session variables</small>
                         </a>
                         <a href="index.php?page=debug_invoice" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-file-text-o" style="color: #27ae60;"></i> <strong>Invoice Debug</strong>
-                            <br><small style="color: #6c757d;">Debug invoice access & permissions</small>
+                            <br><small style="color: #6c757d;">Debug invoice access</small>
                         </a>
                         <a href="index.php?page=api_lang_debug" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-language" style="color: #2980b9;"></i> <strong>Language Debug</strong>
-                            <br><small style="color: #6c757d;">Debug language/localization API</small>
-                        </a>
-                        <a href="index.php?page=audit_log" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
-                            <i class="fa fa-history" style="color: #c0392b;"></i> <strong>Audit Log</strong>
-                            <br><small style="color: #6c757d;">View system activity history</small>
+                            <br><small style="color: #6c757d;">Debug localization API</small>
                         </a>
                     </div>
                     
@@ -817,15 +804,40 @@ function get_status_badge($status) {
                         <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-server"></i> Infrastructure</h6>
                         <a href="index.php?page=docker_test" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-cloud" style="color: #1abc9c;"></i> <strong>Docker Test</strong>
-                            <br><small style="color: #6c757d;">Test Docker socket connectivity</small>
+                            <br><small style="color: #6c757d;">Test Docker socket</small>
+                        </a>
+                        <a href="index.php?page=test_containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-cube" style="color: #9b59b6;"></i> <strong>Container Debug</strong>
+                            <br><small style="color: #6c757d;">Raw container data</small>
                         </a>
                         <a href="index.php?page=containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-server" style="color: #8e44ad;"></i> <strong>Container Manager</strong>
-                            <br><small style="color: #6c757d;">Full Docker container management</small>
+                            <br><small style="color: #6c757d;">Manage containers</small>
                         </a>
                         <a href="index.php?page=monitoring" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-dashboard" style="color: #e74c3c;"></i> <strong>System Monitor</strong>
-                            <br><small style="color: #6c757d;">Health, performance & security</small>
+                            <br><small style="color: #6c757d;">Health & performance</small>
+                        </a>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <div class="col-md-4">
+                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-shield"></i> Admin Quick Links</h6>
+                        <a href="index.php?page=user" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-users" style="color: #3498db;"></i> <strong>User Management</strong>
+                            <br><small style="color: #6c757d;">Manage system users</small>
+                        </a>
+                        <a href="index.php?page=audit_log" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-history" style="color: #c0392b;"></i> <strong>Audit Log</strong>
+                            <br><small style="color: #6c757d;">View activity history</small>
+                        </a>
+                        <a href="index.php?page=payment_method_list" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-credit-card-alt" style="color: #27ae60;"></i> <strong>Payment Methods</strong>
+                            <br><small style="color: #6c757d;">Configure payments</small>
+                        </a>
+                        <a href="index.php?page=payment_gateway_config" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-cogs" style="color: #8e44ad;"></i> <strong>Gateway Config</strong>
+                            <br><small style="color: #6c757d;">Payment gateway settings</small>
                         </a>
                     </div>
                 </div>

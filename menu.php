@@ -315,12 +315,6 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=audit_log"><i class="fa fa-history"></i> <?=$xml->auditlog ?? 'Audit Log'?></a>
                             </li>
-                            <li>
-                                <a href="index.php?page=monitoring"><i class="fa fa-dashboard"></i> <?=$xml->monitoring ?? 'System Monitor'?></a>
-                            </li>
-                            <li>
-                                <a href="index.php?page=containers"><i class="fa fa-server"></i> <?=$xml->containers ?? 'Containers'?></a>
-                            </li>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=payment_method_list"><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></a>
@@ -344,20 +338,21 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=debug_invoice"><i class="fa fa-file-text-o"></i> <?=$xml->debuginvoice ?? 'Invoice Debug'?></a>
                             </li>
-                            <li class="divider"></li>
-                            <li>
-                                <a href="index.php?page=docker_test"><i class="fa fa-cloud"></i> <?=$xml->dockertest ?? 'Docker Test'?></a>
-                            </li>
-                            <li>
-                                <a href="index.php?page=test_containers"><i class="fa fa-cube"></i> <?=$xml->testcontainers ?? 'Container Test'?></a>
-                            </li>
-                            <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="index.php?page=audit_log"><i class="fa fa-history"></i> <?=$xml->auditlog ?? 'Audit Log'?></a>
+                                <a href="index.php?page=docker_test"><i class="fa fa-cloud"></i> <?=$xml->dockertest ?? 'Docker Test'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=test_containers"><i class="fa fa-cube"></i> <?=$xml->testcontainers ?? 'Container Debug'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=containers"><i class="fa fa-server"></i> <?=$xml->containers ?? 'Container Manager'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=monitoring"><i class="fa fa-dashboard"></i> <?=$xml->monitoring ?? 'System Monitor'?></a>
                             </li>
                         </ul>
                     </li>
