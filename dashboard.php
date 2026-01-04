@@ -765,6 +765,71 @@ function get_status_badge($status) {
             </div>
         </div>
     </div>
+    
+    <!-- Developer Tools Panel (Super Admin Only) -->
+    <?php if ($is_super_admin): ?>
+    <div class="row kpi-row">
+        <div class="col-md-12">
+            <div class="content-card" style="border-left: 4px solid #e74c3c;">
+                <h5 class="card-title">
+                    <i class="fa fa-wrench" style="color: #e74c3c;"></i> Developer Tools
+                    <span class="badge" style="background: #e74c3c; color: white; margin-left: 10px;">Super Admin</span>
+                </h5>
+                <p style="color: #6c757d; margin-bottom: 15px;">Testing, debugging, and monitoring tools for system development</p>
+                
+                <div class="row">
+                    <!-- Testing Tools -->
+                    <div class="col-md-4">
+                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-flask"></i> Testing</h6>
+                        <a href="index.php?page=test_crud" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-database" style="color: #3498db;"></i> <strong>CRUD Test</strong>
+                            <br><small style="color: #6c757d;">Test database Create/Read/Update/Delete</small>
+                        </a>
+                        <a href="index.php?page=test_containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-cube" style="color: #9b59b6;"></i> <strong>Container Test</strong>
+                            <br><small style="color: #6c757d;">View raw Docker container data</small>
+                        </a>
+                    </div>
+                    
+                    <!-- Debug Tools -->
+                    <div class="col-md-4">
+                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-bug"></i> Debug</h6>
+                        <a href="index.php?page=debug_session" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-key" style="color: #e67e22;"></i> <strong>Session Debug</strong>
+                            <br><small style="color: #6c757d;">View current session variables</small>
+                        </a>
+                        <a href="index.php?page=debug_invoice" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-file-text-o" style="color: #27ae60;"></i> <strong>Invoice Debug</strong>
+                            <br><small style="color: #6c757d;">Debug invoice access & permissions</small>
+                        </a>
+                        <a href="index.php?page=api_lang_debug" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-language" style="color: #2980b9;"></i> <strong>Language Debug</strong>
+                            <br><small style="color: #6c757d;">Debug language/localization API</small>
+                        </a>
+                    </div>
+                    
+                    <!-- Docker/Infrastructure Tools -->
+                    <div class="col-md-4">
+                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-server"></i> Infrastructure</h6>
+                        <a href="index.php?page=docker_test" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-cloud" style="color: #1abc9c;"></i> <strong>Docker Test</strong>
+                            <br><small style="color: #6c757d;">Test Docker socket connectivity</small>
+                        </a>
+                        <a href="index.php?page=containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-server" style="color: #8e44ad;"></i> <strong>Container Manager</strong>
+                            <br><small style="color: #6c757d;">Full Docker container management</small>
+                        </a>
+                        <a href="index.php?page=monitoring" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-dashboard" style="color: #e74c3c;"></i> <strong>System Monitor</strong>
+                            <br><small style="color: #6c757d;">Health, performance & security</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; // End of Developer Tools Panel ?>
+    
     <?php endif; // End of Admin Panel ?>
 
     <?php if ($show_user_dashboard): ?>

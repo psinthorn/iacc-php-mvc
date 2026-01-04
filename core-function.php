@@ -241,7 +241,8 @@ case "mo_list" : {
 		}	
 		
 		
-			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($users->conn, "select * from product where model='".sql_int($_REQUEST['p_id'])."'"))==0)){
+			// SECURITY FIX: Add company filter to product check
+			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($users->conn, "select p.* from product p join model m on p.model = m.id where p.model='".sql_int($_REQUEST['p_id'])."'" . $companyFilter->andCompanyFilter('m')))==0)){
 	mysqli_query($users->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter());
 		}
 	header("Location: index.php?page=mo_list");
@@ -593,8 +594,8 @@ $flag=0;
 		$sn=$ms[ms]+1;
 		}
 	
-	
-$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
+	// SECURITY FIX: Add company filter via store_sale owner check
+$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno from store s join product p on s.pro_id=p.pro_id join store_sale ss on s.id=ss.st_id where ss.own_id='".$_SESSION['com_id']."' and p.model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
 
 
 	$args['value']="'".$_REQUEST['pro_id'][$ci]."','".$sn."','".($maxno[maxno]+1)."'";
@@ -627,8 +628,8 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from 
 	 
 	 
 	 	
-	
-$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
+	// SECURITY FIX: Add company filter via store_sale owner check
+$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno from store s join product p on s.pro_id=p.pro_id join store_sale ss on s.id=ss.st_id where ss.own_id='".$_SESSION['com_id']."' and p.model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
 
 
 	

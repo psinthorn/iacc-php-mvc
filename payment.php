@@ -4,7 +4,11 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 $users=new DbConn($config);
-// Security already checked in index.php?>
+// Security already checked in index.php
+
+// Get current company for multi-tenant isolation
+$com_id = sql_int($_SESSION['com_id']);
+?>
 <!DOCTYPE html>
 <html>
 
@@ -14,7 +18,8 @@ $users=new DbConn($config);
 <body>
 <?php
 $id = sql_int($_REQUEST['id']);
-$query=mysqli_query($db->conn, "select * from payment where id='".$id."'");
+// SECURITY FIX: Add company_id filter to prevent cross-tenant data access
+$query=mysqli_query($db->conn, "select * from payment where id='".$id."' AND com_id='".$com_id."'");
 if(mysqli_num_rows($query)==1){
 $method="E";
 $data=mysqli_fetch_array($query);

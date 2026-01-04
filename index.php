@@ -144,6 +144,14 @@ $routes = [
     'payment_gateway_test'   => 'payment-gateway-test.php',
     'payment_webhook'        => 'payment-webhook.php',
     
+    // Developer Tools (Admin Only)
+    'test_crud'              => 'test-crud.php',
+    'debug_session'          => 'debug-session.php',
+    'debug_invoice'          => 'debug-invoice.php',
+    'docker_test'            => 'docker-test.php',
+    'test_containers'        => 'test-containers.php',
+    'api_lang_debug'         => 'api-lang-debug.php',
+    
     // Invoice Payment
     'inv_checkout'           => 'inv-checkout.php',
     'inv_payment_success'    => 'inv-payment-success.php',

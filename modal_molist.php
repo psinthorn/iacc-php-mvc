@@ -91,7 +91,10 @@ return false;
  
             </div>			<!-- /modal-body -->
             <div class="modal-footer">
-              <button type="submit" name="method" value="E" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-saved"></span> <?=$xml->edit?></button><?php if(mysqli_num_rows(mysqli_query($db->conn, "SELECT * FROM  product WHERE 	model='".$p_id."'"))==0){?>   <button name="method" value="D" type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> <?=$xml->delete?></button>  <?php }?> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> <?=$xml->close?></button>
+              <button type="submit" name="method" value="E" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-saved"></span> <?=$xml->edit?></button><?php 
+              // SECURITY FIX: Add company filter to product check to prevent cross-tenant data exposure
+              $productCheck = mysqli_query($db->conn, "SELECT p.* FROM product p JOIN model m ON p.model = m.id WHERE p.model='".$p_id."'" . $companyFilter->andCompanyFilter('m'));
+              if(mysqli_num_rows($productCheck)==0){?>   <button name="method" value="D" type="submit" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> <?=$xml->delete?></button>  <?php }?> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> <?=$xml->close?></button>
            
 
             </div>			<!-- /modal-footer -->

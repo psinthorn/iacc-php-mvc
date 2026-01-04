@@ -3,8 +3,13 @@ session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
+require_once("inc/class.company_filter.php");
 $users=new DbConn($config);
-// Security already checked in index.php?>
+// Security already checked in index.php
+
+// Company filter for multi-tenant data isolation
+$companyFilter = CompanyFilter::getInstance();
+?>
 <!DOCTYPE html>
 <html>
 
@@ -64,7 +69,7 @@ $(function(){
 			var indexthis = document.getElementById("countloop").value;
 		document.getElementById("countloop").value=parseInt(indexthis)+1;
 		
-		var NR ="<tr id=fr["+indexthis+"]> <td style=' margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;'><div id='box'><select required id='type["+indexthis+"]' name='type["+indexthis+"]' onchange='checkorder(this.value,this.id)' class='form-control'><?php $querycustomer=mysqli_query($db->conn, "select name,id from type  ");
+		var NR ="<tr id=fr["+indexthis+"]> <td style=' margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;'><div id='box'><select required id='type["+indexthis+"]' name='type["+indexthis+"]' onchange='checkorder(this.value,this.id)' class='form-control'><?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type'));
 			echo "<option value='' >Please Select Product</option>";
 			while($fetch_customer=mysqli_fetch_array($querycustomer)){
 				
@@ -157,7 +162,7 @@ while($data_fetitem=mysqli_fetch_array($qeurytmpitem)){?>
    
     
        <div id="box"><select  onchange="checkorder(this.value,this.id)" id="type[<?=$i?>]" name="type[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select name,id from type order by id desc");
+			<?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type') . " order by id desc");
 			echo "<option value='' >-------Please Select Product--------</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($data_fetitem[type]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
@@ -168,7 +173,7 @@ while($data_fetitem=mysqli_fetch_array($qeurytmpitem)){?>
    
       
      <div id="box"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysqli_query($db->conn, "select brand_name,id from brand order by id desc");
+<?php $querycustomer=mysqli_query($db->conn, "select brand_name,id from brand WHERE 1=1" . $companyFilter->andCompanyFilter('brand') . " order by id desc");
 echo "<option value='' >-------Please Select Brand--------</option>";
 while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[brand_name]."</option>";
@@ -190,7 +195,7 @@ while($fetch_customer=mysqli_fetch_array($querycustomer)){
    
     
        <div id="box"><select  onchange="checkorder(this.value,this.id)" id="type[<?=$i?>]" name="type[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select name,id from type");
+			<?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type'));
 			echo "<option value='0' >-------Please Select Product--------</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					if($data_fetitem[type]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";

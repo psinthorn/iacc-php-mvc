@@ -1,7 +1,7 @@
 # iACC - Accounting Management System
 
-**Version**: 3.3  
-**Status**: Production Ready  
+**Version**: 3.4  
+**Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
@@ -9,6 +9,17 @@
 ---
 
 ## 📋 Changelog
+
+### v3.4 (January 4, 2026)
+- **SaaS Multi-Tenant Security Fixes** 🔒:
+  - Fixed data leakage in delivery forms (`deliv-make.php`, `deliv-edit.php`)
+    - Type/Brand dropdowns now filtered by company_id
+  - Fixed payment.php to verify company ownership before displaying records
+  - Fixed product-list.php aggregation to filter by company
+  - Fixed modal_molist.php product existence check with company filter
+  - Fixed core-function.php store/inventory queries with company isolation
+  - Secured test-crud.php (Super Admin only, company-filtered CRUD)
+  - All master data now properly isolated per tenant/company
 
 ### v3.3 (January 4, 2026)
 - **Master Data CRUD Fully Functional** ✅:

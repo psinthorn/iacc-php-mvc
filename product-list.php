@@ -42,7 +42,10 @@ $companyFilter = CompanyFilter::getInstance();
     $query_type=mysqli_query($db->conn, "select * from type where cat_id='".$datacat['id']."'" . $companyFilter->andCompanyFilter('type'));
     $dataall="";
   while($datatype=mysqli_fetch_array($query_type)){
-    $sql = "select sum(price)/sum(quantity) as net from product where type='".$datatype['id']."'";
+    // SECURITY FIX: Add company filter to product aggregation query via type relationship
+    $sql = "select sum(p.price)/sum(p.quantity) as net from product p 
+            join type t on p.type = t.id 
+            where p.type='".$datatype['id']."'" . $companyFilter->andCompanyFilter('t');
     $query = mysqli_query($db->conn, $sql);
 	  $netpr = mysqli_fetch_array($query);
 	  $dataall.="<a href=\"javascript:makeSelection('".$datatype['name']."','".$datatype['id']."','".floor($netpr['net'])."');\"><div style='width:230px;  float:left;  border-radius:5px; border:solid thin #ddd; padding:8px; margin:3px;'>".$datatype['name']."</div></a>";
