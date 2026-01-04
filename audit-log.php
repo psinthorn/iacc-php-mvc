@@ -134,9 +134,74 @@ $action_counts = array_count_values(array_column($logs, 'action'));
     .filter-grid { grid-template-columns: 1fr 1fr; }
     .filter-actions { grid-column: span 2; }
 }
+
+<?php include_once __DIR__ . '/inc/skeleton-loader.php'; echo get_skeleton_styles(); ?>
 </style>
 
-<div class="audit-container">
+<div class="audit-container skeleton-loading" id="pageContainer">
+    <!-- Skeleton Loading State -->
+    <div class="skeleton-container">
+        <!-- Header skeleton -->
+        <div class="audit-header">
+            <div class="skeleton" style="width: 200px; height: 32px;"></div>
+            <div class="skeleton skeleton-badge"></div>
+        </div>
+        
+        <!-- Stats skeleton -->
+        <div class="stats-row">
+            <?php for ($i = 0; $i < 6; $i++): ?>
+            <div class="stat-card">
+                <div class="skeleton skeleton-icon sm" style="margin: 0 auto 8px;"></div>
+                <div class="skeleton" style="width: 40px; height: 22px; margin: 0 auto 4px;"></div>
+                <div class="skeleton" style="width: 60px; height: 10px; margin: 0 auto;"></div>
+            </div>
+            <?php endfor; ?>
+        </div>
+        
+        <!-- Filter skeleton -->
+        <div class="filter-card">
+            <div class="filter-grid">
+                <?php for ($i = 0; $i < 5; $i++): ?>
+                <div class="filter-group">
+                    <div class="skeleton" style="width: 60px; height: 12px; margin-bottom: 6px;"></div>
+                    <div class="skeleton skeleton-input"></div>
+                </div>
+                <?php endfor; ?>
+                <div class="filter-actions">
+                    <div class="skeleton skeleton-btn" style="width: 80px;"></div>
+                    <div class="skeleton skeleton-btn" style="width: 70px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timeline skeleton -->
+        <div class="timeline">
+            <div class="timeline-header">
+                <div class="skeleton" style="width: 150px; height: 16px;"></div>
+            </div>
+            <div class="timeline-body">
+                <?php for ($i = 0; $i < 8; $i++): ?>
+                <div class="timeline-item">
+                    <div class="timeline-time">
+                        <div class="skeleton" style="width: 80px; height: 14px; margin-bottom: 4px;"></div>
+                        <div class="skeleton" style="width: 60px; height: 12px;"></div>
+                    </div>
+                    <div class="skeleton" style="width: 36px; height: 36px; border-radius: 10px;"></div>
+                    <div class="timeline-content">
+                        <div class="skeleton" style="width: 200px; height: 14px; margin-bottom: 6px;"></div>
+                        <div class="skeleton" style="width: 150px; height: 12px;"></div>
+                    </div>
+                    <div class="timeline-meta">
+                        <div class="skeleton" style="width: 100px; height: 20px; border-radius: 6px;"></div>
+                    </div>
+                </div>
+                <?php endfor; ?>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actual Content -->
+    <div class="content-container">
     <!-- Header -->
     <div class="audit-header">
         <h1 class="audit-title">
@@ -286,9 +351,22 @@ $action_counts = array_count_values(array_column($logs, 'action'));
     </div>
 </div>
 
+    </div><!-- End content-container -->
+</div><!-- End pageContainer -->
+
 <script>
 function toggleDetails(id) {
     const el = document.getElementById('details-' + id);
     el.classList.toggle('show');
 }
+
+// Remove skeleton loading
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var container = document.getElementById('pageContainer');
+        if (container) {
+            container.classList.remove('skeleton-loading');
+        }
+    }, 300);
+});
 </script>

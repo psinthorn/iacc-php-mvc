@@ -263,9 +263,34 @@ function getStatusBadge($result) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD Test - Developer Tools</title>
     <?php echo get_dev_tools_css(); ?>
+    <?php include_once __DIR__ . '/inc/skeleton-loader.php'; ?>
+    <style><?php echo get_skeleton_styles(); ?></style>
 </head>
 <body>
-    <div class="dev-tools-container">
+    <div class="dev-tools-container skeleton-loading" id="pageContainer">
+        <!-- Skeleton Loading State -->
+        <div class="skeleton-container">
+            <?php echo skeleton_page_header(); ?>
+            <?php echo skeleton_stat_cards(4); ?>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_card(); ?>
+            </div>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_table(9, 3); ?>
+            </div>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_card(true); ?>
+            </div>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_card(true); ?>
+            </div>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_card(true); ?>
+            </div>
+        </div>
+        
+        <!-- Actual Content -->
+        <div class="content-container">
         <?php echo get_dev_tools_header('CRUD Operations Test', 'Testing Create, Read, Update, Delete operations on all main database tables', 'fa-database', '#3498db'); ?>
         
         <!-- Summary Stats -->
@@ -451,6 +476,8 @@ function getStatusBadge($result) {
             <a href="?" class="btn-dev btn-primary"><i class="fa fa-refresh"></i> Run Tests Again</a>
             <a href="index.php?page=dashboard" class="btn-dev btn-outline"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>
         </div>
+        </div><!-- End content-container -->
     </div>
+    <script><?php echo get_skeleton_js('pageContainer', 300); ?></script>
 </body>
 </html>

@@ -321,10 +321,82 @@ $lang = $_SESSION['lang'] ?? 'en';
                 grid-template-columns: 1fr 1fr;
             }
         }
+        
+        <?php include_once __DIR__ . '/inc/skeleton-loader.php'; echo get_skeleton_styles(); ?>
     </style>
 </head>
 <body>
 
+<div class="skeleton-loading" id="pageContainer">
+<!-- Skeleton Loading State -->
+<div class="skeleton-container" style="padding: 20px;">
+    <!-- Header skeleton -->
+    <div style="background: linear-gradient(135deg, #8e44ad, #6c3483); padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+        <div class="skeleton skeleton-dark" style="width: 300px; height: 32px; margin-bottom: 10px;"></div>
+        <div class="skeleton skeleton-dark" style="width: 250px; height: 16px;"></div>
+    </div>
+    
+    <!-- Stats skeleton -->
+    <div class="health-grid" style="margin-bottom: 20px;">
+        <?php for ($i = 0; $i < 4; $i++): ?>
+        <div class="health-item">
+            <div class="skeleton skeleton-icon" style="margin: 0 auto 10px;"></div>
+            <div class="skeleton" style="width: 80px; height: 14px; margin: 0 auto 8px;"></div>
+            <div class="skeleton" style="width: 60px; height: 20px; margin: 0 auto;"></div>
+        </div>
+        <?php endfor; ?>
+    </div>
+    
+    <!-- Cards skeleton -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header"><div class="skeleton" style="width: 150px; height: 16px;"></div></div>
+                <div class="card-body">
+                    <div class="metric-grid">
+                        <?php for ($i = 0; $i < 4; $i++): ?>
+                        <div class="metric-card">
+                            <div class="skeleton" style="width: 60px; height: 28px; margin: 0 auto 8px;"></div>
+                            <div class="skeleton" style="width: 80px; height: 12px; margin: 0 auto;"></div>
+                        </div>
+                        <?php endfor; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header"><div class="skeleton" style="width: 120px; height: 16px;"></div></div>
+                <div class="card-body">
+                    <?php for ($i = 0; $i < 5; $i++): ?>
+                    <div class="login-bar">
+                        <div class="skeleton" style="width: 100px; height: 14px;"></div>
+                        <div class="skeleton" style="flex: 1; height: 20px; margin: 0 10px;"></div>
+                        <div class="skeleton" style="width: 60px; height: 14px;"></div>
+                    </div>
+                    <?php endfor; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Table skeleton -->
+    <div class="card">
+        <div class="card-header"><div class="skeleton" style="width: 150px; height: 16px;"></div></div>
+        <div class="card-body">
+            <?php for ($i = 0; $i < 6; $i++): ?>
+            <div style="display: flex; gap: 20px; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                <div class="skeleton" style="width: 60%; height: 14px;"></div>
+                <div class="skeleton" style="width: 15%; height: 14px;"></div>
+                <div class="skeleton" style="width: 15%; height: 14px;"></div>
+            </div>
+            <?php endfor; ?>
+        </div>
+    </div>
+</div>
+
+<!-- Actual Content -->
+<div class="content-container">
 <!-- Header -->
 <div class="monitoring-header">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -641,6 +713,16 @@ $lang = $_SESSION['lang'] ?? 'en';
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script>
+// Remove skeleton loading
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var container = document.getElementById('pageContainer');
+        if (container) {
+            container.classList.remove('skeleton-loading');
+        }
+    }, 300);
+});
+
 // Auto-refresh every 60 seconds
 let countdown = 60;
 setInterval(function() {
@@ -651,5 +733,7 @@ setInterval(function() {
     }
 }, 1000);
 </script>
+</div><!-- End content-container -->
+</div><!-- End pageContainer -->
 </body>
 </html>

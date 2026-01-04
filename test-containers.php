@@ -57,9 +57,28 @@ $has_duplicate_names = count($names) !== $unique_names;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Container Test - Developer Tools</title>
     <?php echo get_dev_tools_css(); ?>
+    <?php include_once __DIR__ . '/inc/skeleton-loader.php'; ?>
+    <style><?php echo get_skeleton_styles(); ?></style>
 </head>
 <body>
-    <div class="dev-tools-container">
+    <div class="dev-tools-container skeleton-loading" id="pageContainer">
+        <!-- Skeleton Loading State -->
+        <div class="skeleton-container">
+            <?php echo skeleton_page_header(); ?>
+            <?php echo skeleton_stat_cards(4); ?>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_card(); ?>
+            </div>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_table(6, 6); ?>
+            </div>
+            <div style="margin-top: 20px;">
+                <?php echo skeleton_card(); ?>
+            </div>
+        </div>
+        
+        <!-- Actual Content -->
+        <div class="content-container">
         <?php echo get_dev_tools_header('Container Test', 'View raw Docker container data for debugging duplicate issues', 'fa-cube', '#9b59b6'); ?>
         
         <?php if ($error): ?>
@@ -179,6 +198,8 @@ $has_duplicate_names = count($names) !== $unique_names;
             <a href="index.php?page=containers" class="btn-dev btn-outline"><i class="fa fa-server"></i> Full Container Manager</a>
             <a href="index.php?page=dashboard" class="btn-dev btn-outline"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>
         </div>
+        </div><!-- End content-container -->
     </div>
+    <script><?php echo get_skeleton_js('pageContainer', 300); ?></script>
 </body>
 </html>
