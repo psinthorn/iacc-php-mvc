@@ -35,42 +35,54 @@ date_default_timezone_set("Asia/Bangkok");
 // ============================================================================
 // DOCKER TOOLS CONFIGURATION
 // ============================================================================
-// Default: 'auto' - Can be changed via Developer Tools UI
+// Two separate settings:
+// 1. docker_tools: For Docker Test & Container Debug (read-only debug tools)
+//    Default: 'auto' - auto-detect Docker environment
+// 2. container_manager: For Container Manager (has start/stop/restart actions)
+//    Default: 'off' - requires manual enable for safety
+
 // Options: 'auto' | 'on' | 'off'
-// - 'auto': Auto-detect if running in Docker container (default)
-// - 'on':   Always show Docker tools (force enable)
-// - 'off':  Never show Docker tools (for cPanel/non-Docker deployments)
-$config["docker_tools"] = "auto";
+// - 'auto': Auto-detect if running in Docker container
+// - 'on':   Always enable (force)
+// - 'off':  Always disable
+$config["docker_tools"] = "auto";        // Docker Test, Container Debug
+$config["container_manager"] = "off";    // Container Manager (default OFF for safety)
 
 // Runtime settings file path
 define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');
 
 /**
  * Get Docker tools setting (from file or default config)
+ * @param string $key 'docker_tools' or 'container_manager'
  * @return string 'auto' | 'on' | 'off'
  */
-function get_docker_tools_setting() {
+function get_docker_tools_setting($key = 'docker_tools') {
     global $config;
     
     // Check for runtime settings file first
     if (file_exists(DOCKER_SETTINGS_FILE)) {
         $settings = json_decode(file_get_contents(DOCKER_SETTINGS_FILE), true);
-        if (isset($settings['docker_tools']) && in_array($settings['docker_tools'], ['auto', 'on', 'off'])) {
-            return $settings['docker_tools'];
+        if (isset($settings[$key]) && in_array($settings[$key], ['auto', 'on', 'off'])) {
+            return $settings[$key];
         }
     }
     
     // Fall back to config default
-    return isset($config["docker_tools"]) ? $config["docker_tools"] : "auto";
+    $default = ($key === 'container_manager') ? 'off' : 'auto';
+    return isset($config[$key]) ? $config[$key] : $default;
 }
 
 /**
  * Save Docker tools setting to file
  * @param string $setting 'auto' | 'on' | 'off'
+ * @param string $key 'docker_tools' or 'container_manager'
  * @return bool
  */
-function save_docker_tools_setting($setting) {
+function save_docker_tools_setting($setting, $key = 'docker_tools') {
     if (!in_array($setting, ['auto', 'on', 'off'])) {
+        return false;
+    }
+    if (!in_array($key, ['docker_tools', 'container_manager'])) {
         return false;
     }
     
@@ -79,18 +91,37 @@ function save_docker_tools_setting($setting) {
         $settings = json_decode(file_get_contents(DOCKER_SETTINGS_FILE), true) ?: [];
     }
     
-    $settings['docker_tools'] = $setting;
+    $settings[$key] = $setting;
     $settings['updated_at'] = date('Y-m-d H:i:s');
     
     return file_put_contents(DOCKER_SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
 }
 
 /**
- * Check if Docker tools should be enabled
+ * Check if Docker tools should be enabled (for Docker Test & Container Debug)
  * @return bool
  */
 function is_docker_tools_enabled() {
-    $setting = get_docker_tools_setting();
+    $setting = get_docker_tools_setting('docker_tools');
+    
+    // Manual override
+    if ($setting === "on") {
+        return true;
+    }
+    if ($setting === "off") {
+        return false;
+    }
+    
+    // Auto-detect: Check if running in Docker container
+    return is_running_in_docker();
+}
+
+/**
+ * Check if Container Manager should be enabled
+ * @return bool
+ */
+function is_container_manager_enabled() {
+    $setting = get_docker_tools_setting('container_manager');
     
     // Manual override
     if ($setting === "on") {

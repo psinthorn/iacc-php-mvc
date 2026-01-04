@@ -17,6 +17,59 @@ function check_dev_tools_access() {
     }
 }
 
+// Check Docker tools access (for Docker-specific pages)
+function check_docker_tools_access() {
+    // First check dev tools access
+    check_dev_tools_access();
+    
+    // Then check if Docker tools are enabled
+    $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : false;
+    
+    if (!$docker_enabled) {
+        $docker_status = function_exists('get_docker_tools_status') ? get_docker_tools_status() : ['mode_text' => 'Unknown'];
+        $user_level = $_SESSION['user_level'] ?? 0;
+        
+        echo get_dev_tools_css();
+        echo <<<HTML
+        <div style="min-height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px;">
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 50px; max-width: 600px; margin: 40px auto; text-align: center;">
+                <i class="fa fa-server" style="font-size: 64px; color: #6c757d; margin-bottom: 25px;"></i>
+                <h2 style="color: #fff; margin-bottom: 15px;">Docker Tools Disabled</h2>
+                <p style="color: #adb5bd; margin-bottom: 20px;">
+                    This feature is currently disabled.<br>
+                    <strong style="color: #fff;">Current mode:</strong> {$docker_status['mode_text']}
+                </p>
+                <p style="color: #6c757d; margin-bottom: 30px;">
+                    Docker tools are designed for Docker environments only.<br>
+                    If running on cPanel or non-Docker server, this feature is not available.
+                </p>
+HTML;
+        
+        if ($user_level >= 2) {
+            echo <<<HTML
+                <a href="index.php?page=dashboard" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                    <i class="fa fa-cog"></i> Go to Dashboard to Enable
+                </a>
+                <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">
+                    Change Docker Tools mode in Dashboard → Developer Tools panel
+                </p>
+HTML;
+        } else {
+            echo <<<HTML
+                <p style="color: #6c757d; font-size: 12px;">
+                    Contact Super Admin to enable Docker tools.
+                </p>
+HTML;
+        }
+        
+        echo <<<HTML
+            </div>
+        </div>
+HTML;
+        exit;
+    }
+}
+
 // Get developer tools header HTML
 function get_dev_tools_header($title, $subtitle, $icon = 'fa-wrench', $color = '#e74c3c') {
     return <<<HTML

@@ -326,7 +326,10 @@ include_once 'inc/top-navbar.php';
                     </li>
                     
                     <!-- Developer Tools (Super Admin only) -->
-                    <?php $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true; ?>
+                    <?php 
+                        $docker_debug_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true;
+                        $container_mgr_enabled = function_exists('is_container_manager_enabled') ? is_container_manager_enabled() : false;
+                    ?>
                     <li>
                         <a href="#"><i class="fa fa-wrench"></i> <?=$xml->devtools ?? 'Developer Tools'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
@@ -342,7 +345,7 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
-                            <?php if ($docker_enabled): ?>
+                            <?php if ($docker_debug_enabled): ?>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=docker_test"><i class="fa fa-cloud"></i> <?=$xml->dockertest ?? 'Docker Test'?></a>
@@ -350,6 +353,8 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=test_containers"><i class="fa fa-cube"></i> <?=$xml->testcontainers ?? 'Container Debug'?></a>
                             </li>
+                            <?php endif; ?>
+                            <?php if ($container_mgr_enabled): ?>
                             <li>
                                 <a href="index.php?page=containers"><i class="fa fa-server"></i> <?=$xml->containers ?? 'Container Manager'?></a>
                             </li>

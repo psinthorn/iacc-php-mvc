@@ -13,15 +13,29 @@ $is_admin = ($user_level >= 1);
 $is_super_admin = ($user_level >= 2);
 
 // Handle Docker tools setting update (Super Admin only)
-if ($is_super_admin && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['docker_tools_setting'])) {
+if ($is_super_admin && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('csrf_verify') && csrf_verify()) {
-        $new_setting = $_POST['docker_tools_setting'];
-        if (function_exists('save_docker_tools_setting') && save_docker_tools_setting($new_setting)) {
-            $docker_settings_message = 'Docker tools setting updated to: ' . ucfirst($new_setting);
-            $docker_settings_success = true;
-        } else {
-            $docker_settings_message = 'Failed to update Docker tools setting';
-            $docker_settings_success = false;
+        // Handle Docker Tools setting (for Docker Test & Container Debug)
+        if (isset($_POST['docker_tools_setting'])) {
+            $new_setting = $_POST['docker_tools_setting'];
+            if (function_exists('save_docker_tools_setting') && save_docker_tools_setting($new_setting, 'docker_tools')) {
+                $docker_settings_message = 'Docker Tools setting updated to: ' . ucfirst($new_setting);
+                $docker_settings_success = true;
+            } else {
+                $docker_settings_message = 'Failed to update Docker Tools setting';
+                $docker_settings_success = false;
+            }
+        }
+        // Handle Container Manager setting (separate)
+        if (isset($_POST['container_manager_setting'])) {
+            $new_setting = $_POST['container_manager_setting'];
+            if (function_exists('save_docker_tools_setting') && save_docker_tools_setting($new_setting, 'container_manager')) {
+                $container_manager_message = 'Container Manager setting updated to: ' . ucfirst($new_setting);
+                $container_manager_success = true;
+            } else {
+                $container_manager_message = 'Failed to update Container Manager setting';
+                $container_manager_success = false;
+            }
         }
     }
 }
@@ -782,9 +796,14 @@ function get_status_badge($status) {
     
     <!-- Developer Tools Panel (Super Admin Only) -->
     <?php if ($is_super_admin): ?>
-    <?php $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true; ?>
-    <?php $docker_status = function_exists('get_docker_tools_status') ? get_docker_tools_status() : ['mode_text' => 'N/A', 'setting' => 'auto', 'is_docker_environment' => false]; ?>
-    <?php $current_setting = function_exists('get_docker_tools_setting') ? get_docker_tools_setting() : 'auto'; ?>
+    <?php 
+        $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true;
+        $container_mgr_enabled = function_exists('is_container_manager_enabled') ? is_container_manager_enabled() : false;
+        $docker_status = function_exists('get_docker_tools_status') ? get_docker_tools_status() : ['mode_text' => 'N/A', 'setting' => 'auto', 'is_docker_environment' => false];
+        $docker_setting = function_exists('get_docker_tools_setting') ? get_docker_tools_setting('docker_tools') : 'auto';
+        $container_mgr_setting = function_exists('get_docker_tools_setting') ? get_docker_tools_setting('container_manager') : 'off';
+        $is_docker_env = function_exists('is_running_in_docker') ? is_running_in_docker() : false;
+    ?>
     <div class="row kpi-row">
         <div class="col-md-12">
             <div class="content-card" style="border-left: 4px solid #e74c3c;">
@@ -792,33 +811,53 @@ function get_status_badge($status) {
                     <i class="fa fa-wrench" style="color: #e74c3c;"></i> Developer Tools
                     <span class="badge" style="background: #e74c3c; color: white; margin-left: 10px;">Super Admin</span>
                     <?php if ($docker_enabled): ?>
-                    <span class="badge" style="background: #1abc9c; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-cloud"></i> Docker</span>
-                    <?php else: ?>
-                    <span class="badge" style="background: #95a5a6; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-server"></i> cPanel</span>
+                    <span class="badge" style="background: #1abc9c; color: white; margin-left: 5px;" title="Docker Debug: <?= ucfirst($docker_setting) ?>"><i class="fa fa-cloud"></i> Docker Debug</span>
+                    <?php endif; ?>
+                    <?php if ($container_mgr_enabled): ?>
+                    <span class="badge" style="background: #8e44ad; color: white; margin-left: 5px;" title="Container Manager: <?= ucfirst($container_mgr_setting) ?>"><i class="fa fa-server"></i> Container Mgr</span>
+                    <?php endif; ?>
+                    <?php if (!$docker_enabled && !$container_mgr_enabled): ?>
+                    <span class="badge" style="background: #95a5a6; color: white; margin-left: 5px;"><i class="fa fa-server"></i> cPanel Mode</span>
                     <?php endif; ?>
                 </h5>
                 
-                <!-- Docker Tools Settings -->
-                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px;">
-                    <form method="POST" action="index.php?page=dashboard" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <?php if (function_exists('csrf_field')) echo csrf_field(); ?>
-                        <span style="color: #333; font-weight: 500;"><i class="fa fa-cog"></i> Docker Tools Mode:</span>
-                        <select name="docker_tools_setting" style="padding: 6px 12px; border: 1px solid #ced4da; border-radius: 4px; background: white; min-width: 180px;">
-                            <option value="auto" <?= $current_setting === 'auto' ? 'selected' : '' ?>>
-                                🔄 Auto <?= $docker_status['is_docker_environment'] ? '(Docker detected)' : '(No Docker)' ?>
-                            </option>
-                            <option value="on" <?= $current_setting === 'on' ? 'selected' : '' ?>>✅ On (Force Enable)</option>
-                            <option value="off" <?= $current_setting === 'off' ? 'selected' : '' ?>>❌ Off (Disable for cPanel)</option>
-                        </select>
-                        <button type="submit" style="padding: 6px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            <i class="fa fa-save"></i> Save
-                        </button>
-                        <?php if (isset($docker_settings_message)): ?>
-                        <span style="color: <?= $docker_settings_success ? '#27ae60' : '#e74c3c' ?>; margin-left: 10px;">
-                            <i class="fa <?= $docker_settings_success ? 'fa-check' : 'fa-times' ?>"></i> <?= htmlspecialchars($docker_settings_message) ?>
-                        </span>
-                        <?php endif; ?>
-                    </form>
+                <!-- Docker Settings -->
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <!-- Docker Test & Container Debug -->
+                        <form method="POST" action="index.php?page=dashboard" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <?php if (function_exists('csrf_field')) echo csrf_field(); ?>
+                            <span style="color: #333; font-weight: 500; min-width: 160px;"><i class="fa fa-bug"></i> Docker Debug:</span>
+                            <select name="docker_tools_setting" style="padding: 5px 10px; border: 1px solid #ced4da; border-radius: 4px; background: white; min-width: 180px;">
+                                <option value="auto" <?= $docker_setting === 'auto' ? 'selected' : '' ?>>🔄 Auto <?= $is_docker_env ? '(Docker ✓)' : '(No Docker)' ?></option>
+                                <option value="on" <?= $docker_setting === 'on' ? 'selected' : '' ?>>✅ On</option>
+                                <option value="off" <?= $docker_setting === 'off' ? 'selected' : '' ?>>❌ Off</option>
+                            </select>
+                            <button type="submit" style="padding: 5px 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Save</button>
+                            <?php if (isset($docker_settings_message)): ?>
+                            <span style="color: <?= $docker_settings_success ? '#27ae60' : '#e74c3c' ?>; font-size: 12px;"><i class="fa <?= $docker_settings_success ? 'fa-check' : 'fa-times' ?>"></i> <?= htmlspecialchars($docker_settings_message) ?></span>
+                            <?php endif; ?>
+                        </form>
+                        
+                        <!-- Container Manager (separate, default OFF) -->
+                        <form method="POST" action="index.php?page=dashboard" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <?php if (function_exists('csrf_field')) echo csrf_field(); ?>
+                            <span style="color: #333; font-weight: 500; min-width: 160px;"><i class="fa fa-server"></i> Container Manager:</span>
+                            <select name="container_manager_setting" style="padding: 5px 10px; border: 1px solid #ced4da; border-radius: 4px; background: white; min-width: 180px;">
+                                <option value="off" <?= $container_mgr_setting === 'off' ? 'selected' : '' ?>>❌ Off (Default)</option>
+                                <option value="auto" <?= $container_mgr_setting === 'auto' ? 'selected' : '' ?>>🔄 Auto <?= $is_docker_env ? '(Docker ✓)' : '(No Docker)' ?></option>
+                                <option value="on" <?= $container_mgr_setting === 'on' ? 'selected' : '' ?>>✅ On</option>
+                            </select>
+                            <button type="submit" style="padding: 5px 12px; background: #8e44ad; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Save</button>
+                            <?php if (isset($container_manager_message)): ?>
+                            <span style="color: <?= $container_manager_success ? '#27ae60' : '#e74c3c' ?>; font-size: 12px;"><i class="fa <?= $container_manager_success ? 'fa-check' : 'fa-times' ?>"></i> <?= htmlspecialchars($container_manager_message) ?></span>
+                            <?php endif; ?>
+                        </form>
+                    </div>
+                    <p style="color: #6c757d; font-size: 11px; margin: 10px 0 0 0;">
+                        <strong>Docker Debug</strong> (Docker Test, Container Debug): Read-only debug tools, default Auto. 
+                        <strong>Container Manager</strong>: Has start/stop/restart actions, default Off for safety.
+                    </p>
                 </div>
                 
                 <p style="color: #6c757d; margin-bottom: 15px;">Testing, debugging, and infrastructure monitoring tools</p>
@@ -857,15 +896,18 @@ function get_status_badge($status) {
                             <i class="fa fa-cube" style="color: #9b59b6;"></i> <strong>Container Debug</strong>
                             <br><small style="color: #6c757d;">Raw container data</small>
                         </a>
+                        <?php endif; ?>
+                        <?php if ($container_mgr_enabled): ?>
                         <a href="index.php?page=containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-server" style="color: #8e44ad;"></i> <strong>Container Manager</strong>
                             <br><small style="color: #6c757d;">Manage containers</small>
                         </a>
-                        <?php else: ?>
+                        <?php endif; ?>
+                        <?php if (!$docker_enabled && !$container_mgr_enabled): ?>
                         <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; margin-bottom: 5px;">
                             <i class="fa fa-info-circle" style="color: #6c757d;"></i>
                             <span style="color: #6c757d;">Docker tools disabled</span>
-                            <br><small style="color: #adb5bd;">Running on cPanel/non-Docker environment</small>
+                            <br><small style="color: #adb5bd;">Enable above to access Docker features</small>
                         </div>
                         <?php endif; ?>
                         <a href="index.php?page=monitoring" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">

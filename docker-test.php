@@ -10,8 +10,8 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/dev-tools-style.php");
 
-// Check access
-check_dev_tools_access();
+// Check access (Docker tools must be enabled)
+check_docker_tools_access();
 
 // Docker socket path
 $socket = '/var/run/docker.sock';

@@ -14,11 +14,53 @@
  * 
  * Production (docker-compose.prod.yml):
  *   Uses docker-socket-proxy service for security (read-only access)
+ * 
+ * Docker Tools Toggle:
+ * - This page respects the docker_tools setting (auto/on/off)
+ * - Default is OFF unless explicitly enabled or Docker is detected
  */
 
 $user_level = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
 if ($user_level < 1) {
     echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied. Admin privileges required. (Your level: ' . $user_level . ')</div>';
+    return;
+}
+
+// Check if Container Manager is enabled (separate from Docker debug tools)
+$container_manager_enabled = function_exists('is_container_manager_enabled') ? is_container_manager_enabled() : false;
+$container_manager_setting = function_exists('get_docker_tools_setting') ? get_docker_tools_setting('container_manager') : 'off';
+
+if (!$container_manager_enabled) {
+    ?>
+    <div style="padding: 40px; text-align: center;">
+        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 40px; max-width: 600px; margin: 0 auto;">
+            <i class="fa fa-server" style="font-size: 48px; color: #6c757d; margin-bottom: 20px;"></i>
+            <h3 style="color: #333; margin-bottom: 15px;">Container Manager Disabled</h3>
+            <p style="color: #6c757d; margin-bottom: 20px;">
+                Container management is currently disabled.<br>
+                <strong>Current setting:</strong> <?= ucfirst(htmlspecialchars($container_manager_setting)) ?>
+            </p>
+            <p style="color: #6c757d; margin-bottom: 25px;">
+                Container Manager has start/stop/restart actions and is <strong>disabled by default</strong> for safety.<br>
+                Enable it manually if you need to manage Docker containers.
+            </p>
+            <?php if ($user_level >= 2): ?>
+            <p style="margin-bottom: 15px;">
+                <a href="index.php?page=dashboard" class="btn btn-primary" style="padding: 10px 25px;">
+                    <i class="fa fa-cog"></i> Go to Dashboard to Enable
+                </a>
+            </p>
+            <p style="color: #adb5bd; font-size: 12px;">
+                Super Admin can enable Container Manager in Dashboard → Developer Tools panel
+            </p>
+            <?php else: ?>
+            <p style="color: #adb5bd; font-size: 12px;">
+                Contact Super Admin to enable Container Manager if needed.
+            </p>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
     return;
 }
 
