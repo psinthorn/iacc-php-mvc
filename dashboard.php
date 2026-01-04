@@ -897,19 +897,15 @@ function get_status_badge($status) {
                             <br><small style="color: #6c757d;">Raw container data</small>
                         </a>
                         <?php endif; ?>
-                        <?php if ($container_mgr_enabled): ?>
-                        <a href="index.php?page=containers" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
-                            <i class="fa fa-server" style="color: #8e44ad;"></i> <strong>Container Manager</strong>
-                            <br><small style="color: #6c757d;">Manage containers</small>
+                        <!-- Container Manager always visible, but styled based on enabled state -->
+                        <a href="index.php?page=containers" class="btn btn-block" style="background: <?= $container_mgr_enabled ? '#f8f9fa' : '#f0f0f0' ?>; border: 1px solid <?= $container_mgr_enabled ? '#dee2e6' : '#e0e0e0' ?>; color: <?= $container_mgr_enabled ? '#333' : '#999' ?>; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
+                            <i class="fa fa-server" style="color: <?= $container_mgr_enabled ? '#8e44ad' : '#ccc' ?>;"></i> 
+                            <strong>Container Manager</strong>
+                            <?php if (!$container_mgr_enabled): ?>
+                            <span style="font-size: 10px; background: #e74c3c; color: white; padding: 2px 6px; border-radius: 3px; margin-left: 5px;">Off</span>
+                            <?php endif; ?>
+                            <br><small style="color: #6c757d;"><?= $container_mgr_enabled ? 'Manage containers' : 'Click to enable' ?></small>
                         </a>
-                        <?php endif; ?>
-                        <?php if (!$docker_enabled && !$container_mgr_enabled): ?>
-                        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; margin-bottom: 5px;">
-                            <i class="fa fa-info-circle" style="color: #6c757d;"></i>
-                            <span style="color: #6c757d;">Docker tools disabled</span>
-                            <br><small style="color: #adb5bd;">Enable above to access Docker features</small>
-                        </div>
-                        <?php endif; ?>
                         <a href="index.php?page=monitoring" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-dashboard" style="color: #e74c3c;"></i> <strong>System Monitor</strong>
                             <br><small style="color: #6c757d;">Health & performance</small>

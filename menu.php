@@ -354,11 +354,15 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=test_containers"><i class="fa fa-cube"></i> <?=$xml->testcontainers ?? 'Container Debug'?></a>
                             </li>
                             <?php endif; ?>
-                            <?php if ($container_mgr_enabled): ?>
                             <li>
-                                <a href="index.php?page=containers"><i class="fa fa-server"></i> <?=$xml->containers ?? 'Container Manager'?></a>
+                                <a href="index.php?page=containers" style="<?= !$container_mgr_enabled ? 'color: #999;' : '' ?>">
+                                    <i class="fa fa-server" style="<?= !$container_mgr_enabled ? 'color: #ccc;' : '' ?>"></i> 
+                                    <?=$xml->containers ?? 'Container Manager'?>
+                                    <?php if (!$container_mgr_enabled): ?>
+                                    <span style="font-size: 10px; color: #999; margin-left: 5px;">(Off)</span>
+                                    <?php endif; ?>
+                                </a>
                             </li>
-                            <?php endif; ?>
                             <li>
                                 <a href="index.php?page=monitoring"><i class="fa fa-dashboard"></i> <?=$xml->monitoring ?? 'System Monitor'?></a>
                             </li>

@@ -591,9 +591,199 @@ if (is_array($containers) && !isset($containers['error']) && $running_count == 0
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { background: #10b981; color: #fff; }
 .toast.error { background: #ef4444; color: #fff; }
+
+/* Skeleton Loading */
+.skeleton-container { display: none; }
+.skeleton-loading .skeleton-container { display: block; }
+.skeleton-loading .content-container { display: none; }
+
+@keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-wave 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-wave {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text { height: 14px; margin-bottom: 8px; }
+.skeleton-text.sm { width: 60%; }
+.skeleton-text.md { width: 80%; }
+.skeleton-text.lg { width: 100%; }
+.skeleton-text.title { height: 28px; width: 250px; margin-bottom: 12px; }
+
+.skeleton-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.skeleton-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.skeleton-value {
+    height: 32px;
+    width: 60px;
+    margin-bottom: 8px;
+}
+
+.skeleton-label {
+    height: 12px;
+    width: 100px;
+}
+
+.skeleton-container-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.skeleton-card-header {
+    padding: 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.skeleton-container-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    margin-right: 14px;
+}
+
+.skeleton-card-body {
+    padding: 20px;
+}
+
+.skeleton-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.skeleton-stat-item {
+    text-align: center;
+}
+
+.skeleton-stat-value {
+    height: 22px;
+    width: 50px;
+    margin: 0 auto 6px;
+}
+
+.skeleton-stat-label {
+    height: 10px;
+    width: 40px;
+    margin: 0 auto;
+}
+
+.skeleton-card-footer {
+    padding: 16px 20px;
+    background: #f9fafb;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    gap: 10px;
+}
+
+.skeleton-btn {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
+}
+
+.skeleton-badge {
+    height: 28px;
+    width: 80px;
+    border-radius: 20px;
+}
 </style>
 
-<div class="container-monitor">
+<div class="container-monitor skeleton-loading" id="containerMonitor">
+    <!-- Skeleton Loading State -->
+    <div class="skeleton-container">
+        <!-- Skeleton Header -->
+        <div class="monitor-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="skeleton skeleton-text title"></div>
+            </div>
+            <div class="skeleton" style="width: 100px; height: 40px; border-radius: 10px;"></div>
+        </div>
+        
+        <!-- Skeleton Stats Grid -->
+        <div class="stats-grid">
+            <?php for ($i = 0; $i < 4; $i++): ?>
+            <div class="skeleton-stat-card">
+                <div class="skeleton skeleton-icon"></div>
+                <div class="skeleton skeleton-value"></div>
+                <div class="skeleton skeleton-label"></div>
+            </div>
+            <?php endfor; ?>
+        </div>
+        
+        <!-- Skeleton Container Cards -->
+        <div class="containers-grid">
+            <?php for ($i = 0; $i < 3; $i++): ?>
+            <div class="skeleton-container-card">
+                <div class="skeleton-card-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="skeleton skeleton-container-icon"></div>
+                        <div>
+                            <div class="skeleton" style="width: 120px; height: 16px; margin-bottom: 6px;"></div>
+                            <div class="skeleton" style="width: 180px; height: 12px;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton skeleton-badge"></div>
+                </div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-stats-row">
+                        <div class="skeleton-stat-item">
+                            <div class="skeleton skeleton-stat-value"></div>
+                            <div class="skeleton skeleton-stat-label"></div>
+                        </div>
+                        <div class="skeleton-stat-item">
+                            <div class="skeleton skeleton-stat-value"></div>
+                            <div class="skeleton skeleton-stat-label"></div>
+                        </div>
+                        <div class="skeleton-stat-item">
+                            <div class="skeleton skeleton-stat-value"></div>
+                            <div class="skeleton skeleton-stat-label"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton" style="width: 100%; height: 32px; margin-bottom: 12px;"></div>
+                    <div class="skeleton" style="width: 60%; height: 12px;"></div>
+                </div>
+                <div class="skeleton-card-footer">
+                    <div class="skeleton skeleton-btn"></div>
+                    <div class="skeleton skeleton-btn"></div>
+                    <div class="skeleton skeleton-btn"></div>
+                    <div class="skeleton skeleton-btn"></div>
+                </div>
+            </div>
+            <?php endfor; ?>
+        </div>
+    </div>
+    
+    <!-- Actual Content -->
+    <div class="content-container">
     <!-- Header -->
     <div class="monitor-header">
         <h1 class="monitor-title">
@@ -790,6 +980,7 @@ if (is_array($containers) && !isset($containers['error']) && $running_count == 0
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
+    </div><!-- End content-container -->
 </div>
 
 <!-- Logs Modal -->
@@ -872,5 +1063,16 @@ document.getElementById('logsModal').addEventListener('click', function(e) {
 // Close modal on Escape
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeLogs();
+});
+
+// Remove skeleton loading after content is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Simulate minimum loading time for smooth UX (300ms)
+    setTimeout(function() {
+        const monitor = document.getElementById('containerMonitor');
+        if (monitor) {
+            monitor.classList.remove('skeleton-loading');
+        }
+    }, 300);
 });
 </script>
