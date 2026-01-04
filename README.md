@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.7  
+**Version**: 3.8  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,47 @@
 ---
 
 ## 📋 Changelog
+
+### v3.8 (January 4, 2026)
+- **Unified Pagination System** 📄:
+  - Created shared pagination helper (`inc/pagination.php`)
+  - `paginate()` function for calculating pagination data
+  - `render_pagination()` function with configurable page key parameter
+  - Modern responsive pagination styling in `css/master-data.css`
+  - Centered pagination with pill-style buttons and hover effects
+
+- **Master Data Pagination Standardization**:
+  - Updated `company-list.php` to use shared pagination
+  - Updated `type-list.php` to use shared pagination
+  - Updated `category-list.php` to use shared pagination
+  - Updated `brand-list.php` to use shared pagination
+  - Updated `mo-list.php` to use shared pagination
+  - All master data pages now use consistent `p` parameter
+
+- **Invoice Payments Pagination**:
+  - Added full pagination to `invoice-payments.php`
+  - Uses `pg` parameter for page navigation
+  - Count query with subquery to handle HAVING clause
+  - Removed 100-record limit in favor of proper pagination
+
+- **Tax Invoice List Fix** 🐛:
+  - Fixed `compl-list2.php` blank page issue
+  - Removed invalid `status_iv='1'` column reference
+  - Changed to `iv.texiv_rw IS NOT NULL AND iv.texiv_rw != ''` filter
+  - Added `iv.` prefix to ambiguous column names
+  - Added null checks on query results
+
+- **Menu & Navigation**:
+  - Renamed "Bank Accounts" to "Payment Terms" in sidebar
+  - Changed icon from bank to clock for payment terms
+
+- **UI Modernization Continued** 🎨:
+  - `payment-list.php` - Modern card layout, gradient header
+  - `payment.php` - Form redesign with Inter font, indigo gradient
+  - `payment-method-list.php` - Consistent dev-tools style headers
+  - `payment-gateway-config.php` - Modern header with back button
+  - `user-list.php` - Enhanced role section styling
+  - Added `.master-data-container` wrapper for max-width and centering
 
 ### v3.7 (January 4, 2026)
 - **UI Modernization - Application-Wide** 🎨:

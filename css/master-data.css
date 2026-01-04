@@ -30,6 +30,14 @@
     --md-font-base: 15px;
 }
 
+/* ========== Container ========== */
+.master-data-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
 /* ========== Base Styles ========== */
 .master-data-header,
 .master-data-table,
@@ -633,50 +641,89 @@
     border-color: var(--md-primary);
 }
 
-/* ========== Pagination ========== */
+/* ========== Pagination - Modern Style ========== */
+.master-data-pagination,
 .pagination-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding: 16px 20px;
-    background: var(--md-bg-light);
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border-top: 1px solid var(--md-border);
+    border-radius: 0 0 var(--md-radius-lg) var(--md-radius-lg);
+    gap: 12px;
+    text-align: center;
 }
 
+.master-data-pagination .page-info,
 .pagination-container .pagination-info {
-    font-size: 14px !important;
-    color: var(--md-text-secondary);
+    font-size: 13px !important;
+    color: var(--md-text-muted);
+    font-weight: 400;
+    order: 2; /* Move info below pagination */
+    margin-top: 4px;
 }
 
+.master-data-pagination .pagination,
 .pagination-container .pagination {
     margin: 0;
-    display: flex;
+    padding: 0;
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 6px;
+    list-style: none;
+    order: 1; /* Pagination buttons first */
 }
 
+.master-data-pagination .pagination li,
+.pagination-container .pagination li {
+    list-style: none;
+}
+
+.master-data-pagination .pagination li a,
+.master-data-pagination .pagination li span,
 .pagination-container .pagination li a,
 .pagination-container .pagination li span {
-    padding: 8px 14px;
-    border-radius: var(--md-radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 10px;
     font-size: 14px !important;
-    font-weight: 500;
-    border: 1px solid var(--md-border);
+    font-weight: 600;
+    border: 2px solid var(--md-border);
     background: var(--md-bg-white);
     color: var(--md-text-primary);
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
+.master-data-pagination .pagination li.active a,
+.master-data-pagination .pagination li.active span,
 .pagination-container .pagination li.active a,
 .pagination-container .pagination li.active span {
-    background: var(--md-primary);
+    background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-primary-light) 100%);
     border-color: var(--md-primary);
     color: white;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
+.master-data-pagination .pagination li a:hover,
 .pagination-container .pagination li a:hover {
     background: var(--md-bg-light);
-    border-color: var(--md-text-muted);
+    border-color: var(--md-primary);
+    color: var(--md-primary);
+    transform: translateY(-2px);
+}
+
+.master-data-pagination .pagination li.disabled span,
+.pagination-container .pagination li.disabled span {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 /* ========== Empty State ========== */
@@ -785,9 +832,27 @@
         overflow-x: auto;
     }
     
+    .master-data-pagination,
     .pagination-container {
         flex-direction: column;
         gap: 12px;
+        text-align: center;
+    }
+    
+    .master-data-pagination .pagination,
+    .pagination-container .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .master-data-pagination .pagination li a,
+    .master-data-pagination .pagination li span,
+    .pagination-container .pagination li a,
+    .pagination-container .pagination li span {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        font-size: 13px !important;
     }
 }
 

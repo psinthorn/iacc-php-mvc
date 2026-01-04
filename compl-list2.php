@@ -35,16 +35,16 @@ if (!empty($date_preset)) {
 $search_cond = '';
 if (!empty($search)) {
     $search_escaped = sql_escape($search);
-    $search_cond = " AND (po.name LIKE '%$search_escaped%' OR name_en LIKE '%$search_escaped%' OR texiv_rw LIKE '%$search_escaped%')";
+    $search_cond = " AND (po.name LIKE '%$search_escaped%' OR name_en LIKE '%$search_escaped%' OR iv.texiv_rw LIKE '%$search_escaped%')";
 }
 
 // Build date filter
 $date_cond = '';
 if (!empty($date_from)) {
-    $date_cond .= " AND texiv_create >= '$date_from'";
+    $date_cond .= " AND iv.texiv_create >= '$date_from'";
 }
 if (!empty($date_to)) {
-    $date_cond .= " AND texiv_create <= '$date_to'";
+    $date_cond .= " AND iv.texiv_create <= '$date_to'";
 }
 
 // Count total records for OUT
@@ -52,16 +52,16 @@ $count_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po
     JOIN pr ON po.ref=pr.id 
     JOIN company ON pr.cus_id=company.id 
     JOIN iv ON po.id=iv.tex 
-    WHERE po_id_new='' AND ven_id='$com_id' AND status='5' AND status_iv='1' $search_cond $date_cond");
-$total_out = mysqli_fetch_assoc($count_query)['total'];
+    WHERE po_id_new='' AND ven_id='$com_id' AND status='5' AND iv.texiv_rw IS NOT NULL AND iv.texiv_rw != '' $search_cond $date_cond");
+$total_out = $count_query ? (mysqli_fetch_assoc($count_query)['total'] ?? 0) : 0;
 
 // Count total records for IN
 $count_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM po 
     JOIN pr ON po.ref=pr.id 
     JOIN company ON pr.ven_id=company.id 
     JOIN iv ON po.id=iv.tex 
-    WHERE po_id_new='' AND pr.cus_id='$com_id' AND status='5' AND status_iv='1' $search_cond $date_cond");
-$total_in = mysqli_fetch_assoc($count_query)['total'];
+    WHERE po_id_new='' AND pr.cus_id='$com_id' AND status='5' AND iv.texiv_rw IS NOT NULL AND iv.texiv_rw != '' $search_cond $date_cond");
+$total_in = $count_query ? (mysqli_fetch_assoc($count_query)['total'] ?? 0) : 0;
 
 $total_records = $total_out + $total_in;
 $pagination = paginate($total_records, $per_page, $current_page);
@@ -228,14 +228,14 @@ unset($query_params['pg']);
     </thead>
     <tbody>
 <?php
-$query = mysqli_query($db->conn, "SELECT po.id as id, countmailtax, po.name as name, texiv_rw, 
-    DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status 
+$query = mysqli_query($db->conn, "SELECT po.id as id, countmailtax, po.name as name, iv.texiv_rw, 
+    DATE_FORMAT(iv.texiv_create,'%d-%m-%Y') as texiv_create, name_en, status 
     FROM po 
     JOIN pr ON po.ref=pr.id 
     JOIN company ON pr.cus_id=company.id 
     JOIN iv ON po.id=iv.tex 
-    WHERE po_id_new='' AND ven_id='$com_id' AND status='5' AND status_iv='1' $search_cond $date_cond 
-    ORDER BY texiv_rw DESC 
+    WHERE po_id_new='' AND ven_id='$com_id' AND status='5' AND iv.texiv_rw IS NOT NULL AND iv.texiv_rw != '' $search_cond $date_cond 
+    ORDER BY iv.texiv_rw DESC 
     LIMIT $offset, $limit");
 
 $row_count = 0;
@@ -260,9 +260,6 @@ while($data = mysqli_fetch_array($query)) {
             </td>
         </tr>
 <?php }
-            </td>
-        </tr>
-<?php } 
 
 if ($row_count == 0): ?>
         <tr>
@@ -301,14 +298,14 @@ if ($row_count == 0): ?>
     </thead>
     <tbody>
 <?php
-$query = mysqli_query($db->conn, "SELECT po.id as id, po.name as name, iv.id as tax, texiv_rw, 
-    DATE_FORMAT(texiv_create,'%d-%m-%Y') as texiv_create, name_en, status 
+$query = mysqli_query($db->conn, "SELECT po.id as id, po.name as name, iv.id as tax, iv.texiv_rw, 
+    DATE_FORMAT(iv.texiv_create,'%d-%m-%Y') as texiv_create, name_en, status 
     FROM po 
     JOIN pr ON po.ref=pr.id 
     JOIN company ON pr.ven_id=company.id 
     JOIN iv ON po.id=iv.tex 
-    WHERE po_id_new='' AND pr.cus_id='$com_id' AND status='5' AND status_iv='1' $search_cond $date_cond 
-    ORDER BY texiv_rw DESC 
+    WHERE po_id_new='' AND pr.cus_id='$com_id' AND status='5' AND iv.texiv_rw IS NOT NULL AND iv.texiv_rw != '' $search_cond $date_cond 
+    ORDER BY iv.texiv_rw DESC 
     LIMIT $offset, $limit");
 
 $row_count = 0;

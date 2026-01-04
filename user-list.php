@@ -238,28 +238,176 @@ $roles = [
 ?>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/master-data.css">
 <style>
-.user-container { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-.page-header-user { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; padding: 24px 28px; border-radius: 16px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
-.page-header-user h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
-.btn-add-user { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-.btn-add-user:hover { background: rgba(255,255,255,0.3); color: #fff; text-decoration: none; transform: translateY(-2px); }
+.user-container { 
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
 
-.filter-card-user { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
-.filter-card-user .card-header { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.filter-card-user .card-header i { color: #6366f1; }
-.filter-card-user .card-body { padding: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.filter-card-user .form-control { border-radius: 10px; border: 1px solid #e5e7eb; height: 44px; padding: 10px 16px; font-size: 14px; }
-.filter-card-user .form-control:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); outline: none; }
-.filter-card-user .btn-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; }
-.filter-card-user .btn-default { background: #f1f5f9; border: 1px solid #e5e7eb; padding: 10px 20px; border-radius: 10px; font-weight: 500; color: #64748b; }
+.page-header-user { 
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); 
+    color: #fff; 
+    padding: 28px 32px; 
+    border-radius: 16px; 
+    margin-bottom: 24px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3); 
+}
+
+.page-header-user .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-user .header-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.page-header-user h2 { 
+    margin: 0; 
+    font-size: 26px; 
+    font-weight: 700; 
+}
+
+.page-header-user .subtitle {
+    margin: 4px 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.btn-add-user { 
+    background: rgba(255,255,255,0.15); 
+    border: 2px solid rgba(255,255,255,0.3); 
+    color: #fff; 
+    padding: 12px 24px; 
+    border-radius: 10px; 
+    font-size: 14px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    text-decoration: none; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+
+.btn-add-user:hover { 
+    background: rgba(255,255,255,0.25); 
+    color: #fff; 
+    text-decoration: none; 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.filter-card-user { 
+    background: #fff; 
+    border-radius: 16px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    margin-bottom: 24px; 
+    border: 1px solid #e5e7eb; 
+    overflow: hidden; 
+}
+
+.filter-card-user .card-header { 
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
+    padding: 16px 24px; 
+    border-bottom: 1px solid #e5e7eb; 
+    font-weight: 600; 
+    color: #374151; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    font-size: 15px; 
+}
+
+.filter-card-user .card-header i { 
+    color: #4f46e5; 
+    font-size: 16px;
+}
+
+.filter-card-user .card-body { 
+    padding: 20px 24px; 
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    gap: 16px; 
+}
+
+.filter-card-user .form-control { 
+    border-radius: 10px; 
+    border: 2px solid #e5e7eb; 
+    height: 46px; 
+    padding: 10px 16px; 
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+}
+
+.filter-card-user .form-control:focus { 
+    border-color: #4f46e5; 
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); 
+    outline: none; 
+}
+
+.filter-card-user .btn-primary { 
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); 
+    border: none; 
+    padding: 12px 24px; 
+    border-radius: 10px; 
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.filter-card-user .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.filter-card-user .btn-default { 
+    background: #fff; 
+    border: 2px solid #e5e7eb; 
+    padding: 12px 24px; 
+    border-radius: 10px; 
+    font-weight: 600; 
+    color: #64748b;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.filter-card-user .btn-default:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
 </style>
 
 <div class="user-container">
 
 <!-- Page Header -->
 <div class="page-header-user">
-    <h2><i class="fa fa-users"></i> <?= isset($xml->user) ? $xml->user : 'User Management' ?></h2>
+    <div class="header-content">
+        <div class="header-icon">
+            <i class="fa fa-users"></i>
+        </div>
+        <div>
+            <h2><?= isset($xml->user) ? $xml->user : 'User Management' ?></h2>
+            <p class="subtitle"><?= isset($xml->user_subtitle) ? $xml->user_subtitle : 'Manage system users, roles and permissions' ?></p>
+        </div>
+    </div>
     <button type="button" class="btn-add-user" data-toggle="modal" data-target="#addUserModal">
         <i class="fa fa-plus"></i> Add New User
     </button>
@@ -274,10 +422,9 @@ $roles = [
         <form method="get" action="" class="form-inline" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
             <input type="hidden" name="page" value="user">
             
-            <div class="form-group" style="margin-right: 15px;">
-                <input type="text" class="form-control" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> Email, Company..." 
-                       value="<?=htmlspecialchars($search)?>" style="width: 200px;">
+            <input type="text" class="form-control" name="search" 
+                   placeholder="<?=$xml->search ?? 'Search'?> Email, Company..." 
+                   value="<?=htmlspecialchars($search)?>" style="width: 200px;">
             
             <select name="role" class="form-control" style="width:130px;">
                 <option value="">All Roles</option>
@@ -309,95 +456,121 @@ $roles = [
 <?php endif; ?>
 <!-- Users Table -->
 <style>
-.role-section {
+.user-container .role-section {
     margin-bottom: 24px;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     overflow: hidden;
     border: 1px solid #e5e7eb;
 }
 
-.role-header {
-    padding: 18px 24px;
+.user-container .role-header {
+    padding: 20px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+    border-bottom: none;
 }
 
-.role-header.super-admin {
+.user-container .role-header.super-admin {
     background: linear-gradient(135deg, #dc2626, #ef4444);
     color: white;
 }
 
-.role-header.admin {
+.user-container .role-header.admin {
     background: linear-gradient(135deg, #0ea5e9, #38bdf8);
     color: white;
 }
 
-.role-header.user {
+.user-container .role-header.user {
     background: linear-gradient(135deg, #10b981, #34d399);
     color: white;
 }
 
-.role-title {
+.user-container .role-title {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
 }
 
-.role-title i {
-    font-size: 24px;
-    opacity: 0.9;
+.user-container .role-title .role-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
 }
 
-.role-title h4 {
+.user-container .role-title i {
+    font-size: 20px;
+    opacity: 1;
+}
+
+.user-container .role-title h4 {
     margin: 0;
     font-size: 18px;
     font-weight: 700;
 }
 
-.role-title .role-desc {
+.user-container .role-title .role-desc {
     font-size: 13px;
-    opacity: 0.85;
-    margin-top: 3px;
+    opacity: 0.9;
+    margin-top: 4px;
     font-weight: 400;
 }
 
-.role-count {
+.user-container .role-count {
     background: rgba(255,255,255,0.2);
-    padding: 6px 16px;
+    padding: 8px 18px;
     border-radius: 20px;
     font-weight: 600;
     font-size: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
 }
 
-.role-body {
+.user-container .role-body {
     padding: 0;
 }
 
-.role-body .table {
+.user-container .role-body .table {
     margin: 0;
 }
 
-.role-body .table th {
-    background: #f8f9fa;
+.user-container .role-body .table th {
+    background: #f9fafb;
     font-weight: 600;
-    color: #2c3e50;
+    color: #374151;
     border-top: none;
+    padding: 14px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.empty-role {
-    padding: 30px;
+.user-container .role-body .table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    border-color: #f3f4f6;
+}
+
+.user-container .role-body .table tr:hover {
+    background: #f9fafb;
+}
+
+.user-container .empty-role {
+    padding: 40px;
     text-align: center;
-    color: #7f8c8d;
+    color: #6b7280;
 }
 
-.empty-role i {
-    font-size: 40px;
-    margin-bottom: 10px;
-    opacity: 0.5;
+.user-container .empty-role i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
 }
 </style>
 
@@ -411,7 +584,9 @@ $roles = [
 <div class="role-section">
     <div class="role-header <?= $roleClass ?>">
         <div class="role-title">
-            <i class="fa <?= $roleData['icon'] ?>"></i>
+            <div class="role-icon">
+                <i class="fa <?= $roleData['icon'] ?>"></i>
+            </div>
             <div>
                 <h4><?= $roleData['label'] ?></h4>
                 <div class="role-desc"><?= $roleData['desc'] ?></div>

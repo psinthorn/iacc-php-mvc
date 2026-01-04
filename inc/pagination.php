@@ -38,19 +38,20 @@ function paginate($total_records, $per_page = 20, $current_page = 1) {
  * @param array $pagination Pagination data from paginate()
  * @param string $base_url Base URL for pagination links
  * @param array $params Additional query parameters to preserve
+ * @param string $page_key The query parameter name for page number (default: 'pg')
  * @return string HTML for pagination
  */
-function render_pagination($pagination, $base_url, $params = []) {
+function render_pagination($pagination, $base_url, $params = [], $page_key = 'pg') {
     if ($pagination['total_pages'] <= 1) {
         return '';
     }
     
     // Build query string preserving existing params
     $query_params = $params;
-    unset($query_params['pg']); // Remove page param, we'll add it fresh
+    unset($query_params[$page_key]); // Remove page param, we'll add it fresh
     
-    $build_url = function($page) use ($base_url, $query_params) {
-        $query_params['pg'] = $page;
+    $build_url = function($page) use ($base_url, $query_params, $page_key) {
+        $query_params[$page_key] = $page;
         return $base_url . '&' . http_build_query($query_params);
     };
     

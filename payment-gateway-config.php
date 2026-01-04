@@ -206,45 +206,96 @@ $gatewayFields = [
 ];
 ?>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/master-data.css">
 <style>
 .gateway-config-container {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .page-header-gateway {
-    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
     color: white;
-    padding: 25px 30px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header-gateway .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-gateway .header-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
 }
 
 .page-header-gateway h2 {
-    margin: 0 0 5px 0;
-    font-size: 24px;
-    font-weight: 600;
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
 }
 
-.page-header-gateway p {
-    margin: 0;
+.page-header-gateway .subtitle {
+    margin: 4px 0 0;
     opacity: 0.9;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.btn-back-link {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-back-link:hover {
+    background: rgba(255,255,255,0.25);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .gateway-card {
     background: white;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
 .gateway-header {
-    padding: 20px 25px;
+    padding: 24px 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
 .gateway-header.paypal {
@@ -260,7 +311,7 @@ $gatewayFields = [
 .gateway-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .gateway-title i {
@@ -270,31 +321,32 @@ $gatewayFields = [
 .gateway-title h3 {
     margin: 0;
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .gateway-status {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .status-badge {
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .status-badge.configured {
-    background: rgba(39, 174, 96, 0.2);
-    color: #27ae60;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
 }
 
 .status-badge.not-configured {
-    background: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
 }
 
 .gateway-body {
@@ -588,19 +640,22 @@ $gatewayFields = [
 <div class="gateway-config-container">
     <!-- Page Header -->
     <div class="page-header-gateway">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2><i class="fa fa-cogs"></i> <?=$xml->paymentgatewayconfig ?? 'Payment Gateway Configuration'?></h2>
-                <p><?=$xml->managepaymentgateways ?? 'Configure PayPal and Stripe API credentials for online payments'?></p>
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fa fa-cogs"></i>
             </div>
-            <a href="index.php?page=payment_method_list" class="btn btn-default" style="background: white; color: #8e44ad;">
-                <i class="fa fa-arrow-left"></i> <?=$xml->backtolist ?? 'Back to Payment Methods'?>
-            </a>
+            <div>
+                <h2><?=$xml->paymentgatewayconfig ?? 'Payment Gateway Configuration'?></h2>
+                <p class="subtitle"><?=$xml->managepaymentgateways ?? 'Configure PayPal and Stripe API credentials for online payments'?></p>
+            </div>
         </div>
+        <a href="index.php?page=payment_method_list" class="btn-back-link">
+            <i class="fa fa-arrow-left"></i> <?=$xml->backtolist ?? 'Back to Payment Methods'?>
+        </a>
     </div>
     
     <?php if ($message): ?>
-    <div class="alert alert-<?= $messageType ?> alert-dismissible" style="border-radius: 8px;">
+    <div class="alert alert-<?= $messageType ?> alert-dismissible" style="border-radius: 12px; border: none;">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <i class="fa fa-<?= $messageType === 'success' ? 'check-circle' : ($messageType === 'danger' ? 'times-circle' : 'exclamation-circle') ?>"></i>
         <?= e($message) ?>

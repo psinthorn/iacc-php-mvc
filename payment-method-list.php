@@ -55,59 +55,80 @@ $stats_gateway = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT COUNT(*) as 
 $query = mysqli_query($db->conn, "SELECT * FROM payment_method $where_clause ORDER BY sort_order ASC, id ASC");
 ?>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/master-data.css">
 <style>
 .payment-method-container {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 20px;
-    background: #f5f6fa;
-    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .page-header-pm {
-    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
     color: white;
-    padding: 25px 30px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header-pm .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-pm .header-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
 }
 
 .page-header-pm h2 {
-    margin: 0 0 5px 0;
-    font-size: 28px;
-    font-weight: 600;
-}
-
-.page-header-pm p {
     margin: 0;
-    opacity: 0.9;
+    font-size: 26px;
+    font-weight: 700;
 }
 
-.header-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+.page-header-pm .subtitle {
+    margin: 4px 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 .btn-add-new {
-    background: white;
-    color: #8e44ad;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    font-size: 14px;
 }
 
 .btn-add-new:hover {
-    background: #f8f9fa;
+    background: rgba(255,255,255,0.25);
     transform: translateY(-2px);
-    color: #8e44ad;
+    color: white;
     text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 /* Stats Cards */
@@ -115,66 +136,76 @@ $query = mysqli_query($db->conn, "SELECT * FROM payment_method $where_clause ORD
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    margin-bottom: 25px;
+    margin-bottom: 24px;
 }
 
-.stat-card {
+.stats-row .stat-card {
     background: white;
-    border-radius: 10px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
 }
 
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+.stats-row .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
 }
 
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    display: flex;
+.stats-row .stat-card .stat-icon {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px;
+    border-radius: 12px !important;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    color: white;
+    font-size: 22px !important;
+    color: white !important;
+    position: static !important;
+    opacity: 1 !important;
+    transform: none !important;
+    right: auto !important;
+    top: auto !important;
 }
 
-.stat-icon.total { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
-.stat-icon.active { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-.stat-icon.inactive { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-.stat-icon.gateway { background: linear-gradient(135deg, #3498db, #2980b9); }
+.stats-row .stat-card .stat-icon.total { background: linear-gradient(135deg, #4f46e5, #6366f1) !important; }
+.stats-row .stat-card .stat-icon.active { background: linear-gradient(135deg, #10b981, #34d399) !important; }
+.stats-row .stat-card .stat-icon.inactive { background: linear-gradient(135deg, #ef4444, #f87171) !important; }
+.stats-row .stat-card .stat-icon.gateway { background: linear-gradient(135deg, #3b82f6, #60a5fa) !important; }
 
-.stat-info h3 {
+.stats-row .stat-card .stat-info h3 {
     margin: 0;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
-    color: #2c3e50;
+    color: #1f2937;
 }
 
-.stat-info p {
-    margin: 0;
-    color: #7f8c8d;
+.stats-row .stat-card .stat-info p {
+    margin: 4px 0 0;
+    color: #6b7280;
     font-size: 13px;
+    font-weight: 500;
 }
 
 /* Filter Card */
 .filter-card {
     background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
 }
 
 .filter-row {
     display: flex;
-    gap: 15px;
+    gap: 16px;
     align-items: flex-end;
     flex-wrap: wrap;
 }
@@ -186,58 +217,70 @@ $query = mysqli_query($db->conn, "SELECT * FROM payment_method $where_clause ORD
 
 .filter-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: #555;
-    font-size: 13px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .filter-group input,
 .filter-group select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    height: 48px;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
     font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    box-sizing: border-box;
 }
 
 .filter-group input:focus,
 .filter-group select:focus {
-    border-color: #8e44ad;
+    border-color: #4f46e5;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.1);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
 .btn-filter {
-    background: #8e44ad;
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+    padding: 12px 24px;
+    border-radius: 10px;
     cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
 }
 
 .btn-filter:hover {
-    background: #7d3c98;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
 .btn-reset {
-    background: #95a5a6;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+    background: #fff;
+    color: #64748b;
+    border: 2px solid #e5e7eb;
+    padding: 12px 24px;
+    border-radius: 10px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 14px;
     text-decoration: none;
-    transition: all 0.3s;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
 }
 
 .btn-reset:hover {
-    background: #7f8c8d;
-    color: white;
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #374151;
     text-decoration: none;
 }
 
@@ -455,17 +498,18 @@ $query = mysqli_query($db->conn, "SELECT * FROM payment_method $where_clause ORD
 <div class="payment-method-container">
     <!-- Page Header -->
     <div class="page-header-pm">
-        <div class="row">
-            <div class="col-md-8">
-                <h2><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></h2>
-                <p><?=$xml->managepaymentmethods ?? 'Manage all payment methods for your business'?></p>
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fa fa-credit-card-alt"></i>
             </div>
-            <div class="col-md-4 text-right">
-                <a href="index.php?page=payment_method&mode=A" class="btn-add-new">
-                    <i class="fa fa-plus"></i> <?=$xml->addnew ?? 'Add New'?>
-                </a>
+            <div>
+                <h2><?=$xml->paymentmethods ?? 'Payment Methods'?></h2>
+                <p class="subtitle"><?=$xml->managepaymentmethods ?? 'Manage all payment methods for your business'?></p>
             </div>
         </div>
+        <a href="index.php?page=payment_method&mode=A" class="btn-add-new">
+            <i class="fa fa-plus"></i> <?=$xml->addnew ?? 'Add New'?>
+        </a>
     </div>
 
     <!-- Stats Cards -->

@@ -54,48 +54,284 @@ $action_styles = [
 $action_counts = array_count_values(array_column($logs, 'action'));
 ?>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/master-data.css">
 <style>
-.audit-container { max-width: 1400px; margin: 0 auto; }
-.audit-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-.audit-title { font-size: 28px; font-weight: 600; color: #1f2937; margin: 0; display: flex; align-items: center; gap: 12px; }
-.audit-title i { color: #6b7280; }
-.audit-badge { background: #f3f4f6; color: #374151; padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+.audit-container { 
+    max-width: 1400px; 
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.audit-header { 
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3);
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+}
+
+.audit-header .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.audit-header .header-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.audit-title { 
+    font-size: 26px; 
+    font-weight: 700; 
+    color: white; 
+    margin: 0; 
+}
+
+.audit-subtitle {
+    margin: 4px 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.audit-badge { 
+    background: rgba(255,255,255,0.2); 
+    color: white; 
+    padding: 8px 18px; 
+    border-radius: 20px; 
+    font-size: 14px; 
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.3);
+}
 
 /* Stats Cards */
-.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.stat-card { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; transition: transform 0.2s, box-shadow 0.2s; }
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.stat-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 16px; }
-.stat-value { font-size: 22px; font-weight: 700; color: #1f2937; }
-.stat-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.stats-row { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    gap: 16px; 
+    margin-bottom: 24px; 
+}
+
+.stat-card { 
+    background: #fff; 
+    border-radius: 16px; 
+    padding: 20px; 
+    text-align: center; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    border: 1px solid #e5e7eb; 
+    transition: transform 0.2s, box-shadow 0.2s; 
+}
+
+.stat-card:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12); 
+}
+
+.stat-icon { 
+    width: 44px; 
+    height: 44px; 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 12px; 
+    font-size: 18px; 
+}
+
+.stat-value { 
+    font-size: 28px; 
+    font-weight: 700; 
+    color: #1f2937; 
+}
+
+.stat-label { 
+    font-size: 12px; 
+    color: #6b7280; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    margin-top: 4px;
+    font-weight: 600;
+}
 
 /* Filter Card */
-.filter-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
-.filter-grid { display: grid; grid-template-columns: repeat(5, 1fr) auto; gap: 16px; align-items: end; }
-.filter-group label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-.filter-group input, .filter-group select { width: 100%; height: 44px; padding: 0 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; background: #f9fafb; box-sizing: border-box; }
-.filter-group input:focus, .filter-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); background: #fff; }
-.filter-actions { display: flex; gap: 10px; }
-.btn-filter { padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
-.btn-filter-primary { background: #3b82f6; color: #fff; }
-.btn-filter-primary:hover { background: #2563eb; }
-.btn-filter-secondary { background: #f3f4f6; color: #374151; }
-.btn-filter-secondary:hover { background: #e5e7eb; }
+.filter-card { 
+    background: #fff; 
+    border-radius: 16px; 
+    padding: 24px; 
+    margin-bottom: 24px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    border: 1px solid #e5e7eb; 
+}
+
+.filter-grid { 
+    display: grid; 
+    grid-template-columns: repeat(5, 1fr) auto; 
+    gap: 16px; 
+    align-items: end; 
+}
+
+.filter-group label { 
+    display: block; 
+    font-size: 12px; 
+    font-weight: 600; 
+    color: #374151; 
+    margin-bottom: 8px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+}
+
+.filter-group input, .filter-group select { 
+    width: 100%; 
+    height: 46px; 
+    padding: 0 16px; 
+    border: 2px solid #e5e7eb; 
+    border-radius: 10px; 
+    font-size: 14px; 
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s; 
+    background: #fff; 
+    box-sizing: border-box; 
+}
+
+.filter-group input:focus, .filter-group select:focus { 
+    outline: none; 
+    border-color: #4f46e5; 
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); 
+}
+
+.filter-actions { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.btn-filter { 
+    padding: 12px 24px; 
+    border-radius: 10px; 
+    font-size: 14px; 
+    font-weight: 600; 
+    border: none; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px; 
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-filter-primary { 
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); 
+    color: #fff; 
+}
+
+.btn-filter-primary:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.btn-filter-secondary { 
+    background: #fff; 
+    color: #374151;
+    border: 2px solid #e5e7eb;
+}
+
+.btn-filter-secondary:hover { 
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
 
 /* Timeline */
-.timeline { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; overflow: hidden; }
-.timeline-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
-.timeline-header h3 { margin: 0; font-size: 16px; font-weight: 600; color: #1f2937; }
-.timeline-body { max-height: 600px; overflow-y: auto; }
-.timeline-item { display: grid; grid-template-columns: 140px 48px 1fr auto; gap: 0; align-items: start; padding: 16px 24px; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s; }
-.timeline-item:hover { background: #f9fafb; }
-.timeline-item:last-child { border-bottom: none; }
+.timeline { 
+    background: #fff; 
+    border-radius: 16px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+    border: 1px solid #e5e7eb; 
+    overflow: hidden; 
+}
 
-.timeline-time { font-size: 12px; color: #6b7280; padding-top: 4px; }
-.timeline-time .date { font-weight: 600; color: #374151; }
-.timeline-time .time { margin-top: 2px; }
+.timeline-header { 
+    padding: 20px 24px; 
+    border-bottom: 1px solid #e5e7eb; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
 
-.timeline-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.timeline-header h3 { 
+    margin: 0; 
+    font-size: 16px; 
+    font-weight: 600; 
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timeline-header h3 i {
+    color: #4f46e5;
+}
+
+.timeline-body { 
+    max-height: 600px; 
+    overflow-y: auto; 
+}
+
+.timeline-item { 
+    display: grid; 
+    grid-template-columns: 140px 48px 1fr auto; 
+    gap: 0; 
+    align-items: start; 
+    padding: 18px 24px; 
+    border-bottom: 1px solid #f3f4f6; 
+    transition: background-color 0.2s; 
+}
+
+.timeline-item:hover { 
+    background: #f9fafb; 
+}
+
+.timeline-item:last-child { 
+    border-bottom: none; 
+}
+
+.timeline-time { 
+    font-size: 12px; 
+    color: #6b7280; 
+    padding-top: 4px; 
+}
+
+.timeline-time .date { 
+    font-weight: 600; 
+    color: #374151; 
+}
+
+.timeline-time .time { 
+    margin-top: 2px; 
+}
+
+.timeline-icon { 
+    width: 38px; 
+    height: 38px; 
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 14px; 
+}
 
 .timeline-content { padding-left: 16px; }
 .timeline-action { font-weight: 600; color: #1f2937; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
@@ -204,9 +440,15 @@ $action_counts = array_count_values(array_column($logs, 'action'));
     <div class="content-container">
     <!-- Header -->
     <div class="audit-header">
-        <h1 class="audit-title">
-            <i class="fa fa-shield"></i> Audit Log
-        </h1>
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fa fa-shield"></i>
+            </div>
+            <div>
+                <h1 class="audit-title">Audit Log</h1>
+                <p class="audit-subtitle">Track all system activities and security events</p>
+            </div>
+        </div>
         <span class="audit-badge">
             <i class="fa fa-database"></i> <?=count($logs)?> records
         </span>

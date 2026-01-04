@@ -1,6 +1,12 @@
 <?php
 // Security already checked in index.php
+require_once("inc/pagination.php");
+
 $com_id = sql_int($_SESSION['com_id']);
+
+// Pagination settings
+$current_page = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
+$per_page = 20;
 
 // Get filter parameters
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
@@ -97,6 +103,7 @@ if ($com_id > 0) {
 .progress { height: 6px; border-radius: 3px; background: #e5e7eb; margin-top: 6px; }
 .progress-bar { border-radius: 3px; }
 </style>
+<link rel="stylesheet" href="css/master-data.css">
 
 <div class="payments-container">
 
@@ -226,6 +233,32 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
     </thead>
     <tbody>
 <?php
+// Count query for pagination (using subquery to handle HAVING clause)
+$count_sql = "SELECT COUNT(*) as total FROM (
+    SELECT iv.tex, 
+           COALESCE(prod.total_amount, 0) as total_amount,
+           COALESCE(paid.paid_amount, 0) as paid_amount
+    FROM iv
+    JOIN po ON iv.tex = po.id
+    JOIN pr ON po.ref = pr.id
+    LEFT JOIN company ON pr.cus_id = company.id
+    LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+    LEFT JOIN (SELECT po_id, SUM(volumn) as paid_amount FROM pay WHERE deleted_at IS NULL GROUP BY po_id) paid ON po.id = paid.po_id
+    WHERE iv.deleted_at IS NULL $company_filter $search_cond
+    GROUP BY iv.tex
+    $status_cond
+) as filtered";
+$count_result = mysqli_query($db->conn, $count_sql);
+$total_records = mysqli_fetch_assoc($count_result)['total'] ?? 0;
+
+// Use pagination helper
+$pagination = paginate($total_records, $per_page, $current_page);
+$offset = $pagination['offset'];
+
+// Preserve query params for pagination
+$query_params = $_GET;
+unset($query_params['pg']);
+
 $sql = "SELECT iv.tex as invoice_id, iv.createdate, po.name as description, po.tax as po_number,
         company.name_en as customer_name, company.name_th as customer_name_th,
         COALESCE(prod.total_amount, 0) as total_amount,
@@ -240,7 +273,7 @@ $sql = "SELECT iv.tex as invoice_id, iv.createdate, po.name as description, po.t
         GROUP BY iv.tex
         $status_cond
         ORDER BY iv.createdate DESC
-        LIMIT 100";
+        LIMIT $per_page OFFSET $offset";
 
 $result = mysqli_query($db->conn, $sql);
 $row_count = 0;
@@ -314,13 +347,11 @@ else:
 <?php endif; ?>
     </tbody>
 </table>
-</div>
-</div>
 
-<?php if ($row_count >= 100): ?>
-<div class="alert alert-info" style="border-radius:12px;border:none;background:#eff6ff;color:#1e40af;">
-    <i class="fa fa-info-circle"></i> Showing first 100 results. Use filters to narrow down your search.
+<!-- Pagination -->
+<?= render_pagination($pagination, '?page=invoice_payments', $query_params) ?>
+
 </div>
-<?php endif; ?>
+</div>
 
 </div><!-- /payments-container -->

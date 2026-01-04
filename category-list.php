@@ -1,6 +1,7 @@
 <?php
 require_once("inc/security.php");
 require_once("inc/class.company_filter.php");
+require_once("inc/pagination.php");
 
 // Get company filter instance
 $companyFilter = CompanyFilter::getInstance();
@@ -8,9 +9,8 @@ $com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
 
 // Get search parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$page_num = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+$current_page = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
 $per_page = 15;
-$offset = ($page_num - 1) * $per_page;
 
 // Build search condition with company filter
 $search_cond = '';
@@ -23,7 +23,15 @@ if (!empty($search)) {
 $stats_query = mysqli_query($db->conn, "SELECT COUNT(*) as total FROM category " . $companyFilter->whereCompanyFilter());
 $stats = mysqli_fetch_assoc($stats_query);
 $total_items = $stats['total'];
-$total_pages = ceil($total_items / $per_page);
+
+// Use pagination helper
+$pagination = paginate($total_items, $per_page, $current_page);
+$offset = $pagination['offset'];
+$total_pages = $pagination['total_pages'];
+
+// Preserve query params for pagination
+$query_params = $_GET;
+unset($query_params['p']);
 
 // Get items with usage count
 $sql = "SELECT c.id, c.cat_name, c.des, 
@@ -45,6 +53,8 @@ if ($edit_id > 0) {
 $show_form = isset($_GET['new']) || $edit_data;
 ?>
 <link rel="stylesheet" href="css/master-data.css">
+
+<div class="master-data-container">
 
 <!-- Page Header -->
 <div class="master-data-header">
@@ -178,35 +188,7 @@ $show_form = isset($_GET['new']) || $edit_data;
     </table>
     
     <!-- Pagination -->
-    <?php if ($total_pages > 1): ?>
-    <div class="master-data-pagination">
-        <div class="page-info">
-            <?=$xml->showing ?? 'Showing'?> <?=$offset + 1?>-<?=min($offset + $per_page, $total_items)?> 
-            <?=$xml->of ?? 'of'?> <?=$total_items?> <?=$xml->items ?? 'items'?>
-        </div>
-        <ul class="pagination pagination-sm">
-            <?php if ($page_num > 1): ?>
-            <li><a href="?page=category&p=1&search=<?=urlencode($search)?>">&laquo;</a></li>
-            <li><a href="?page=category&p=<?=$page_num-1?>&search=<?=urlencode($search)?>">&lsaquo;</a></li>
-            <?php endif; ?>
-            
-            <?php 
-            $start_page = max(1, $page_num - 2);
-            $end_page = min($total_pages, $page_num + 2);
-            for ($i = $start_page; $i <= $end_page; $i++): 
-            ?>
-            <li class="<?=$i == $page_num ? 'active' : ''?>">
-                <a href="?page=category&p=<?=$i?>&search=<?=urlencode($search)?>"><?=$i?></a>
-            </li>
-            <?php endfor; ?>
-            
-            <?php if ($page_num < $total_pages): ?>
-            <li><a href="?page=category&p=<?=$page_num+1?>&search=<?=urlencode($search)?>">&rsaquo;</a></li>
-            <li><a href="?page=category&p=<?=$total_pages?>&search=<?=urlencode($search)?>">&raquo;</a></li>
-            <?php endif; ?>
-        </ul>
-    </div>
-    <?php endif; ?>
+    <?= render_pagination($pagination, '?page=category', $query_params, 'p') ?>
     
     <?php else: ?>
     <!-- Empty State -->
@@ -218,6 +200,8 @@ $show_form = isset($_GET['new']) || $edit_data;
     </div>
     <?php endif; ?>
 </div>
+
+</div><!-- /.master-data-container -->
 
 <script>
 // Auto-focus on form when visible and scroll to it

@@ -270,7 +270,7 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=invoice_payments"><i class="fa fa-money"></i> <?=$xml->paymenttracking ?? 'Payment Tracking'?></a>
                             </li>
                             <li>
-                                <a href="index.php?page=payment"><i class="fa fa-bank"></i> <?=$xml->payment ?? 'Bank Accounts'?></a>
+                                <a href="index.php?page=payment"><i class="fa fa-clock-o"></i> <?=$xml->paymentterms ?? 'Payment Terms'?></a>
                             </li>
                         </ul>
                     </li>
