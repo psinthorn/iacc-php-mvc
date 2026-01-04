@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 3.4  
+**Version**: 3.5  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 4, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,36 @@
 ---
 
 ## 📋 Changelog
+
+### v3.5 (January 4, 2026)
+- **Developer Tools Dashboard** 🛠️:
+  - New consolidated Developer Tools section for Super Admin users
+  - Added "Developer Tools" menu in sidebar navigation
+  - Quick access panel on main dashboard
+  - Access restricted to Super Admin (user_level >= 2)
+
+- **Developer Tools Pages**:
+  - `test-crud.php` - Database CRUD operations testing
+  - `debug-session.php` - PHP session data viewer
+  - `debug-invoice.php` - Invoice access permissions debugger
+  - `docker-test.php` - Docker socket connectivity tester
+  - `test-containers.php` - Container data duplicate checker
+  - `api-lang-debug.php` - Language/localization debugger
+
+- **Modern UI/UX Redesign for Developer Tools** 🎨:
+  - New shared style system (`inc/dev-tools-style.php`)
+  - Dark gradient backgrounds with modern aesthetics
+  - Stats cards with icons and color-coded values
+  - Responsive data tables with hover effects
+  - Status badges (success/warning/danger/info)
+  - Code blocks with syntax highlighting
+  - Info boxes for tips and warnings
+  - Consistent Inter font family
+  - Helper functions: `check_dev_tools_access()`, `get_dev_tools_header()`, `format_json_html()`
+
+- **Routing Updates**:
+  - Added 6 new routes in `index.php` for developer tools
+  - Routes: test_crud, debug_session, debug_invoice, docker_test, test_containers, api_lang_debug
 
 ### v3.4 (January 4, 2026)
 - **SaaS Multi-Tenant Security Fixes** 🔒:
