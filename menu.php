@@ -326,6 +326,7 @@ include_once 'inc/top-navbar.php';
                     </li>
                     
                     <!-- Developer Tools (Super Admin only) -->
+                    <?php $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true; ?>
                     <li>
                         <a href="#"><i class="fa fa-wrench"></i> <?=$xml->devtools ?? 'Developer Tools'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
@@ -341,6 +342,7 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
+                            <?php if ($docker_enabled): ?>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=docker_test"><i class="fa fa-cloud"></i> <?=$xml->dockertest ?? 'Docker Test'?></a>
@@ -351,6 +353,7 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=containers"><i class="fa fa-server"></i> <?=$xml->containers ?? 'Container Manager'?></a>
                             </li>
+                            <?php endif; ?>
                             <li>
                                 <a href="index.php?page=monitoring"><i class="fa fa-dashboard"></i> <?=$xml->monitoring ?? 'System Monitor'?></a>
                             </li>

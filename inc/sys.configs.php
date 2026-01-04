@@ -32,3 +32,90 @@ date_default_timezone_set("Asia/Bangkok");
 //$config["dbname"]   = "ngt-admin";
 //$config["dbname"]   = "theiconn_cms";
 
+// ============================================================================
+// DOCKER TOOLS CONFIGURATION
+// ============================================================================
+// Options: 'auto' | 'on' | 'off'
+// - 'auto': Auto-detect if running in Docker container (default)
+// - 'on':   Always show Docker tools (force enable)
+// - 'off':  Never show Docker tools (for cPanel/non-Docker deployments)
+$config["docker_tools"] = "auto";
+
+/**
+ * Check if Docker tools should be enabled
+ * @return bool
+ */
+function is_docker_tools_enabled() {
+    global $config;
+    
+    $setting = isset($config["docker_tools"]) ? $config["docker_tools"] : "auto";
+    
+    // Manual override
+    if ($setting === "on") {
+        return true;
+    }
+    if ($setting === "off") {
+        return false;
+    }
+    
+    // Auto-detect: Check if running in Docker container
+    return is_running_in_docker();
+}
+
+/**
+ * Detect if the application is running inside a Docker container
+ * @return bool
+ */
+function is_running_in_docker() {
+    // Method 1: Check for /.dockerenv file (Docker creates this)
+    if (file_exists('/.dockerenv')) {
+        return true;
+    }
+    
+    // Method 2: Check cgroup for docker/container references
+    if (file_exists('/proc/1/cgroup')) {
+        $cgroup = @file_get_contents('/proc/1/cgroup');
+        if ($cgroup && (
+            strpos($cgroup, 'docker') !== false ||
+            strpos($cgroup, 'kubepods') !== false ||
+            strpos($cgroup, 'containerd') !== false
+        )) {
+            return true;
+        }
+    }
+    
+    // Method 3: Check for container environment variables
+    if (getenv('DOCKER_CONTAINER') || getenv('KUBERNETES_SERVICE_HOST')) {
+        return true;
+    }
+    
+    // Method 4: Check Docker socket exists (might be mounted)
+    if (file_exists('/var/run/docker.sock')) {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Get Docker tools status info for display
+ * @return array
+ */
+function get_docker_tools_status() {
+    global $config;
+    
+    $setting = isset($config["docker_tools"]) ? $config["docker_tools"] : "auto";
+    $is_docker = is_running_in_docker();
+    $is_enabled = is_docker_tools_enabled();
+    
+    return [
+        'setting' => $setting,
+        'is_docker_environment' => $is_docker,
+        'is_enabled' => $is_enabled,
+        'status_text' => $is_enabled ? 'Enabled' : 'Disabled',
+        'mode_text' => $setting === 'auto' 
+            ? ($is_docker ? 'Auto (Docker detected)' : 'Auto (No Docker)') 
+            : ucfirst($setting)
+    ];
+}
+

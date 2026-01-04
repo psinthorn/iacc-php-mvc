@@ -768,12 +768,19 @@ function get_status_badge($status) {
     
     <!-- Developer Tools Panel (Super Admin Only) -->
     <?php if ($is_super_admin): ?>
+    <?php $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true; ?>
+    <?php $docker_status = function_exists('get_docker_tools_status') ? get_docker_tools_status() : ['mode_text' => 'N/A']; ?>
     <div class="row kpi-row">
         <div class="col-md-12">
             <div class="content-card" style="border-left: 4px solid #e74c3c;">
                 <h5 class="card-title">
                     <i class="fa fa-wrench" style="color: #e74c3c;"></i> Developer Tools
                     <span class="badge" style="background: #e74c3c; color: white; margin-left: 10px;">Super Admin</span>
+                    <?php if ($docker_enabled): ?>
+                    <span class="badge" style="background: #1abc9c; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-docker"></i> Docker</span>
+                    <?php else: ?>
+                    <span class="badge" style="background: #95a5a6; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-server"></i> cPanel</span>
+                    <?php endif; ?>
                 </h5>
                 <p style="color: #6c757d; margin-bottom: 15px;">Testing, debugging, and infrastructure monitoring tools</p>
                 
@@ -802,6 +809,7 @@ function get_status_badge($status) {
                     <!-- Docker/Infrastructure Tools -->
                     <div class="col-md-4">
                         <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-server"></i> Infrastructure</h6>
+                        <?php if ($docker_enabled): ?>
                         <a href="index.php?page=docker_test" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-cloud" style="color: #1abc9c;"></i> <strong>Docker Test</strong>
                             <br><small style="color: #6c757d;">Test Docker socket</small>
@@ -814,6 +822,13 @@ function get_status_badge($status) {
                             <i class="fa fa-server" style="color: #8e44ad;"></i> <strong>Container Manager</strong>
                             <br><small style="color: #6c757d;">Manage containers</small>
                         </a>
+                        <?php else: ?>
+                        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; margin-bottom: 5px;">
+                            <i class="fa fa-info-circle" style="color: #6c757d;"></i>
+                            <span style="color: #6c757d;">Docker tools disabled</span>
+                            <br><small style="color: #adb5bd;">Running on cPanel/non-Docker environment</small>
+                        </div>
+                        <?php endif; ?>
                         <a href="index.php?page=monitoring" class="btn btn-block" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 10px 15px; margin-bottom: 5px;">
                             <i class="fa fa-dashboard" style="color: #e74c3c;"></i> <strong>System Monitor</strong>
                             <br><small style="color: #6c757d;">Health & performance</small>
