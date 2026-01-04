@@ -12,6 +12,20 @@ $user_level = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) :
 $is_admin = ($user_level >= 1);
 $is_super_admin = ($user_level >= 2);
 
+// Handle Docker tools setting update (Super Admin only)
+if ($is_super_admin && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['docker_tools_setting'])) {
+    if (function_exists('csrf_verify') && csrf_verify()) {
+        $new_setting = $_POST['docker_tools_setting'];
+        if (function_exists('save_docker_tools_setting') && save_docker_tools_setting($new_setting)) {
+            $docker_settings_message = 'Docker tools setting updated to: ' . ucfirst($new_setting);
+            $docker_settings_success = true;
+        } else {
+            $docker_settings_message = 'Failed to update Docker tools setting';
+            $docker_settings_success = false;
+        }
+    }
+}
+
 // Determine dashboard mode:
 // - Admin/Super Admin: Always show Admin Panel
 // - Admin/Super Admin with company selected: Also show User Dashboard (company data)
@@ -769,7 +783,8 @@ function get_status_badge($status) {
     <!-- Developer Tools Panel (Super Admin Only) -->
     <?php if ($is_super_admin): ?>
     <?php $docker_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true; ?>
-    <?php $docker_status = function_exists('get_docker_tools_status') ? get_docker_tools_status() : ['mode_text' => 'N/A']; ?>
+    <?php $docker_status = function_exists('get_docker_tools_status') ? get_docker_tools_status() : ['mode_text' => 'N/A', 'setting' => 'auto', 'is_docker_environment' => false]; ?>
+    <?php $current_setting = function_exists('get_docker_tools_setting') ? get_docker_tools_setting() : 'auto'; ?>
     <div class="row kpi-row">
         <div class="col-md-12">
             <div class="content-card" style="border-left: 4px solid #e74c3c;">
@@ -777,11 +792,35 @@ function get_status_badge($status) {
                     <i class="fa fa-wrench" style="color: #e74c3c;"></i> Developer Tools
                     <span class="badge" style="background: #e74c3c; color: white; margin-left: 10px;">Super Admin</span>
                     <?php if ($docker_enabled): ?>
-                    <span class="badge" style="background: #1abc9c; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-docker"></i> Docker</span>
+                    <span class="badge" style="background: #1abc9c; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-cloud"></i> Docker</span>
                     <?php else: ?>
                     <span class="badge" style="background: #95a5a6; color: white; margin-left: 5px;" title="Docker tools: <?= $docker_status['mode_text'] ?>"><i class="fa fa-server"></i> cPanel</span>
                     <?php endif; ?>
                 </h5>
+                
+                <!-- Docker Tools Settings -->
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px;">
+                    <form method="POST" action="index.php?page=dashboard" style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <?php if (function_exists('csrf_field')) echo csrf_field(); ?>
+                        <span style="color: #333; font-weight: 500;"><i class="fa fa-cog"></i> Docker Tools Mode:</span>
+                        <select name="docker_tools_setting" style="padding: 6px 12px; border: 1px solid #ced4da; border-radius: 4px; background: white; min-width: 180px;">
+                            <option value="auto" <?= $current_setting === 'auto' ? 'selected' : '' ?>>
+                                🔄 Auto <?= $docker_status['is_docker_environment'] ? '(Docker detected)' : '(No Docker)' ?>
+                            </option>
+                            <option value="on" <?= $current_setting === 'on' ? 'selected' : '' ?>>✅ On (Force Enable)</option>
+                            <option value="off" <?= $current_setting === 'off' ? 'selected' : '' ?>>❌ Off (Disable for cPanel)</option>
+                        </select>
+                        <button type="submit" style="padding: 6px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fa fa-save"></i> Save
+                        </button>
+                        <?php if (isset($docker_settings_message)): ?>
+                        <span style="color: <?= $docker_settings_success ? '#27ae60' : '#e74c3c' ?>; margin-left: 10px;">
+                            <i class="fa <?= $docker_settings_success ? 'fa-check' : 'fa-times' ?>"></i> <?= htmlspecialchars($docker_settings_message) ?>
+                        </span>
+                        <?php endif; ?>
+                    </form>
+                </div>
+                
                 <p style="color: #6c757d; margin-bottom: 15px;">Testing, debugging, and infrastructure monitoring tools</p>
                 
                 <div class="row">
