@@ -26,6 +26,9 @@
     <!-- SB Admin CSS - Include with every page -->
     <link href="css/sb-admin.css" rel="stylesheet">
     
+    <!-- Skeleton Loader - Global loading animation -->
+    <link href="css/skeleton-loader.css" rel="stylesheet">
+    
     <!-- jQuery - Use 3.x with 1.x migrate for compatibility -->
     <?php if ($useBootstrap5): ?>
     <script src="js/jquery-3.7.1.min.js"></script>

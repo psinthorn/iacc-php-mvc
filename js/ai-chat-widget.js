@@ -75,6 +75,12 @@
                         </div>
                     </div>
                     <div class="ai-chat-header-actions">
+                        <a href="index.php?page=ai_settings" class="ai-chat-btn-icon" title="AI Settings" target="_blank">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </a>
                         <button class="ai-chat-btn-icon" id="ai-chat-clear" title="เริ่มใหม่">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -129,8 +135,8 @@
                             </svg>
                         </button>
                     </div>
-                    <div class="ai-chat-powered">
-                        Powered by Ollama 🦙
+                    <div class="ai-chat-powered" id="ai-chat-powered">
+                        Powered by AI ✨
                     </div>
                 </div>
             </div>
@@ -151,6 +157,7 @@
             status: document.getElementById('ai-chat-status'),
             badge: document.getElementById('ai-chat-badge'),
             quickActions: document.getElementById('ai-chat-quick-actions'),
+            powered: document.getElementById('ai-chat-powered'),
         };
     }
 
@@ -296,17 +303,28 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',  // Include session cookies for cross-origin
                 body: JSON.stringify({
                     message: message,
                     session_id: state.sessionId,
                 }),
             });
 
+            if (!response.ok) {
+                console.error('HTTP Error:', response.status, response.statusText);
+            }
+
             const data = await response.json();
+            console.log('Chat response:', data);  // Debug log
 
             if (data.success) {
                 state.sessionId = data.data.session_id;
-                addMessage('assistant', data.data.message);
+                
+                // Handle message - use fallback if empty
+                const message = data.data.message || (data.data.tool_results?.length > 0 
+                    ? 'กำลังประมวลผล...' 
+                    : 'ไม่สามารถตอบกลับได้');
+                addMessage('assistant', message);
 
                 // Handle confirmation
                 if (data.data.requires_confirmation) {
@@ -389,6 +407,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     confirmation_id: confirmationId,
                     session_id: state.sessionId,
@@ -426,6 +445,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     confirmation_id: confirmationId,
                     session_id: state.sessionId,
@@ -476,13 +496,27 @@
      */
     async function checkHealth() {
         try {
-            const response = await fetch(CONFIG.apiEndpoint + '?action=health');
+            // Use 'ping' action which doesn't require authentication
+            const response = await fetch(CONFIG.apiEndpoint + '?action=ping', {
+                credentials: 'include'
+            });
             const data = await response.json();
+            console.log('Health check response:', data);  // Debug log
 
-            if (data.success && data.data.ollama?.available) {
+            if (data.success && data.provider?.available) {
+                const providerName = data.provider.display_name || data.provider.name;
+                const model = data.provider.model || '';
+                setStatus('online', `${providerName} • ${model}`);
+                // Update powered by text
+                updatePoweredBy(data.provider);
+            } else if (data.success && data.ollama?.available) {
+                // Backward compatibility
                 setStatus('online', 'ออนไลน์');
+                updatePoweredBy({ name: 'ollama', display_name: 'Ollama' });
             } else {
-                setStatus('offline', 'ไม่พร้อมใช้งาน');
+                const providerName = data.provider?.display_name || 'AI';
+                setStatus('offline', `${providerName} ไม่พร้อม`);
+                if (data.provider) updatePoweredBy(data.provider);
             }
         } catch (error) {
             setStatus('offline', 'ไม่สามารถเชื่อมต่อได้');
@@ -495,6 +529,24 @@
     function setStatus(status, text) {
         elements.status.className = 'ai-chat-status ' + status;
         elements.status.querySelector('.status-text').textContent = text;
+    }
+
+    /**
+     * Update "Powered by" text based on active provider
+     */
+    function updatePoweredBy(provider) {
+        if (!elements.powered) return;
+        
+        const providerIcons = {
+            'openai': '⚡',
+            'ollama': '🦙',
+            'default': '✨'
+        };
+        
+        const name = provider.display_name || provider.name || 'AI';
+        const icon = providerIcons[provider.name] || providerIcons.default;
+        
+        elements.powered.innerHTML = `Powered by ${name} ${icon}`;
     }
 
     /**

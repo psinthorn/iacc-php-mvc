@@ -146,6 +146,13 @@ $routes = [
     
     // Developer Tools (Admin Only)
     'test_crud'              => 'test-crud.php',
+    'test_crud_ai'           => 'test-crud-ai.php',
+    'ai_settings'            => 'ai-settings.php',
+    'ai_chat_history'        => 'ai-chat-history.php',
+    'ai_schema_browser'      => 'ai-schema-browser.php',
+    'ai_action_log'          => 'ai-action-log.php',
+    'ai_schema_refresh'      => 'ai-schema-refresh.php',
+    'ai_documentation'       => 'ai-documentation.php',
     'debug_session'          => 'debug-session.php',
     'debug_invoice'          => 'debug-invoice.php',
     'docker_test'            => 'docker-test.php',

@@ -1,10 +1,10 @@
 <?php
 /**
  * AI-Powered CRUD Testing Tool
- * Uses Ollama to generate test scenarios, analyze failures, and interactive testing
+ * Uses AI (OpenAI/Ollama) to generate test scenarios, analyze failures, and interactive testing
  * 
  * @package iACC
- * @version 1.0
+ * @version 1.1
  * @date 2026-01-05
  */
 
@@ -16,15 +16,14 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/dev-tools-style.php");
-require_once("ai/ollama-client.php");
-require_once("ai/config.php");
+require_once("ai/ai-provider.php");
 
 // Check access
 check_dev_tools_access();
 
 $db = new DbConn($config);
-$aiConfig = include('ai/config.php');
-$ollama = new OllamaClient($aiConfig['ollama']);
+$ai = new AIProvider();
+$aiSettings = AIProvider::getSettings();
 
 // Available tables for testing
 $availableTables = [
@@ -170,14 +169,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
     switch ($action) {
         case 'check_ollama':
-            // Check if Ollama is available
-            $result = $ollama->listModels();
-            if ($result['success']) {
+            // Check if AI provider is available
+            $result = $ai->checkHealth();
+            if ($result['available']) {
                 $response['success'] = true;
-                $response['message'] = 'Ollama is connected';
+                $response['message'] = ucfirst($result['provider']) . ' is connected';
                 $response['data'] = $result['models'] ?? [];
+                $response['provider'] = $result['provider'];
             } else {
-                $response['message'] = 'Cannot connect to Ollama: ' . ($result['error'] ?? 'Unknown error');
+                $response['message'] = 'Cannot connect to ' . ucfirst($ai->getProvider()) . ': ' . ($result['error'] ?? 'Unknown error');
+                $response['provider'] = $ai->getProvider();
             }
             break;
             
@@ -214,15 +215,17 @@ Return as JSON array:
   }
 ]
 
-Focus on: " . match($testType) {
-    'edge_cases' => 'empty strings, special characters, unicode, very long strings, SQL injection attempts (safely), boundary values',
-    'normal' => 'typical valid data that would be used in production',
-    'stress' => 'large data volumes, concurrent-like operations, maximum field lengths',
-    'security' => 'SQL injection patterns, XSS attempts, malformed data, authentication bypass attempts',
-    default => 'general testing scenarios'
-};
+Focus on: " . (function($type) {
+    switch ($type) {
+        case 'edge_cases': return 'empty strings, special characters, unicode, very long strings, SQL injection attempts (safely), boundary values';
+        case 'normal': return 'typical valid data that would be used in production';
+        case 'stress': return 'large data volumes, concurrent-like operations, maximum field lengths';
+        case 'security': return 'SQL injection patterns, XSS attempts, malformed data, authentication bypass attempts';
+        default: return 'general testing scenarios';
+    }
+})($testType);
 
-            $result = $ollama->generate($prompt, "You are a helpful database testing assistant. Always return valid JSON.");
+            $result = $ai->generate($prompt, "You are a helpful database testing assistant. Always return valid JSON.");
             
             if ($result['success']) {
                 $responseText = $result['response'] ?? '';
@@ -242,7 +245,7 @@ Focus on: " . match($testType) {
                     $response['data'] = ['raw' => $responseText];
                 }
             } else {
-                $response['message'] = 'Ollama error: ' . ($result['error'] ?? 'Unknown');
+                $response['message'] = 'AI error: ' . ($result['error'] ?? 'Unknown');
             }
             break;
             
@@ -268,14 +271,14 @@ Please provide:
 
 Be specific and actionable.";
 
-            $result = $ollama->generate($prompt, "You are a database debugging expert. Provide clear, actionable solutions.");
+            $result = $ai->generate($prompt, "You are a database debugging expert. Provide clear, actionable solutions.");
             
             if ($result['success']) {
                 $response['success'] = true;
                 $response['data'] = ['analysis' => $result['response'] ?? ''];
                 $response['message'] = 'Analysis complete';
             } else {
-                $response['message'] = 'Ollama error: ' . ($result['error'] ?? 'Unknown');
+                $response['message'] = 'AI error: ' . ($result['error'] ?? 'Unknown');
             }
             break;
             
@@ -320,7 +323,7 @@ Return a JSON object with:
 
 If you cannot understand the request, set understood to false and explain why in the explanation field.";
 
-            $result = $ollama->generate($prompt, "You are a helpful testing assistant. Always return valid JSON.");
+            $result = $ai->generate($prompt, "You are a helpful testing assistant. Always return valid JSON.");
             
             if ($result['success']) {
                 $responseText = $result['response'] ?? '';
@@ -339,7 +342,7 @@ If you cannot understand the request, set understood to false and explain why in
                     $response['data'] = ['raw' => $responseText];
                 }
             } else {
-                $response['message'] = 'Ollama error: ' . ($result['error'] ?? 'Unknown');
+                $response['message'] = 'AI error: ' . ($result['error'] ?? 'Unknown');
             }
             break;
             
@@ -599,12 +602,13 @@ If you cannot understand the request, set understood to false and explain why in
 </head>
 <body>
     <div class="dev-tools-container">
-        <?php echo get_dev_tools_header('AI-Powered CRUD Testing', 'Use Ollama AI to generate tests, analyze failures, and test with natural language', 'fa-robot', '#667eea'); ?>
+        <?php echo get_dev_tools_header('AI-Powered CRUD Testing', 'Use AI (' . ucfirst($ai->getProvider()) . ') to generate tests, analyze failures, and test with natural language', 'fa-robot', '#667eea'); ?>
         
-        <!-- Ollama Status -->
+        <!-- AI Status -->
         <div class="ollama-status" id="ollamaStatus">
             <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">Checking Ollama connection...</span>
+            <span id="statusText">Checking AI connection...</span>
+            <a href="ai-settings.php" style="margin-left: auto; font-size: 12px;"><i class="fa fa-cog"></i> Settings</a>
         </div>
         
         <!-- Tab Navigation -->
@@ -788,8 +792,8 @@ If you cannot understand the request, set understood to false and explain why in
         });
     });
     
-    // Check Ollama status on load
-    async function checkOllamaStatus() {
+    // Check AI status on load
+    async function checkAIStatus() {
         try {
             const response = await fetch('test-crud-ai.php', {
                 method: 'POST',
@@ -803,17 +807,18 @@ If you cannot understand the request, set understood to false and explain why in
             
             if (data.success) {
                 dot.classList.add('connected');
-                text.textContent = 'Connected to Ollama - Models: ' + (data.data.map(m => m.name).join(', ') || 'Ready');
+                const provider = data.provider ? data.provider.charAt(0).toUpperCase() + data.provider.slice(1) : 'AI';
+                text.textContent = provider + ' connected - Models: ' + (data.data.map(m => m.name).join(', ') || 'Ready');
             } else {
                 dot.classList.add('error');
-                text.textContent = 'Ollama not available: ' + data.message;
+                text.textContent = 'AI not available: ' + data.message;
             }
         } catch (e) {
             document.getElementById('statusDot').classList.add('error');
             document.getElementById('statusText').textContent = 'Connection error: ' + e.message;
         }
     }
-    checkOllamaStatus();
+    checkAIStatus();
     
     // Natural Language Processing
     function setQuery(text) {

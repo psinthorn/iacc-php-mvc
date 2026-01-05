@@ -22,8 +22,12 @@ if (session_status() === PHP_SESSION_NONE) {
 // Set JSON response header
 header('Content-Type: application/json');
 
-// Allow CORS for development
-header('Access-Control-Allow-Origin: *');
+// Allow CORS with credentials (use specific origin, not wildcard)
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin && (strpos($origin, 'localhost') !== false || strpos($origin, '127.0.0.1') !== false)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Access-Control-Allow-Credentials: true');
+}
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
@@ -32,10 +36,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
+// Handle ping/status BEFORE auth check (these are public endpoints for the widget)
+$action = $_GET['action'] ?? '';
+if ($action === 'ping' || $action === 'status') {
+    require_once __DIR__ . '/ai-provider.php';
+    
+    $settings = AIProvider::getSettings();
+    $provider = $settings['provider'] ?? 'openai';
+    
+    $providerInfo = [
+        'name' => $provider,
+        'available' => false,
+        'model' => '',
+        'display_name' => '',
+    ];
+    
+    if ($provider === 'openai') {
+        $providerInfo['model'] = $settings['openai_model'] ?? 'gpt-4o-mini';
+        $providerInfo['available'] = !empty($settings['openai_api_key']);
+        $providerInfo['display_name'] = 'OpenAI';
+    } else {
+        $providerInfo['model'] = $settings['ollama_model'] ?? 'llama3.2:3b';
+        $providerInfo['display_name'] = 'Ollama';
+        if ($settings['ollama_enabled'] ?? false) {
+            require_once __DIR__ . '/ollama-client.php';
+            try {
+                $ollama = new OllamaClient(['base_url' => $settings['ollama_url'] ?? 'http://ollama:11434']);
+                $health = $ollama->checkHealth();
+                $providerInfo['available'] = $health['available'] ?? false;
+            } catch (Exception $e) {
+                $providerInfo['available'] = false;
+            }
+        }
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'provider' => $providerInfo,
+        'settings' => [
+            'temperature' => $settings['temperature'] ?? 0.7,
+            'max_tokens' => $settings['max_tokens'] ?? 2048,
+        ],
+        'timestamp' => date('c'),
+    ]);
+    exit;
+}
+
 // Include required files
 require_once __DIR__ . '/../inc/class.dbconn.php';
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/ollama-client.php';
+require_once __DIR__ . '/openai-client.php';
+require_once __DIR__ . '/ai-provider.php';
 require_once __DIR__ . '/agent-tools.php';
 require_once __DIR__ . '/agent-executor.php';
 
@@ -46,7 +98,7 @@ class ChatHandler
 {
     private $db;
     private array $config;
-    private OllamaClient $ollama;
+    private $aiProvider;
     private AgentExecutor $executor;
     private int $companyId;
     private int $userId;
@@ -63,8 +115,8 @@ class ChatHandler
         // Check authentication
         $this->checkAuth();
         
-        // Initialize Ollama client
-        $this->ollama = new OllamaClient($this->config['ollama']);
+        // Initialize AI Provider (uses settings from cache/ai-settings.json)
+        $this->aiProvider = new AIProvider();
         
         // Initialize session
         $this->sessionId = $this->getOrCreateSession();
@@ -212,11 +264,11 @@ class ChatHandler
         // Build messages array for Ollama
         $messages = $this->buildMessages($history, $message);
         
-        // Get available tools
-        $tools = getAgentTools();
+        // Get all available tools (business + schema discovery)
+        $tools = getAllTools();
         
-        // Send to Ollama
-        $result = $this->ollama->chat($messages, $tools);
+        // Send to AI provider (OpenAI or Ollama based on settings)
+        $result = $this->aiProvider->chat($messages, $tools);
         
         if (!$result['success']) {
             $this->sendError('AI service error: ' . ($result['error'] ?? 'Unknown'), 500);
@@ -299,7 +351,42 @@ class ChatHandler
             '{current_time}' => date('H:i:s'),
         ];
         
-        return str_replace(array_keys($replacements), array_values($replacements), $prompt);
+        $prompt = str_replace(array_keys($replacements), array_values($replacements), $prompt);
+        
+        // Append cached database schema if available
+        $schemaContext = $this->getSchemaContext();
+        if ($schemaContext) {
+            $prompt .= "\n\n" . $schemaContext;
+        }
+        
+        return $prompt;
+    }
+    
+    /**
+     * Get cached database schema context
+     */
+    private function getSchemaContext(): string
+    {
+        require_once __DIR__ . '/schema-discovery.php';
+        
+        $cached = SchemaDiscovery::loadCompactSchema();
+        if ($cached) {
+            return "DATABASE SCHEMA REFERENCE:\n" . $cached;
+        }
+        
+        // Minimal schema if cache not available
+        return <<<SCHEMA
+DATABASE SCHEMA QUICK REFERENCE:
+- iv: Invoices (tex→po.id, taxrw=invoice#, status_iv, payment_status)
+- po: Purchase Orders (id, ref→pr.id, name, date, status)
+- pr: Projects (id, cus_id→company, ven_id→company)
+- product: Line items (po_id, price, quantity)
+- pay: Payments (po_id, volumn=amount)
+- company: Companies (id, name_en, name_sh)
+
+Query Pattern: iv → po → pr → company, with product/pay joins for totals
+Use list_database_tables or describe_table tools for more details.
+SCHEMA;
     }
     
     /**
@@ -343,8 +430,9 @@ PROMPT;
      */
     private function processResponse(array $result): array
     {
-        $message = $this->ollama->getResponseText($result);
-        $toolCalls = $this->ollama->getToolCalls($result);
+        // Get response text and tool calls from result
+        $message = $result['response'] ?? '';
+        $toolCalls = $result['tool_calls'] ?? [];
         
         $toolResults = [];
         $requiresConfirmation = false;
@@ -352,16 +440,22 @@ PROMPT;
         
         // Execute tool calls
         foreach ($toolCalls as $call) {
-            $toolName = $call['function']['name'] ?? '';
+            // Handle both OpenAI format (name, arguments) and function format (function.name, function.arguments)
+            $toolName = $call['name'] ?? $call['function']['name'] ?? '';
             $params = [];
             
-            // Parse arguments
-            if (isset($call['function']['arguments'])) {
-                if (is_string($call['function']['arguments'])) {
-                    $params = json_decode($call['function']['arguments'], true) ?? [];
+            // Parse arguments - handle both formats
+            $arguments = $call['arguments'] ?? $call['function']['arguments'] ?? null;
+            if ($arguments !== null) {
+                if (is_string($arguments)) {
+                    $params = json_decode($arguments, true) ?? [];
                 } else {
-                    $params = $call['function']['arguments'];
+                    $params = $arguments;
                 }
+            }
+            
+            if (empty($toolName)) {
+                continue;
             }
             
             // Execute tool
@@ -377,10 +471,20 @@ PROMPT;
                 $requiresConfirmation = true;
                 $confirmationId = $toolResult['confirmation_id'];
             }
-            
-            // If tool was executed, append result to message
-            if (!empty($toolResult['success']) && isset($toolResult['result'])) {
-                $message .= "\n\n" . $this->formatToolResult($toolName, $toolResult['result']);
+        }
+        
+        // If we have tool results, send them back to AI for a natural language response
+        if (!empty($toolResults) && empty($message)) {
+            $message = $this->generateResponseFromToolResults($toolResults);
+        } elseif (!empty($toolResults)) {
+            // Append formatted results to the existing message
+            foreach ($toolResults as $tr) {
+                if (!empty($tr['result']['success'])) {
+                    $formatted = $this->formatToolResult($tr['tool'], $tr['result']['result'] ?? $tr['result']);
+                    if (!empty($formatted)) {
+                        $message .= "\n\n" . $formatted;
+                    }
+                }
             }
         }
         
@@ -394,12 +498,175 @@ PROMPT;
     }
     
     /**
+     * Generate a natural language response from tool results by sending back to AI
+     */
+    private function generateResponseFromToolResults(array $toolResults): string
+    {
+        $messages = [];
+        
+        // Add context about what was requested
+        $messages[] = [
+            'role' => 'system',
+            'content' => 'Based on the tool results below, provide a helpful summary response to the user. Format data nicely with bullet points or tables if appropriate. Keep it concise.',
+        ];
+        
+        // Format tool results for AI
+        $resultsText = '';
+        foreach ($toolResults as $tr) {
+            $toolName = $tr['tool'];
+            $result = $tr['result'];
+            
+            if ($result['success'] ?? false) {
+                $data = $result['result'] ?? $result;
+                $resultsText .= "Tool: {$toolName}\nResult: " . json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n\n";
+            } else {
+                $error = $result['error'] ?? 'Unknown error';
+                $resultsText .= "Tool: {$toolName}\nError: {$error}\n\n";
+            }
+        }
+        
+        $messages[] = [
+            'role' => 'user',
+            'content' => "Here are the results from the database queries:\n\n" . $resultsText . "\n\nPlease summarize this for the user in a clear, friendly way.",
+        ];
+        
+        // Call AI without tools to get natural language response
+        $response = $this->aiProvider->chat($messages, []);
+        
+        if ($response['success'] ?? false) {
+            return $response['response'] ?? $this->formatToolResultsFallback($toolResults);
+        }
+        
+        // Fallback to simple formatting
+        return $this->formatToolResultsFallback($toolResults);
+    }
+    
+    /**
+     * Fallback formatting when AI call fails
+     */
+    private function formatToolResultsFallback(array $toolResults): string
+    {
+        $output = '';
+        
+        foreach ($toolResults as $tr) {
+            $result = $tr['result'];
+            
+            if ($result['success'] ?? false) {
+                $data = $result['result'] ?? $result;
+                $output .= $this->formatToolResult($tr['tool'], $data);
+            } else {
+                $output .= "❌ Error: " . ($result['error'] ?? 'Unknown error') . "\n";
+            }
+        }
+        
+        return $output ?: 'ไม่พบข้อมูล / No data found';
+    }
+    
+    /**
      * Format tool result for display
      */
-    private function formatToolResult(string $toolName, array $result): string
+    private function formatToolResult(string $toolName, $result): string
     {
-        // The AI will usually format its own response, but we can help
-        return '';
+        if (empty($result)) {
+            return '';
+        }
+        
+        // Handle array results
+        if (is_array($result)) {
+            // Check if it's a list of items
+            if (isset($result[0]) && is_array($result[0])) {
+                return $this->formatResultsTable($toolName, $result);
+            }
+            
+            // Check for specific result structures
+            if (isset($result['data']) && is_array($result['data'])) {
+                return $this->formatResultsTable($toolName, $result['data']);
+            }
+            
+            if (isset($result['count'])) {
+                return "📊 พบ {$result['count']} รายการ";
+            }
+            
+            if (isset($result['summary'])) {
+                return "📊 " . $result['summary'];
+            }
+            
+            // Format as key-value pairs
+            $lines = [];
+            foreach ($result as $key => $value) {
+                if (is_array($value)) {
+                    continue;
+                }
+                $lines[] = "• **{$key}**: {$value}";
+            }
+            return implode("\n", $lines);
+        }
+        
+        return (string) $result;
+    }
+    
+    /**
+     * Format array results as a simple table
+     */
+    private function formatResultsTable(string $toolName, array $items): string
+    {
+        if (empty($items)) {
+            return "ไม่พบข้อมูล / No data found";
+        }
+        
+        $count = count($items);
+        $output = "📋 **พบ {$count} รายการ**\n\n";
+        
+        // Show first 10 items
+        $shown = array_slice($items, 0, 10);
+        
+        foreach ($shown as $i => $item) {
+            $num = $i + 1;
+            
+            // Try to create a meaningful summary for each item
+            $summary = $this->createItemSummary($item);
+            $output .= "{$num}. {$summary}\n";
+        }
+        
+        if ($count > 10) {
+            $remaining = $count - 10;
+            $output .= "\n... และอีก {$remaining} รายการ";
+        }
+        
+        return $output;
+    }
+    
+    /**
+     * Create a summary line for an item
+     */
+    private function createItemSummary(array $item): string
+    {
+        $parts = [];
+        
+        // Priority fields to show
+        $priorityFields = [
+            'inv_no', 'invoice_no', 'po_no', 'number', 'name', 'company_name', 'customer_name',
+            'total', 'amount', 'grand_total', 'status', 'date', 'due_date', 'inv_date'
+        ];
+        
+        foreach ($priorityFields as $field) {
+            if (isset($item[$field]) && $item[$field] !== null && $item[$field] !== '') {
+                $value = $item[$field];
+                
+                // Format money
+                if (in_array($field, ['total', 'amount', 'grand_total'])) {
+                    $value = '฿' . number_format((float)$value, 2);
+                }
+                
+                $parts[] = $value;
+                
+                if (count($parts) >= 4) {
+                    break;
+                }
+            }
+        }
+        
+        return implode(' | ', $parts) ?: json_encode($item);
     }
     
     /**
@@ -472,12 +739,13 @@ PROMPT;
      */
     private function handleHealth(): void
     {
-        $ollamaHealth = $this->ollama->checkHealth();
+        $settings = AIProvider::getSettings();
+        $provider = $settings['provider'] ?? 'openai';
         
         $this->sendSuccess([
             'status' => 'ok',
-            'ollama' => $ollamaHealth,
-            'model' => $this->ollama->getModel(),
+            'provider' => $provider,
+            'model' => $this->aiProvider->getModel(),
             'user_id' => $this->userId,
             'company_id' => $this->companyId,
         ]);
@@ -509,16 +777,16 @@ PROMPT;
     private function getConversationHistory(int $limit = 20): array
     {
         $maxHistory = $this->config['agent']['max_history'] ?? $limit;
-        $limit = min($limit, $maxHistory);
+        $limit = min((int)$limit, (int)$maxHistory);
         
         $sql = "SELECT role, content, tool_calls, tool_results, created_at
                 FROM ai_conversations
                 WHERE session_id = ? AND company_id = ?
                 ORDER BY created_at DESC
-                LIMIT ?";
+                LIMIT " . intval($limit);
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$this->sessionId, $this->companyId, $limit]);
+        $stmt->execute([$this->sessionId, $this->companyId]);
         $messages = $stmt->fetchAll();
         
         // Reverse to get chronological order
@@ -542,7 +810,7 @@ PROMPT;
             $role,
             $content,
             $toolCalls ? json_encode($toolCalls) : null,
-            $this->ollama->getModel(),
+            $this->aiProvider->getModel(),
         ]);
     }
     
@@ -604,13 +872,38 @@ PROMPT;
 // Handle public health check (no auth required)
 if (($_GET['action'] ?? '') === 'ping') {
     try {
-        $ollama = new OllamaClient();
-        $health = $ollama->checkHealth();
+        require_once __DIR__ . '/ai-provider.php';
+        $settings = AIProvider::getSettings();
+        $provider = $settings['provider'] ?? 'openai';
+        
+        $providerInfo = [
+            'name' => $provider,
+            'available' => false,
+            'model' => '',
+        ];
+        
+        if ($provider === 'openai') {
+            $providerInfo['model'] = $settings['openai_model'] ?? 'gpt-4o-mini';
+            $providerInfo['available'] = !empty($settings['openai_api_key']);
+            $providerInfo['display_name'] = 'OpenAI';
+        } else {
+            $providerInfo['model'] = $settings['ollama_model'] ?? 'llama3.2:3b';
+            $providerInfo['display_name'] = 'Ollama';
+            // Check Ollama availability
+            if ($settings['ollama_enabled'] ?? false) {
+                $ollama = new OllamaClient(['base_url' => $settings['ollama_url'] ?? 'http://ollama:11434']);
+                $health = $ollama->checkHealth();
+                $providerInfo['available'] = $health['available'] ?? false;
+            }
+        }
+        
         echo json_encode([
             'success' => true,
             'status' => 'ok',
-            'ollama' => $health,
-            'model' => $ollama->getModel(),
+            'provider' => $providerInfo,
+            // Keep ollama for backward compatibility
+            'ollama' => ['available' => $providerInfo['available']],
+            'model' => $providerInfo['model'],
             'timestamp' => date('c'),
         ]);
     } catch (Exception $e) {
@@ -619,6 +912,19 @@ if (($_GET['action'] ?? '') === 'ping') {
             'error' => $e->getMessage(),
         ]);
     }
+    exit;
+}
+
+// Handle session debug (for troubleshooting)
+if (($_GET['action'] ?? '') === 'debug') {
+    echo json_encode([
+        'success' => true,
+        'session_id' => session_id(),
+        'user_id' => $_SESSION['user_id'] ?? null,
+        'com_id' => $_SESSION['com_id'] ?? null,
+        'user_level' => $_SESSION['user_level'] ?? null,
+        'logged_in' => !empty($_SESSION['user_id']),
+    ]);
     exit;
 }
 

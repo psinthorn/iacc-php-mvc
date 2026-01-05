@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 4.0  
+**Version**: 4.1  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 5, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,45 @@
 ---
 
 ## 📋 Changelog
+
+### v4.1 (January 5, 2026)
+- **Multi-Provider AI System** 🤖:
+  - Added OpenAI support (gpt-4o-mini) as primary provider
+  - Ollama remains available for local inference (OFF by default due to CPU usage)
+  - Provider switching via AI Settings page
+  - Unified provider abstraction in `ai/ai-provider.php`
+
+- **Schema Discovery & Caching** 🗄️:
+  - AI can now read and understand database structure (42 tables)
+  - Schema cached to reduce token usage in prompts
+  - Auto-refresh with hash-based change detection
+  - Three cache formats: JSON (full), MD (docs), TXT (compact for AI)
+
+- **5 New Schema Tools** 🔍:
+  - `list_database_tables` - List all 42 tables with row counts
+  - `describe_table` - Get columns, types, keys for any table
+  - `search_schema` - Find tables/columns by keyword
+  - `get_table_relationships` - Discover foreign key relationships
+  - `get_database_summary` - Overview of entire database
+
+- **AI Tools Admin Pages** 📊:
+  - **AI Settings** - Configure provider, API keys, models
+  - **AI CRUD Test** - Interactive chat interface
+  - **Chat History** - View/delete past conversations
+  - **Schema Browser** - Explore database tables and columns
+  - **Action Log** - Audit all AI tool executions
+  - **Refresh Schema** - Manual/auto schema cache refresh
+  - **Documentation** - Data flow diagrams and architecture
+
+- **23 Total AI Tools**:
+  - 18 Business tools (invoices, POs, customers, products, payments)
+  - 5 Schema discovery tools (database introspection)
+
+- **Bug Fixes** 🐛:
+  - Fixed OpenAI empty parameters (`{}` not `[]`)
+  - Fixed session variable (`user_level` not `level`)
+  - Fixed PDO connection for AI pages
+  - Fixed tool sync across all components
 
 ### v4.0 (January 5, 2026)
 - **AI Chatbot Integration** 🤖:

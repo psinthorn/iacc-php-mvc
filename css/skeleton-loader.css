@@ -1,0 +1,332 @@
+/* ============================================
+   Skeleton Loading Animation Styles
+   Global skeleton loader for all pages
+   ============================================ */
+
+/* Core visibility control */
+.skeleton-container { display: none; }
+.skeleton-loading .skeleton-container { display: block; }
+.skeleton-loading .content-container { display: none; }
+
+/* Skeleton Wave Animation */
+@keyframes skeleton-wave {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Base Skeleton Element */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-wave 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+/* Dark Theme Skeleton */
+.skeleton-dark {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: skeleton-wave 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+/* ========== Text Skeletons ========== */
+.skeleton-text { height: 14px; margin-bottom: 8px; }
+.skeleton-text.xs { width: 40%; }
+.skeleton-text.sm { width: 60%; }
+.skeleton-text.md { width: 80%; }
+.skeleton-text.lg { width: 100%; }
+.skeleton-text.title { height: 28px; width: 250px; margin-bottom: 12px; }
+.skeleton-text.subtitle { height: 20px; width: 180px; margin-bottom: 10px; }
+
+/* ========== Common Components ========== */
+
+/* Avatar */
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.skeleton-avatar.sm { width: 32px; height: 32px; }
+.skeleton-avatar.lg { width: 60px; height: 60px; }
+.skeleton-avatar.xl { width: 80px; height: 80px; }
+
+/* Button */
+.skeleton-btn {
+    height: 38px;
+    border-radius: 8px;
+    min-width: 80px;
+}
+.skeleton-btn.sm { height: 30px; min-width: 60px; }
+.skeleton-btn.lg { height: 46px; min-width: 100px; }
+
+/* Badge */
+.skeleton-badge {
+    height: 24px;
+    width: 70px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* Icon */
+.skeleton-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+}
+.skeleton-icon.sm { width: 32px; height: 32px; border-radius: 8px; }
+.skeleton-icon.lg { width: 56px; height: 56px; border-radius: 14px; }
+
+/* ========== Card Skeleton ========== */
+.skeleton-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.skeleton-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.skeleton-card-body {
+    padding: 0;
+}
+
+/* ========== Table Skeleton ========== */
+.skeleton-table {
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.skeleton-table-header {
+    background: #f9fafb;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    gap: 20px;
+}
+
+.skeleton-table-row {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.skeleton-table-row:last-child {
+    border-bottom: none;
+}
+
+.skeleton-table-cell {
+    flex: 1;
+}
+
+/* ========== Stats Card Skeleton ========== */
+.skeleton-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.skeleton-stat-value {
+    height: 32px;
+    width: 60px;
+    margin-bottom: 8px;
+}
+
+.skeleton-stat-label {
+    height: 12px;
+    width: 100px;
+}
+
+/* ========== Grid Layouts ========== */
+.skeleton-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.skeleton-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.skeleton-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+@media (max-width: 992px) {
+    .skeleton-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .skeleton-grid-2, .skeleton-grid-3, .skeleton-grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========== Form Skeleton ========== */
+.skeleton-form-group {
+    margin-bottom: 20px;
+}
+
+.skeleton-label {
+    height: 14px;
+    width: 120px;
+    margin-bottom: 8px;
+}
+
+.skeleton-input {
+    height: 44px;
+    width: 100%;
+    border-radius: 8px;
+}
+
+.skeleton-textarea {
+    height: 120px;
+    width: 100%;
+    border-radius: 8px;
+}
+
+.skeleton-select {
+    height: 44px;
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* ========== Chart/Graph Skeleton ========== */
+.skeleton-chart {
+    height: 200px;
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+.skeleton-chart.sm { height: 150px; }
+.skeleton-chart.lg { height: 300px; }
+.skeleton-chart.xl { height: 400px; }
+
+/* ========== List Skeleton ========== */
+.skeleton-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.skeleton-list-item:last-child {
+    border-bottom: none;
+}
+
+/* ========== Image Skeleton ========== */
+.skeleton-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+}
+.skeleton-image.sm { height: 100px; }
+.skeleton-image.lg { height: 300px; }
+.skeleton-image.square { aspect-ratio: 1; height: auto; }
+.skeleton-image.thumbnail { width: 60px; height: 60px; }
+
+/* ========== Navigation Skeleton ========== */
+.skeleton-nav {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.skeleton-nav-item {
+    height: 36px;
+    width: 80px;
+    border-radius: 4px;
+}
+
+/* ========== Breadcrumb Skeleton ========== */
+.skeleton-breadcrumb {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.skeleton-breadcrumb-item {
+    height: 14px;
+    width: 60px;
+}
+
+/* ========== Master Data Page Skeleton ========== */
+.skeleton-master-data {
+    padding: 20px;
+}
+
+.skeleton-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.skeleton-page-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.skeleton-page-header-right {
+    display: flex;
+    gap: 10px;
+}
+
+.skeleton-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.skeleton-search-box {
+    height: 44px;
+    width: 300px;
+    border-radius: 8px;
+}
+
+/* ========== Animation Variants ========== */
+
+/* Pulse animation (alternative to wave) */
+@keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.skeleton-pulse {
+    background: #e0e0e0;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+/* Fade in for content reveal */
+@keyframes skeleton-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.content-container {
+    animation: skeleton-fade-in 0.3s ease-out;
+}
+
+/* ========== Utility Classes ========== */
+.skeleton-mb-0 { margin-bottom: 0 !important; }
+.skeleton-mb-1 { margin-bottom: 4px !important; }
+.skeleton-mb-2 { margin-bottom: 8px !important; }
+.skeleton-mb-3 { margin-bottom: 16px !important; }
+.skeleton-mb-4 { margin-bottom: 24px !important; }
+
+.skeleton-w-25 { width: 25% !important; }
+.skeleton-w-50 { width: 50% !important; }
+.skeleton-w-75 { width: 75% !important; }
+.skeleton-w-100 { width: 100% !important; }

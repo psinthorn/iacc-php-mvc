@@ -512,6 +512,16 @@ function getAgentTools(): array
 }
 
 /**
+ * Get all available tools (agent tools + schema tools)
+ * 
+ * @return array All tool definitions
+ */
+function getAllTools(): array
+{
+    return array_merge(getAgentTools(), getSchemaTools());
+}
+
+/**
  * Get tool by name
  * 
  * @param string $toolName Tool name
@@ -519,7 +529,7 @@ function getAgentTools(): array
  */
 function getToolByName(string $toolName): ?array
 {
-    $tools = getAgentTools();
+    $tools = getAllTools();
     
     foreach ($tools as $tool) {
         if ($tool['name'] === $toolName) {
@@ -538,7 +548,7 @@ function getToolByName(string $toolName): ?array
  */
 function getToolsByOperation(string $operation): array
 {
-    return array_filter(getAgentTools(), function($tool) use ($operation) {
+    return array_filter(getAllTools(), function($tool) use ($operation) {
         return ($tool['operation'] ?? '') === $operation;
     });
 }
@@ -553,6 +563,78 @@ function getConfirmableTools(): array
     return array_filter(getAgentTools(), function($tool) {
         return !empty($tool['confirm']);
     });
+}
+
+/**
+ * Get schema discovery tools
+ * These allow the AI to understand database structure
+ * 
+ * @return array Schema tools
+ */
+function getSchemaTools(): array
+{
+    return [
+        [
+            'name' => 'list_database_tables',
+            'description' => 'List all tables in the database with row counts. Use this to understand the database structure.',
+            'parameters' => [],
+            'permission' => null, // No permission needed for schema discovery
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'describe_table',
+            'description' => 'Get detailed information about a specific database table including columns, data types, keys, and sample data.',
+            'parameters' => [
+                'table_name' => [
+                    'type' => 'string',
+                    'description' => 'Name of the table to describe',
+                    'required' => true,
+                ],
+                'include_sample' => [
+                    'type' => 'boolean',
+                    'description' => 'Include sample data rows (default: true)',
+                ],
+            ],
+            'permission' => null,
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'search_schema',
+            'description' => 'Search for tables or columns matching a pattern. Use this to find where specific data is stored.',
+            'parameters' => [
+                'pattern' => [
+                    'type' => 'string',
+                    'description' => 'Search pattern (supports partial matching)',
+                    'required' => true,
+                ],
+            ],
+            'permission' => null,
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'get_table_relationships',
+            'description' => 'Get foreign key relationships for a table or all tables.',
+            'parameters' => [
+                'table_name' => [
+                    'type' => 'string',
+                    'description' => 'Table name (optional, shows all if not provided)',
+                ],
+            ],
+            'permission' => null,
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'get_database_summary',
+            'description' => 'Get a high-level summary of the database including all tables, key relationships, and common query patterns.',
+            'parameters' => [],
+            'permission' => null,
+            'operation' => 'read',
+        ],
+    ];
 }
 
 /**

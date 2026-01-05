@@ -143,6 +143,6 @@ $current_year = date('Y');
 if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])):
 ?>
 <!-- AI Chat Widget -->
-<link rel="stylesheet" href="css/ai-chat.css">
-<script src="js/ai-chat-widget.js"></script>
+<link rel="stylesheet" href="css/ai-chat.css?v=<?php echo time(); ?>">
+<script src="js/ai-chat-widget.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>

@@ -368,6 +368,35 @@ include_once 'inc/top-navbar.php';
                             </li>
                         </ul>
                     </li>
+                    
+                    <!-- AI Tools (Super Admin only) -->
+                    <li>
+                        <a href="#"><i class="fa fa-robot"></i> <?=$xml->aitools ?? 'AI Tools'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=ai_settings"><i class="fa fa-cogs"></i> <?=$xml->aisettings ?? 'AI Settings'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=test_crud_ai"><i class="fa fa-flask"></i> <?=$xml->testcrudai ?? 'AI CRUD Test'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=ai_chat_history"><i class="fa fa-comments"></i> <?=$xml->aichathistory ?? 'Chat History'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=ai_schema_browser"><i class="fa fa-database"></i> <?=$xml->aischemabrowser ?? 'Schema Browser'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=ai_action_log"><i class="fa fa-list-alt"></i> <?=$xml->aiactionlog ?? 'Action Log'?></a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=ai_documentation"><i class="fa fa-book"></i> <?=$xml->aidocumentation ?? 'Documentation'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=ai_schema_refresh"><i class="fa fa-refresh"></i> <?=$xml->aischemarefresh ?? 'Refresh Schema'?></a>
+                            </li>
+                        </ul>
+                    </li>
                     <?php endif; ?>
                   
                 </ul>

@@ -1,0 +1,5576 @@
+{
+    "database": "iacc",
+    "discovered_at": "2026-01-05 10:01:21",
+    "tables": {
+        "_migration_log": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "migration_name",
+                    "type": "varchar(255)",
+                    "nullable": false,
+                    "key": "UNI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "executed_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "status",
+                    "type": "enum('success','failed','rolled_back')",
+                    "nullable": true,
+                    "key": "",
+                    "default": "success",
+                    "extra": ""
+                },
+                {
+                    "name": "notes",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "uk_migration_name": {
+                    "unique": true,
+                    "columns": [
+                        "migration_name"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 2,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "migration_name": "002_remaining_database_fixes_v1.1",
+                    "executed_at": "2026-01-03 22:40:52",
+                    "status": "success",
+                    "notes": "Converted remaining MyISAM to InnoDB, standardized charset, added indexes"
+                },
+                {
+                    "id": "2",
+                    "migration_name": "003_add_foreign_keys",
+                    "executed_at": "2026-01-03 23:01:14",
+                    "status": "success",
+                    "notes": "Added FK constraints for model, map_type_to_brand, RBAC tables"
+                }
+            ]
+        },
+        "ai_action_log": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "user_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "session_id",
+                    "type": "varchar(64)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "conversation_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "action_type",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "action_params",
+                    "type": "json",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "affected_table",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "affected_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "previous_value",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "new_value",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "result",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "status",
+                    "type": "enum('pending','confirmed','executed','cancelled','failed')",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": "pending",
+                    "extra": ""
+                },
+                {
+                    "name": "error_message",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "confirmed_at",
+                    "type": "timestamp",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "executed_at",
+                    "type": "timestamp",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_company": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "idx_user": {
+                    "unique": false,
+                    "columns": [
+                        "user_id"
+                    ]
+                },
+                "idx_session": {
+                    "unique": false,
+                    "columns": [
+                        "session_id"
+                    ]
+                },
+                "idx_status": {
+                    "unique": false,
+                    "columns": [
+                        "status"
+                    ]
+                },
+                "idx_action_type": {
+                    "unique": false,
+                    "columns": [
+                        "action_type"
+                    ]
+                },
+                "idx_created": {
+                    "unique": false,
+                    "columns": [
+                        "created_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 8,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "session_id": "chat_a1d825636595086ee4d87aea9f10ca29",
+                    "conversation_id": null,
+                    "action_type": "search_invoices",
+                    "action_params": "{\"status\": \"all\"}",
+                    "affected_table": null,
+                    "affected_id": null,
+                    "previous_value": null,
+                    "new_value": null,
+                    "result": null,
+                    "status": "pending",
+                    "error_message": null,
+                    "created_at": "2026-01-05 08:45:46",
+                    "confirmed_at": null,
+                    "executed_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "session_id": "chat_13566dbdbe80c1fb9dfd4415e60c3872",
+                    "conversation_id": null,
+                    "action_type": "get_overdue_invoices",
+                    "action_params": "{\"days_overdue\": 1}",
+                    "affected_table": null,
+                    "affected_id": null,
+                    "previous_value": null,
+                    "new_value": null,
+                    "result": null,
+                    "status": "pending",
+                    "error_message": null,
+                    "created_at": "2026-01-05 08:47:41",
+                    "confirmed_at": null,
+                    "executed_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "session_id": "chat_b2a51ddadab073ced47cd1b99ee03355",
+                    "conversation_id": null,
+                    "action_type": "search_invoices",
+                    "action_params": "{\"status\": \"all\"}",
+                    "affected_table": null,
+                    "affected_id": null,
+                    "previous_value": null,
+                    "new_value": null,
+                    "result": null,
+                    "status": "failed",
+                    "error_message": "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'iv.iv_id' in 'field list'",
+                    "created_at": "2026-01-05 08:48:39",
+                    "confirmed_at": null,
+                    "executed_at": "2026-01-05 08:48:39"
+                }
+            ]
+        },
+        "ai_conversations": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "user_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "session_id",
+                    "type": "varchar(64)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "role",
+                    "type": "enum('user','assistant','system','tool')",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "content",
+                    "type": "text",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tool_calls",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tool_results",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tokens_used",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "model",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "llama3.1:8b",
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_session": {
+                    "unique": false,
+                    "columns": [
+                        "session_id"
+                    ]
+                },
+                "idx_company_user": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "user_id"
+                    ]
+                },
+                "idx_created": {
+                    "unique": false,
+                    "columns": [
+                        "created_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 42,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "session_id": "chat_4ff84f613695407fb646ec06c500dfbd",
+                    "role": "user",
+                    "content": "สรุปข้อมูลวันนี้",
+                    "tool_calls": null,
+                    "tool_results": null,
+                    "tokens_used": "0",
+                    "model": "llama3.2:3b",
+                    "created_at": "2026-01-05 00:55:43"
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "session_id": "chat_1a1bcc2462bd0c03b638a891893d40b7",
+                    "role": "user",
+                    "content": "hi",
+                    "tool_calls": null,
+                    "tool_results": null,
+                    "tokens_used": "0",
+                    "model": "llama3.2:3b",
+                    "created_at": "2026-01-05 00:58:01"
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "session_id": "chat_e91861caee958883580ae6da38fb77af",
+                    "role": "user",
+                    "content": "สรุปข้อมูลวันนี้",
+                    "tool_calls": null,
+                    "tool_results": null,
+                    "tokens_used": "0",
+                    "model": "llama3.2:3b",
+                    "created_at": "2026-01-05 01:00:47"
+                }
+            ]
+        },
+        "ai_sessions": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "session_id",
+                    "type": "varchar(64)",
+                    "nullable": false,
+                    "key": "UNI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "user_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "title",
+                    "type": "varchar(255)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "message_count",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "last_activity",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": "on update CURRENT_TIMESTAMP"
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "closed_at",
+                    "type": "timestamp",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "session_id": {
+                    "unique": true,
+                    "columns": [
+                        "session_id"
+                    ]
+                },
+                "idx_company_user": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "user_id"
+                    ]
+                },
+                "idx_last_activity": {
+                    "unique": false,
+                    "columns": [
+                        "last_activity"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 21,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "session_id": "chat_4ff84f613695407fb646ec06c500dfbd",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "title": null,
+                    "message_count": "0",
+                    "last_activity": "2026-01-05 00:55:43",
+                    "created_at": "2026-01-05 00:55:43",
+                    "closed_at": null
+                },
+                {
+                    "id": "2",
+                    "session_id": "chat_1a1bcc2462bd0c03b638a891893d40b7",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "title": null,
+                    "message_count": "0",
+                    "last_activity": "2026-01-05 00:58:01",
+                    "created_at": "2026-01-05 00:58:01",
+                    "closed_at": null
+                },
+                {
+                    "id": "3",
+                    "session_id": "chat_2d0c8013baef9de3907f7cfd2cb8ab49",
+                    "company_id": "95",
+                    "user_id": "5",
+                    "title": null,
+                    "message_count": "0",
+                    "last_activity": "2026-01-05 01:00:02",
+                    "created_at": "2026-01-05 01:00:02",
+                    "closed_at": null
+                }
+            ]
+        },
+        "audit_logs": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "user_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "action",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "table_name",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "record_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "old_values",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "new_values",
+                    "type": "json",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ip_address",
+                    "type": "varchar(45)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "user_agent",
+                    "type": "varchar(255)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_user_created": {
+                    "unique": false,
+                    "columns": [
+                        "user_id",
+                        "created_at"
+                    ]
+                },
+                "idx_action_created": {
+                    "unique": false,
+                    "columns": [
+                        "action",
+                        "created_at"
+                    ]
+                },
+                "idx_table_record": {
+                    "unique": false,
+                    "columns": [
+                        "table_name",
+                        "record_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 37,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "user_id": "4",
+                    "action": "export",
+                    "table_name": "report",
+                    "record_id": null,
+                    "old_values": null,
+                    "new_values": null,
+                    "ip_address": "192.168.65.1",
+                    "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+                    "created_at": "2026-01-03 10:03:42"
+                },
+                {
+                    "id": "2",
+                    "user_id": "4",
+                    "action": "logout",
+                    "table_name": "session",
+                    "record_id": null,
+                    "old_values": null,
+                    "new_values": null,
+                    "ip_address": "192.168.65.1",
+                    "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+                    "created_at": "2026-01-03 10:08:46"
+                },
+                {
+                    "id": "3",
+                    "user_id": "7",
+                    "action": "login",
+                    "table_name": "session",
+                    "record_id": "7",
+                    "old_values": null,
+                    "new_values": null,
+                    "ip_address": "192.168.65.1",
+                    "user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+                    "created_at": "2026-01-03 10:09:17"
+                }
+            ]
+        },
+        "authorize": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "email",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "UNI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "phone",
+                    "type": "varchar(20)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "password",
+                    "type": "varchar(255)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "level",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "lang",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "password_migrated",
+                    "type": "tinyint(1)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "locked_until",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "failed_attempts",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "unique_email": {
+                    "unique": true,
+                    "columns": [
+                        "email"
+                    ]
+                },
+                "idx_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 7,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "email": "etatun@directbooking.co.th",
+                    "name": null,
+                    "phone": null,
+                    "password": "e10adc3949ba59abbe56e057f20f883e",
+                    "level": "0",
+                    "company_id": null,
+                    "lang": "0",
+                    "password_migrated": "0",
+                    "locked_until": null,
+                    "failed_attempts": "0"
+                },
+                {
+                    "id": "2",
+                    "email": "info@nextgentechs.com",
+                    "name": null,
+                    "phone": null,
+                    "password": "e10adc3949ba59abbe56e057f20f883e",
+                    "level": "0",
+                    "company_id": null,
+                    "lang": "0",
+                    "password_migrated": "0",
+                    "locked_until": null,
+                    "failed_attempts": "0"
+                },
+                {
+                    "id": "3",
+                    "email": "acc@sameasname.com",
+                    "name": null,
+                    "phone": null,
+                    "password": "$2y$12$cjH1C9VAJq13\/D8NkbcWVOuheBCrGknv8eGd7xOMcv0mQDWznYAVS",
+                    "level": "0",
+                    "company_id": "95",
+                    "lang": "0",
+                    "password_migrated": "1",
+                    "locked_until": null,
+                    "failed_attempts": "0"
+                }
+            ]
+        },
+        "billing": {
+            "columns": [
+                {
+                    "name": "bil_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "inv_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "price",
+                    "type": "varchar(10)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "bil_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 0,
+            "sample_data": []
+        },
+        "brand": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "brand_name",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "logo",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ven_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_band_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_brand_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "idx_brand_company_name": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "brand_name"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "company_id",
+                    "ref_table": "company",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 67,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "brand_name": "Lemel",
+                    "des": "Lemel",
+                    "logo": "",
+                    "ven_id": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "brand_name": "HP",
+                    "des": "HP Product ",
+                    "logo": "",
+                    "ven_id": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "brand_name": "Lenovo",
+                    "des": "-",
+                    "logo": "",
+                    "ven_id": "0",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "category": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "cat_name",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_category_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_category_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "idx_category_company_name": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "cat_name"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "company_id",
+                    "ref_table": "company",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 41,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "cat_name": "MEMORY",
+                    "des": "-",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "cat_name": "STORAGE",
+                    "des": "-",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "cat_name": "MONITOR",
+                    "des": "-",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "company": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "name_en",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name_th",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name_sh",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "contact",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "email",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "phone",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "fax",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tax",
+                    "type": "varchar(20)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "customer",
+                    "type": "int(1)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vender",
+                    "type": "int(1)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "logo",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "term",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_company_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_company_name_en": {
+                    "unique": false,
+                    "columns": [
+                        "name_en"
+                    ]
+                },
+                "idx_company_name_th": {
+                    "unique": false,
+                    "columns": [
+                        "name_th"
+                    ]
+                },
+                "idx_company_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 155,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "name_en": "NextGenTech Service & Support Co., Ltd.",
+                    "name_th": "NextGenTech Service & Support Co., Ltd.",
+                    "name_sh": "NGT",
+                    "contact": "Pannaphat Phuttha-u-patham",
+                    "email": "info@nextgentechs.com",
+                    "phone": "027480102-4",
+                    "fax": "02-7480232",
+                    "tax": "0105546151080",
+                    "customer": "1",
+                    "vender": "1",
+                    "logo": "logo4b45d293752e42efd85bf47b847313fa.jpg",
+                    "term": "- Condition1<br>- Condition2<br>- Condition3<br>- Condition4<br>- ConditionEnd",
+                    "deleted_at": null,
+                    "company_id": "95"
+                },
+                {
+                    "id": "2",
+                    "name_en": "บริษัท ศาลา สมุย จำกัด(สาขาที่ 1)",
+                    "name_th": "บริษัท ศาลา สมุย จำกัด(สาขาที่ 00001)",
+                    "name_sh": "Sala Samui",
+                    "contact": "K.Pornthip Rakthan",
+                    "email": "apsamui@salasamui.com",
+                    "phone": "077-245-888",
+                    "fax": "077-245-889",
+                    "tax": "0105544062616",
+                    "customer": "1",
+                    "vender": "1",
+                    "logo": "",
+                    "term": "",
+                    "deleted_at": null,
+                    "company_id": "95"
+                },
+                {
+                    "id": "3",
+                    "name_en": " Synnex(Thailand) Public Company Limited.",
+                    "name_th": "ซินเนค",
+                    "name_sh": "synnex",
+                    "contact": "Syn",
+                    "email": "etatun@directbooking.co.th",
+                    "phone": "+66(0) 2553 8888",
+                    "fax": "+66(0) 2578 8181",
+                    "tax": "1202020020",
+                    "customer": "0",
+                    "vender": "1",
+                    "logo": "logob37c2ee101943f8e09c4a072e789b222.jpg",
+                    "term": "",
+                    "deleted_at": null,
+                    "company_id": "95"
+                }
+            ]
+        },
+        "company_addr": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "com_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "adr_tax",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "city_tax",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "district_tax",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "province_tax",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "zip_tax",
+                    "type": "varchar(10)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "adr_bil",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "city_bil",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "district_bil",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "province_bil",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "zip_bil",
+                    "type": "varchar(10)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "valid_start",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "valid_end",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 343,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "com_id": "1",
+                    "adr_tax": "-",
+                    "city_tax": "-",
+                    "district_tax": "-",
+                    "province_tax": "-",
+                    "zip_tax": "-",
+                    "adr_bil": "-",
+                    "city_bil": "-",
+                    "district_bil": "-",
+                    "province_bil": "-",
+                    "zip_bil": "-",
+                    "valid_start": "2014-03-01",
+                    "valid_end": "2014-03-27",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "com_id": "2",
+                    "adr_tax": "-",
+                    "city_tax": "-",
+                    "district_tax": "-",
+                    "province_tax": "-",
+                    "zip_tax": "-",
+                    "adr_bil": "-",
+                    "city_bil": "-",
+                    "district_bil": "-",
+                    "province_bil": "-",
+                    "zip_bil": "-",
+                    "valid_start": "2014-03-06",
+                    "valid_end": "2014-03-27",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "com_id": "3",
+                    "adr_tax": "-",
+                    "city_tax": "-",
+                    "district_tax": "-",
+                    "province_tax": "-",
+                    "zip_tax": "-",
+                    "adr_bil": "-",
+                    "city_bil": "-",
+                    "district_bil": "-",
+                    "province_bil": "-",
+                    "zip_bil": "-",
+                    "valid_start": "2014-03-06",
+                    "valid_end": "0000-00-00",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "company_credit": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "cus_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ven_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "limit_credit",
+                    "type": "varchar(10)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "limit_day",
+                    "type": "varchar(4)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "valid_start",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "valid_end",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_company_credit_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 0,
+            "sample_data": []
+        },
+        "deliver": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "po_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deliver_date",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "out_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_deliver_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_deliver_po_id": {
+                    "unique": false,
+                    "columns": [
+                        "po_id"
+                    ]
+                },
+                "idx_deliver_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 747,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "po_id": "0",
+                    "deliver_date": "2014-07-02",
+                    "out_id": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "po_id": "0",
+                    "deliver_date": "2014-07-03",
+                    "out_id": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "po_id": "0",
+                    "deliver_date": "2014-07-03",
+                    "out_id": "0",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "gen_serial": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 0,
+            "sample_data": []
+        },
+        "iv": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tex",
+                    "type": "int(15)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "cus_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "createdate",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "taxrw",
+                    "type": "varchar(8)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "texiv",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "texiv_rw",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "texiv_create",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "status_iv",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "countmailinv",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "countmailtax",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_status",
+                    "type": "enum('pending','partial','paid')",
+                    "nullable": true,
+                    "key": "",
+                    "default": "pending",
+                    "extra": ""
+                },
+                {
+                    "name": "payment_gateway",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_order_id",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "paid_amount",
+                    "type": "decimal(12,2)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "paid_date",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "tex"
+                    ]
+                },
+                "idx_iv_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "idx_iv_company_tex": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "tex"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 702,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "tex": "2",
+                    "cus_id": "8",
+                    "createdate": "2014-09-18",
+                    "taxrw": "57000001",
+                    "texiv": "0",
+                    "texiv_rw": "0",
+                    "texiv_create": "0000-00-00",
+                    "status_iv": "0",
+                    "countmailinv": "0",
+                    "countmailtax": "0",
+                    "deleted_at": null,
+                    "payment_status": "pending",
+                    "payment_gateway": null,
+                    "payment_order_id": null,
+                    "paid_amount": "0.00",
+                    "paid_date": null
+                },
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "tex": "14",
+                    "cus_id": "5",
+                    "createdate": "2014-09-18",
+                    "taxrw": "57000001",
+                    "texiv": "0",
+                    "texiv_rw": "0",
+                    "texiv_create": "0000-00-00",
+                    "status_iv": "0",
+                    "countmailinv": "0",
+                    "countmailtax": "0",
+                    "deleted_at": null,
+                    "payment_status": "pending",
+                    "payment_gateway": null,
+                    "payment_order_id": null,
+                    "paid_amount": "0.00",
+                    "paid_date": null
+                },
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "tex": "16",
+                    "cus_id": "7",
+                    "createdate": "2014-07-18",
+                    "taxrw": "57000001",
+                    "texiv": "0",
+                    "texiv_rw": "0",
+                    "texiv_create": "0000-00-00",
+                    "status_iv": "0",
+                    "countmailinv": "0",
+                    "countmailtax": "0",
+                    "deleted_at": null,
+                    "payment_status": "pending",
+                    "payment_gateway": null,
+                    "payment_order_id": null,
+                    "paid_amount": "0.00",
+                    "paid_date": null
+                }
+            ]
+        },
+        "login_attempts": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "ip_address",
+                    "type": "varchar(45)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "username",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "attempted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "successful",
+                    "type": "tinyint(1)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_ip_time": {
+                    "unique": false,
+                    "columns": [
+                        "ip_address",
+                        "attempted_at"
+                    ]
+                },
+                "idx_username_time": {
+                    "unique": false,
+                    "columns": [
+                        "username",
+                        "attempted_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 48,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "ip_address": "192.168.65.1",
+                    "username": "psinthorn@gmail.com",
+                    "attempted_at": "2026-01-02 19:49:50",
+                    "successful": "1"
+                },
+                {
+                    "id": "2",
+                    "ip_address": "192.168.65.1",
+                    "username": "psinthorn@gmail.com",
+                    "attempted_at": "2026-01-02 19:52:50",
+                    "successful": "1"
+                },
+                {
+                    "id": "3",
+                    "ip_address": "192.168.65.1",
+                    "username": "psinthorn@gmail.com",
+                    "attempted_at": "2026-01-02 19:55:08",
+                    "successful": "1"
+                }
+            ]
+        },
+        "map_type_to_brand": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "type_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "brand_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "fk_map_type": {
+                    "unique": false,
+                    "columns": [
+                        "type_id"
+                    ]
+                },
+                "fk_map_brand": {
+                    "unique": false,
+                    "columns": [
+                        "brand_id"
+                    ]
+                },
+                "idx_mtb_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "brand_id",
+                    "ref_table": "brand",
+                    "ref_column": "id"
+                },
+                {
+                    "column_name": "type_id",
+                    "ref_table": "type",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 265,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "type_id": "21",
+                    "brand_id": "16"
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "type_id": "30",
+                    "brand_id": "20"
+                },
+                {
+                    "id": "5",
+                    "company_id": "95",
+                    "type_id": "25",
+                    "brand_id": "19"
+                }
+            ]
+        },
+        "model": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "type_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "brand_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "model_name",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "price",
+                    "type": "double",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_model_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "fk_model_brand": {
+                    "unique": false,
+                    "columns": [
+                        "brand_id"
+                    ]
+                },
+                "fk_model_type": {
+                    "unique": false,
+                    "columns": [
+                        "type_id"
+                    ]
+                },
+                "idx_model_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "idx_model_company_type_brand": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "type_id",
+                        "brand_id"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "brand_id",
+                    "ref_table": "brand",
+                    "ref_column": "id"
+                },
+                {
+                    "column_name": "type_id",
+                    "ref_table": "type",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 359,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "type_id": "21",
+                    "brand_id": "16",
+                    "model_name": "13-00099",
+                    "des": "",
+                    "price": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "type_id": "30",
+                    "brand_id": "20",
+                    "model_name": "50X50X15",
+                    "des": "",
+                    "price": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "5",
+                    "company_id": "95",
+                    "type_id": "25",
+                    "brand_id": "19",
+                    "model_name": "AMP4F",
+                    "des": "",
+                    "price": "0",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "password_resets": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "email",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "token",
+                    "type": "varchar(64)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "expires_at",
+                    "type": "datetime",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "used",
+                    "type": "tinyint(1)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_token": {
+                    "unique": false,
+                    "columns": [
+                        "token"
+                    ]
+                },
+                "idx_email": {
+                    "unique": false,
+                    "columns": [
+                        "email"
+                    ]
+                },
+                "idx_expires": {
+                    "unique": false,
+                    "columns": [
+                        "expires_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 1,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "email": "psinthorn@gmail.com",
+                    "token": "239b2b58bfd455227627deb149f8b289100e7efed0c18f360cfe28a4bd9aec1f",
+                    "created_at": "2026-01-02 21:08:29",
+                    "expires_at": "2026-01-02 22:08:29",
+                    "used": "0"
+                }
+            ]
+        },
+        "pay": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "po_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "method",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "value",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "volumn",
+                    "type": "double",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "date",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_pay_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_pay_po_id": {
+                    "unique": false,
+                    "columns": [
+                        "po_id"
+                    ]
+                },
+                "idx_pay_date": {
+                    "unique": false,
+                    "columns": [
+                        "date"
+                    ]
+                },
+                "idx_pay_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 494,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "po_id": "0",
+                    "method": "1",
+                    "value": "pay direct",
+                    "volumn": "10800",
+                    "date": "2014-07-03",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "po_id": "0",
+                    "method": "1",
+                    "value": "",
+                    "volumn": "1080",
+                    "date": "2014-07-03",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "po_id": "0",
+                    "method": "1",
+                    "value": "",
+                    "volumn": "5000",
+                    "date": "2014-07-03",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "payment": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "payment_name",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_des",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "com_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_payment_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 5,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "payment_name": "Cash",
+                    "payment_des": "เงินสด",
+                    "com_id": "7",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "payment_name": "Bank Transfer",
+                    "payment_des": "ธนาคาร ทหารไทย",
+                    "com_id": "7",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "payment_name": "a\/c TMB 3333",
+                    "payment_des": "a\/c TMB 3333",
+                    "com_id": "5",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "payment_gateway_config": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_method_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "config_key",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "config_value",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "is_encrypted",
+                    "type": "tinyint(1)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": "on update CURRENT_TIMESTAMP"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "unique_method_key": {
+                    "unique": true,
+                    "columns": [
+                        "payment_method_id",
+                        "config_key"
+                    ]
+                },
+                "idx_pgc_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "payment_method_id",
+                    "ref_table": "payment_method",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 11,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "payment_method_id": "5",
+                    "config_key": "mode",
+                    "config_value": "sandbox",
+                    "is_encrypted": "0",
+                    "created_at": "2026-01-03 15:16:27",
+                    "updated_at": "2026-01-04 02:10:51"
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "payment_method_id": "5",
+                    "config_key": "client_id",
+                    "config_value": "",
+                    "is_encrypted": "1",
+                    "created_at": "2026-01-03 15:16:27",
+                    "updated_at": "2026-01-04 02:10:51"
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "payment_method_id": "5",
+                    "config_key": "client_secret",
+                    "config_value": "",
+                    "is_encrypted": "1",
+                    "created_at": "2026-01-03 15:16:27",
+                    "updated_at": "2026-01-04 02:10:51"
+                }
+            ]
+        },
+        "payment_log": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "gateway",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "order_id",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "reference_id",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "amount",
+                    "type": "decimal(12,2)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "currency",
+                    "type": "varchar(3)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "THB",
+                    "extra": ""
+                },
+                {
+                    "name": "status",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "request_data",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "response_data",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "updated_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": "on update CURRENT_TIMESTAMP"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_gateway": {
+                    "unique": false,
+                    "columns": [
+                        "gateway"
+                    ]
+                },
+                "idx_order_id": {
+                    "unique": false,
+                    "columns": [
+                        "order_id"
+                    ]
+                },
+                "idx_reference_id": {
+                    "unique": false,
+                    "columns": [
+                        "reference_id"
+                    ]
+                },
+                "idx_status": {
+                    "unique": false,
+                    "columns": [
+                        "status"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 0,
+            "sample_data": []
+        },
+        "payment_method": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "code",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "UNI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name_th",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "icon",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "fa-money",
+                    "extra": ""
+                },
+                {
+                    "name": "description",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "is_gateway",
+                    "type": "tinyint(1)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "is_active",
+                    "type": "tinyint(1)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "1",
+                    "extra": ""
+                },
+                {
+                    "name": "sort_order",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": "on update CURRENT_TIMESTAMP"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "code": {
+                    "unique": true,
+                    "columns": [
+                        "code"
+                    ]
+                },
+                "idx_pmethod_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 6,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "code": "cash",
+                    "name": "Cash",
+                    "name_th": "เงินสด",
+                    "icon": "fa-money",
+                    "description": "Cash payment",
+                    "is_gateway": "0",
+                    "is_active": "1",
+                    "sort_order": "1",
+                    "created_at": "2026-01-03 14:49:45",
+                    "updated_at": "2026-01-04 02:10:51"
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "code": "bank_transfer",
+                    "name": "Bank Transfer",
+                    "name_th": "โอนเงิน",
+                    "icon": "fa-university",
+                    "description": "Bank transfer payment",
+                    "is_gateway": "0",
+                    "is_active": "1",
+                    "sort_order": "2",
+                    "created_at": "2026-01-03 14:49:45",
+                    "updated_at": "2026-01-04 02:10:51"
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "code": "credit_card",
+                    "name": "Credit Card",
+                    "name_th": "บัตรเครดิต",
+                    "icon": "fa-credit-card",
+                    "description": "Credit card payment",
+                    "is_gateway": "0",
+                    "is_active": "1",
+                    "sort_order": "3",
+                    "created_at": "2026-01-03 14:49:45",
+                    "updated_at": "2026-01-04 02:10:51"
+                }
+            ]
+        },
+        "payment_methods": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "com_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "method_type",
+                    "type": "enum('bank','gateway','qrcode','cash','other')",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": "bank",
+                    "extra": ""
+                },
+                {
+                    "name": "method_name",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "account_name",
+                    "type": "varchar(150)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "account_number",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "branch",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "gateway_id",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "qr_image",
+                    "type": "varchar(200)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "is_active",
+                    "type": "tinyint(1)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": "1",
+                    "extra": ""
+                },
+                {
+                    "name": "is_default",
+                    "type": "tinyint(1)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "sort_order",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "0",
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": "on update CURRENT_TIMESTAMP"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_com_id": {
+                    "unique": false,
+                    "columns": [
+                        "com_id"
+                    ]
+                },
+                "idx_method_type": {
+                    "unique": false,
+                    "columns": [
+                        "method_type"
+                    ]
+                },
+                "idx_active": {
+                    "unique": false,
+                    "columns": [
+                        "is_active"
+                    ]
+                },
+                "idx_pm_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "com_id",
+                    "ref_table": "company",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 1,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "com_id": "2",
+                    "method_type": "bank",
+                    "method_name": "SCB",
+                    "account_name": "Prad0tnam.Samuik Public Company Limited",
+                    "account_number": "429-052054-7",
+                    "branch": "Silom Branch",
+                    "gateway_id": null,
+                    "qr_image": null,
+                    "is_active": "1",
+                    "is_default": "1",
+                    "sort_order": "0",
+                    "created_at": "2026-01-02 00:19:38",
+                    "updated_at": "2026-01-04 02:10:51"
+                }
+            ]
+        },
+        "permissions": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "key",
+                    "type": "varchar(255)",
+                    "nullable": false,
+                    "key": "UNI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(255)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "description",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "key": {
+                    "unique": true,
+                    "columns": [
+                        "key"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 7,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "key": "po.view",
+                    "name": "View Purchase Orders",
+                    "description": "View PO list and details"
+                },
+                {
+                    "id": "2",
+                    "key": "po.create",
+                    "name": "Create Purchase Order",
+                    "description": "Create new PO"
+                },
+                {
+                    "id": "3",
+                    "key": "po.edit",
+                    "name": "Edit Purchase Order",
+                    "description": "Edit PO details"
+                }
+            ]
+        },
+        "po": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "po_id_new",
+                    "type": "varchar(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ref",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tax",
+                    "type": "varchar(15)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "date",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "valid_pay",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deliver_date",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "pic",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "dis",
+                    "type": "float",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "bandven",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vat",
+                    "type": "double",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "over",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_po_date": {
+                    "unique": false,
+                    "columns": [
+                        "date"
+                    ]
+                },
+                "idx_po_ref": {
+                    "unique": false,
+                    "columns": [
+                        "ref"
+                    ]
+                },
+                "idx_po_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 1903,
+            "sample_data": [
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "po_id_new": "251",
+                    "name": "Sinthorn Pradutnam",
+                    "ref": "2",
+                    "tax": "57000002",
+                    "date": "2014-07-01",
+                    "valid_pay": "2014-07-01",
+                    "deliver_date": "2014-07-02",
+                    "pic": "",
+                    "dis": "0",
+                    "bandven": "0",
+                    "vat": "7",
+                    "over": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "14",
+                    "company_id": "95",
+                    "po_id_new": "",
+                    "name": "The Kala Samui",
+                    "ref": "11",
+                    "tax": "57000014",
+                    "date": "2014-07-21",
+                    "valid_pay": "2014-07-21",
+                    "deliver_date": "2014-07-22",
+                    "pic": ".",
+                    "dis": "0",
+                    "bandven": "0",
+                    "vat": "7",
+                    "over": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "16",
+                    "company_id": "95",
+                    "po_id_new": "",
+                    "name": "LeD",
+                    "ref": "14",
+                    "tax": "57000016",
+                    "date": "2014-08-19",
+                    "valid_pay": "0000-00-00",
+                    "deliver_date": "1970-01-01",
+                    "pic": ".",
+                    "dis": "0",
+                    "bandven": "0",
+                    "vat": "7",
+                    "over": "0",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "pr": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "usr_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "cus_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ven_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "date",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "status",
+                    "type": "varchar(1)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "cancel",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "mailcount",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payby",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_pr_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_pr_date": {
+                    "unique": false,
+                    "columns": [
+                        "date"
+                    ]
+                },
+                "idx_pr_status": {
+                    "unique": false,
+                    "columns": [
+                        "status"
+                    ]
+                },
+                "idx_pr_cus_id": {
+                    "unique": false,
+                    "columns": [
+                        "cus_id"
+                    ]
+                },
+                "idx_pr_ven_id": {
+                    "unique": false,
+                    "columns": [
+                        "ven_id"
+                    ]
+                },
+                "idx_pr_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 1036,
+            "sample_data": [
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "name": "Sinthorn Pradutnam",
+                    "des": "LIGHTING EQUIPMENT",
+                    "usr_id": "4",
+                    "cus_id": "7",
+                    "ven_id": "8",
+                    "date": "2014-07-01",
+                    "status": "1",
+                    "cancel": "0",
+                    "mailcount": "0",
+                    "payby": "7",
+                    "deleted_at": null
+                },
+                {
+                    "id": "11",
+                    "company_id": "95",
+                    "name": "The Kala Samui",
+                    "des": "Cisco Network Switch",
+                    "usr_id": "4",
+                    "cus_id": "1",
+                    "ven_id": "7",
+                    "date": "2014-07-21",
+                    "status": "4",
+                    "cancel": "0",
+                    "mailcount": "0",
+                    "payby": "1",
+                    "deleted_at": null
+                },
+                {
+                    "id": "13",
+                    "company_id": "95",
+                    "name": "Thai Thana Builders",
+                    "des": "Lighting Control System",
+                    "usr_id": "4",
+                    "cus_id": "9",
+                    "ven_id": "7",
+                    "date": "2014-08-19",
+                    "status": "5",
+                    "cancel": "0",
+                    "mailcount": "0",
+                    "payby": "9",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "product": {
+            "columns": [
+                {
+                    "name": "pro_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "po_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "price",
+                    "type": "double",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "discount",
+                    "type": "double",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ban_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "model",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "type",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "quantity",
+                    "type": "decimal(10,2)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "pack_quantity",
+                    "type": "decimal(10,2)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "so_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "activelabour",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "valuelabour",
+                    "type": "double",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vo_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vo_warranty",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "re_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "pro_id"
+                    ]
+                },
+                "idx_product_po_id": {
+                    "unique": false,
+                    "columns": [
+                        "po_id"
+                    ]
+                },
+                "idx_product_type": {
+                    "unique": false,
+                    "columns": [
+                        "type"
+                    ]
+                },
+                "idx_product_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "idx_product_type_fk": {
+                    "unique": false,
+                    "columns": [
+                        "type"
+                    ]
+                },
+                "idx_product_brand_fk": {
+                    "unique": false,
+                    "columns": [
+                        "ban_id"
+                    ]
+                },
+                "idx_product_model_fk": {
+                    "unique": false,
+                    "columns": [
+                        "model"
+                    ]
+                },
+                "idx_product_company_type": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "type"
+                    ]
+                },
+                "idx_product_company_po_type": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "po_id",
+                        "type"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 5920,
+            "sample_data": [
+                {
+                    "pro_id": "2",
+                    "company_id": "95",
+                    "po_id": "2",
+                    "price": "1534.11",
+                    "discount": "0",
+                    "ban_id": "16",
+                    "model": null,
+                    "type": "0",
+                    "quantity": "42.00",
+                    "pack_quantity": "1.00",
+                    "so_id": "0",
+                    "des": "",
+                    "activelabour": "0",
+                    "valuelabour": "0",
+                    "vo_id": "0",
+                    "vo_warranty": "0000-00-00",
+                    "re_id": "0",
+                    "deleted_at": null
+                },
+                {
+                    "pro_id": "3",
+                    "company_id": "95",
+                    "po_id": "2",
+                    "price": "48.24",
+                    "discount": "0",
+                    "ban_id": "16",
+                    "model": "1",
+                    "type": "21",
+                    "quantity": "126.00",
+                    "pack_quantity": "1.00",
+                    "so_id": "0",
+                    "des": "",
+                    "activelabour": "0",
+                    "valuelabour": "0",
+                    "vo_id": "0",
+                    "vo_warranty": "0000-00-00",
+                    "re_id": "0",
+                    "deleted_at": null
+                },
+                {
+                    "pro_id": "4",
+                    "company_id": "95",
+                    "po_id": "2",
+                    "price": "1520",
+                    "discount": "0",
+                    "ban_id": "16",
+                    "model": null,
+                    "type": "0",
+                    "quantity": "22.00",
+                    "pack_quantity": "1.00",
+                    "so_id": "0",
+                    "des": "",
+                    "activelabour": "0",
+                    "valuelabour": "0",
+                    "vo_id": "0",
+                    "vo_warranty": "0000-00-00",
+                    "re_id": "0",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "receipt": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "phone",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "email",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "createdate",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "updated_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "description",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_method",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "cash",
+                    "extra": ""
+                },
+                {
+                    "name": "payment_ref",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_date",
+                    "type": "date",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "status",
+                    "type": "enum('draft','confirmed','cancelled')",
+                    "nullable": true,
+                    "key": "",
+                    "default": "confirmed",
+                    "extra": ""
+                },
+                {
+                    "name": "invoice_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "quotation_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "source_type",
+                    "type": "enum('quotation','invoice','manual')",
+                    "nullable": true,
+                    "key": "",
+                    "default": "manual",
+                    "extra": ""
+                },
+                {
+                    "name": "vender",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "rep_no",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "rep_rw",
+                    "type": "varchar(10)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "brand",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "subtotal",
+                    "type": "decimal(12,2)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "after_discount",
+                    "type": "decimal(12,2)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "vat_amount",
+                    "type": "decimal(12,2)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "total_amount",
+                    "type": "decimal(12,2)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "0.00",
+                    "extra": ""
+                },
+                {
+                    "name": "vat",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "dis",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "include_vat",
+                    "type": "tinyint(1)",
+                    "nullable": false,
+                    "key": "",
+                    "default": "1",
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_source",
+                    "type": "enum('manual','paypal','stripe')",
+                    "nullable": true,
+                    "key": "",
+                    "default": "manual",
+                    "extra": ""
+                },
+                {
+                    "name": "payment_transaction_id",
+                    "type": "varchar(100)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "idx_receipt_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_receipt_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 5,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "name": "test receipt",
+                    "phone": "0818558893",
+                    "email": "vit_20@msn.com",
+                    "createdate": "2014-12-01",
+                    "updated_at": null,
+                    "description": "Array",
+                    "payment_method": "cash",
+                    "payment_ref": null,
+                    "payment_date": null,
+                    "status": "confirmed",
+                    "invoice_id": null,
+                    "quotation_id": null,
+                    "source_type": "manual",
+                    "vender": "7",
+                    "rep_no": "1",
+                    "rep_rw": "57000001",
+                    "brand": "0",
+                    "subtotal": "0.00",
+                    "after_discount": "0.00",
+                    "vat_amount": "0.00",
+                    "total_amount": "0.00",
+                    "vat": "0",
+                    "dis": "0",
+                    "include_vat": "1",
+                    "deleted_at": null,
+                    "payment_source": "manual",
+                    "payment_transaction_id": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "name": "Pascal Ennesser",
+                    "phone": "0937656324",
+                    "email": "lebeniste13650@gmail.com",
+                    "createdate": "2015-12-19",
+                    "updated_at": null,
+                    "description": "Array",
+                    "payment_method": "cash",
+                    "payment_ref": null,
+                    "payment_date": null,
+                    "status": "confirmed",
+                    "invoice_id": null,
+                    "quotation_id": null,
+                    "source_type": "manual",
+                    "vender": "7",
+                    "rep_no": "2",
+                    "rep_rw": "58000002",
+                    "brand": "21",
+                    "subtotal": "0.00",
+                    "after_discount": "0.00",
+                    "vat_amount": "0.00",
+                    "total_amount": "0.00",
+                    "vat": "0",
+                    "dis": "10",
+                    "include_vat": "1",
+                    "deleted_at": null,
+                    "payment_source": "manual",
+                    "payment_transaction_id": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "name": "Pascal Ennesser",
+                    "phone": "0937656324",
+                    "email": "lebeniste13650@gmail.com",
+                    "createdate": "2015-12-19",
+                    "updated_at": null,
+                    "description": "",
+                    "payment_method": "cash",
+                    "payment_ref": null,
+                    "payment_date": null,
+                    "status": "confirmed",
+                    "invoice_id": null,
+                    "quotation_id": null,
+                    "source_type": "manual",
+                    "vender": "1",
+                    "rep_no": "1",
+                    "rep_rw": "58000001",
+                    "brand": "0",
+                    "subtotal": "0.00",
+                    "after_discount": "0.00",
+                    "vat_amount": "0.00",
+                    "total_amount": "0.00",
+                    "vat": "0",
+                    "dis": "0",
+                    "include_vat": "1",
+                    "deleted_at": null,
+                    "payment_source": "manual",
+                    "payment_transaction_id": null
+                }
+            ]
+        },
+        "receive": {
+            "columns": [
+                {
+                    "name": "rec_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "po_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deliver_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "date",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "rec_id"
+                    ]
+                },
+                "idx_receive_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 716,
+            "sample_data": [
+                {
+                    "rec_id": "1",
+                    "company_id": "95",
+                    "po_id": "1",
+                    "deliver_id": "1",
+                    "date": "2014-07-01"
+                },
+                {
+                    "rec_id": "2",
+                    "company_id": "95",
+                    "po_id": "9",
+                    "deliver_id": "2",
+                    "date": "2014-07-02"
+                },
+                {
+                    "rec_id": "3",
+                    "company_id": "95",
+                    "po_id": "5",
+                    "deliver_id": "3",
+                    "date": "2014-07-02"
+                }
+            ]
+        },
+        "remember_tokens": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "user_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "token_hash",
+                    "type": "varchar(64)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "expires_at",
+                    "type": "datetime",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_user": {
+                    "unique": false,
+                    "columns": [
+                        "user_id"
+                    ]
+                },
+                "idx_token": {
+                    "unique": false,
+                    "columns": [
+                        "token_hash"
+                    ]
+                },
+                "idx_expires": {
+                    "unique": false,
+                    "columns": [
+                        "expires_at"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 0,
+            "sample_data": []
+        },
+        "role_permissions": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "role_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "permission_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "uk_role_permission": {
+                    "unique": true,
+                    "columns": [
+                        "role_id",
+                        "permission_id"
+                    ]
+                },
+                "fk_role_permissions_permission": {
+                    "unique": false,
+                    "columns": [
+                        "permission_id"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "permission_id",
+                    "ref_table": "permissions",
+                    "ref_column": "id"
+                },
+                {
+                    "column_name": "role_id",
+                    "ref_table": "roles",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 7,
+            "sample_data": [
+                {
+                    "id": "5",
+                    "role_id": "1",
+                    "permission_id": "1"
+                },
+                {
+                    "id": "3",
+                    "role_id": "1",
+                    "permission_id": "2"
+                },
+                {
+                    "id": "4",
+                    "role_id": "1",
+                    "permission_id": "3"
+                }
+            ]
+        },
+        "roles": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(255)",
+                    "nullable": false,
+                    "key": "UNI",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "description",
+                    "type": "text",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "created_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": ""
+                },
+                {
+                    "name": "updated_at",
+                    "type": "timestamp",
+                    "nullable": false,
+                    "key": "",
+                    "default": "CURRENT_TIMESTAMP",
+                    "extra": "on update CURRENT_TIMESTAMP"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "name": {
+                    "unique": true,
+                    "columns": [
+                        "name"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 5,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "name": "Admin",
+                    "description": "Full access",
+                    "created_at": "2026-01-01 11:02:31",
+                    "updated_at": "2026-01-01 11:02:31"
+                },
+                {
+                    "id": "2",
+                    "name": "Manager",
+                    "description": "Can manage companies, create documents, view reports",
+                    "created_at": "2026-01-01 13:16:33",
+                    "updated_at": "2026-01-01 13:16:33"
+                },
+                {
+                    "id": "3",
+                    "name": "Accountant",
+                    "description": "Can process payments, view reports, manage invoices",
+                    "created_at": "2026-01-01 13:16:33",
+                    "updated_at": "2026-01-01 13:16:33"
+                }
+            ]
+        },
+        "sendoutitem": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "ven_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "cus_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "tmp",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_sendoutitem_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 8,
+            "sample_data": [
+                {
+                    "id": "11",
+                    "company_id": "95",
+                    "ven_id": "7",
+                    "cus_id": "36",
+                    "tmp": "Electrical System\r\n"
+                },
+                {
+                    "id": "12",
+                    "company_id": "95",
+                    "ven_id": "7",
+                    "cus_id": "36",
+                    "tmp": "Tax Invoice"
+                },
+                {
+                    "id": "13",
+                    "company_id": "95",
+                    "ven_id": "7",
+                    "cus_id": "36",
+                    "tmp": "Tax Invoice"
+                }
+            ]
+        },
+        "store": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "pro_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "s_n",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "no",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_store_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 1773,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "pro_id": "11",
+                    "s_n": "12345678",
+                    "no": "0"
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "pro_id": "12",
+                    "s_n": "HT-5012",
+                    "no": "0"
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "pro_id": "6",
+                    "s_n": "ht12231321",
+                    "no": "0"
+                }
+            ]
+        },
+        "store_sale": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "st_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "warranty",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "sale",
+                    "type": "varchar(2)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "own_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 1792,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "st_id": "5",
+                    "warranty": "2014-10-22",
+                    "sale": "0",
+                    "own_id": "5"
+                },
+                {
+                    "id": "2",
+                    "st_id": "6",
+                    "warranty": "2014-10-22",
+                    "sale": "0",
+                    "own_id": "7"
+                },
+                {
+                    "id": "3",
+                    "st_id": "7",
+                    "warranty": "2014-10-22",
+                    "sale": "0",
+                    "own_id": "7"
+                }
+            ]
+        },
+        "tmp_product": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "pr_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "type",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "quantity",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "price",
+                    "type": "varchar(10)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 2221,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "pr_id": "1",
+                    "type": "17",
+                    "quantity": "1",
+                    "price": "0"
+                },
+                {
+                    "id": "2",
+                    "pr_id": "2",
+                    "type": "18",
+                    "quantity": "1",
+                    "price": "0"
+                },
+                {
+                    "id": "3",
+                    "pr_id": "2",
+                    "type": "21",
+                    "quantity": "1",
+                    "price": "0"
+                }
+            ]
+        },
+        "type": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(50)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "des",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "cat_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_type_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_type_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                },
+                "fk_type_category": {
+                    "unique": false,
+                    "columns": [
+                        "cat_id"
+                    ]
+                },
+                "idx_type_company_cat": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "cat_id"
+                    ]
+                },
+                "idx_type_company_name": {
+                    "unique": false,
+                    "columns": [
+                        "company_id",
+                        "name"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "cat_id",
+                    "ref_table": "category",
+                    "ref_column": "id"
+                },
+                {
+                    "column_name": "company_id",
+                    "ref_table": "company",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 390,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "name": "RAM DDRIII (8GB)",
+                    "des": "8G DDRIII",
+                    "cat_id": "1",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "name": "RAM DDRIII (4GB)",
+                    "des": "",
+                    "cat_id": "1",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "name": "SSD (128GB)",
+                    "des": "",
+                    "cat_id": "2",
+                    "deleted_at": null
+                }
+            ]
+        },
+        "user": {
+            "columns": [
+                {
+                    "name": "usr_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "surname",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "com_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "email",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "phone",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "fax",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "mobile",
+                    "type": "varchar(30)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "usr_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 4,
+            "sample_data": [
+                {
+                    "usr_id": "1",
+                    "name": "pricha",
+                    "surname": "yothinuppamai",
+                    "com_id": "1",
+                    "email": "etatun@directbooking.co.th",
+                    "phone": "027480232",
+                    "fax": "027480233",
+                    "mobile": "0818558893"
+                },
+                {
+                    "usr_id": "2",
+                    "name": "Pannaphat",
+                    "surname": "Phuttha-u-patham",
+                    "com_id": "1",
+                    "email": "info@nextgentechs.com",
+                    "phone": "027480232",
+                    "fax": "027480233",
+                    "mobile": "0863019571"
+                },
+                {
+                    "usr_id": "3",
+                    "name": "lek",
+                    "surname": "-",
+                    "com_id": "5",
+                    "email": "acc@sameasname.com",
+                    "phone": "-",
+                    "fax": "-",
+                    "mobile": "-"
+                }
+            ]
+        },
+        "user_roles": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "user_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "role_id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "uk_user_role": {
+                    "unique": true,
+                    "columns": [
+                        "user_id",
+                        "role_id"
+                    ]
+                },
+                "fk_user_roles_role": {
+                    "unique": false,
+                    "columns": [
+                        "role_id"
+                    ]
+                }
+            },
+            "foreign_keys": [
+                {
+                    "column_name": "role_id",
+                    "ref_table": "roles",
+                    "ref_column": "id"
+                }
+            ],
+            "row_count": 4,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "user_id": "1",
+                    "role_id": "1"
+                },
+                {
+                    "id": "2",
+                    "user_id": "2",
+                    "role_id": "1"
+                },
+                {
+                    "id": "3",
+                    "user_id": "3",
+                    "role_id": "1"
+                }
+            ]
+        },
+        "voucher": {
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "PRI",
+                    "default": null,
+                    "extra": "auto_increment"
+                },
+                {
+                    "name": "company_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(100)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "phone",
+                    "type": "varchar(20)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "email",
+                    "type": "varchar(40)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "createdate",
+                    "type": "date",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "description",
+                    "type": "mediumtext",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "payment_method",
+                    "type": "varchar(50)",
+                    "nullable": true,
+                    "key": "",
+                    "default": "cash",
+                    "extra": ""
+                },
+                {
+                    "name": "status",
+                    "type": "enum('draft','confirmed','cancelled')",
+                    "nullable": true,
+                    "key": "",
+                    "default": "confirmed",
+                    "extra": ""
+                },
+                {
+                    "name": "invoice_id",
+                    "type": "int(11)",
+                    "nullable": true,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vender",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vou_no",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vou_rw",
+                    "type": "varchar(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "brand",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "vat",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "discount",
+                    "type": "int(11)",
+                    "nullable": false,
+                    "key": "",
+                    "default": null,
+                    "extra": ""
+                },
+                {
+                    "name": "deleted_at",
+                    "type": "datetime",
+                    "nullable": true,
+                    "key": "MUL",
+                    "default": null,
+                    "extra": ""
+                }
+            ],
+            "indexes": {
+                "PRIMARY": {
+                    "unique": true,
+                    "columns": [
+                        "id"
+                    ]
+                },
+                "idx_voucher_deleted_at": {
+                    "unique": false,
+                    "columns": [
+                        "deleted_at"
+                    ]
+                },
+                "idx_voucher_company_id": {
+                    "unique": false,
+                    "columns": [
+                        "company_id"
+                    ]
+                }
+            },
+            "foreign_keys": [],
+            "row_count": 16,
+            "sample_data": [
+                {
+                    "id": "1",
+                    "company_id": "95",
+                    "name": "ทดสอบ",
+                    "phone": "0818558893",
+                    "email": "vit_20@msn.com",
+                    "createdate": "2014-10-31",
+                    "description": "ทดสอบ",
+                    "payment_method": "cash",
+                    "status": "confirmed",
+                    "invoice_id": null,
+                    "vender": "7",
+                    "vou_no": "1",
+                    "vou_rw": "57000001",
+                    "brand": "14",
+                    "vat": "0",
+                    "discount": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "2",
+                    "company_id": "95",
+                    "name": "ทดสอบ",
+                    "phone": "0818558893",
+                    "email": "vit_20@msn.com",
+                    "createdate": "2014-10-31",
+                    "description": "ทดสอบ",
+                    "payment_method": "cash",
+                    "status": "confirmed",
+                    "invoice_id": null,
+                    "vender": "7",
+                    "vou_no": "2",
+                    "vou_rw": "57000002",
+                    "brand": "14",
+                    "vat": "0",
+                    "discount": "0",
+                    "deleted_at": null
+                },
+                {
+                    "id": "3",
+                    "company_id": "95",
+                    "name": "test3",
+                    "phone": "0818558893",
+                    "email": "etatun.yo@gmail.com",
+                    "createdate": "2014-10-31",
+                    "description": "Array",
+                    "payment_method": "cash",
+                    "status": "confirmed",
+                    "invoice_id": null,
+                    "vender": "7",
+                    "vou_no": "3",
+                    "vou_rw": "57000003",
+                    "brand": "0",
+                    "vat": "0",
+                    "discount": "0",
+                    "deleted_at": null
+                }
+            ]
+        }
+    }
+}

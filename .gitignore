@@ -9,6 +9,7 @@ docker-volumes/
 
 # Runtime settings (user-configurable)
 inc/docker-settings.json
+cache/ai-settings.json
 
 # IDE and editor files
 .vscode/
