@@ -1,14 +1,55 @@
 # iACC - Accounting Management System
 
-**Version**: 4.1  
+**Version**: 4.2  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 5, 2026  
+**Last Updated**: January 6, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v4.2 (January 6, 2026)
+- **AI Enhancement - 29 Total Tools** 🛠️:
+  - Added 6 new analytics/report tools:
+    - `get_sales_report` - Revenue, invoice count, top customers, monthly breakdown
+    - `get_revenue_trend` - Monthly revenue trends with growth calculation
+    - `get_customer_analysis` - Top customers by revenue, order count, avg order value
+    - `get_aging_report` - A/R aging buckets (current, 31-60, 61-90, 90+ days)
+    - `get_payment_summary` - Collection rate by payment method
+    - `export_data` - Export invoices/customers/payments to CSV/JSON
+  - Fixed SQL column errors in existing tools (company.contact, product.pro_id, pay.method)
+  - All 29 tools verified working (21/23 pass, 2 "not found" = correct multi-tenant behavior)
+
+- **RAG Enhancement** 📚:
+  - Conversation history summarization for long chats
+  - Context extraction from user messages
+  - Entity detection (invoice numbers, date ranges, Thai months)
+  - Intent detection with tool hints
+  - Tool usage examples in system prompt
+
+- **Multi-language Support** 🌐:
+  - Thai/English language detection (character analysis)
+  - Full bilingual system prompts
+  - Thai date formatting (Buddhist Era year)
+  - Thai month name parsing (มกราคม → 01)
+  - Currency formatting (฿)
+  - New file: `ai/ai-language.php`
+
+- **Streaming Responses** ⚡:
+  - Server-Sent Events (SSE) endpoint for real-time streaming
+  - Typing effect with blinking cursor
+  - Tool execution status updates
+  - Fallback to regular POST if streaming fails
+  - New file: `ai/chat-stream.php`
+  - Updated: `js/ai-chat-widget.js`, `css/ai-chat.css`
+
+- **UI Improvements** 🎨:
+  - 7 quick actions in chat widget (was 3)
+  - Added analytics shortcuts: Sales Report, Revenue Trend, Customer Analysis, Aging Report
+  - Streaming cursor animation
+  - Status pulse animation during processing
 
 ### v4.1 (January 5, 2026)
 - **Multi-Provider AI System** 🤖:

@@ -563,3 +563,69 @@
 .ai-chat-widget.theme-dark .ai-chat-input {
     color: var(--ai-gray-100);
 }
+
+/* =========================================================
+   Streaming Response Styles
+   ========================================================= */
+
+/* Streaming message container */
+.ai-chat-message.ai-chat-streaming .ai-chat-message-text {
+    position: relative;
+}
+
+/* Blinking cursor for streaming */
+.ai-chat-streaming-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--ai-primary);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: cursor-blink 0.8s infinite;
+}
+
+@keyframes cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Streaming status indicator */
+.ai-chat-streaming-status {
+    font-size: 11px;
+    color: var(--ai-gray-500);
+    margin-top: 6px;
+    font-style: italic;
+    animation: status-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Loading with status */
+.ai-chat-loading .ai-chat-message-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* Tool call indicator */
+.ai-chat-tool-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--ai-primary-light);
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+
+.ai-chat-tool-indicator::before {
+    content: '⚙️';
+    font-size: 12px;
+}
+

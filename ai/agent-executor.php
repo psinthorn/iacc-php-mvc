@@ -177,6 +177,26 @@ class AgentExecutor
                 
             case 'get_database_summary':
                 return $this->getDatabaseSummary($params);
+            
+            // ========== Report & Analytics Operations ==========
+            
+            case 'get_sales_report':
+                return $this->getSalesReport($params);
+                
+            case 'get_revenue_trend':
+                return $this->getRevenueTrend($params);
+                
+            case 'get_customer_analysis':
+                return $this->getCustomerAnalysis($params);
+                
+            case 'get_aging_report':
+                return $this->getAgingReport($params);
+                
+            case 'get_payment_summary':
+                return $this->getPaymentSummary($params);
+                
+            case 'export_data':
+                return $this->exportData($params);
                 
             default:
                 throw new Exception("Tool not implemented: $toolName");
@@ -318,7 +338,6 @@ class AgentExecutor
                     iv.status_iv as status,
                     iv.payment_status,
                     c.name_en as customer_name,
-                    c.address as customer_address,
                     c.phone as customer_phone,
                     c.email as customer_email,
                     c.id as customer_id,
@@ -402,7 +421,6 @@ class AgentExecutor
                     po.id as po_id,
                     po.name as po_name,
                     DATE_FORMAT(po.date, '%Y-%m-%d') as po_date,
-                    po.status,
                     c.name_en as customer_name,
                     c.id as customer_id,
                     COALESCE(prod.total_amount, 0) as total_amount
@@ -514,7 +532,7 @@ class AgentExecutor
     
     private function searchCustomers(array $params): array
     {
-        $sql = "SELECT id, name_en, name_sh, phone, email, address
+        $sql = "SELECT id, name_en, name_sh, phone, email, contact
                 FROM company 
                 WHERE 1=1";
         
@@ -553,7 +571,7 @@ class AgentExecutor
                     'name' => $c['name_en'] ?: $c['name_sh'],
                     'phone' => $c['phone'],
                     'email' => $c['email'],
-                    'address' => $c['address'],
+                    'contact' => $c['contact'],
                 ];
             }, $customers),
         ];
@@ -789,7 +807,7 @@ class AgentExecutor
     private function searchProducts(array $params): array
     {
         // Product table in this schema is related to PO line items
-        $sql = "SELECT p.id, p.name, p.des, p.price, p.quantity
+        $sql = "SELECT p.pro_id, p.des, p.price, p.quantity, p.model
                 FROM product p
                 JOIN po ON p.po_id = po.id
                 JOIN pr ON po.ref = pr.id
@@ -798,11 +816,11 @@ class AgentExecutor
         $bindings = [$this->companyId];
         
         if (!empty($params['name'])) {
-            $sql .= " AND p.name LIKE ?";
+            $sql .= " AND p.des LIKE ?";
             $bindings[] = '%' . $params['name'] . '%';
         }
         
-        $sql .= " ORDER BY p.name ASC";
+        $sql .= " ORDER BY p.des ASC";
         
         $limit = min($params['limit'] ?? 10, 50);
         $sql .= " LIMIT " . intval($limit);
@@ -1507,6 +1525,409 @@ class AgentExecutor
             'key_tables' => $keyTables,
             'relationships' => $relationships['relationships'],
             'summary' => $summary,
+        ];
+    }
+    
+    // =========================================================
+    // REPORT & ANALYTICS Operation Implementations
+    // =========================================================
+    
+    private function getSalesReport(array $params): array
+    {
+        $dateFrom = $params['date_from'] ?? date('Y-m-01');
+        $dateTo = $params['date_to'] ?? date('Y-m-d');
+        $groupBy = $params['group_by'] ?? 'month';
+        
+        // Total revenue and invoice count
+        $sql = "SELECT 
+                    COUNT(DISTINCT iv.tex) as invoice_count,
+                    COALESCE(SUM(prod.total_amount), 0) as total_revenue,
+                    COALESCE(SUM(paid.paid_amount), 0) as total_collected
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                LEFT JOIN (SELECT po_id, SUM(volumn) as paid_amount FROM pay WHERE deleted_at IS NULL GROUP BY po_id) paid ON po.id = paid.po_id
+                WHERE iv.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND iv.createdate BETWEEN ? AND ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$this->companyId, $dateFrom, $dateTo]);
+        $totals = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Top customers
+        $sqlCustomers = "SELECT 
+                    c.name_en as customer_name,
+                    c.id as customer_id,
+                    COUNT(DISTINCT iv.tex) as invoice_count,
+                    COALESCE(SUM(prod.total_amount), 0) as total_revenue
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN company c ON pr.cus_id = c.id
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                WHERE iv.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND iv.createdate BETWEEN ? AND ?
+                GROUP BY c.id, c.name_en
+                ORDER BY total_revenue DESC
+                LIMIT 5";
+        
+        $stmt = $this->db->prepare($sqlCustomers);
+        $stmt->execute([$this->companyId, $dateFrom, $dateTo]);
+        $topCustomers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Monthly breakdown
+        $sqlMonthly = "SELECT 
+                    DATE_FORMAT(iv.createdate, '%Y-%m') as month,
+                    COUNT(DISTINCT iv.tex) as invoice_count,
+                    COALESCE(SUM(prod.total_amount), 0) as revenue
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                WHERE iv.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND iv.createdate BETWEEN ? AND ?
+                GROUP BY DATE_FORMAT(iv.createdate, '%Y-%m')
+                ORDER BY month ASC";
+        
+        $stmt = $this->db->prepare($sqlMonthly);
+        $stmt->execute([$this->companyId, $dateFrom, $dateTo]);
+        $monthlyBreakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'period' => ['from' => $dateFrom, 'to' => $dateTo],
+            'total_revenue' => (float)$totals['total_revenue'],
+            'total_collected' => (float)$totals['total_collected'],
+            'collection_rate' => $totals['total_revenue'] > 0 
+                ? round(($totals['total_collected'] / $totals['total_revenue']) * 100, 1) 
+                : 0,
+            'invoice_count' => (int)$totals['invoice_count'],
+            'top_customers' => $topCustomers,
+            'monthly_breakdown' => $monthlyBreakdown,
+        ];
+    }
+    
+    private function getRevenueTrend(array $params): array
+    {
+        $months = $params['months'] ?? 12;
+        $comparePrevious = $params['compare_previous'] ?? true;
+        
+        $endDate = date('Y-m-d');
+        $startDate = date('Y-m-d', strtotime("-{$months} months"));
+        
+        // Monthly revenue
+        $sql = "SELECT 
+                    DATE_FORMAT(iv.createdate, '%Y-%m') as month,
+                    COALESCE(SUM(prod.total_amount), 0) as revenue
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                WHERE iv.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND iv.createdate >= ?
+                GROUP BY DATE_FORMAT(iv.createdate, '%Y-%m')
+                ORDER BY month ASC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$this->companyId, $startDate]);
+        $monthlyData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Calculate trends
+        $revenues = array_column($monthlyData, 'revenue');
+        $totalRevenue = array_sum($revenues);
+        $avgMonthly = count($revenues) > 0 ? $totalRevenue / count($revenues) : 0;
+        
+        // Growth calculation
+        $growth = null;
+        if (count($revenues) >= 2) {
+            $firstHalf = array_sum(array_slice($revenues, 0, (int)(count($revenues) / 2)));
+            $secondHalf = array_sum(array_slice($revenues, (int)(count($revenues) / 2)));
+            if ($firstHalf > 0) {
+                $growth = round((($secondHalf - $firstHalf) / $firstHalf) * 100, 1);
+            }
+        }
+        
+        return [
+            'period' => ['from' => $startDate, 'to' => $endDate],
+            'months_analyzed' => $months,
+            'total_revenue' => $totalRevenue,
+            'average_monthly' => round($avgMonthly, 2),
+            'growth_percent' => $growth,
+            'monthly_data' => $monthlyData,
+            'trend' => $growth > 0 ? 'increasing' : ($growth < 0 ? 'decreasing' : 'stable'),
+        ];
+    }
+    
+    private function getCustomerAnalysis(array $params): array
+    {
+        $topCount = $params['top_count'] ?? 10;
+        $dateFrom = $params['date_from'] ?? date('Y-01-01');
+        $dateTo = $params['date_to'] ?? date('Y-m-d');
+        
+        $sql = "SELECT 
+                    c.id as customer_id,
+                    c.name_en as customer_name,
+                    COUNT(DISTINCT iv.tex) as invoice_count,
+                    COUNT(DISTINCT po.id) as order_count,
+                    COALESCE(SUM(prod.total_amount), 0) as total_revenue,
+                    COALESCE(AVG(prod.total_amount), 0) as avg_order_value,
+                    MIN(iv.createdate) as first_invoice,
+                    MAX(iv.createdate) as last_invoice
+                FROM company c
+                JOIN pr ON c.id = pr.cus_id
+                JOIN po ON po.ref = pr.id
+                LEFT JOIN iv ON iv.tex = po.id AND iv.deleted_at IS NULL
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                WHERE pr.ven_id = ?
+                AND (iv.createdate IS NULL OR iv.createdate BETWEEN ? AND ?)
+                GROUP BY c.id, c.name_en
+                ORDER BY total_revenue DESC
+                LIMIT " . intval($topCount);
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$this->companyId, $dateFrom, $dateTo]);
+        $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Calculate total for percentage
+        $totalRevenue = array_sum(array_column($customers, 'total_revenue'));
+        
+        // Add revenue percentage
+        foreach ($customers as &$customer) {
+            $customer['revenue_percent'] = $totalRevenue > 0 
+                ? round(($customer['total_revenue'] / $totalRevenue) * 100, 1) 
+                : 0;
+        }
+        
+        return [
+            'period' => ['from' => $dateFrom, 'to' => $dateTo],
+            'top_customers' => $customers,
+            'total_revenue' => $totalRevenue,
+        ];
+    }
+    
+    private function getAgingReport(array $params): array
+    {
+        $customerId = $params['customer_id'] ?? null;
+        
+        $sql = "SELECT 
+                    iv.tex as invoice_id,
+                    po.name as invoice_name,
+                    iv.taxrw as invoice_number,
+                    iv.createdate as invoice_date,
+                    c.name_en as customer_name,
+                    c.id as customer_id,
+                    COALESCE(prod.total_amount, 0) as total_amount,
+                    COALESCE(paid.paid_amount, 0) as paid_amount,
+                    COALESCE(prod.total_amount, 0) - COALESCE(paid.paid_amount, 0) as outstanding,
+                    DATEDIFF(CURDATE(), iv.createdate) as days_old,
+                    CASE 
+                        WHEN DATEDIFF(CURDATE(), iv.createdate) <= 30 THEN 'current'
+                        WHEN DATEDIFF(CURDATE(), iv.createdate) <= 60 THEN '31-60 days'
+                        WHEN DATEDIFF(CURDATE(), iv.createdate) <= 90 THEN '61-90 days'
+                        ELSE '90+ days'
+                    END as aging_bucket
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN company c ON pr.cus_id = c.id
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                LEFT JOIN (SELECT po_id, SUM(volumn) as paid_amount FROM pay WHERE deleted_at IS NULL GROUP BY po_id) paid ON po.id = paid.po_id
+                WHERE iv.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND (COALESCE(prod.total_amount, 0) - COALESCE(paid.paid_amount, 0)) > 0";
+        
+        $bindings = [$this->companyId];
+        
+        if ($customerId) {
+            $sql .= " AND c.id = ?";
+            $bindings[] = $customerId;
+        }
+        
+        $sql .= " ORDER BY days_old DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($bindings);
+        $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Summary by bucket
+        $buckets = ['current' => 0, '31-60 days' => 0, '61-90 days' => 0, '90+ days' => 0];
+        foreach ($invoices as $inv) {
+            $buckets[$inv['aging_bucket']] += (float)$inv['outstanding'];
+        }
+        
+        $totalOutstanding = array_sum($buckets);
+        
+        return [
+            'total_outstanding' => $totalOutstanding,
+            'invoice_count' => count($invoices),
+            'aging_summary' => $buckets,
+            'invoices' => array_slice($invoices, 0, 20), // Limit for response size
+        ];
+    }
+    
+    private function getPaymentSummary(array $params): array
+    {
+        $dateFrom = $params['date_from'] ?? date('Y-01-01');
+        $dateTo = $params['date_to'] ?? date('Y-m-d');
+        
+        // Total invoiced vs collected
+        $sql = "SELECT 
+                    COALESCE(SUM(prod.total_amount), 0) as total_invoiced,
+                    COALESCE(SUM(paid.paid_amount), 0) as total_collected
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                LEFT JOIN (SELECT po_id, SUM(volumn) as paid_amount FROM pay WHERE deleted_at IS NULL GROUP BY po_id) paid ON po.id = paid.po_id
+                WHERE iv.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND iv.createdate BETWEEN ? AND ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$this->companyId, $dateFrom, $dateTo]);
+        $totals = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Payment by method (if available)
+        $sqlPayments = "SELECT 
+                    p.method as payment_method,
+                    COUNT(*) as payment_count,
+                    SUM(p.volumn) as total_amount
+                FROM pay p
+                JOIN po ON p.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE p.deleted_at IS NULL 
+                AND pr.ven_id = ?
+                AND p.date BETWEEN ? AND ?
+                GROUP BY p.method";
+        
+        $stmt = $this->db->prepare($sqlPayments);
+        $stmt->execute([$this->companyId, $dateFrom, $dateTo]);
+        $byMethod = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $totalInvoiced = (float)$totals['total_invoiced'];
+        $totalCollected = (float)$totals['total_collected'];
+        
+        return [
+            'period' => ['from' => $dateFrom, 'to' => $dateTo],
+            'total_invoiced' => $totalInvoiced,
+            'total_collected' => $totalCollected,
+            'outstanding' => $totalInvoiced - $totalCollected,
+            'collection_rate' => $totalInvoiced > 0 
+                ? round(($totalCollected / $totalInvoiced) * 100, 1) 
+                : 0,
+            'by_method' => $byMethod,
+        ];
+    }
+    
+    private function exportData(array $params): array
+    {
+        $dataType = $params['data_type'] ?? 'invoices';
+        $dateFrom = $params['date_from'] ?? date('Y-01-01');
+        $dateTo = $params['date_to'] ?? date('Y-m-d');
+        $format = $params['format'] ?? 'csv';
+        
+        // Build query based on type
+        switch ($dataType) {
+            case 'invoices':
+                $sql = "SELECT 
+                        iv.taxrw as invoice_number,
+                        po.name as description,
+                        DATE_FORMAT(iv.createdate, '%Y-%m-%d') as invoice_date,
+                        c.name_en as customer,
+                        COALESCE(prod.total_amount, 0) as amount,
+                        COALESCE(paid.paid_amount, 0) as paid,
+                        iv.payment_status
+                    FROM iv
+                    JOIN po ON iv.tex = po.id
+                    JOIN pr ON po.ref = pr.id
+                    LEFT JOIN company c ON pr.cus_id = c.id
+                    LEFT JOIN (SELECT po_id, SUM(price * quantity) as total_amount FROM product GROUP BY po_id) prod ON po.id = prod.po_id
+                    LEFT JOIN (SELECT po_id, SUM(volumn) as paid_amount FROM pay WHERE deleted_at IS NULL GROUP BY po_id) paid ON po.id = paid.po_id
+                    WHERE iv.deleted_at IS NULL 
+                    AND pr.ven_id = ?
+                    AND iv.createdate BETWEEN ? AND ?
+                    ORDER BY iv.createdate DESC";
+                break;
+                
+            case 'customers':
+                $sql = "SELECT 
+                        name_en as name,
+                        name_sh as short_name,
+                        email,
+                        phone,
+                        fax,
+                        contact
+                    FROM company 
+                    WHERE deleted_at IS NULL
+                    AND (customer = 1 OR vender = 1)
+                    ORDER BY name_en";
+                $dateFrom = null;
+                $dateTo = null;
+                break;
+                
+            case 'payments':
+                $sql = "SELECT 
+                        p.date as date,
+                        p.volumn as amount,
+                        p.method as method,
+                        po.name as invoice,
+                        c.name_en as customer
+                    FROM pay p
+                    JOIN po ON p.po_id = po.id
+                    JOIN pr ON po.ref = pr.id
+                    LEFT JOIN company c ON pr.cus_id = c.id
+                    WHERE p.deleted_at IS NULL 
+                    AND pr.ven_id = ?
+                    AND p.date BETWEEN ? AND ?
+                    ORDER BY p.date DESC";
+                break;
+                
+            default:
+                throw new Exception("Unknown data type: $dataType");
+        }
+        
+        $bindings = [$this->companyId];
+        if ($dateFrom && $dateTo) {
+            $bindings[] = $dateFrom;
+            $bindings[] = $dateTo;
+        }
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(count($bindings) > 1 ? $bindings : [$this->companyId]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Generate filename
+        $filename = "{$dataType}_export_" . date('Ymd_His') . ".{$format}";
+        $filepath = "/var/www/html/upload/exports/{$filename}";
+        
+        // Ensure directory exists
+        if (!is_dir(dirname($filepath))) {
+            mkdir(dirname($filepath), 0755, true);
+        }
+        
+        // Write file
+        if ($format === 'csv' && count($data) > 0) {
+            $fp = fopen($filepath, 'w');
+            fputcsv($fp, array_keys($data[0])); // Header
+            foreach ($data as $row) {
+                fputcsv($fp, $row);
+            }
+            fclose($fp);
+        } else {
+            file_put_contents($filepath, json_encode($data, JSON_PRETTY_PRINT));
+        }
+        
+        return [
+            'data_type' => $dataType,
+            'record_count' => count($data),
+            'format' => $format,
+            'filename' => $filename,
+            'download_url' => "/upload/exports/{$filename}",
+            'message' => "Exported {$dataType} data ({count($data)} records) to {$filename}",
         ];
     }
 }

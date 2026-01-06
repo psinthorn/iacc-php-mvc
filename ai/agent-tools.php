@@ -508,6 +508,134 @@ function getAgentTools(): array
             'permission' => null,
             'operation' => 'utility',
         ],
+        
+        // =========================================================
+        // REPORT & ANALYTICS Tools
+        // =========================================================
+        
+        [
+            'name' => 'get_sales_report',
+            'description' => 'Get sales report for a date range. Returns total revenue, invoice count, top customers, and monthly breakdown.',
+            'parameters' => [
+                'date_from' => [
+                    'type' => 'string',
+                    'description' => 'Start date in YYYY-MM-DD format',
+                    'required' => true,
+                ],
+                'date_to' => [
+                    'type' => 'string',
+                    'description' => 'End date in YYYY-MM-DD format',
+                    'required' => true,
+                ],
+                'group_by' => [
+                    'type' => 'string',
+                    'enum' => ['day', 'week', 'month', 'customer'],
+                    'description' => 'Group results by period or customer',
+                ],
+            ],
+            'permission' => 'view_report',
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'get_revenue_trend',
+            'description' => 'Analyze revenue trends over time. Compare periods, identify growth, and forecast.',
+            'parameters' => [
+                'months' => [
+                    'type' => 'integer',
+                    'description' => 'Number of months to analyze (default 12)',
+                ],
+                'compare_previous' => [
+                    'type' => 'boolean',
+                    'description' => 'Compare with previous period',
+                ],
+            ],
+            'permission' => 'view_report',
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'get_customer_analysis',
+            'description' => 'Analyze customer purchasing behavior. Returns top customers by revenue, purchase frequency, and average order value.',
+            'parameters' => [
+                'top_count' => [
+                    'type' => 'integer',
+                    'description' => 'Number of top customers to return (default 10)',
+                ],
+                'date_from' => [
+                    'type' => 'string',
+                    'description' => 'Start date for analysis period',
+                ],
+                'date_to' => [
+                    'type' => 'string',
+                    'description' => 'End date for analysis period',
+                ],
+            ],
+            'permission' => 'view_report',
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'get_aging_report',
+            'description' => 'Get accounts receivable aging report. Shows outstanding invoices grouped by age (30, 60, 90+ days).',
+            'parameters' => [
+                'customer_id' => [
+                    'type' => 'integer',
+                    'description' => 'Filter by specific customer',
+                ],
+                'include_paid' => [
+                    'type' => 'boolean',
+                    'description' => 'Include paid invoices in analysis',
+                ],
+            ],
+            'permission' => 'view_report',
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'get_payment_summary',
+            'description' => 'Get payment summary and collection rate. Shows total collected, pending, overdue amounts.',
+            'parameters' => [
+                'date_from' => [
+                    'type' => 'string',
+                    'description' => 'Start date in YYYY-MM-DD format',
+                ],
+                'date_to' => [
+                    'type' => 'string',
+                    'description' => 'End date in YYYY-MM-DD format',
+                ],
+            ],
+            'permission' => 'view_report',
+            'operation' => 'read',
+        ],
+        
+        [
+            'name' => 'export_data',
+            'description' => 'Export data to a downloadable format. Returns a link to download the exported file.',
+            'parameters' => [
+                'data_type' => [
+                    'type' => 'string',
+                    'enum' => ['invoices', 'purchase_orders', 'customers', 'payments'],
+                    'description' => 'Type of data to export',
+                    'required' => true,
+                ],
+                'date_from' => [
+                    'type' => 'string',
+                    'description' => 'Start date filter',
+                ],
+                'date_to' => [
+                    'type' => 'string',
+                    'description' => 'End date filter',
+                ],
+                'format' => [
+                    'type' => 'string',
+                    'enum' => ['csv', 'json'],
+                    'description' => 'Export format (default csv)',
+                ],
+            ],
+            'permission' => 'export_data',
+            'operation' => 'read',
+        ],
     ];
 }
 

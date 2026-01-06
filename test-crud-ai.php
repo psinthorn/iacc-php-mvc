@@ -773,12 +773,6 @@ If you cannot understand the request, set understood to false and explain why in
                 <div id="manualResult" style="margin-top: 20px;"></div>
             </div>
         </div>
-        
-        <?php echo get_dev_tools_footer([
-            'test-crud.php' => 'Standard CRUD Test',
-            'admin-containers.php' => 'Docker Containers',
-            'admin-monitoring.php' => 'System Monitoring'
-        ]); ?>
     </div>
     
     <script>
