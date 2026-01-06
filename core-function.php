@@ -299,15 +299,25 @@ case "pr_list" : {
 		
 		}else
 	if($_REQUEST['method']=="A"){
-	$args['value']="'".$_REQUEST['name']."','".$_REQUEST['des']."','".$_SESSION['user_id']."','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".date('Y-m-d')."','0','0','0',''";
+	// Include company_id for multi-tenant and deleted_at as NULL
+	$owner_company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
+	$args['value']="'".$owner_company_id."','".$_REQUEST['name']."','".$_REQUEST['des']."','".$_SESSION['user_id']."','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".date('Y-m-d')."','0','0','0','0',NULL";
 	
 	 $pr_id=$har->insertDbMax($args);
+	 
+	 // Debug: Log what's being received for product rows
+	 error_log("PR INSERT: pr_id=$pr_id");
 	 for($i=0;$i<9;$i++){
+		 $type_id = isset($_REQUEST['id'.$i]) ? $_REQUEST['id'.$i] : 'NOT_SET';
+		 $qty = isset($_REQUEST['quantity'.$i]) ? $_REQUEST['quantity'.$i] : 'NOT_SET';
+		 $price = isset($_REQUEST['price'.$i]) ? $_REQUEST['price'.$i] : 'NOT_SET';
+		 error_log("  Row $i: type_id=$type_id, qty=$qty, price=$price");
 		 
-		// echo "<br>".$_REQUEST[id.$i]."|".$_REQUEST[quantity.$i];
-		 if(($_REQUEST[id.$i]!="0")&&($_REQUEST[quantity.$i]!="0")){
+		 if(($_REQUEST['id'.$i]!="0")&&($_REQUEST['id'.$i]!="")&&($_REQUEST['quantity'.$i]!="0")){
 		 	$args['table']="tmp_product";
-		$args['value']="'','".$pr_id."','".$_REQUEST[id.$i]."','".$_REQUEST[quantity.$i]."','".$_REQUEST[price.$i]."'";
+		// Use NULL for auto-increment id instead of empty string
+		$args['value']="NULL,'".$pr_id."','".$_REQUEST['id'.$i]."','".$_REQUEST['quantity'.$i]."','".$_REQUEST['price'.$i]."'";
+		error_log("  INSERTING: " . $args['value']);
 		$har->insertDB($args);
 		 }
 		 }
@@ -329,7 +339,7 @@ case "po_list" : {
 		}else
 	if($_REQUEST['method']=="A"){
 	$id=$har->Maxid($args['table']);
-	$args['value']="'','".$_REQUEST['name']."','".$_REQUEST['ref']."','".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."','".date('Y-m-d')."','".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','','".$_REQUEST['dis']."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[over]."'";
+	$args['value']="'".$_SESSION['com_id']."','','".$_REQUEST['name']."','".$_REQUEST['ref']."','".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."','".date('Y-m-d')."','".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','','".$_REQUEST['dis']."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[over]."',NULL";
 	 
 	$po_id=$har->insertDbMax($args);
 	$args['table']="pr";
@@ -343,7 +353,7 @@ case "po_list" : {
 	$i=0;
 	foreach ($_REQUEST[type] as $type) {
 		
-		$args['value']="'','".$po_id."','".$_REQUEST[price][$i]."','0','".$_REQUEST[ban_id][$i]."','".$_REQUEST[model][$i]."','".$type."','".$_REQUEST[quantity][$i]."','1','','".$_REQUEST[des][$i]."','".$_REQUEST[a_labour][$i]."','".$_REQUEST[v_labour][$i]."','0','0000-00-00',''";
+		$args['value']="'','".$_SESSION['com_id']."','".$po_id."','".$_REQUEST[price][$i]."','0','".$_REQUEST[ban_id][$i]."','".$_REQUEST[model][$i]."','".$type."','".$_REQUEST[quantity][$i]."','1','','".$_REQUEST[des][$i]."','".$_REQUEST[a_labour][$i]."','".$_REQUEST[v_labour][$i]."','0','0000-00-00','',NULL";
 		$har->insertDB($args);	
 		$i++;
 		}
@@ -357,7 +367,7 @@ case "po_list" : {
 			
 			$_REQUEST['page']="qa_list";
 	$id=$har->Maxid($args['table']);
-	$args['value']="'','".$_REQUEST['name']."','".$_REQUEST['ref']."','".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."','".date("Y-m-d",strtotime($_REQUEST[create_date]))."','".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','','".$_REQUEST['dis']."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[over]."'";
+	$args['value']="'".$_SESSION['com_id']."','','".$_REQUEST['name']."','".$_REQUEST['ref']."','".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."','".date("Y-m-d",strtotime($_REQUEST[create_date]))."','".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','','".$_REQUEST['dis']."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[over]."',NULL";
 	 
 	$po_id=$har->insertDbMax($args);
 	
@@ -372,7 +382,7 @@ case "po_list" : {
 		
 	foreach ($_REQUEST[type] as $key => $type ) {
 		
-		$args['value']="'','".$po_id."','".$_REQUEST[price][$key]."','".$_REQUEST[discount][$key]."','".$_REQUEST[ban_id][$key]."','".$_REQUEST[model][$key]."','".$type."','".$_REQUEST[quantity][$key]."','".$_REQUEST[pack_quantity][$key]."','','".$_REQUEST[des][$key]."','".$_REQUEST[a_labour][$key]."','".$_REQUEST[v_labour][$key]."','0','0000-00-00',''";
+		$args['value']="'','".$_SESSION['com_id']."','".$po_id."','".$_REQUEST[price][$key]."','".$_REQUEST[discount][$key]."','".$_REQUEST[ban_id][$key]."','".$_REQUEST[model][$key]."','".$type."','".$_REQUEST[quantity][$key]."','".$_REQUEST[pack_quantity][$key]."','','".$_REQUEST[des][$key]."','".$_REQUEST[a_labour][$key]."','".$_REQUEST[v_labour][$key]."','0','0000-00-00','',NULL";
 		$har->insertDB($args);	
 
 		}

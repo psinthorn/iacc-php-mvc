@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 4.2  
+**Version**: 4.3  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 6, 2026  
 **Project Size**: 175 MB  
@@ -9,6 +9,15 @@
 ---
 
 ## 📋 Changelog
+
+### v4.3 (January 6, 2026)
+- **UI/UX Improvements** 🎨:
+  - **Quotation List (qa-list.php)**: Improved mail icon button with proper notification badge
+    - Mail count pill badge now positioned correctly (top-right corner)
+    - Red gradient badge for sent emails, gray for zero
+    - Added white border and shadow for better visibility
+    - Mail button wrapper for proper badge positioning
+    - Helpful tooltip showing email count
 
 ### v4.2 (January 6, 2026)
 - **AI Enhancement - 29 Total Tools** 🛠️:

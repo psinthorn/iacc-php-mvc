@@ -302,7 +302,7 @@ $hasLinkedInvoice = !empty($fetvou['invoice_id']);
 </div>
 
 <form action="core-function.php" method="post" id="company-form">
-
+<?= csrf_field() ?>
 <!-- Invoice Link Section -->
 <div class="invoice-link-card">
     <div class="form-row" style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">

@@ -88,7 +88,6 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/ollama-client.php';
 require_once __DIR__ . '/openai-client.php';
 require_once __DIR__ . '/ai-provider.php';
-require_once __DIR__ . '/ai-language.php';
 require_once __DIR__ . '/agent-tools.php';
 require_once __DIR__ . '/agent-executor.php';
 
@@ -104,7 +103,6 @@ class ChatHandler
     private int $companyId;
     private int $userId;
     private string $sessionId;
-    private string $detectedLanguage = 'en';
     
     public function __construct()
     {
@@ -257,9 +255,6 @@ class ChatHandler
             $this->sendError('Message is required', 400);
         }
         
-        // Detect language from user message
-        $this->detectedLanguage = AILanguage::detectLanguage($message);
-        
         // Save user message
         $this->saveMessage('user', $message);
         
@@ -269,8 +264,8 @@ class ChatHandler
         // Build messages array for Ollama
         $messages = $this->buildMessages($history, $message);
         
-        // Get all available tools (business + schema discovery)
-        $tools = getAllTools();
+        // Get available tools
+        $tools = getAgentTools();
         
         // Send to AI provider (OpenAI or Ollama based on settings)
         $result = $this->aiProvider->chat($messages, $tools);
@@ -291,7 +286,6 @@ class ChatHandler
         $this->sendSuccess([
             'session_id' => $this->sessionId,
             'message' => $response['message'],
-            'language' => $this->detectedLanguage,
             'tool_calls' => $response['tool_calls'] ?? [],
             'tool_results' => $response['tool_results'] ?? [],
             'requires_confirmation' => $response['requires_confirmation'] ?? false,
@@ -313,170 +307,21 @@ class ChatHandler
             'content' => $systemPrompt,
         ];
         
-        // Add conversation history (with summarization for long conversations)
-        $historyMessages = $this->prepareConversationHistory($history);
-        foreach ($historyMessages as $msg) {
+        // Add conversation history
+        foreach ($history as $msg) {
             $messages[] = [
                 'role' => $msg['role'],
                 'content' => $msg['content'],
             ];
         }
         
-        // Add context-enhanced current message
-        $enhancedMessage = $this->enhanceUserMessage($currentMessage);
+        // Add current message
         $messages[] = [
             'role' => 'user',
-            'content' => $enhancedMessage,
+            'content' => $currentMessage,
         ];
         
         return $messages;
-    }
-    
-    /**
-     * Prepare conversation history with summarization for long conversations
-     */
-    private function prepareConversationHistory(array $history): array
-    {
-        $maxMessages = 10;  // Keep last 10 messages in full detail
-        $maxTokensPerMessage = 500;  // Truncate long messages
-        
-        if (count($history) <= $maxMessages) {
-            return $history;
-        }
-        
-        // Split into old and recent messages
-        $oldMessages = array_slice($history, 0, -$maxMessages);
-        $recentMessages = array_slice($history, -$maxMessages);
-        
-        // Summarize old messages
-        $summary = $this->summarizeOldMessages($oldMessages);
-        
-        // Return summary + recent messages
-        $result = [];
-        if ($summary) {
-            $result[] = [
-                'role' => 'system',
-                'content' => "Previous conversation summary: " . $summary,
-            ];
-        }
-        
-        return array_merge($result, $recentMessages);
-    }
-    
-    /**
-     * Summarize old messages for context
-     */
-    private function summarizeOldMessages(array $messages): string
-    {
-        if (empty($messages)) {
-            return '';
-        }
-        
-        $topics = [];
-        $actions = [];
-        
-        foreach ($messages as $msg) {
-            $content = strtolower($msg['content']);
-            
-            // Extract topics mentioned
-            if (preg_match('/invoice|ใบแจ้งหนี้|bill/i', $content)) {
-                $topics['invoices'] = true;
-            }
-            if (preg_match('/purchase.?order|po|คำสั่งซื้อ/i', $content)) {
-                $topics['purchase_orders'] = true;
-            }
-            if (preg_match('/customer|client|ลูกค้า/i', $content)) {
-                $topics['customers'] = true;
-            }
-            if (preg_match('/payment|paid|ชำระ/i', $content)) {
-                $topics['payments'] = true;
-            }
-            if (preg_match('/report|summary|รายงาน/i', $content)) {
-                $topics['reports'] = true;
-            }
-            
-            // Extract actions performed
-            if ($msg['role'] === 'assistant' && preg_match('/searched|found|updated|marked/i', $content)) {
-                $actions[] = substr($content, 0, 100);
-            }
-        }
-        
-        $summary = "Previously discussed: " . implode(', ', array_keys($topics));
-        if (!empty($actions)) {
-            $summary .= ". Actions taken: " . implode('; ', array_slice($actions, -3));
-        }
-        
-        return $summary;
-    }
-    
-    /**
-     * Enhance user message with extracted context
-     */
-    private function enhanceUserMessage(string $message): string
-    {
-        // Extract entities and add context hints
-        $context = $this->extractMessageContext($message);
-        
-        // If specific entities are detected, add hints for tool selection
-        if (!empty($context['hints'])) {
-            return $message . "\n\n[Context hints: " . implode(', ', $context['hints']) . "]";
-        }
-        
-        return $message;
-    }
-    
-    /**
-     * Extract context from user message
-     */
-    private function extractMessageContext(string $message): array
-    {
-        $context = [
-            'entities' => [],
-            'intent' => null,
-            'hints' => [],
-        ];
-        
-        $msg = strtolower($message);
-        
-        // Detect invoice references
-        if (preg_match('/inv[-\s]?(\d+)|invoice\s*#?\s*(\d+)/i', $message, $m)) {
-            $context['entities']['invoice_number'] = $m[1] ?: $m[2];
-            $context['hints'][] = 'use get_invoice_details for specific invoice lookup';
-        }
-        
-        // Detect date ranges
-        if (preg_match('/(?:from|ตั้งแต่)\s*(\d{4}-\d{2}-\d{2}).*(?:to|ถึง)\s*(\d{4}-\d{2}-\d{2})/i', $message, $m)) {
-            $context['entities']['date_range'] = ['from' => $m[1], 'to' => $m[2]];
-            $context['hints'][] = 'date range specified';
-        }
-        
-        // Detect Thai month references
-        if (preg_match('/(มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)/i', $message)) {
-            $context['hints'][] = 'Thai month reference detected';
-        }
-        
-        // Detect intent
-        if (preg_match('/รายงาน|report|summary|สรุป/i', $msg)) {
-            $context['intent'] = 'report';
-            $context['hints'][] = 'consider get_sales_report, get_revenue_trend, or get_dashboard_summary';
-        }
-        
-        if (preg_match('/ค้าง|overdue|ยังไม่ชำระ|unpaid|outstanding/i', $msg)) {
-            $context['intent'] = 'outstanding';
-            $context['hints'][] = 'consider get_aging_report or get_overdue_invoices';
-        }
-        
-        if (preg_match('/export|ดาวน์โหลด|download|csv/i', $msg)) {
-            $context['intent'] = 'export';
-            $context['hints'][] = 'use export_data tool for file download';
-        }
-        
-        if (preg_match('/top|อันดับ|ranking|best/i', $msg)) {
-            $context['intent'] = 'analysis';
-            $context['hints'][] = 'consider get_customer_analysis for top customer rankings';
-        }
-        
-        return $context;
     }
     
     /**
@@ -489,8 +334,7 @@ class ChatHandler
         if (file_exists($promptFile)) {
             $prompt = file_get_contents($promptFile);
         } else {
-            // Use language-aware prompt
-            $prompt = AILanguage::getSystemPrompt($this->detectedLanguage);
+            $prompt = $this->getDefaultSystemPrompt();
         }
         
         // Replace placeholders
@@ -507,42 +351,7 @@ class ChatHandler
             '{current_time}' => date('H:i:s'),
         ];
         
-        $prompt = str_replace(array_keys($replacements), array_values($replacements), $prompt);
-        
-        // Append cached database schema if available
-        $schemaContext = $this->getSchemaContext();
-        if ($schemaContext) {
-            $prompt .= "\n\n" . $schemaContext;
-        }
-        
-        return $prompt;
-    }
-    
-    /**
-     * Get cached database schema context
-     */
-    private function getSchemaContext(): string
-    {
-        require_once __DIR__ . '/schema-discovery.php';
-        
-        $cached = SchemaDiscovery::loadCompactSchema();
-        if ($cached) {
-            return "DATABASE SCHEMA REFERENCE:\n" . $cached;
-        }
-        
-        // Minimal schema if cache not available
-        return <<<SCHEMA
-DATABASE SCHEMA QUICK REFERENCE:
-- iv: Invoices (tex→po.id, taxrw=invoice#, status_iv, payment_status)
-- po: Purchase Orders (id, ref→pr.id, name, date, status)
-- pr: Projects (id, cus_id→company, ven_id→company)
-- product: Line items (po_id, price, quantity)
-- pay: Payments (po_id, volumn=amount)
-- company: Companies (id, name_en, name_sh)
-
-Query Pattern: iv → po → pr → company, with product/pay joins for totals
-Use list_database_tables or describe_table tools for more details.
-SCHEMA;
+        return str_replace(array_keys($replacements), array_values($replacements), $prompt);
     }
     
     /**
@@ -557,8 +366,7 @@ CAPABILITIES:
 - Search and view invoices, POs, payments, customers
 - Mark invoices as paid
 - Update order statuses
-- Generate reports and analytics (sales, revenue trends, aging, customer analysis)
-- Export data to CSV/JSON
+- Generate summaries and reports
 - Add notes to records
 
 RULES:
@@ -577,42 +385,6 @@ CURRENT CONTEXT:
 - User Level: {user_level}
 - Date: {current_date}
 - Time: {current_time}
-
-TOOL USAGE EXAMPLES:
-
-1. Finding invoices:
-   User: "Show invoices for ABC Company"
-   → Use search_invoices with customer="ABC Company"
-
-2. Invoice details:
-   User: "Details for invoice INV-2026-001"
-   → Use get_invoice_details with invoice_number="INV-2026-001"
-
-3. Overdue invoices:
-   User: "What invoices are overdue?"
-   → Use get_overdue_invoices or get_aging_report
-
-4. Sales report:
-   User: "Show me sales for January 2026"
-   → Use get_sales_report with date_from="2026-01-01", date_to="2026-01-31"
-
-5. Customer analysis:
-   User: "Who are our top 5 customers?"
-   → Use get_customer_analysis with top_count=5
-
-6. Revenue trends:
-   User: "Show revenue trend for the last 6 months"
-   → Use get_revenue_trend with months=6
-
-7. Export data:
-   User: "Export all invoices to CSV"
-   → Use export_data with data_type="invoices", format="csv"
-
-8. Database structure:
-   User: "What tables are in the database?"
-   → Use list_database_tables
-   User: "What columns are in the company table?"
-   → Use describe_table with table_name="company"
 
 When you need data, use the available tools. Present results in a clear, formatted way.
 PROMPT;

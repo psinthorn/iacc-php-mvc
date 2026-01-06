@@ -49,6 +49,7 @@ if(mysqli_num_rows($query)==1){
     </div>
     <div class="card-body">
         <form action="core-function.php" method="post" id="myform">
+            <?= csrf_field() ?>
             <div class="form-group">
                 <label for="cat_name"><?=$xml->name?></label>
                 <input id="cat_name" name="cat_name" class="form-control" required type="text" value="<?php echo e($data['cat_name'] ?? '');?>">

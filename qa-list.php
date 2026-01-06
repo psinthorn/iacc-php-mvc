@@ -256,13 +256,49 @@ unset($query_params['pg_out'], $query_params['pg_in']);
     .status-badge.success { background: #d1fae5; color: #10b981; }
     .status-badge.cancelled { background: #fee2e2; color: #ef4444; }
     
-    .mail-badge {
+    .mail-btn-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .mail-btn-wrapper .action-btn {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+    
+    .mail-btn-wrapper .action-btn:hover {
         background: #667eea;
         color: white;
-        padding: 2px 6px;
-        border-radius: 10px;
+    }
+    
+    .mail-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 0;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
         font-size: 10px;
-        margin-left: 2px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+        border: 2px solid white;
+        line-height: 1;
+    }
+    
+    .mail-badge:empty,
+    .mail-badge.hide {
+        display: none;
+    }
+    
+    .mail-badge.zero {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        box-shadow: 0 2px 4px rgba(107, 114, 128, 0.3);
     }
     
     /* Pagination Styling */
@@ -406,17 +442,21 @@ echo "<tr><td>QUO-".htmlspecialchars($data['tax'])."</td><td>".htmlspecialchars(
 $var=decodenum($data['status']);
 
 if($data['cancel']=="1"){
+$mailcount = intval($data['mailcount']);
+$badgeClass = $mailcount == 0 ? 'mail-badge zero' : 'mail-badge';
 echo "<td><span class='status-badge cancelled'>".$xml->$var."</span></td><td>
 <a class='action-btn primary' href='index.php?page=".$pg."&id=".$data['id']."&action=m' title='Edit'><i class=\"fa fa-pencil\"></i></a>
 <a class='action-btn success' href='index.php?page=po_view&id=".$data['id']."' title='Confirm'><i class=\"fa fa-check\"></i></a>
 <a class='action-btn' href='exp.php?id=".$data['id']."' target='blank' title='View'><i class='fa fa-search'></i></a>
-<a class='action-btn' data-toggle='modal' href='model_mail.php?page=exp&id=".$data['id']."' data-target='.bs-example-modal-lg' title='Email'><i class='fa fa-envelope'></i><span class='mail-badge'>".$data['mailcount']."</span></a>
+<span class='mail-btn-wrapper'><a class='action-btn' data-toggle='modal' href='model_mail.php?page=exp&id=".$data['id']."' data-target='.bs-example-modal-lg' title='Email (".$mailcount." sent)'><i class='fa fa-envelope'></i></a><span class='".$badgeClass."'>".$mailcount."</span></span>
 </td></tr>";}else
-{echo "<td><span class='status-badge active'>".$xml->$var."</span></td><td>
+{$mailcount = intval($data['mailcount']);
+$badgeClass = $mailcount == 0 ? 'mail-badge zero' : 'mail-badge';
+echo "<td><span class='status-badge active'>".$xml->$var."</span></td><td>
 <a class='action-btn primary' href='index.php?page=".$pg."&id=".$data['id']."&action=m' title='Edit'><i class=\"fa fa-pencil\"></i></a>
 <a class='action-btn success' href='index.php?page=po_view&id=".$data['id']."' title='Confirm'><i class=\"fa fa-check\"></i></a>
 <a class='action-btn' href='exp.php?id=".$data['id']."' target='blank' title='View'><i class='fa fa-search'></i></a>
-<a class='action-btn' data-toggle='modal' href='model_mail.php?page=exp&id=".$data['id']."' data-target='.bs-example-modal-lg' title='Email'><i class='fa fa-envelope'></i><span class='mail-badge'>".$data['mailcount']."</span></a>
+<span class='mail-btn-wrapper'><a class='action-btn' data-toggle='modal' href='model_mail.php?page=exp&id=".$data['id']."' data-target='.bs-example-modal-lg' title='Email (".$mailcount." sent)'><i class='fa fa-envelope'></i></a><span class='".$badgeClass."'>".$mailcount."</span></span>
 <a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href='core-function.php?page=po_list&id=".$data['id']."&method=D'><i class=\"fa fa-trash\"></i></a>
 </td></tr>";}
 	

@@ -13,18 +13,12 @@
     // Configuration
     const CONFIG = {
         apiEndpoint: '/ai/chat-handler.php',
-        streamEndpoint: '/ai/chat-stream.php',
-        useStreaming: true,  // Enable SSE streaming for real-time responses
         position: 'bottom-right',
         theme: 'light',
         quickActions: [
             { label: '📊 สรุปวันนี้', prompt: 'สรุปข้อมูลวันนี้' },
             { label: '💰 ใบแจ้งหนี้ค้างชำระ', prompt: 'แสดงใบแจ้งหนี้ที่ยังไม่ได้ชำระ' },
             { label: '⏰ เกินกำหนด', prompt: 'แสดงใบแจ้งหนี้ที่เกินกำหนดชำระ' },
-            { label: '📈 รายงานยอดขาย', prompt: 'แสดงรายงานยอดขายเดือนนี้' },
-            { label: '📉 แนวโน้มรายได้', prompt: 'แสดงแนวโน้มรายได้ 6 เดือนย้อนหลัง' },
-            { label: '👥 วิเคราะห์ลูกค้า', prompt: 'วิเคราะห์ลูกค้า Top 10' },
-            { label: '📋 รายงาน Aging', prompt: 'แสดง Aging Report ลูกหนี้' },
         ]
     };
 
@@ -35,10 +29,6 @@
         sessionId: null,
         messages: [],
         pendingConfirmation: null,
-        // Streaming state
-        currentEventSource: null,
-        streamingMessageEl: null,
-        streamingContent: '',
     };
 
     // DOM Elements
@@ -307,18 +297,6 @@
         // Show loading
         setLoading(true);
 
-        // Use streaming or regular mode
-        if (CONFIG.useStreaming) {
-            sendMessageStreaming(message);
-        } else {
-            sendMessageRegular(message);
-        }
-    }
-
-    /**
-     * Send message using regular POST request
-     */
-    async function sendMessageRegular(message) {
         try {
             const response = await fetch(CONFIG.apiEndpoint + '?action=chat', {
                 method: 'POST',
@@ -361,217 +339,6 @@
             addMessage('assistant', '❌ ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่');
         } finally {
             setLoading(false);
-        }
-    }
-
-    /**
-     * Send message using SSE streaming
-     */
-    function sendMessageStreaming(message) {
-        // Close any existing EventSource
-        if (state.currentEventSource) {
-            state.currentEventSource.close();
-        }
-
-        // Reset streaming state
-        state.streamingContent = '';
-        state.streamingMessageEl = null;
-
-        // Build SSE URL with query parameters
-        const params = new URLSearchParams({
-            message: message,
-            session_id: state.sessionId || '',
-        });
-        const url = CONFIG.streamEndpoint + '?' + params.toString();
-
-        try {
-            const eventSource = new EventSource(url, { withCredentials: true });
-            state.currentEventSource = eventSource;
-
-            // Handle different event types
-            eventSource.addEventListener('thinking', (e) => {
-                console.log('🤔 Thinking:', e.data);
-                updateStreamingStatus('กำลังคิด...');
-            });
-
-            eventSource.addEventListener('language', (e) => {
-                console.log('🌐 Language:', e.data);
-            });
-
-            eventSource.addEventListener('status', (e) => {
-                console.log('📊 Status:', e.data);
-                updateStreamingStatus(e.data);
-            });
-
-            eventSource.addEventListener('tools', (e) => {
-                console.log('🔧 Tools available:', e.data);
-            });
-
-            eventSource.addEventListener('tool_call', (e) => {
-                try {
-                    const data = JSON.parse(e.data);
-                    console.log('🔨 Tool call:', data);
-                    updateStreamingStatus(`กำลังใช้เครื่องมือ: ${data.tool}`);
-                } catch (err) {
-                    console.log('🔨 Tool call:', e.data);
-                }
-            });
-
-            eventSource.addEventListener('tool_result', (e) => {
-                console.log('✅ Tool result:', e.data);
-            });
-
-            eventSource.addEventListener('chunk', (e) => {
-                // Append chunk to streaming content
-                state.streamingContent += e.data;
-                updateStreamingMessage(state.streamingContent);
-            });
-
-            eventSource.addEventListener('done', (e) => {
-                try {
-                    const data = JSON.parse(e.data);
-                    console.log('✅ Done:', data);
-                    
-                    // Update session ID
-                    if (data.session_id) {
-                        state.sessionId = data.session_id;
-                    }
-                    
-                    // Finalize the message
-                    finalizeStreamingMessage(state.streamingContent);
-                    
-                    // Handle confirmation if needed
-                    if (data.requires_confirmation) {
-                        state.pendingConfirmation = data.confirmation_id;
-                        addConfirmationButtons(data.confirmation_id);
-                    }
-                } catch (err) {
-                    console.log('Done event:', e.data);
-                    finalizeStreamingMessage(state.streamingContent);
-                }
-                
-                eventSource.close();
-                state.currentEventSource = null;
-                setLoading(false);
-            });
-
-            eventSource.addEventListener('error', (e) => {
-                if (e.data) {
-                    console.error('❌ Stream error:', e.data);
-                    addMessage('assistant', '❌ เกิดข้อผิดพลาด: ' + e.data);
-                }
-                eventSource.close();
-                state.currentEventSource = null;
-                setLoading(false);
-            });
-
-            eventSource.onerror = (e) => {
-                console.error('EventSource error:', e);
-                if (eventSource.readyState === EventSource.CLOSED) {
-                    console.log('EventSource closed');
-                } else {
-                    // Connection error - fallback to regular mode
-                    console.warn('Streaming failed, falling back to regular mode');
-                    eventSource.close();
-                    state.currentEventSource = null;
-                    sendMessageRegular(message);
-                }
-            };
-
-        } catch (error) {
-            console.error('Failed to create EventSource:', error);
-            // Fallback to regular mode
-            sendMessageRegular(message);
-        }
-    }
-
-    /**
-     * Update streaming status indicator
-     */
-    function updateStreamingStatus(status) {
-        const loadingEl = elements.messages.querySelector('.ai-chat-loading');
-        if (loadingEl) {
-            const contentEl = loadingEl.querySelector('.ai-chat-message-content');
-            if (contentEl) {
-                contentEl.innerHTML = `
-                    <div class="ai-chat-typing">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <div class="ai-chat-streaming-status">${status}</div>
-                `;
-            }
-        }
-    }
-
-    /**
-     * Update streaming message in real-time
-     */
-    function updateStreamingMessage(content) {
-        // Remove loading indicator and create/update streaming message
-        const loadingEl = elements.messages.querySelector('.ai-chat-loading');
-        
-        if (!state.streamingMessageEl) {
-            // Create streaming message element
-            if (loadingEl) {
-                loadingEl.remove();
-            }
-            
-            const messageEl = document.createElement('div');
-            messageEl.className = 'ai-chat-message assistant ai-chat-streaming';
-            messageEl.innerHTML = `
-                <div class="ai-chat-message-avatar">🤖</div>
-                <div class="ai-chat-message-content">
-                    <div class="ai-chat-message-text">${formatMessage(content)}</div>
-                    <div class="ai-chat-streaming-cursor"></div>
-                </div>
-            `;
-            elements.messages.appendChild(messageEl);
-            state.streamingMessageEl = messageEl;
-        } else {
-            // Update existing streaming message
-            const textEl = state.streamingMessageEl.querySelector('.ai-chat-message-text');
-            if (textEl) {
-                textEl.innerHTML = formatMessage(content);
-            }
-        }
-        
-        scrollToBottom();
-    }
-
-    /**
-     * Finalize streaming message
-     */
-    function finalizeStreamingMessage(content) {
-        if (state.streamingMessageEl) {
-            // Remove streaming class and cursor
-            state.streamingMessageEl.classList.remove('ai-chat-streaming');
-            const cursor = state.streamingMessageEl.querySelector('.ai-chat-streaming-cursor');
-            if (cursor) cursor.remove();
-            
-            // Add timestamp
-            const contentEl = state.streamingMessageEl.querySelector('.ai-chat-message-content');
-            if (contentEl) {
-                const timeEl = document.createElement('div');
-                timeEl.className = 'ai-chat-message-time';
-                timeEl.textContent = formatTime(new Date());
-                contentEl.appendChild(timeEl);
-            }
-            
-            // Save to state
-            state.messages.push({ role: 'assistant', content, time: new Date() });
-            
-            // Reset streaming state
-            state.streamingMessageEl = null;
-            state.streamingContent = '';
-        } else if (content) {
-            // No streaming element, add regular message
-            addMessage('assistant', content);
-        }
-        
-        // Remove any remaining loading indicator
-        const loadingEl = elements.messages.querySelector('.ai-chat-loading');
-        if (loadingEl) {
-            loadingEl.remove();
         }
     }
 

@@ -42,6 +42,7 @@ return false;
 <body>
  
         <form action="core-function.php" method="post" name="myform" id="myform">
+            <?= csrf_field() ?>
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                  <h4 class="modal-title"><?=$xml->edit?><?=$xml->model?></h4>

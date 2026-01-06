@@ -191,7 +191,7 @@ $fetvou=mysqli_fetch_array($queryvou);
 </div>
 
 <form action="core-function.php" method="post" id="company-form">
-
+<?= csrf_field() ?>
 <!-- Vendor/Payee Information Card -->
 <div class="form-card">
     <div class="card-header">

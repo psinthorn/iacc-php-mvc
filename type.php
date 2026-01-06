@@ -57,7 +57,7 @@ if(mysqli_num_rows($query)==1){
 </div>
 
 <form action="core-function.php" method="post" id="myform">
-
+<?= csrf_field() ?>
 <!-- Basic Information -->
 <div class="form-card">
     <div class="card-header">

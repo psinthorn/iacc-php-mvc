@@ -127,7 +127,7 @@ $_date = explode("-", date("d-m-Y"));
 	?>
     <div class="clearfix"></div>
 <form action="core-function.php" method="post" id="company-form">
-
+<?= csrf_field() ?>
 
     <div id="box">
 		<lable for="name"><?=$xml->customer?></lable>

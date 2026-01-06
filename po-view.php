@@ -36,7 +36,7 @@ if(mysqli_num_rows($query)=="1"){
 	?>
     <div class="clearfix"></div>
 <form action="core-function.php" method="post" id="company-form" enctype="multipart/form-data">
-
+<?= csrf_field() ?>
 	<div id="box">
 		<lable for="name"><?=$xml->name?></lable>
 		<input id="name" name="name" class="form-control" readonly required value="<?php echo $data[name];?>"  type="text">

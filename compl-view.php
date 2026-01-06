@@ -52,7 +52,7 @@ if(mysqli_num_rows($query)=="1"){
 	?>
     <div class="clearfix"></div>
 <form action="core-function.php"  method="post" id="company-form" enctype="multipart/form-data">
-
+<?= csrf_field() ?>
 	<div id="box">
 		<lable for="name"><?=$xml->name?></lable>
 		<input id="name" name="name" class="form-control" readonly required value="<?php echo $data[name];?>"  type="text">
@@ -178,7 +178,7 @@ if($accu!=0){
 	
 	if($data[ven_id]==$_SESSION['com_id']){?>
 <form action="core-function.php" method="post" id="payment-form" name="payment-form" enctype="multipart/form-data" onSubmit="return paymentcheck();">
-
+<?= csrf_field() ?>
 	<div id="box">
 		<lable for="payment"><?=$xml->method?></lable>
 		<select id="payment" name="payment" class="form-control">
@@ -212,7 +212,7 @@ if($accu!=0){
 	
 	
 	<form action="core-function.php" method="post" id="payment-form" name="payment-form" enctype="multipart/form-data" onSubmit="return paymentcheck();">
-        
+        <?= csrf_field() ?>
          <div id="box" style="float:right; text-align:right;"> <button type="submit" id="method" name="method" value="V" class="btn btn-danger"><?=$xml->voidinv?></button>
          
         
@@ -223,7 +223,7 @@ if($accu!=0){
 	
 	<?php } }else{
 		?><form action="core-function.php" method="post" id="payment-form" name="payment-form" enctype="multipart/form-data" onSubmit="return paymentcheck();">
-        
+        <?= csrf_field() ?>
          <div id="box" style="float:right; text-align:right;"> <button type="submit" id="method" name="method"  value="V" class="btn btn-danger"><?=$xml->voidinv?></button> <button type="submit" id="method" name="method" value="C" class="btn btn-success"><?=$xml->taxinvoicem?></button>
          
    

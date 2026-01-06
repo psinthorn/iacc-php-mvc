@@ -17,6 +17,16 @@
     <script src="js/sb-admin.js"></script>
     <script src="js/jqBootstrapValidation.js"></script>
     
+    <!-- Smart Dropdown Component - Searchable & Sortable dropdowns -->
+    <script src="js/smart-dropdown.js"></script>
+    <script>
+        // Auto-initialize all smart dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof SmartDropdown !== 'undefined') {
+                SmartDropdown.initAll('.smart-dropdown');
+            }
+        });
+    </script>
 
     <!-- Page-Level Demo Scripts - Dashboard - Use for reference -->
     <script src="js/demo/dashboard-demo.js">

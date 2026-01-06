@@ -48,7 +48,7 @@ if(mysqli_num_rows($query)==1){
 </div>
 
 <form action="core-function.php" method="post" enctype="multipart/form-data" id="myform">
-
+<?= csrf_field() ?>
 <div class="form-card">
     <div class="card-header">
         <i class="fa fa-edit"></i> <?=$method == "E" ? ($xml->save ?? 'Edit') : ($xml->add ?? 'Add')?> <?=$xml->brand ?? 'Brand'?>

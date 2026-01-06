@@ -191,6 +191,7 @@ if(mysqli_num_rows($query)=="1"){
 	?>
     <div class="clearfix"></div>
 <form action="core-function.php" method="post" id="company-form">
+  <?= csrf_field() ?>
   <div id="box">
 		<lable for="name"><?=$xml->customer?></lable>
 		<!--<input class="form-control" type="text" readonly value="<?php echo $customer[name_sh];?>">-->
