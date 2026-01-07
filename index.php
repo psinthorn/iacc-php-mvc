@@ -195,6 +195,9 @@ $pageFile = isset($routes[$page]) ? $routes[$page] : null;
         <div id="page-wrapper">
             <div class="row">
                 <?php 
+                // Debug routing
+                file_put_contents('logs/app.log', date('Y-m-d H:i:s') . " DEBUG index.php: page=$page, pageFile=$pageFile, exists=" . (file_exists($pageFile) ? 'yes' : 'no') . "\n", FILE_APPEND);
+                
                 // Include the page file if route exists
                 if ($pageFile && file_exists($pageFile)) {
                     include_once $pageFile;

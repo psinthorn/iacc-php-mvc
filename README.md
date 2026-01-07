@@ -1,14 +1,37 @@
 # iACC - Accounting Management System
 
-**Version**: 4.3  
+**Version**: 4.4  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 6, 2026  
+**Last Updated**: January 7, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v4.4 (January 7, 2026)
+- **Critical Bug Fix - Product INSERT** 🐛:
+  - Fixed products not saving when creating PO from PR
+  - Root cause: `valuelabour` column (double NOT NULL) receiving empty strings
+  - Fixed `core-function.php` to use proper type casting (`floatval()`, `intval()`) for all numeric product fields
+  - Affected fields: price, model, quantity, ban_id, a_labour, v_labour, discount, pack_quantity
+
+- **PO Edit Page Redesign** 🎨:
+  - Modernized `po-edit.php` with card-based UI matching `po-make.php` style
+  - Changed model dropdown from AJAX to client-side JSON population
+  - Improved product row management with add/remove functionality
+  - Fixed input field heights and styling consistency
+
+- **PO View Page Improvements** 📄:
+  - Fixed product description showing wrong data (was showing PR description, now shows model description)
+  - Removed redundant description card that displayed incorrect PR-level description
+  - Product table now correctly displays `model.des` as product description
+
+- **Bug Fixes** 🔧:
+  - Fixed `makeoptionindex.php`: Changed `$users` to `$db` variable name to match query usage
+  - Fixed qa_list not showing prices (result of product INSERT fix)
+  - Products now correctly saved and displayed throughout PO workflow
 
 ### v4.3 (January 6, 2026)
 - **UI/UX Improvements** 🎨:

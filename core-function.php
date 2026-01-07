@@ -351,12 +351,27 @@ case "po_list" : {
 	
 	$args['table']="product";
 	$i=0;
+	file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - type array: " . print_r($_REQUEST['type'] ?? 'NOT SET', true) . "\n", FILE_APPEND);
+	file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - price array: " . print_r($_REQUEST['price'] ?? 'NOT SET', true) . "\n", FILE_APPEND);
+	file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - model array: " . print_r($_REQUEST['model'] ?? 'NOT SET', true) . "\n", FILE_APPEND);
+	if(isset($_REQUEST['type']) && is_array($_REQUEST['type'])) {
 	foreach ($_REQUEST[type] as $type) {
+		$a_labour = !empty($_REQUEST['a_labour'][$i]) ? intval($_REQUEST['a_labour'][$i]) : 0;
+		$v_labour = !empty($_REQUEST['v_labour'][$i]) ? floatval($_REQUEST['v_labour'][$i]) : 0;
+		$des = isset($_REQUEST['des'][$i]) ? mysqli_real_escape_string($db->conn, $_REQUEST['des'][$i]) : '';
+		$price = !empty($_REQUEST['price'][$i]) ? floatval($_REQUEST['price'][$i]) : 0;
+		$model = !empty($_REQUEST['model'][$i]) ? intval($_REQUEST['model'][$i]) : 0;
+		$quantity = !empty($_REQUEST['quantity'][$i]) ? floatval($_REQUEST['quantity'][$i]) : 1;
+		$ban_id = !empty($_REQUEST['ban_id'][$i]) ? intval($_REQUEST['ban_id'][$i]) : 0;
 		
-		$args['value']="'','".$_SESSION['com_id']."','".$po_id."','".$_REQUEST[price][$i]."','0','".$_REQUEST[ban_id][$i]."','".$_REQUEST[model][$i]."','".$type."','".$_REQUEST[quantity][$i]."','1','','".$_REQUEST[des][$i]."','".$_REQUEST[a_labour][$i]."','".$_REQUEST[v_labour][$i]."','0','0000-00-00','',NULL";
+		$args['value']="NULL,'".$_SESSION['com_id']."','".$po_id."','".$price."','0','".$ban_id."','".$model."','".$type."','".$quantity."','1','0','".$des."','".$a_labour."','".$v_labour."','0','1970-01-01','0',NULL";
+		file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG product insert value: " . $args['value'] . "\n", FILE_APPEND);
 		$har->insertDB($args);	
 		$i++;
 		}
+	} else {
+		file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - NO TYPE ARRAY!\n", FILE_APPEND);
+	}
 	
 	$_REQUEST['page']="qa_list";
 		}else if($_REQUEST['method']=="E"){
@@ -381,8 +396,17 @@ case "po_list" : {
 	$i=0;
 		
 	foreach ($_REQUEST[type] as $key => $type ) {
+		$price = !empty($_REQUEST['price'][$key]) ? floatval($_REQUEST['price'][$key]) : 0;
+		$discount = !empty($_REQUEST['discount'][$key]) ? floatval($_REQUEST['discount'][$key]) : 0;
+		$ban_id = !empty($_REQUEST['ban_id'][$key]) ? intval($_REQUEST['ban_id'][$key]) : 0;
+		$model = !empty($_REQUEST['model'][$key]) ? intval($_REQUEST['model'][$key]) : 0;
+		$quantity = !empty($_REQUEST['quantity'][$key]) ? floatval($_REQUEST['quantity'][$key]) : 1;
+		$pack_quantity = !empty($_REQUEST['pack_quantity'][$key]) ? floatval($_REQUEST['pack_quantity'][$key]) : 1;
+		$des = isset($_REQUEST['des'][$key]) ? mysqli_real_escape_string($db->conn, $_REQUEST['des'][$key]) : '';
+		$a_labour = !empty($_REQUEST['a_labour'][$key]) ? intval($_REQUEST['a_labour'][$key]) : 0;
+		$v_labour = !empty($_REQUEST['v_labour'][$key]) ? floatval($_REQUEST['v_labour'][$key]) : 0;
 		
-		$args['value']="'','".$_SESSION['com_id']."','".$po_id."','".$_REQUEST[price][$key]."','".$_REQUEST[discount][$key]."','".$_REQUEST[ban_id][$key]."','".$_REQUEST[model][$key]."','".$type."','".$_REQUEST[quantity][$key]."','".$_REQUEST[pack_quantity][$key]."','','".$_REQUEST[des][$key]."','".$_REQUEST[a_labour][$key]."','".$_REQUEST[v_labour][$key]."','0','0000-00-00','',NULL";
+		$args['value']="NULL,'".$_SESSION['com_id']."','".$po_id."','".$price."','".$discount."','".$ban_id."','".$model."','".$type."','".$quantity."','".$pack_quantity."','0','".$des."','".$a_labour."','".$v_labour."','0','1970-01-01','0',NULL";
 		$har->insertDB($args);	
 
 		}
