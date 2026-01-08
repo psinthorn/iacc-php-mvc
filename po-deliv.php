@@ -13,7 +13,7 @@ $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 $action = $_GET['action'] ?? 'c';
 
-$query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as valid_pay,DATE_FORMAT(valid_pay,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and ven_id='".$com_id."' and po_id_new=''");
+$query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and ven_id='".$com_id."' and po_id_new=''");
 $hasData = mysqli_num_rows($query) == 1;
 
 if($hasData){
@@ -251,9 +251,9 @@ if($hasData){
     .products-table thead th.text-center { text-align: center; }
     
     .products-table tbody td {
-        padding: 16px;
+        padding: 10px 12px;
         border-bottom: 1px solid #f3f4f6;
-        font-size: 14px;
+        font-size: 13px;
         color: #374151;
         vertical-align: middle;
     }
@@ -284,14 +284,22 @@ if($hasData){
     }
     
     .products-table tbody td .form-control {
-        padding: 14px 14px;
+        padding: 6px 8px;
         border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 14px;
+        border-radius: 6px;
+        font-size: 12px;
         transition: all 0.2s;
-        min-width: 180px;
-        min-height: 48px;
+        height: 32px;
         box-sizing: border-box;
+        width: 100%;
+    }
+    
+    .products-table tbody td .sn-input {
+        max-width: 150px;
+    }
+    
+    .products-table tbody td .exp-input {
+        max-width: 110px;
     }
     
     .products-table tbody td .form-control:focus {
@@ -434,15 +442,13 @@ if($hasData){
             </div>
             <div class="info-row">
                 <span class="label"><?=$xml->validpay?></span>
-                <span class="value"><?=htmlspecialchars($data['valid_pay'])?></span>
+                <input type="text" class="form-control date-input" name="valid_pay" value="<?=htmlspecialchars($data['valid_pay'])?>" placeholder="dd-mm-yyyy" style="max-width: 140px; height: 32px; padding: 6px 8px; font-size: 13px;">
             </div>
             <div class="info-row">
                 <span class="label"><?=$xml->deliverydate?></span>
-                <span class="value"><?=htmlspecialchars($data['deliver_date'])?></span>
+                <input type="text" class="form-control date-input" name="deliver_date" value="<?=htmlspecialchars($data['deliver_date'])?>" placeholder="dd-mm-yyyy" style="max-width: 140px; height: 32px; padding: 6px 8px; font-size: 13px;">
             </div>
             <input type="hidden" name="name" value="<?=htmlspecialchars($data['name'])?>">
-            <input type="hidden" name="valid_pay" value="<?=htmlspecialchars($data['valid_pay'])?>">
-            <input type="hidden" name="deliver_date" value="<?=htmlspecialchars($data['deliver_date'])?>">
         </div>
         
         <!-- Parties -->
@@ -458,26 +464,6 @@ if($hasData){
             <div class="info-row">
                 <span class="label"><?=$xml->customer?></span>
                 <span class="value"><?=htmlspecialchars($customer['name_en'] ?: $customer['name_sh'])?></span>
-            </div>
-        </div>
-        
-        <!-- Pay By -->
-        <div class="info-card">
-            <div class="info-card-header">
-                <div class="icon blue"><i class="fa fa-credit-card"></i></div>
-                <h3><?=$xml->payby ?? 'Pay By'?></h3>
-            </div>
-            <div class="form-group" style="margin-top: 8px;">
-                <label for="payby"><?=$xml->selectcustomer ?? 'Select Customer'?></label>
-                <select class="form-control" name="payby" id="payby">
-                <?php 
-                $query_cus=mysqli_query($db->conn, "select name_en,id from company where customer='1'");
-                while($fetch_cus=mysqli_fetch_array($query_cus)){
-                    $selected = ($fetch_cus['id']==$data['cus_id']) ? 'selected' : '';
-                    echo "<option ".$selected." value='".$fetch_cus['id']."'>".htmlspecialchars($fetch_cus['name_en'])."</option>";
-                }
-                ?>
-                </select>
             </div>
         </div>
     </div>
@@ -504,9 +490,9 @@ if($hasData){
             <thead>
                 <tr>
                     <th style="width:5%">#</th>
-                    <th style="width:30%"><?=$xml->product ?? 'Product'?></th>
-                    <th style="width:35%"><?=$xml->sn ?? 'Serial Number'?></th>
-                    <th style="width:30%"><?=$xml->warranty ?? 'Warranty Expiry'?></th>
+                    <th style="width:45%"><?=$xml->product ?? 'Product'?></th>
+                    <th style="width:30%"><?=$xml->sn ?? 'Serial Number'?></th>
+                    <th style="width:20%"><?=$xml->warranty ?? 'Warranty Expiry'?></th>
                 </tr>
             </thead>
             <tbody>
@@ -528,7 +514,7 @@ if($hasData){
                             <span class="product-name"><?=htmlspecialchars($data_pro['name'])?></span>
                             <span class="product-model"><?=htmlspecialchars($data_pro['model'])?></span>
                             <?php if(!empty($data_pro['model_des'])): ?>
-                            <small style="color:#6b7280; font-size:11px;"><?=strip_tags($data_pro['model_des'])?></small>
+                            <small style="color:#6b7280; font-size:11px;"><?=safe_html($data_pro['model_des'])?></small>
                             <?php endif; ?>
                         </div>
                     </td>
@@ -544,12 +530,12 @@ if($hasData){
                                 ?>
                             </select>
                         <?php else: ?>
-                            <input class='form-control' name='sn[<?=$j-1?>]' value='<?=htmlspecialchars($suggestedSN)?>' type='text' placeholder='Enter serial number'>
+                            <input class='form-control sn-input' name='sn[<?=$j-1?>]' value='<?=htmlspecialchars($suggestedSN)?>' type='text' placeholder='S/N'>
                         <?php endif; ?>
                         <input type='hidden' name='pro_id[<?=$j-1?>]' value='<?=$data_pro['pro_id']?>'>
                     </td>
                     <td>
-                        <input class='form-control' name='exp[<?=$j-1?>]' type='text' value='<?=$defaultExpiry?>' placeholder='dd-mm-yyyy'>
+                        <input class='form-control exp-input' name='exp[<?=$j-1?>]' type='text' value='<?=$defaultExpiry?>' placeholder='dd-mm-yyyy'>
                     </td>
                 </tr>
             <?php 
