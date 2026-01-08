@@ -1,14 +1,56 @@
 # iACC - Accounting Management System
 
-**Version**: 4.4  
+**Version**: 4.5  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 7, 2026  
+**Last Updated**: January 8, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
 ## 📋 Changelog
+
+### v4.5 (January 8, 2026)
+- **Delivery Note Workflow Complete** 📦:
+  - Fixed `po-deliv.php` UI - Modern card-based design with orange gradient header
+  - Fixed delivery note save functionality - INSERT statements using NULL for auto-increment columns
+  - Fixed `deliv-view.php` - Complete redesign with green gradient header, info cards
+  - Fixed `rec.php` (Delivery Note PDF) - Modern template matching inv.php style with green theme
+  - Default warranty expiry now set to current date + 1 year
+
+- **Receive/Confirm Receipt Flow** ✅:
+  - Fixed grammar: "Recieve" → "Confirm Receipt" in language files
+  - Fixed `receive` table INSERT - Added missing `company_id` column
+  - Fixed `iv` table INSERT - Added all 18 columns (was only 11)
+  - Fixed date validation error for `texiv_create` column
+
+- **Invoice View Page Redesign** 💜:
+  - Complete redesign of `compl-view.php` with purple gradient theme
+  - Modern card layout with info grid for invoice details
+  - Products table with purple gradient header
+  - Summary section with payment history
+  - Payment form with increased input field heights
+  - Action buttons: Print Invoice (blue), Void Invoice (red), Issue Tax Invoice (green)
+  - Status badges: Remaining amount (yellow) or Fully Paid (green)
+
+- **Payment Recording** 💰:
+  - Fixed `pay` table INSERT - Added missing `company_id` and `deleted_at` columns
+  - Payment workflow now fully functional
+  - Payment history displays with print links
+
+- **PDF Template Improvements** 📄:
+  - Fixed typos across all PDF templates:
+    - "Term & Condition" → "Terms & Conditions"
+    - "Receive By" → "Received By"
+    - "Delivery By" → "Delivered By"
+    - "Authorize Signature" → "Authorized Signature"
+  - Updated templates: rec.php, taxiv-m.php, sptinv.php, inv-m.php, exp-m.php
+  - Delivery Note PDF now uses modern centered header with green theme (#059669)
+
+- **Bug Fixes** 🐛:
+  - Fixed `deliv-view.php` query - Removed extra `$id` in `po_id_new` condition
+  - Fixed `rec.php` - Changed `$users` to `$db`, fixed `brandven` → `bandven` typo
+  - Fixed all INSERT statements to use NULL instead of '' for auto-increment columns
 
 ### v4.4 (January 7, 2026)
 - **Critical Bug Fix - Product INSERT** 🐛:

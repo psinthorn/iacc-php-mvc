@@ -4,144 +4,181 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
-$users=new DbConn($config);
+$db=new DbConn($config);
 // Security already checked in index.php
 
 $id = sql_int($_REQUEST['id']);
-$com_id = sql_int($_SESSION['com_id']);
-$modep = sql_escape($_REQUEST['modep']);
+$com_id = sql_int($_SESSION['com_id'] ?? 0);
+$modep = sql_escape($_REQUEST['modep'] ?? '');
 
 if($modep=="ad"){
 	$query=mysqli_query($db->conn, "select sendoutitem.id as id,sendoutitem.tmp as des,ven_id,cus_id,name_sh,out_id,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where deliver.id='".$id."' and (cus_id='".$com_id."' or ven_id='".$com_id."') and deliver.id not in (select deliver_id from receive) ");
 	}else{
  
  
- $query=mysqli_query($db->conn, "select po.name as name,ven_id,dis,tax,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,brandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$id."' and  status>'2'  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
+ $query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,dis,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,bandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$id."' and  status>'2'  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
  }
 if(mysqli_num_rows($query)=="1"){
 	$data=mysqli_fetch_array($query);
 	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
 	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[cus_id]."' and valid_end='0000-00-00'"));
 	
-if($data[brandven]==0){$logo=$vender[logo];}else{
-		$bandlogo=mysqli_fetch_array(mysqli_query($db->conn, "select logo from brand where id='".$data[brandven]."'"));
+if($data[bandven]==0){$logo=$vender[logo];}else{
+		$bandlogo=mysqli_fetch_array(mysqli_query($db->conn, "select logo from brand where id='".$data[bandven]."'"));
 		$logo=$bandlogo[logo];
 		
 		}
+
+// Build DN Number
+$dn_number = 'DN-' . str_pad($id, 7, "0", STR_PAD_LEFT);
+if($modep == "ad") {
+    $dn_number .= ' (make)';
+}
+
+// Modern Clean Template matching inv.php style
 $html = '
-<div style="width:20%; float:left;"><img src="upload/'.$logo.'"  height="60" ></div><div style="width:80%;text-align:right "><b>'.$vender[name_en].'</b>
-<small><br>'.$vender[adr_tax].'<br>'.$vender[city_tax].' '.$vender[district_tax].' '.$vender[province_tax].' '.$vender[zip_tax].'<br>Tel : '.$vender[phone].'  Fax : '.$vender[fax].' Email: '.$vender[email].'<br>Tax: '.$vender[tax].'</small></div>
+<style>
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #333; }
+    
+    /* Header */
+    .header { text-align: center; margin-bottom: 10px; }
+    .header img { width: 50px; height: 50px; }
+    .company-name { font-size: 14px; font-weight: bold; color: #059669; margin-top: 5px; }
+    .company-addr { font-size: 10px; color: #444; line-height: 1.4; }
+    
+    /* Title */
+    .title { background: #059669; color: #fff; text-align: center; padding: 8px; font-size: 16px; font-weight: bold; letter-spacing: 2px; margin: 10px 0; }
+    
+    /* Info Section */
+    .info-table { width: 100%; margin-bottom: 10px; }
+    .info-table td { vertical-align: top; font-size: 10px; }
+    .info-left { width: 55%; }
+    .info-right { width: 45%; padding-left: 20px; }
+    .dn-box { padding: 4px 0; margin-bottom: 6px; }
+    .dn-num { font-size: 13px; font-weight: bold; color: #059669; margin: 0; }
+    .dn-meta { font-size: 9px; color: #666; margin-top: 2px; }
+    .lbl { font-weight: bold; color: #555; width: 55px; }
+    .cust-name { font-weight: bold; }
+    
+    /* Items Table */
+    .items { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .items th { background: #059669; color: #fff; padding: 6px 8px; font-size: 10px; text-align: left; }
+    .items th.r { text-align: right; }
+    .items th.c { text-align: center; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 10px; vertical-align: top; }
+    .items td.r { text-align: right; }
+    .items td.c { text-align: center; }
+    .items tr:nth-child(even) { background: #f0fdf4; }
+    
+    /* Terms */
+    .terms { border-top: 1px solid #ccc; padding-top: 8px; margin-top: 15px; }
+    .terms-title { font-weight: bold; font-size: 10px; color: #059669; margin-bottom: 5px; }
+    .terms-content { font-size: 9px; color: #555; line-height: 1.4; }
+    
+    /* Signatures */
+    .sigs { margin-top: 30px; }
+    .sigs td { width: 33%; text-align: center; padding: 0 10px; vertical-align: bottom; }
+    .sig-space { height: 40px; }
+    .sig-line { font-size: 10px; font-weight: bold; padding-top: 5px; border-top: 1px solid #333; }
+    .sig-date { font-size: 9px; color: #888; margin-top: 3px; }
+</style>
 
-<div id="all_font2" style="font-size:12px; margin-bottom:10px; ">
-<div style="width:100%; margin-top:10px; margin-bottom:5px; padding:5px;background-color:#000; text-align:center; font-weight:bold; color:#FFF;font-size:18px;">DELIVERY NOTE
+<!-- Header -->
+<div class="header">
+    <img src="upload/' . $logo . '" width="50" height="50"><br>
+    <div class="company-name">' . ($vender['name_en'] ?? '') . '</div>
+    <div class="company-addr">
+        ' . ($vender['adr_tax'] ?? '') . ' ' . ($vender['city_tax'] ?? '') . ' ' . ($vender['district_tax'] ?? '') . ' ' . ($vender['province_tax'] ?? '') . ' ' . ($vender['zip_tax'] ?? '') . '<br>
+        Tel: ' . ($vender['phone'] ?? '') . ' &nbsp; Fax: ' . ($vender['fax'] ?? '') . ' &nbsp; Email: ' . ($vender['email'] ?? '') . ' &nbsp; Tax ID: ' . ($vender['tax'] ?? '') . '
+    </div>
 </div>
 
-<div style="width:10%; float:left; font-weight:bold;">Customer</div>
-<div style="width:54%; float:left;">'.$customer[name_en].'</div>
-<div style="width:14%; float:left; text-align:left; padding-left:3px; font-weight:bold;">Delivery Date</div>
-<div style="width:20%; float:left; text-align:left;">'.$data['deliver_date'].'</div>
+<!-- Title -->
+<div class="title">DELIVERY NOTE</div>
 
+<!-- Info Section -->
+<table class="info-table">
+    <tr>
+        <td class="info-left">
+            <div class="dn-box">
+                <div class="dn-num">' . $dn_number . '</div>
+                <div class="dn-meta">Date: ' . $data['deliver_date'] . ($modep != "ad" ? ' &nbsp;|&nbsp; Ref: PO-' . $data['tax'] : '') . '</div>
+            </div>
+            <table>
+                <tr><td class="lbl">Customer</td><td class="cust-name">' . ($customer['name_en'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Address</td><td>' . ($customer['adr_tax'] ?? '') . ' ' . ($customer['city_tax'] ?? '') . ' ' . ($customer['district_tax'] ?? '') . ' ' . ($customer['province_tax'] ?? '') . ' ' . ($customer['zip_tax'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Tax ID</td><td>' . ($customer['tax'] ?? '') . '</td></tr>
+            </table>
+        </td>
+        <td class="info-right">
+            <table>
+                <tr><td class="lbl">Tel</td><td>' . ($customer['phone'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Fax</td><td>' . ($customer['fax'] ?? '') . '</td></tr>
+                <tr><td class="lbl">Email</td><td>' . ($customer['email'] ?? '') . '</td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
-<div style="width:10%; float:left; font-weight:bold;">Address</div>
-<div style="width:54%; float:left;">'.$customer[adr_tax].'</div>
-<div style="width:14%; float:left; padding-left:3px; font-weight:bold; ">No.</div>
-';
+<!-- Items -->
+<table class="items">
+    <tr>
+        <th style="width:5%">#</th>
+        <th style="width:15%">Model</th>
+        <th style="width:35%">Product Name</th>
+        <th style="width:20%">S/N</th>
+        <th class="c" style="width:8%">Unit</th>
+        <th style="width:17%">Warranty</th>
+    </tr>';
 
-if($modep!="ad"){
-$html.='	
-<div style="width:20%; float:left; ">DN-'.str_pad($id, 7, "0", STR_PAD_LEFT).'</div>
-';}else{
-$html.='	
-<div style="width:20%; float:left; ">
-DN-'.str_pad($id, 7, "0", STR_PAD_LEFT).'(make)</div>
-';}
+if($_REQUEST['modep']=="ad"){
+    $que_pro = mysqli_query($db->conn, "SELECT type.name as name, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty, product.des as des, quantity FROM product JOIN type ON product.type=type.id JOIN store ON product.pro_id=store.pro_id JOIN store_sale ON store.id=store_sale.st_id JOIN model ON product.model=model.id WHERE so_id='".$data['out_id']."'");
+} else {
+    $que_pro = mysqli_query($db->conn, "SELECT type.name as name, model.model_name as model, quantity, s_n, product.des as des, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN type ON product.type=type.id JOIN store ON product.pro_id=store.pro_id JOIN store_sale ON store.id=store_sale.st_id JOIN model ON product.model=model.id WHERE po_id='".$data['po_id']."'");
+}
 
+$cot = 1;
+while($data_pro = mysqli_fetch_array($que_pro)) {
+    $html .= '<tr>
+        <td>' . $cot . '</td>
+        <td>' . ($data_pro['model'] ?? '') . '</td>
+        <td>' . ($data_pro['name'] ?? '') . '</td>
+        <td>' . ($data_pro['s_n'] ?? '') . '</td>
+        <td class="c">1</td>
+        <td>' . ($data_pro['warranty'] ?? '') . '</td>
+    </tr>';
+    $cot++;
+}
 
+$html .= '</table>
 
+<!-- Terms -->
+' . (!empty($vender['term']) ? '
+<div class="terms">
+    <div class="terms-title">Terms & Conditions</div>
+    <div class="terms-content">' . nl2br($vender['term'] ?? '') . '</div>
+</div>' : '') . '
 
-$html.='
-<div style="width:10%; height:5px; float:left; font-weight:bold;"></div>
-<div style="width:54%; float:left;">'.$customer[city_tax].' '.$customer[district_tax].' '.$customer[province_tax].' '.$customer[zip_tax].'</div>';
-
-
-
-
-
-if($modep!="ad"){
-$html.='<div style="width:14%; float:left;  padding-left:3px; font-weight:bold;">Ref-Doc</div>
-<div style="width:20%; float:left;">PO-'.$data[tax].'</div>
-';}else{
-	$html.='<div style="width:14%; height:10px; float:left;  padding-left:3px; font-weight:bold;"> </div>
-<div style="width:20%; height:10px; float:left;"> </div>
-';
-	}
-$html.='
-<div style="width:10%; float:left; font-weight:bold;">Tax ID</div>
-<div style="width:90%; float:left;">'.$customer[tax].'</div>
-
-<div style="width:10%; float:left; font-weight:bold;">Email</div>
-<div style="width:90%; float:left;">'.$customer[email].'</div>
-
-<div style="width:10%; float:left; font-weight:bold;">Tel.</div>
-<div style="width:22%; float:left;">'.$customer[phone].'</div>
-<div style="width:10%; float:left; font-weight:bold;">Fax.</div>
-<div style="width:22%; float:left;">'.$customer[fax].'</div>
-
-</div>
-
-
-<div id="all_font" style="font-size:12px; height:532px;">
-
-
-<div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
-<div style="width:5%; float:left;">No.</div>
-<div style="width:15%; float:left;">Model</div>
-<div style="width:36%;float:left;">Product Name</div>
-
-<div style="width:20%; float:left;text-align:left;">S/N</div>
-<div style="width:10%; float:left;text-align:left;">Unit</div>
-
-<div style="width:13%; float:left;text-align:left;">Warranty</div>
-
-</div>
-';
-
-if($_REQUEST[modep]=="ad"){$que_pro=mysqli_query($db->conn, "select type.name as name,model.model_name as model,s_n,DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty,product.des as des, quantity from product join type on product.type=type.id  join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id join model on product.model=model.id where so_id='".$data[out_id]."'");}else{
-$que_pro=mysqli_query($db->conn, "select type.name as name,model.model_name as model,quantity,s_n,product.des as des,DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty from product join type on product.type=type.id  join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id join model on product.model=model.id where po_id='".$data[po_id]."'");}$summary=0;
-$cot=1;
-	while($data_pro=mysqli_fetch_array($que_pro)){
-$total=$data_pro[price]-$data_pro[discount];
-$summary+=$total;
-
-$html .= '<div style="width:100%">
-<div style="width:5%; float:left;">'.$cot.'</div>
-<div style="width:15%; float:left;">'.$data_pro[model].'</div>
-<div style="width:36%;float:left;">'.$data_pro[name].'</div>
-<div style="width:20%; float:left;text-align:left;">'.$data_pro[s_n].'</div>
-<div style="width:10%; float:left;text-align:left;">1</div>
-<div style="width:13%; float:left;text-align:left;">'.$data_pro[warranty].'</div>
-
-</div>';
-
-	if($data_pro[des]!="")$html .= '
-<div style="width:98%; margin-left:2%;font-size:10px;"># '.$data_pro[des].'</div>';	
-$cot++;
- }
- 
-$html .= '</div>
-<hr>
-
-<div id="all_font" style="font-size:12px;">
-
-
-<b>Term & Condition</b><br>'.$vender[term].'<br>
-<hr>
-<div style="width:33%; height:100px; float:left; border-right: solid thin #cccccc; text-align:center;"><br><br><br><br>____________________________<br>Receive By<BR>Date _______/_______/________</div>
-<div style="width:33%; height:100px; float:left; border-right: solid thin #cccccc; text-align:center;"><br><br><br><br>____________________________<br>Delivery By<BR>Date _______/_______/________</div>
-<div style="width:33%; height:100px; float:left; text-align:center;"><br><br><br><br>____________________________<br>Authorize Signature<BR>Date _______/_______/________</div>
-</div>
-
-';	
+<!-- Signatures -->
+<table class="sigs" width="100%">
+    <tr>
+        <td>
+            <div class="sig-space"></div>
+            <div class="sig-line">Received By</div>
+            <div class="sig-date">Date: ____/____/________</div>
+        </td>
+        <td>
+            <div class="sig-space"></div>
+            <div class="sig-line">Delivered By</div>
+            <div class="sig-date">Date: ____/____/________</div>
+        </td>
+        <td>
+            <div class="sig-space"></div>
+            <div class="sig-line">Authorized Signature</div>
+            <div class="sig-date">Date: ____/____/________</div>
+        </td>
+    </tr>
+</table>';	
 
 
 //==============================================================

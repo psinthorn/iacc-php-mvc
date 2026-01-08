@@ -177,7 +177,7 @@ $html .= '
 
 <br>
 <hr>
-<b>Term & Condition</b><br>'.$vender[term].'<br>
+<b>Terms & Conditions</b><br>'.$vender[term].'<br>
 <hr>
 <div style="width:33%; height:100px; float:left; border-right: solid thin #cccccc; text-align:center;">Approved By<br><br><br><br>____________________________<br>Customer Signature<BR>Date _______/_______/________</div>
 <div style="width:33%; height:100px; float:left; border-right: solid thin #cccccc; text-align:center;">Proposed By<br><br><br><br>____________________________<br>Signature<BR>Date _______/_______/________</div>

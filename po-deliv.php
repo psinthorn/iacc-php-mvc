@@ -1,148 +1,598 @@
 <?php
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
-$users=new DbConn($config);
-// Security already checked in index.php?>
-<!DOCTYPE html>
-<html>
+// Security already checked in index.php
 
-<head>
-
-<!--<script language="JavaScript" type="text/javascript">
-function checkBooking() {
-	var frm = document.deliver-form;
-
-
-
-	if (frm.first.value == "" ){
-			alert("Please check your First Name");frm.first.focus();
-return false;
-	}
-	
-	}-->
-
-</script>
-
-</head>
-
-<body><?Php 
 $_date = explode("-", date("d-m-Y"));
-					$day = $_date[0];
-					$month = $_date[1];
-					$year = $_date[2];
-				
-		
+$day = $_date[0];
+$month = $_date[1];
+$year = $_date[2];
 
-?>
-<div style="float:left; width:auto"><h2><i class="fa fa fa-truck"></i> <?php if($_GET[action]=="m")echo $xml->make." ".$xml->deliverynote; else echo $xml->create." ".$xml->deliverynote?></h2></div><form action="index.php?page=po_list"  style="float:right; margin-top:15px;" method="post"><input value="<?=$xml->back?>" style=" margin-left:5px;float:left;" type="submit" class="btn btn-primary"></form>
+// Default warranty expiry: current date + 1 year
+$defaultExpiry = date("d-m-Y", strtotime("+1 year"));
 
-
-<?php  
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
+$action = $_GET['action'] ?? 'c';
 
-$query=mysqli_query($db->conn, "select po.name as name,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as valid_pay,DATE_FORMAT(valid_pay,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2')  and ven_id='".$com_id."' and po_id_new=''");
-if(mysqli_num_rows($query)=="1"){
-	$data=mysqli_fetch_array($query);
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[ven_id]."'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[cus_id]."'"));
-	
-	
-	?>
-    <div class="clearfix"></div>
-<form action="core-function.php" method="post" id="deliver-form" name="deliver-form" enctype="multipart/form-data">
+$query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as valid_pay,DATE_FORMAT(valid_pay,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and ven_id='".$com_id."' and po_id_new=''");
+$hasData = mysqli_num_rows($query) == 1;
 
-	<div id="box">
-		<lable for="name"><?=$xml->name?></lable>
-		<input id="name" name="name" class="form-control" readonly required value="<?php echo $data[name];?>"  type="text">
-	</div>
-    <div id="box">
-		<lable for="name"><?=$xml->vender?></lable>
-		<input class="form-control" type="text" readonly value="<?php echo $vender[name_sh];?>">
-	</div>
-     <div id="box">
-		<lable for="name"><?=$xml->customer?></lable>
-		<input class="form-control" type="text" readonly value="<?php echo $customer[name_sh];?>">
-	</div>
-	<div id="box"  style="width:100%;" >
-		<lable for="des"><?=$xml->description?></lable><textarea id="des" class="form-control" readonly rows="5"><?php echo $data[des];?></textarea>
-		
-	</div>
-     <div id="box">
-		<lable for="name"><?=$xml->validpay?></lable>
-		<input readonly class="form-control" name="valid_pay" type="text" value="<?php echo $data[valid_pay];?>">
-	</div>
-     <div id="box">
-		<lable for="name"><?=$xml->deliverydate?></lable>
-		<input required  class="form-control" name="deliver_date" type="text" value="<?php echo $data[deliver_date];?>">
-	</div>
-     <div id="box">
-		<lable for="name"><?=$xml->payby?></lable>
-        <select class="form-control"  name="payby"  id="payby">
-        <?php $query_cus=mysqli_query($db->conn, "select name_en,id from company where customer='1'");
-		
-		
-		while($fetch_cus=mysqli_fetch_array($query_cus)){
-					if($fetch_cus[id]==$data[cus_id])
-					echo "<option selected value='".$fetch_cus[id]."' >".$fetch_cus[name_en]."</option>"; else 	echo "<option value='".$fetch_cus[id]."' >".$fetch_cus[name_en]."</option>";
-				}?>
-</select>
-	</div>
-<div class="clearfix"></div><br><table class="table"><tr><tr><th width="250"><?=$xml->name?></th><th><?=$xml->sn?></th><th width="150"><?=$xml->warranty?></th></tr>
-	<?php $que_pro=mysqli_query($db->conn, "select type.name as name,product.des as des,product.price as price,pro_id,discount,model.model_name as model,quantity,pack_quantity,type from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
-
-$j=0;
-	while($data_pro=mysqli_fetch_array($que_pro)){
-$item=$data_pro[quantity]*$data_pro[pack_quantity];
-for($i=0;$i<$item;$i++){
-echo "<tr><td>".$data_pro[name]."<br>(".$data_pro[model].")</td>
-<td>";
-if($_GET[action]=="m"){ echo "
-<select required class='form-control' name='sn[".$j."]'><option value='' >-------Please Select Item------</option>";
-
-$query_store=mysqli_query($db->conn, "select store.id as st_id, type.name as name, s_n from store join product on store.pro_id=product.pro_id join store_sale on store.id=store_sale.st_id join type on product.type=type.id where own_id='".$com_id."' and type='".$data_pro[type]."' and sale='0'");
-$countpro=mysqli_num_rows($query_store);
-
-$tmpstore="";
-while($data_store=mysqli_fetch_array($query_store)){
-	echo "<option value='".$data_store[st_id]."'>".$data_store[name]."(".$data_store[s_n].")</option>";
-	}
-
-echo "
-</select>
-</td></tr>";}else{ 
-
-$maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".$data_pro[pro_id]."')"));
-
-echo "
-<input  class='form-control' name='sn[".$j."]' value='".$data_pro[model]."-".($maxno[maxno]+1)."' type='text'>".$data_pro[des]."</td>";}
-echo "<td><input class='form-control' placeholder='dd-mm-yyyy' name='exp[".$j."]'  type='text'><input type='hidden' name='pro_id[".$j."]' value='".$data_pro[pro_id]."'></td>
-</tr>";
-$j++;
+if($hasData){
+    $data=mysqli_fetch_array($query);
+    $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh,name_en from company where id='".$data['ven_id']."'"));
+    $customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh,name_en from company where id='".$data['cus_id']."'"));
 }
- }
-	
-	?>
- 
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    .delivery-wrapper {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
     
-    </table>
-   
-	<input type="hidden"  name="method" value="<?php echo e($_GET['action'] ?? '');?>">
-    <input type="hidden" name="ref" value="<?php echo e($data['ref'] ?? '');?>">
-	<input type="hidden" name="page" value="deliv_list">
-    <input type="hidden" name="po_id" value="<?php echo e($id);?>">
-    <input type="hidden" name="cus_id" value="<?php echo e($data['cus_id'] ?? '');?>">
+    .page-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 24px 28px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 40px rgba(245, 158, 11, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .page-header-left h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .page-header-left .subtitle {
+        opacity: 0.9;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    
+    .page-header-left .ref-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .btn-back {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-back:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .info-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+    }
+    
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+    
+    .info-card-header .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    
+    .info-card-header .icon.orange { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .info-card-header .icon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .info-card-header .icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    
+    .info-card-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-row .label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    
+    .info-row .value {
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+    
+    .form-group .form-control {
+        width: 100%;
+        padding: 14px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+        min-height: 48px;
+    }
+    
+    .form-group .form-control:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        outline: none;
+    }
+    
+    .products-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    
+    .products-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .products-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .products-header h3 i {
+        color: #f59e0b;
+    }
+    
+    .products-header .item-count {
+        background: #f59e0b;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .products-table thead th {
+        background: #f9fafb;
+        color: #374151;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        padding: 14px 16px;
+        border-bottom: 2px solid #e5e7eb;
+        text-align: left;
+    }
+    
+    .products-table thead th.text-center { text-align: center; }
+    
+    .products-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+        color: #374151;
+        vertical-align: middle;
+    }
+    
+    .products-table tbody tr:hover {
+        background: rgba(245, 158, 11, 0.02);
+    }
+    
+    .product-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .product-name {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .product-model {
+        font-size: 12px;
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        width: fit-content;
+    }
+    
+    .products-table tbody td .form-control {
+        padding: 14px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        min-width: 180px;
+        min-height: 48px;
+        box-sizing: border-box;
+    }
+    
+    .products-table tbody td .form-control:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        outline: none;
+    }
+    
+    .action-section {
+        display: flex;
+        gap: 16px;
+        justify-content: flex-end;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+    
+    .btn-save:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .error-card {
+        background: white;
+        border-radius: 16px;
+        padding: 60px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+    }
+    
+    .error-card .error-icon {
+        width: 80px;
+        height: 80px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: #ef4444;
+        font-size: 36px;
+    }
+    
+    .error-card h3 {
+        margin: 0 0 10px;
+        color: #1f2937;
+        font-size: 20px;
+    }
+    
+    .error-card p {
+        color: #6b7280;
+        margin: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+        
+        .info-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .products-table {
+            font-size: 12px;
+        }
+        
+        .products-table thead th,
+        .products-table tbody td {
+            padding: 10px 8px;
+        }
+        
+        .products-table tbody td .form-control {
+            min-width: 120px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="delivery-wrapper">
+<?php if($hasData): ?>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h2>
+                <i class="fa fa-truck"></i>
+                <?php if($action=="m") echo $xml->make." ".$xml->deliverynote; else echo $xml->create." ".$xml->deliverynote; ?>
+            </h2>
+            <div class="subtitle">
+                <span class="ref-badge">PO-<?=htmlspecialchars($data['tax'] ?? $id)?></span>
+            </div>
+        </div>
+        <a href="index.php?page=po_list" class="btn-back">
+            <i class="fa fa-arrow-left"></i> <?=$xml->back?>
+        </a>
+    </div>
+
+    <form action="core-function.php" method="post" id="deliver-form" name="deliver-form" enctype="multipart/form-data">
     <?= csrf_field() ?>
-	
-	<?php if($data['status']=="2"){?><input type="submit" value="<?=$xml->save;?>" class="btn btn-primary"><?php }?>
-</form>
+    
+    <!-- Info Cards -->
+    <div class="info-cards">
+        <!-- Order Info -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="icon orange"><i class="fa fa-file-text-o"></i></div>
+                <h3><?=$xml->information ?? 'Order Information'?></h3>
+            </div>
+            <div class="info-row">
+                <span class="label"><?=$xml->name?></span>
+                <span class="value"><?=htmlspecialchars($data['name'])?></span>
+            </div>
+            <div class="info-row">
+                <span class="label"><?=$xml->validpay?></span>
+                <span class="value"><?=htmlspecialchars($data['valid_pay'])?></span>
+            </div>
+            <div class="info-row">
+                <span class="label"><?=$xml->deliverydate?></span>
+                <span class="value"><?=htmlspecialchars($data['deliver_date'])?></span>
+            </div>
+            <input type="hidden" name="name" value="<?=htmlspecialchars($data['name'])?>">
+            <input type="hidden" name="valid_pay" value="<?=htmlspecialchars($data['valid_pay'])?>">
+            <input type="hidden" name="deliver_date" value="<?=htmlspecialchars($data['deliver_date'])?>">
+        </div>
+        
+        <!-- Parties -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="icon green"><i class="fa fa-building"></i></div>
+                <h3><?=$xml->parties ?? 'Parties'?></h3>
+            </div>
+            <div class="info-row">
+                <span class="label"><?=$xml->vender?></span>
+                <span class="value"><?=htmlspecialchars($vender['name_en'] ?: $vender['name_sh'])?></span>
+            </div>
+            <div class="info-row">
+                <span class="label"><?=$xml->customer?></span>
+                <span class="value"><?=htmlspecialchars($customer['name_en'] ?: $customer['name_sh'])?></span>
+            </div>
+        </div>
+        
+        <!-- Pay By -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="icon blue"><i class="fa fa-credit-card"></i></div>
+                <h3><?=$xml->payby ?? 'Pay By'?></h3>
+            </div>
+            <div class="form-group" style="margin-top: 8px;">
+                <label for="payby"><?=$xml->selectcustomer ?? 'Select Customer'?></label>
+                <select class="form-control" name="payby" id="payby">
+                <?php 
+                $query_cus=mysqli_query($db->conn, "select name_en,id from company where customer='1'");
+                while($fetch_cus=mysqli_fetch_array($query_cus)){
+                    $selected = ($fetch_cus['id']==$data['cus_id']) ? 'selected' : '';
+                    echo "<option ".$selected." value='".$fetch_cus['id']."'>".htmlspecialchars($fetch_cus['name_en'])."</option>";
+                }
+                ?>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products Table -->
+    <?php 
+    $que_pro=mysqli_query($db->conn, "select type.name as name,product.des as des,product.price as price,pro_id,discount,model.model_name as model,model.des as model_des,quantity,pack_quantity,type from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."' AND product.deleted_at IS NULL");
+    $total_items = 0;
+    $products = [];
+    while($row = mysqli_fetch_array($que_pro)){
+        $item_count = $row['quantity'] * $row['pack_quantity'];
+        $total_items += $item_count;
+        $products[] = $row;
+    }
+    ?>
+    
+    <div class="products-card">
+        <div class="products-header">
+            <h3><i class="fa fa-barcode"></i> <?=$xml->product ?? 'Products'?> - <?=$xml->sn ?? 'Serial Numbers'?></h3>
+            <span class="item-count"><?=$total_items?> <?=$total_items == 1 ? 'item' : 'items'?></span>
+        </div>
+        
+        <table class="products-table">
+            <thead>
+                <tr>
+                    <th style="width:5%">#</th>
+                    <th style="width:30%"><?=$xml->product ?? 'Product'?></th>
+                    <th style="width:35%"><?=$xml->sn ?? 'Serial Number'?></th>
+                    <th style="width:30%"><?=$xml->warranty ?? 'Warranty Expiry'?></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php 
+            $j = 0;
+            foreach($products as $data_pro):
+                $item = $data_pro['quantity'] * $data_pro['pack_quantity'];
+                for($i=0; $i<$item; $i++):
+                    $j++;
+                    
+                    // Get max serial number for auto-generation
+                    $maxno = mysqli_fetch_array(mysqli_query($db->conn, "select max(no) as maxno from store join product on store.pro_id=product.pro_id where model in (select model from product where pro_id='".$data_pro['pro_id']."')"));
+                    $suggestedSN = $data_pro['model']."-".($maxno['maxno']+$i+1);
+            ?>
+                <tr>
+                    <td style="text-align:center; color:#6b7280; font-weight:500;"><?=$j?></td>
+                    <td>
+                        <div class="product-info">
+                            <span class="product-name"><?=htmlspecialchars($data_pro['name'])?></span>
+                            <span class="product-model"><?=htmlspecialchars($data_pro['model'])?></span>
+                            <?php if(!empty($data_pro['model_des'])): ?>
+                            <small style="color:#6b7280; font-size:11px;"><?=strip_tags($data_pro['model_des'])?></small>
+                            <?php endif; ?>
+                        </div>
+                    </td>
+                    <td>
+                        <?php if($action=="m"): ?>
+                            <select required class='form-control' name='sn[<?=$j-1?>]'>
+                                <option value=''>-- <?=$xml->selectitem ?? 'Select Item'?> --</option>
+                                <?php
+                                $query_store=mysqli_query($db->conn, "select store.id as st_id, type.name as name, s_n from store join product on store.pro_id=product.pro_id join store_sale on store.id=store_sale.st_id join type on product.type=type.id where own_id='".$com_id."' and type='".$data_pro['type']."' and sale='0'");
+                                while($data_store=mysqli_fetch_array($query_store)){
+                                    echo "<option value='".$data_store['st_id']."'>".htmlspecialchars($data_store['name'])." (".htmlspecialchars($data_store['s_n']).")</option>";
+                                }
+                                ?>
+                            </select>
+                        <?php else: ?>
+                            <input class='form-control' name='sn[<?=$j-1?>]' value='<?=htmlspecialchars($suggestedSN)?>' type='text' placeholder='Enter serial number'>
+                        <?php endif; ?>
+                        <input type='hidden' name='pro_id[<?=$j-1?>]' value='<?=$data_pro['pro_id']?>'>
+                    </td>
+                    <td>
+                        <input class='form-control' name='exp[<?=$j-1?>]' type='text' value='<?=$defaultExpiry?>' placeholder='dd-mm-yyyy'>
+                    </td>
+                </tr>
+            <?php 
+                endfor;
+            endforeach;
+            ?>
+            </tbody>
+        </table>
+        
+        <?php if($data['status']=="2"): ?>
+        <div class="action-section">
+            <button type="submit" class="btn-save">
+                <i class="fa fa-save"></i> <?=$xml->save ?? 'Save Delivery Note'?>
+            </button>
+        </div>
+        <?php endif; ?>
+    </div>
+    
+    <input type="hidden" name="method" value="<?=htmlspecialchars($action)?>">
+    <input type="hidden" name="ref" value="<?=htmlspecialchars($data['ref'] ?? '')?>">
+    <input type="hidden" name="page" value="deliv_list">
+    <input type="hidden" name="po_id" value="<?=htmlspecialchars($id)?>">
+    <input type="hidden" name="cus_id" value="<?=htmlspecialchars($data['cus_id'] ?? '')?>">
+    </form>
 
+<?php else: ?>
 
+    <!-- Error State -->
+    <div class="error-card">
+        <div class="error-icon">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+        <h3><?=$xml->error ?? 'Error'?></h3>
+        <p><?=$xml->quotationnotfound ?? 'Order not found or access denied.'?></p>
+        <br>
+        <a href="index.php?page=po_list" class="btn-back" style="background:#667eea; display:inline-flex;">
+            <i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back to List'?>
+        </a>
+    </div>
 
-<?php 
-}else echo "<center>ERROR</center>";?>
+<?php endif; ?>
+
+</div>
 
 </body>
 </html>

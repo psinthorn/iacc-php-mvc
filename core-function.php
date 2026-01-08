@@ -155,7 +155,8 @@ case "category" : {
 case "compl_list" : {
 	if($_REQUEST['method']=="C"){
 		$args['table']="pay";
-	$args['value']="'','".sql_int($_REQUEST['po_id'])."','".sql_escape($_REQUEST['payment'])."','".sql_escape($_REQUEST['remark'])."','".sql_escape($_REQUEST['volumn'])."','".date("Y-m-d")."'";
+	// pay table columns: id, company_id, po_id, method, value, volumn, date, deleted_at
+	$args['value']="NULL,'".$_SESSION['com_id']."','".sql_int($_REQUEST['po_id'])."','".sql_escape($_REQUEST['payment'])."','".sql_escape($_REQUEST['remark'])."','".sql_escape($_REQUEST['volumn'])."','".date("Y-m-d")."',NULL";
 	
 	$har->insertDB($args);	
 		}
@@ -663,11 +664,13 @@ $flag=0;
 $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno from store s join product p on s.pro_id=p.pro_id join store_sale ss on s.id=ss.st_id where ss.own_id='".$_SESSION['com_id']."' and p.model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
 
 
-	$args['value']="'".$_REQUEST['pro_id'][$ci]."','".$sn."','".($maxno[maxno]+1)."'";
+	// store table: id, company_id, pro_id, s_n, no
+	$args['value']="'".$_SESSION['com_id']."','".$_REQUEST['pro_id'][$ci]."','".$sn."','".($maxno[maxno]+1)."'";
 	 $po_id=$har->insertDbMax($args);
-	
-	
-	$args2['value']="'','".$po_id."','".strtotime($_REQUEST['exp'][$ci])."','0','".$_SESSION['com_id']."'";
+
+
+	// store_sale table: id, st_id, warranty, sale, own_id
+	$args2['value']="NULL,'".$po_id."','".date("Y-m-d",strtotime($_REQUEST['exp'][$ci]))."','0','".$_SESSION['com_id']."'";
 		$har->insertDB($args2);	
 	
 	 $ci++;
@@ -675,12 +678,16 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 	 }
 	 
 	 
-	$args3['value']="'','".sql_int($_REQUEST['po_id'])."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."',''";	$har->insertDB($args3);	
+	// deliver table: id, company_id, po_id, deliver_date, out_id, deleted_at
+	$args3['value']="NULL,'".$_SESSION['com_id']."','".sql_int($_REQUEST['po_id'])."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','0',NULL";	$har->insertDB($args3);	
 	
 	$args['table']="pr";
 	$args['value']="status='3',payby='".sql_int($_REQUEST['payby'])."'";
 	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
-	$har->updateDb($args);	
+	$har->updateDb($args);
+	
+	// Redirect to delivery list after creating delivery note
+	exit("<script>window.location = 'index.php?page=deliv_list'</script>");	
 	 
 	 
 	 
@@ -697,8 +704,8 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno from store s join product p on s.pro_id=p.pro_id join store_sale ss on s.id=ss.st_id where ss.own_id='".$_SESSION['com_id']."' and p.model in (select model from product where pro_id='".sql_int($_REQUEST['pro_id'][$ci])."')"));
 
 
-	
-	$args['value']="'".$_REQUEST['pro_id'][$ci]."','".$datacheck[s_n]."','".($maxno[maxno]+1)."'";
+	// store table: id, company_id, pro_id, s_n, no
+	$args['value']="'".$_SESSION['com_id']."','".$_REQUEST['pro_id'][$ci]."','".$datacheck[s_n]."','".($maxno[maxno]+1)."'";
 	 $po_id=$har->insertDbMax($args);
 	
 	
@@ -708,7 +715,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 	
 	$har->updateDb($args4);	
 	
-	$args2['value']="'','".$po_id."','".date("Y-m-d",strtotime($_REQUEST['exp'][$ci]))."','0','".$_REQUEST[cus_id]."'";
+	$args2['value']="NULL,'".$po_id."','".date("Y-m-d",strtotime($_REQUEST['exp'][$ci]))."','0','".$_REQUEST[cus_id]."'";
 	
 		$har->insertDB($args2);	
 	
@@ -717,13 +724,14 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 	 }
 	 
 	 
-	$args3['value']="'','".$_REQUEST['po_id']."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."'";	
+		// deliver table: id, company_id, po_id, deliver_date, out_id, deleted_at
+	$args3['value']="NULL,'".$_SESSION['com_id']."','".sql_int($_REQUEST['po_id'])."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','0',NULL";	
 	
 	$har->insertDB($args3);	
 	
 	$args['table']="pr";
 	$args['value']="status='3'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
+	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);	
 	 
 	 
@@ -784,13 +792,14 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 		else 
 		if($_REQUEST['method']=="R"){
 	$args3['table']="receive";	 
-	$args3['value']="'','".$_REQUEST['po_id']."','".$_REQUEST['deliv_id']."','".date('Y-m-d')."'";	
+	$args3['value']="NULL,'".$_SESSION['com_id']."','".$_REQUEST['po_id']."','".$_REQUEST['deliv_id']."','".date('Y-m-d')."'";	
 	$har->insertDB($args3);		
 	
 	 $argsiv['table']="iv";
 	 $veniv=mysqli_fetch_array(mysqli_query($db->conn, "select ven_id from pr join po on pr.id=po.ref where po.id='".sql_int($_REQUEST['po_id'])."'"));
-	 $maxiv=mysqli_fetch_array(mysqli_query($db->conn, "select max(id) as max_id from iv where cus_id='".$veniv[ven_id]."'"));
-		$argsiv['value']="'".(($maxiv[max_id]*1)+1)."','".$_REQUEST['po_id']."','".$veniv[ven_id]."','".date("Y-m-d")."','".(date("y")+43).str_pad(($maxiv[max_id]+1), 6, '0', STR_PAD_LEFT)."','','','','0','',''";
+	 $maxiv=mysqli_fetch_array(mysqli_query($db->conn, "select max(id) as max_id from iv where cus_id='".$veniv['ven_id']."'"));
+	 // iv table columns: id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date
+	 $argsiv['value']="'".(($maxiv['max_id']*1)+1)."','".$_SESSION['com_id']."','".$_REQUEST['po_id']."','".$veniv['ven_id']."','".date("Y-m-d")."','".(date("y")+43).str_pad(($maxiv['max_id']+1), 6, '0', STR_PAD_LEFT)."','0','0','".date("Y-m-d")."','0','0','0',NULL,'pending',NULL,NULL,'0.00',NULL";
 		$har->insertDB($argsiv);	
 	 
 		
@@ -803,7 +812,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 	} else 
 	if($_REQUEST['method']=="R2"){
 	$args3['table']="receive";	 
-	$args3['value']="'','ou".$_REQUEST['po_id']."','".$_REQUEST['deliv_id']."','".date('Y-m-d')."'";	
+	$args3['value']="NULL,'".$_SESSION['com_id']."','ou".$_REQUEST['po_id']."','".$_REQUEST['deliv_id']."','".date('Y-m-d')."'";	
 	$har->insertDB($args3);		
 		} else
 		if($_REQUEST['method']=="AD"){

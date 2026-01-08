@@ -191,10 +191,10 @@ $html .= '
 <div style="width:12%; float:right;text-align:right;">Grand Total</div>
 <br>
 <hr>
-<b>Term & Condition</b><br>'.$vender[term].'<br>
+<b>Terms & Conditions</b><br>'.$vender[term].'<br>
 <hr>
 <div style="width:49%; height:100px; float:left; border-right: solid thin #cccccc; text-align:center;"></div>
-<div style="width:49%; height:100px; float:left; text-align:center;"><div style="text-align:left;">&nbsp;&nbsp;&nbsp;&nbsp;'.$vender[name_en].'</div><br><br><br><br>____________________________<br>Authorize Signature<BR>Date _______/_______/________</div>
+<div style="width:49%; height:100px; float:left; text-align:center;"><div style="text-align:left;">&nbsp;&nbsp;&nbsp;&nbsp;'.$vender[name_en].'</div><br><br><br><br>____________________________<br>Authorized Signature<BR>Date _______/_______/________</div>
 </div>
 
 
