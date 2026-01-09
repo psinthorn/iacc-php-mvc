@@ -72,6 +72,9 @@ upload/*
 file/*
 !file/.gitkeep
 
+# Product price lists (large files from distributors)
+products/
+
 # Keep Docker configuration
 !docker/
 !docker/**

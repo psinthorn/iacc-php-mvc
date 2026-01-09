@@ -65,10 +65,63 @@ if ($edit_id > 0) {
     }
 }
 $show_form = isset($_GET['new']) || $edit_data;
+
+// Build return URL with current filters for delete/edit actions
+$return_params = [];
+$return_params['page'] = 'mo_list';
+if ($type_filter > 0) $return_params['type_id'] = $type_filter;
+if ($brand_filter > 0) $return_params['brand_id'] = $brand_filter;
+if (!empty($search)) $return_params['search'] = $search;
+$return_url = http_build_query($return_params);
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 
 <div class="master-data-container">
+
+<?php
+// Display flash messages
+if (isset($_SESSION['flash_message'])): 
+    $flash = $_SESSION['flash_message'];
+    unset($_SESSION['flash_message']);
+?>
+<div class="flash-message flash-<?=$flash['type']?>" id="flashMessage">
+    <i class="fa fa-<?=$flash['type'] === 'success' ? 'check-circle' : ($flash['type'] === 'danger' ? 'exclamation-circle' : 'info-circle')?>"></i>
+    <?=htmlspecialchars($flash['text'])?>
+    <button type="button" class="flash-close" onclick="this.parentElement.style.display='none';">&times;</button>
+</div>
+<style>
+.flash-message {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
+}
+.flash-message i { font-size: 20px; }
+.flash-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.flash-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.flash-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.flash-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.flash-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.6;
+    color: inherit;
+}
+.flash-close:hover { opacity: 1; }
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<script>setTimeout(function(){ var el = document.getElementById('flashMessage'); if(el) el.style.display='none'; }, 5000);</script>
+<?php endif; ?>
 
 <!-- Page Header -->
 <div class="master-data-header">
@@ -94,8 +147,8 @@ $show_form = isset($_GET['new']) || $edit_data;
 
 <!-- Action Toolbar -->
 <div class="action-toolbar">
-    <div class="search-box" style="display:flex;gap:10px;max-width:600px;flex-wrap:wrap;">
-        <div style="position:relative;flex:1;min-width:200px;">
+    <div class="search-box" style="display:flex;gap:12px;max-width:800px;flex-wrap:wrap;align-items:center;">
+        <div style="position:relative;flex:1;min-width:280px;">
             <form method="get" action="" style="margin:0;" id="searchForm">
                 <i class="fa fa-search"></i>
                 <input type="hidden" name="page" value="mo_list">
@@ -107,7 +160,7 @@ $show_form = isset($_GET['new']) || $edit_data;
                        onchange="this.form.submit()">
             </form>
         </div>
-        <select class="form-control" style="width:130px;" onchange="window.location='?page=mo_list&type_id='+this.value+'&brand_id=<?=$brand_filter?>&search=<?=urlencode($search)?>'">
+        <select class="form-control filter-select" style="min-width:180px;" onchange="window.location='?page=mo_list&type_id='+this.value+'&brand_id=<?=$brand_filter?>&search=<?=urlencode($search)?>'">
             <option value="0"><?=$xml->all ?? 'All'?> <?=$xml->type ?? 'Types'?></option>
             <?php 
             mysqli_data_seek($types_query, 0);
@@ -115,7 +168,7 @@ $show_form = isset($_GET['new']) || $edit_data;
             <option value="<?=$type['id']?>" <?=$type_filter == $type['id'] ? 'selected' : ''?>><?=htmlspecialchars($type['name'])?></option>
             <?php endwhile; ?>
         </select>
-        <select class="form-control" style="width:130px;" onchange="window.location='?page=mo_list&brand_id='+this.value+'&type_id=<?=$type_filter?>&search=<?=urlencode($search)?>'">
+        <select class="form-control filter-select" style="min-width:180px;" onchange="window.location='?page=mo_list&brand_id='+this.value+'&type_id=<?=$type_filter?>&search=<?=urlencode($search)?>'">
             <option value="0"><?=$xml->all ?? 'All'?> <?=$xml->brand ?? 'Brands'?></option>
             <?php 
             mysqli_data_seek($brands_query, 0);
@@ -182,8 +235,8 @@ $show_form = isset($_GET['new']) || $edit_data;
         <div class="form-row">
             <div class="form-group" style="width:100%;">
                 <label for="des"><i class="fa fa-info-circle"></i> <?=$xml->description ?? 'Description'?></label>
-                <textarea class="form-control" id="des" name="des" rows="2"
-                       placeholder="<?=$xml->enter ?? 'Enter'?> <?=$xml->description ?? 'description'?>..."><?=htmlspecialchars($edit_data['des'] ?? '')?></textarea>
+                <textarea class="form-control" id="des" name="des" rows="4"
+                       placeholder="<?=$xml->enter ?? 'Enter'?> <?=$xml->description ?? 'description'?>..." style="min-height:120px;"><?=htmlspecialchars($edit_data['des'] ?? '')?></textarea>
             </div>
         </div>
         <div class="form-actions">
@@ -242,10 +295,10 @@ $show_form = isset($_GET['new']) || $edit_data;
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <a href="?page=mo_list&edit=<?=$data['id']?>" class="btn btn-edit" title="<?=$xml->edit ?? 'Edit'?>">
+                        <a href="?page=mo_list&edit=<?=$data['id']?><?=$type_filter > 0 ? '&type_id='.$type_filter : ''?><?=$brand_filter > 0 ? '&brand_id='.$brand_filter : ''?><?=!empty($search) ? '&search='.urlencode($search) : ''?>" class="btn btn-edit" title="<?=$xml->edit ?? 'Edit'?>">
                             <i class="fa fa-pencil"></i>
                         </a>
-                        <a href="core-function.php?method=D&p_id=<?=$data['id']?>&page=mo_list" 
+                        <a href="core-function.php?method=D&p_id=<?=$data['id']?>&<?=$return_url?>" 
                            class="btn btn-delete" title="<?=$xml->delete ?? 'Delete'?>"
                            onclick="return confirm('<?=$xml->confirm_delete ?? 'Are you sure you want to delete this item?'?>');">
                             <i class="fa fa-trash"></i>

@@ -183,20 +183,52 @@
 
 .action-toolbar .search-box {
     flex: 1;
-    max-width: 400px;
+    max-width: 800px;
     position: relative;
 }
 
 .action-toolbar .search-box input {
-    padding: 12px 16px 12px 44px !important;
+    padding: 14px 18px 14px 48px !important;
     border-radius: 10px !important;
     border: 2px solid var(--md-border) !important;
     transition: all 0.2s ease;
     width: 100%;
-    height: 48px !important;
-    font-size: 15px !important;
+    height: 52px !important;
+    font-size: 16px !important;
     background: var(--md-bg-light);
     color: var(--md-text-primary) !important;
+}
+
+/* Filter Select Dropdowns */
+.action-toolbar .filter-select,
+.action-toolbar select.form-control {
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 12px 40px 12px 16px !important;
+    border-radius: 10px !important;
+    border: 2px solid var(--md-border) !important;
+    font-size: 15px !important;
+    font-weight: 500;
+    color: var(--md-text-primary) !important;
+    background-color: var(--md-bg-light) !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 16px center !important;
+}
+
+.action-toolbar .filter-select:focus,
+.action-toolbar select.form-control:focus {
+    border-color: var(--md-primary) !important;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+    outline: none;
+}
+
+.action-toolbar .filter-select:hover,
+.action-toolbar select.form-control:hover {
+    border-color: var(--md-primary-light) !important;
 }
 
 .action-toolbar .search-box input::placeholder {
@@ -476,7 +508,7 @@
 }
 
 .inline-form-container form {
-    padding: 24px;
+    padding: 28px 32px;
 }
 
 .inline-form-container .form-header .btn-close-form {
@@ -497,28 +529,28 @@
 
 .inline-form-container .form-row {
     display: flex;
-    gap: 20px;
+    gap: 24px;
     flex-wrap: wrap;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .inline-form-container .form-group {
     flex: 1;
-    min-width: 240px;
+    min-width: 280px;
 }
 
 .inline-form-container label {
     font-weight: 600;
     color: var(--md-text-primary);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     display: block;
-    font-size: 14px !important;
+    font-size: 15px !important;
 }
 
 .inline-form-container label i {
-    margin-right: 6px;
-    color: var(--md-text-muted);
-    width: 16px;
+    margin-right: 8px;
+    color: var(--md-primary);
+    width: 18px;
 }
 
 .inline-form-container .form-control,
@@ -529,10 +561,10 @@
 .inline-form-container textarea {
     border-radius: var(--md-radius-sm) !important;
     border: 2px solid var(--md-border) !important;
-    padding: 12px 14px !important;
-    height: 48px !important;
-    min-height: 48px !important;
-    font-size: 15px !important;
+    padding: 14px 16px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    font-size: 16px !important;
     color: var(--md-text-primary) !important;
     background: var(--md-bg-white) !important;
     transition: all 0.2s ease;
@@ -542,21 +574,22 @@
 
 .inline-form-container select,
 .inline-form-container select.form-control {
-    height: 48px !important;
-    min-height: 48px !important;
-    padding: 10px 14px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    padding: 12px 16px !important;
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
-    background-position: right 14px center !important;
-    padding-right: 40px !important;
+    background-position: right 16px center !important;
+    padding-right: 44px !important;
 }
 
 .inline-form-container textarea {
     height: auto !important;
-    min-height: 100px !important;
+    min-height: 120px !important;
     resize: vertical;
+    line-height: 1.6;
 }
 
 .inline-form-container .form-control:focus,
@@ -574,10 +607,10 @@
 }
 
 .inline-form-container .form-actions {
-    margin-top: 24px;
+    margin-top: 28px;
     display: flex;
-    gap: 12px;
-    padding-top: 20px;
+    gap: 16px;
+    padding-top: 24px;
     border-top: 1px solid var(--md-border);
 }
 
@@ -585,15 +618,16 @@
     background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-primary-light) 100%);
     border: none;
     color: white !important;
-    padding: 14px 28px;
+    padding: 16px 32px;
     border-radius: var(--md-radius-sm);
     font-weight: 600;
-    font-size: 15px !important;
+    font-size: 16px !important;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    min-height: 54px;
 }
 
 .inline-form-container .btn-save:hover {
@@ -605,12 +639,15 @@
     background: var(--md-bg-white);
     border: 2px solid var(--md-border);
     color: var(--md-text-secondary) !important;
-    padding: 12px 24px;
+    padding: 14px 28px;
     border-radius: var(--md-radius-sm);
     font-weight: 600;
-    font-size: 15px !important;
+    font-size: 16px !important;
     transition: all 0.2s ease;
     text-decoration: none;
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
 }
 
 .inline-form-container .btn-cancel:hover {

@@ -159,6 +159,7 @@ $routes = [
     'docker_test'            => 'docker-test.php',
     'test_containers'        => 'test-containers.php',
     'api_lang_debug'         => 'api-lang-debug.php',
+    'dev_roadmap'            => 'dev-roadmap.php',
     
     // AI Chat API
     'ai_chat'                => 'ai/chat-handler.php',

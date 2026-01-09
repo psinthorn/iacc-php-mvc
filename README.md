@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 4.6  
+**Version**: 4.7  
 **Status**: Production Ready (SaaS Ready)  
 **Last Updated**: January 9, 2026  
 **Project Size**: 175 MB  
@@ -33,6 +33,7 @@
 | **Multi-Tenant (SaaS)** | ✅ Done | `company_id` isolation on 17+ tables |
 | **RBAC System** | ✅ Done | 4 tables + PHP enforcement functions |
 | **RBAC Enforcement** | ✅ Done | `has_permission()`, `has_role()`, `require_permission()` |
+| **Developer Role** | ✅ Done | Full access role for dev tools & AI features |
 | **AI Chatbot** | ✅ Done | 29 tools, OpenAI/Ollama, Thai/English, streaming |
 | **UI Modernization** | ✅ Done | Inter font, card layouts, gradients on 30+ pages |
 | **Invoice Workflow** | ✅ Done | PR → PO → Delivery → Invoice → Payment → Tax Invoice |
@@ -57,6 +58,32 @@
 ---
 
 ## 📋 Changelog
+
+### v4.7 (January 9, 2026)
+- **Developer Role & Menu Access Control** 🔐:
+  - Created new "Developer" role (id=6) with full system access
+  - Added `developer.access` permission for dev tools access
+  - Developer Tools menu now requires Developer role (not just user_level)
+  - AI Tools menu now requires Developer role
+  - Updated `check_dev_tools_access()` to verify Developer role
+  - Backward compatible: user_level >= 2 still works as fallback
+
+- **RBAC Test Page Redesign** 🎨:
+  - Complete redesign to match test-crud.php styling
+  - Added skeleton loading animation
+  - Proper stat-cards with icons (success/info/warning/danger)
+  - Permission check tests with PASS/FAIL badges
+  - Role check tests with grid layout
+  - All Available Roles table with permission counts
+  - All Available Permissions table
+  - Users with RBAC Assignments table
+  - Session Debug with dark terminal-style code block
+  - RBAC Summary box with readable info messages
+  - Added to Developer Tools menu
+
+- **Menu Updates**:
+  - Added RBAC Test link to Developer Tools menu
+  - Added RBAC link to dev-tools header navigation bar
 
 ### v4.6 (January 9, 2026)
 - **RBAC Enforcement Complete** 🔐:

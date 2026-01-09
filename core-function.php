@@ -243,10 +243,25 @@ case "mo_list" : {
 		
 		
 			// SECURITY FIX: Add company filter to product check
-			if(($_REQUEST['method']=="D")&&(mysqli_num_rows(mysqli_query($users->conn, "select p.* from product p join model m on p.model = m.id where p.model='".sql_int($_REQUEST['p_id'])."'" . $companyFilter->andCompanyFilter('m')))==0)){
-	mysqli_query($users->conn, "delete from model where id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter());
-		}
-	header("Location: index.php?page=mo_list");
+			if($_REQUEST['method']=="D"){
+				$model_id = sql_int($_REQUEST['p_id']);
+				// Check if any products are using this model
+				$product_check = mysqli_query($users->conn, "SELECT p.* FROM product p JOIN model m ON p.model = m.id WHERE p.model='" . $model_id . "'" . $companyFilter->andCompanyFilter('m'));
+				if(mysqli_num_rows($product_check) == 0){
+					mysqli_query($users->conn, "DELETE FROM model WHERE id='" . $model_id . "' " . $companyFilter->andCompanyFilter());
+					$_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Model deleted successfully.'];
+				} else {
+					$product_count = mysqli_num_rows($product_check);
+					$_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Cannot delete this model. It is being used by ' . $product_count . ' product(s). Please delete or reassign those products first.'];
+				}
+			}
+	
+	// Build redirect URL with filter parameters
+	$redirect_params = ['page' => 'mo_list'];
+	if (!empty($_REQUEST['type_id'])) $redirect_params['type_id'] = intval($_REQUEST['type_id']);
+	if (!empty($_REQUEST['brand_id'])) $redirect_params['brand_id'] = intval($_REQUEST['brand_id']);
+	if (!empty($_REQUEST['search'])) $redirect_params['search'] = $_REQUEST['search'];
+	header("Location: index.php?" . http_build_query($redirect_params));
 	exit;
 }break;
 

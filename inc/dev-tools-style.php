@@ -4,16 +4,26 @@
  * Common styling for all developer tools pages
  */
 
-// Check admin access
+// Check Developer role access
 function check_dev_tools_access() {
     if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
         header('Location: login.php');
         exit;
     }
+    
+    // Check for Developer role (preferred) or fall back to user_level for backward compatibility
+    $has_developer_role = function_exists('has_role') ? has_role('Developer') : false;
     $user_level = $_SESSION['user_level'] ?? 0;
-    if ($user_level < 2) {
-        echo "<script>alert('Access Denied. Super Admin privileges required.');window.location='index.php';</script>";
+    
+    if (!$has_developer_role && $user_level < 2) {
+        echo "<script>alert('Access Denied. Developer role required.');window.location='index.php';</script>";
         exit;
+    }
+    
+    // If user has level >= 2 but no Developer role, still allow (backward compatibility)
+    // But log a warning that they should have Developer role assigned
+    if ($user_level >= 2 && !$has_developer_role) {
+        error_log("Warning: User ID " . ($_SESSION['user_id'] ?? 'unknown') . " accessed dev tools without Developer role (using user_level fallback)");
     }
 }
 
@@ -88,6 +98,8 @@ function get_dev_tools_header($title, $subtitle, $icon = 'fa-wrench', $color = '
             <a href="index.php?page=test_crud" class="nav-btn"><i class="fa fa-database"></i> CRUD</a>
             <a href="index.php?page=debug_session" class="nav-btn"><i class="fa fa-key"></i> Session</a>
             <a href="index.php?page=debug_invoice" class="nav-btn"><i class="fa fa-file-text-o"></i> Invoice</a>
+            <a href="index.php?page=test_rbac" class="nav-btn"><i class="fa fa-shield"></i> RBAC</a>
+            <a href="index.php?page=dev_roadmap" class="nav-btn"><i class="fa fa-road"></i> Roadmap</a>
             <a href="index.php?page=docker_test" class="nav-btn"><i class="fa fa-cloud"></i> Docker</a>
             <a href="index.php?page=test_containers" class="nav-btn"><i class="fa fa-cube"></i> Containers</a>
             <a href="index.php?page=api_lang_debug" class="nav-btn"><i class="fa fa-language"></i> Lang</a>
@@ -615,6 +627,7 @@ function get_dev_tools_css() {
         .summary-stat.pass .summary-stat-value { color: #2ecc71; }
         .summary-stat.warn .summary-stat-value { color: #f1c40f; }
         .summary-stat.fail .summary-stat-value { color: #e74c3c; }
+        .summary-stat.info .summary-stat-value { color: #3498db; }
         
         /* Responsive */
         @media (max-width: 768px) {

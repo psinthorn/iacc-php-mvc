@@ -325,11 +325,13 @@ include_once 'inc/top-navbar.php';
                         </ul>
                     </li>
                     
-                    <!-- Developer Tools (Super Admin only) -->
+                    <!-- Developer Tools (Developer role only) -->
                     <?php 
                         $docker_debug_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true;
                         $container_mgr_enabled = function_exists('is_container_manager_enabled') ? is_container_manager_enabled() : false;
+                        $has_developer_role = function_exists('has_role') ? has_role('Developer') : false;
                     ?>
+                    <?php if ($has_developer_role): ?>
                     <li>
                         <a href="#"><i class="fa fa-wrench"></i> <?=$xml->devtools ?? 'Developer Tools'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
@@ -344,6 +346,9 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=test_rbac"><i class="fa fa-shield"></i> <?=$xml->testrbac ?? 'RBAC Test'?></a>
                             </li>
                             <?php if ($docker_debug_enabled): ?>
                             <li class="divider"></li>
@@ -366,10 +371,14 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=monitoring"><i class="fa fa-dashboard"></i> <?=$xml->monitoring ?? 'System Monitor'?></a>
                             </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=dev_roadmap"><i class="fa fa-road"></i> <?=$xml->devroadmap ?? 'Project Roadmap'?></a>
+                            </li>
                         </ul>
                     </li>
                     
-                    <!-- AI Tools (Super Admin only) -->
+                    <!-- AI Tools (Developer role only) -->
                     <li>
                         <a href="#"><i class="fa fa-robot"></i> <?=$xml->aitools ?? 'AI Tools'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
@@ -397,7 +406,8 @@ include_once 'inc/top-navbar.php';
                             </li>
                         </ul>
                     </li>
-                    <?php endif; ?>
+                    <?php endif; // end Developer role check ?>
+                    <?php endif; // end user_level >= 2 check ?>
                   
                 </ul>
                 <!-- /#side-menu -->
