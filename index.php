@@ -147,6 +147,7 @@ $routes = [
     // Developer Tools (Admin Only)
     'test_crud'              => 'test-crud.php',
     'test_crud_ai'           => 'test-crud-ai.php',
+    'test_rbac'              => 'test-rbac.php',
     'ai_settings'            => 'ai-settings.php',
     'ai_chat_history'        => 'ai-chat-history.php',
     'ai_schema_browser'      => 'ai-schema-browser.php',

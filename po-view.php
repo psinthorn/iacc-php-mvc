@@ -587,6 +587,14 @@ if(mysqli_num_rows($query)=="1"){
         </div>
     </div>
     
+    <!-- Description Section -->
+    <?php if(!empty($data['des'])): ?>
+    <div class="description-card">
+        <h3><i class="fa fa-align-left"></i> <?=$xml->description ?? 'Description'?></h3>
+        <div class="description-content"><?=safe_html($data['des'])?></div>
+    </div>
+    <?php endif; ?>
+    
     <!-- Products Table -->
     <div class="products-card">
         <div class="products-header">
@@ -631,7 +639,7 @@ if(mysqli_num_rows($query)=="1"){
                     $summary+=$total;
                     echo "<tr>
                         <td class='model-cell'>".htmlspecialchars($data_pro['model'])."</td>
-                        <td>".htmlspecialchars($product_desc)."</td>
+                        <td>".safe_html($product_desc)."</td>
                         <td class='text-center'>".$data_pro['quantity']."</td>
                         <td class='text-right'>".number_format($data_pro['price'],2)."</td>
                         <td class='text-right'>".number_format($equip,2)."</td>
@@ -644,7 +652,7 @@ if(mysqli_num_rows($query)=="1"){
                     $summary+=$total;
                     echo "<tr>
                         <td class='model-cell'>".htmlspecialchars($data_pro['model'])."</td>
-                        <td colspan='4'>".htmlspecialchars($product_desc)."</td>
+                        <td colspan='4'>".safe_html($product_desc)."</td>
                         <td class='text-center'>".$data_pro['quantity']."</td>
                         <td class='text-right'>".number_format($data_pro['price'],2)."</td>
                         <td class='text-right'>".number_format($total,2)."</td>

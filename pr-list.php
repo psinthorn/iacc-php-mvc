@@ -97,8 +97,9 @@
     .filter-card .form-control {
         border-radius: 8px;
         border: 1px solid #e5e7eb;
-        padding: 10px 14px;
+        padding: 14px 16px;
         font-size: 14px;
+        min-height: 48px;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
     

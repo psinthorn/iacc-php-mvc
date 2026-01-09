@@ -1,14 +1,77 @@
 # iACC - Accounting Management System
 
-**Version**: 4.5  
+**Version**: 4.6  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 8, 2026  
+**Last Updated**: January 9, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
 ---
 
+## 🎯 Current Status Summary
+
+### ✅ Security Features - COMPLETED
+
+| Feature | Status | Implementation |
+|---------|--------|----------------|
+| **Bcrypt Password Hashing** | ✅ Done | `password_hash_secure()` with cost 12 |
+| **MD5 Auto-Migration** | ✅ Done | Legacy passwords upgrade on login |
+| **CSRF Protection** | ✅ Done | 30+ forms protected |
+| **Rate Limiting** | ✅ Done | 5 attempts/15 min per IP |
+| **Account Lockout** | ✅ Done | 10 failed attempts = 30 min lock |
+| **SQL Injection Prevention** | ✅ Done | 49+ files secured |
+| **Prepared Statements** | ✅ Done | HardClass safe methods |
+| **Session Security** | ✅ Done | HttpOnly, Strict, SameSite |
+| **Remember Me** | ✅ Done | Secure tokens, 30-day expiry |
+| **Password Reset** | ✅ Done | Email-based reset flow |
+| **Soft Delete** | ✅ Done | 16 tables with audit trail |
+
+### ✅ Core Features - COMPLETED
+
+| Feature | Status | Details |
+|---------|--------|--------|
+| **Multi-Tenant (SaaS)** | ✅ Done | `company_id` isolation on 17+ tables |
+| **RBAC System** | ✅ Done | 4 tables + PHP enforcement functions |
+| **RBAC Enforcement** | ✅ Done | `has_permission()`, `has_role()`, `require_permission()` |
+| **AI Chatbot** | ✅ Done | 29 tools, OpenAI/Ollama, Thai/English, streaming |
+| **UI Modernization** | ✅ Done | Inter font, card layouts, gradients on 30+ pages |
+| **Invoice Workflow** | ✅ Done | PR → PO → Delivery → Invoice → Payment → Tax Invoice |
+| **PDF Templates** | ✅ Done | All templates modernized |
+| **Developer Tools** | ✅ Done | CRUD tester, session debugger, RBAC tester |
+
+### ✅ Database Optimization - COMPLETED
+
+| Feature | Status | Details |
+|---------|--------|--------|
+| **Foreign Keys** | ✅ Done | 13 constraints on critical tables |
+| **Indexes** | ✅ Done | 40+ custom indexes for query optimization |
+| **Soft Delete (deleted_at)** | ✅ Done | 16 tables |
+| **Timestamps (created_at)** | ✅ Done | 11 tables |
+
+### 📋 Next Steps
+
+1. **cPanel Production Deployment** - Code is production-ready
+2. **Load Testing** - Performance validation before go-live
+3. **Add timestamps to remaining tables** - `created_at`, `updated_at` coverage
+
+---
+
 ## 📋 Changelog
+
+### v4.6 (January 9, 2026)
+- **RBAC Enforcement Complete** 🔐:
+  - Added `has_permission()` - Check if user has specific permission
+  - Added `has_role()` - Check if user has specific role
+  - Added `require_permission()` - Enforce permission or redirect
+  - Added `require_role()` - Enforce role or redirect
+  - Added `can()` - Hybrid check (RBAC + user_level fallback)
+  - Added `rbac_load_permissions()` - Load permissions from DB to session
+  - Added `rbac_load_roles()` - Load roles from DB to session
+  - Added `rbac_refresh()` - Refresh RBAC cache
+  - Added `rbac_clear()` - Clear RBAC cache on logout
+  - RBAC loaded automatically on login and remember-me
+  - Backward compatible with existing `user_level` checks
+  - New test page: `test-rbac.php` for RBAC testing
 
 ### v4.5 (January 8, 2026)
 - **Delivery Note Workflow Complete** 📦:

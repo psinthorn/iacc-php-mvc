@@ -272,7 +272,7 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
     
     <div class="roadmap-section">
         <div class="timeline">
-            <!-- Completed -->
+            <!-- Completed Q4 2025 -->
             <div class="timeline-item completed">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q4 2025</span>
@@ -288,19 +288,39 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
-            <!-- In Progress -->
+            <!-- Completed Q1 2026 -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'เวอร์ชัน 4.5 - พร้อมใช้งาน' : 'Version 4.5 - Production Ready' ?></h3>
+                <p><?= $lang === 'th' ? 'ระบบความปลอดภัยสมบูรณ์ AI Chatbot และ Multi-Tenant SaaS' : 'Complete security implementation, AI Chatbot, and Multi-Tenant SaaS architecture.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'รหัสผ่าน Bcrypt' : 'Bcrypt password hashing' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'CSRF Protection' : 'CSRF protection' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Rate Limiting' : 'Rate limiting' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'SQL Injection Prevention' : 'SQL injection prevention' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'AI Chatbot (29 เครื่องมือ)' : 'AI Chatbot (29 tools)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Multi-Tenant SaaS' : 'Multi-Tenant SaaS' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'RBAC System' : 'RBAC system' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'UI ทันสมัย 30+ หน้า' : 'Modern UI (30+ pages)' ?></li>
+                </ul>
+            </div>
+            
+            <!-- In Progress - Production Deployment -->
             <div class="timeline-item in-progress">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q1 2026</span>
                     <span class="status-badge in-progress"><?= $lang === 'th' ? 'กำลังดำเนินการ' : 'In Progress' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'การชำระเงินออนไลน์' : 'Online Payments' ?></h3>
-                <p><?= $lang === 'th' ? 'รวมระบบชำระเงินออนไลน์และการเรียกเก็บเงินอัตโนมัติ' : 'Integrate online payment processing and automated billing.' ?></p>
+                <h3><?= $lang === 'th' ? 'การ Deploy สู่ Production' : 'Production Deployment' ?></h3>
+                <p><?= $lang === 'th' ? 'การนำระบบขึ้น cPanel Production และการทดสอบ' : 'Deploy to cPanel production environment and testing.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-spinner fa-spin"></i> <?= $lang === 'th' ? 'ชำระผ่านบัตรเครดิต' : 'Credit card payments' ?></li>
-                    <li><i class="fa fa-spinner fa-spin"></i> <?= $lang === 'th' ? 'QR Payment' : 'QR Payment' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'การเรียกเก็บเงินอัตโนมัติ' : 'Recurring billing' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ใบเสร็จอิเล็กทรอนิกส์' : 'E-receipts' ?></li>
+                    <li><i class="fa fa-spinner fa-spin"></i> <?= $lang === 'th' ? 'Deploy สู่ cPanel' : 'cPanel deployment' ?></li>
+                    <li><i class="fa fa-spinner fa-spin"></i> <?= $lang === 'th' ? 'อัพเกรด PHP 8.3' : 'PHP 8.3 upgrade' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'อัพเกรด MySQL 8.0' : 'MySQL 8.0 upgrade' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Load Testing' : 'Load testing' ?></li>
                 </ul>
             </div>
             
@@ -310,13 +330,13 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <span class="timeline-quarter">Q2 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'แอปมือถือ' : 'Mobile App' ?></h3>
-                <p><?= $lang === 'th' ? 'เปิดตัวแอปมือถือ iOS และ Android สำหรับการจัดการระหว่างเดินทาง' : 'Launch iOS and Android apps for on-the-go management.' ?></p>
+                <h3><?= $lang === 'th' ? 'RBAC และการชำระเงิน' : 'RBAC & Payment Gateway' ?></h3>
+                <p><?= $lang === 'th' ? 'บังคับใช้ RBAC ทั่วระบบและเชื่อมต่อ Payment Gateway' : 'Enforce RBAC permissions system-wide and integrate payment gateways.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แอป iOS' : 'iOS app' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แอป Android' : 'Android app' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนแบบพุช' : 'Push notifications' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สแกนใบเสร็จ' : 'Receipt scanning' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'บังคับใช้ RBAC ทุกหน้า' : 'RBAC enforcement all pages' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'PayPal Integration' : 'PayPal integration' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Stripe Integration' : 'Stripe integration' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'QR PromptPay' : 'QR PromptPay' ?></li>
                 </ul>
             </div>
             
@@ -326,13 +346,13 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <span class="timeline-quarter">Q3 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'AI และระบบอัตโนมัติ' : 'AI & Automation' ?></h3>
-                <p><?= $lang === 'th' ? 'ฟีเจอร์ขับเคลื่อนด้วย AI สำหรับการทำบัญชีอัตโนมัติ' : 'AI-powered features for automated bookkeeping.' ?></p>
+                <h3><?= $lang === 'th' ? 'แอปมือถือ' : 'Mobile App' ?></h3>
+                <p><?= $lang === 'th' ? 'เปิดตัวแอปมือถือ iOS และ Android สำหรับการจัดการระหว่างเดินทาง' : 'Launch iOS and Android apps for on-the-go management.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'จัดหมวดหมู่อัตโนมัติ' : 'Auto-categorization' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'การพยากรณ์อัจฉริยะ' : 'Smart forecasting' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ตรวจจับความผิดปกติ' : 'Anomaly detection' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผู้ช่วยแชท AI' : 'AI chat assistant' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'React Native App' : 'React Native app' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนแบบพุช' : 'Push notifications' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สแกนใบเสร็จ' : 'Receipt scanning' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Offline Mode' : 'Offline mode' ?></li>
                 </ul>
             </div>
             

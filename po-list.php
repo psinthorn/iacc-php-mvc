@@ -525,6 +525,7 @@ if ($row_count == 0): ?>
             </tbody>
         </table>
     </div>
+    </div>
 
     <!-- PO List - IN -->
     <div class="data-card">

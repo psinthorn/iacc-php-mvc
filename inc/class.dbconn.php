@@ -48,6 +48,11 @@ class DbConn {
 	function checkSecurity(){ 
 		// Check if already logged in via session
 		if (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== "") {
+			// Ensure RBAC is loaded (lazy load if missing)
+			if (!isset($_SESSION['rbac_permissions']) && function_exists('rbac_load_permissions')) {
+				rbac_load_permissions($this->conn, $_SESSION['user_id']);
+				rbac_load_roles($this->conn, $_SESSION['user_id']);
+			}
 			return true;
 		}
 		
@@ -66,6 +71,12 @@ class DbConn {
 			} else {
 				$_SESSION['com_id'] = '';
 				$_SESSION['com_name'] = '';
+			}
+			
+			// Load RBAC permissions and roles for auto-login
+			if (function_exists('rbac_load_permissions')) {
+				rbac_load_permissions($this->conn, $userData['user_id']);
+				rbac_load_roles($this->conn, $userData['user_id']);
 			}
 			
 			session_regenerate_id(true);

@@ -87,6 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		        create_remember_token($db->conn, $tmp['id'], 30);
 		    }
 		    
+		    // Load RBAC permissions and roles into session
+		    rbac_load_permissions($db->conn, $tmp['id']);
+		    rbac_load_roles($db->conn, $tmp['id']);
+		    
 		    // Regenerate session ID after successful login (security best practice)
 		    session_regenerate_id(true);
 		    

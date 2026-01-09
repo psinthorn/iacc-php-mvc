@@ -64,6 +64,49 @@ function escape($string) {
 }
 
 /**
+ * Sanitize HTML content, allowing only safe tags and fixing unclosed tags
+ * @param string $html The HTML string to sanitize
+ * @param string $allowedTags Allowed HTML tags (default: '<br><b><strong><i><em><u><p>')
+ * @return string Sanitized HTML with proper tag closure
+ */
+function safe_html($html, $allowedTags = '<br><b><strong><i><em><u><p>') {
+    if (empty($html)) {
+        return '';
+    }
+    
+    // First, strip all tags except allowed ones
+    $html = strip_tags($html, $allowedTags);
+    
+    // Fix unclosed tags by using DOMDocument
+    // Wrap in a div to parse, then extract content
+    $wrapped = '<div>' . $html . '</div>';
+    
+    // Suppress warnings for malformed HTML
+    libxml_use_internal_errors(true);
+    
+    $doc = new DOMDocument('1.0', 'UTF-8');
+    // Load HTML with proper encoding
+    $doc->loadHTML('<?xml encoding="UTF-8">' . $wrapped, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    
+    libxml_clear_errors();
+    
+    // Get the inner HTML of our wrapper div
+    $xpath = new DOMXPath($doc);
+    $div = $xpath->query('//div')->item(0);
+    
+    if ($div) {
+        $result = '';
+        foreach ($div->childNodes as $child) {
+            $result .= $doc->saveHTML($child);
+        }
+        return trim($result);
+    }
+    
+    // Fallback: just return strip_tags result
+    return $html;
+}
+
+/**
  * Validate and sanitize input
  * @param mixed $input The input to validate
  * @param string $type The expected type: string, int, float, email, url, bool
@@ -1068,4 +1111,253 @@ function secure_document_upload($file, $destination = 'upload', $prefix = 'doc')
         $prefix
     );
     return $result['success'] ? $result['filename'] : false;
+}
+
+// ============================================================================
+// RBAC (ROLE-BASED ACCESS CONTROL) HELPERS
+// Added: January 9, 2026
+// These functions work alongside existing user_level checks (non-breaking)
+// ============================================================================
+
+/**
+ * Load user's RBAC permissions from database and cache in session
+ * Call this once after login or when permissions need refresh
+ * 
+ * @param mysqli $conn Database connection
+ * @param int $userId User ID
+ * @return array Array of permission keys the user has
+ */
+function rbac_load_permissions($conn, $userId) {
+    $permissions = [];
+    
+    if (!$conn || !$userId) {
+        return $permissions;
+    }
+    
+    // Query to get all permissions for a user through their roles
+    $sql = "SELECT DISTINCT p.`key` 
+            FROM permissions p
+            INNER JOIN role_permissions rp ON p.id = rp.permission_id
+            INNER JOIN user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = ?";
+    
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        while ($row = $result->fetch_assoc()) {
+            $permissions[] = $row['key'];
+        }
+        $stmt->close();
+    }
+    
+    // Cache in session for performance
+    $_SESSION['rbac_permissions'] = $permissions;
+    
+    return $permissions;
+}
+
+/**
+ * Load user's roles from database and cache in session
+ * 
+ * @param mysqli $conn Database connection
+ * @param int $userId User ID
+ * @return array Array of role names the user has
+ */
+function rbac_load_roles($conn, $userId) {
+    $roles = [];
+    
+    if (!$conn || !$userId) {
+        return $roles;
+    }
+    
+    $sql = "SELECT r.name 
+            FROM roles r
+            INNER JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = ?";
+    
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        while ($row = $result->fetch_assoc()) {
+            $roles[] = $row['name'];
+        }
+        $stmt->close();
+    }
+    
+    // Cache in session
+    $_SESSION['rbac_roles'] = $roles;
+    
+    return $roles;
+}
+
+/**
+ * Check if current user has a specific permission
+ * This is the main function to use for RBAC checks
+ * 
+ * @param string $permission Permission key (e.g., 'po.create', 'user.manage')
+ * @param mysqli|null $conn Optional database connection for fresh check
+ * @return bool True if user has permission
+ */
+function has_permission($permission, $conn = null) {
+    // First check session cache
+    if (isset($_SESSION['rbac_permissions']) && is_array($_SESSION['rbac_permissions'])) {
+        // Check for exact match
+        if (in_array($permission, $_SESSION['rbac_permissions'])) {
+            return true;
+        }
+        // Check for admin.access (grants all permissions)
+        if (in_array('admin.access', $_SESSION['rbac_permissions'])) {
+            return true;
+        }
+    }
+    
+    // Fallback: Super Admin (user_level >= 2) always has all permissions
+    // This maintains backward compatibility
+    $userLevel = $_SESSION['user_level'] ?? 0;
+    if ($userLevel >= 2) {
+        return true;
+    }
+    
+    // If no cached permissions and we have a connection, try loading
+    if ($conn && isset($_SESSION['user_id'])) {
+        $permissions = rbac_load_permissions($conn, $_SESSION['user_id']);
+        if (in_array($permission, $permissions) || in_array('admin.access', $permissions)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Check if current user has a specific role
+ * 
+ * @param string $role Role name (e.g., 'Admin', 'Manager')
+ * @param mysqli|null $conn Optional database connection for fresh check
+ * @return bool True if user has role
+ */
+function has_role($role, $conn = null) {
+    // First check session cache
+    if (isset($_SESSION['rbac_roles']) && is_array($_SESSION['rbac_roles'])) {
+        if (in_array($role, $_SESSION['rbac_roles'])) {
+            return true;
+        }
+    }
+    
+    // If no cached roles and we have a connection, try loading
+    if ($conn && isset($_SESSION['user_id'])) {
+        $roles = rbac_load_roles($conn, $_SESSION['user_id']);
+        if (in_array($role, $roles)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Require a specific permission, redirect if not authorized
+ * Use this at the top of pages that require specific permissions
+ * 
+ * @param string $permission Permission key required
+ * @param string $redirect URL to redirect to (default: index.php)
+ * @param mysqli|null $conn Optional database connection
+ */
+function require_permission($permission, $redirect = 'index.php', $conn = null) {
+    if (!has_permission($permission, $conn)) {
+        if (headers_sent()) {
+            echo "<script>alert('Access Denied: You do not have permission for this action.');window.location='" . e($redirect) . "';</script>";
+        } else {
+            header("Location: " . $redirect);
+        }
+        exit;
+    }
+}
+
+/**
+ * Require a specific role, redirect if not authorized
+ * 
+ * @param string $role Role name required
+ * @param string $redirect URL to redirect to (default: index.php)
+ * @param mysqli|null $conn Optional database connection
+ */
+function require_role($role, $redirect = 'index.php', $conn = null) {
+    if (!has_role($role, $conn)) {
+        if (headers_sent()) {
+            echo "<script>alert('Access Denied: You do not have the required role.');window.location='" . e($redirect) . "';</script>";
+        } else {
+            header("Location: " . $redirect);
+        }
+        exit;
+    }
+}
+
+/**
+ * Check if current user can perform action (combines user_level + RBAC)
+ * Provides smooth transition from user_level to RBAC
+ * 
+ * @param string $permission Permission key to check
+ * @param int $minLevel Minimum user_level as fallback
+ * @param mysqli|null $conn Database connection
+ * @return bool True if user can perform action
+ */
+function can($permission, $minLevel = 0, $conn = null) {
+    // First check RBAC permission
+    if (has_permission($permission, $conn)) {
+        return true;
+    }
+    
+    // Fallback to user_level check for backward compatibility
+    $userLevel = $_SESSION['user_level'] ?? 0;
+    return $userLevel >= $minLevel;
+}
+
+/**
+ * Get all permissions for current user (from session cache)
+ * 
+ * @return array Array of permission keys
+ */
+function get_user_permissions() {
+    return $_SESSION['rbac_permissions'] ?? [];
+}
+
+/**
+ * Get all roles for current user (from session cache)
+ * 
+ * @return array Array of role names
+ */
+function get_user_roles() {
+    return $_SESSION['rbac_roles'] ?? [];
+}
+
+/**
+ * Refresh RBAC cache from database
+ * Call this after role/permission changes
+ * 
+ * @param mysqli $conn Database connection
+ * @return bool True on success
+ */
+function rbac_refresh($conn) {
+    if (!isset($_SESSION['user_id'])) {
+        return false;
+    }
+    
+    rbac_load_permissions($conn, $_SESSION['user_id']);
+    rbac_load_roles($conn, $_SESSION['user_id']);
+    
+    return true;
+}
+
+/**
+ * Clear RBAC cache (call on logout)
+ */
+function rbac_clear() {
+    unset($_SESSION['rbac_permissions']);
+    unset($_SESSION['rbac_roles']);
 }
