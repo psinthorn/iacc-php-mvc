@@ -72,11 +72,7 @@ if (empty($categories) && $com_id == 0) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html>
-
-<head>
-<!-- Modern Font -->
+<!-- Modern Font - loaded inline for included page -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Smart Dropdown Component -->
 <link href="css/smart-dropdown.css" rel="stylesheet">
@@ -651,9 +647,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</head>
-
-<body>
 <div class="pr-form-wrapper">
     <!-- Page Header -->
     <div class="page-header">
@@ -735,7 +728,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="form-actions">
                 <input type="hidden" name="method" value="A">
                 <input type="hidden" name="page" value="pr_list">
-                <input type="hidden" name="ven_id" value="<?php echo $_SESSION['com_id'];?>">
+                <input type="hidden" name="ven_id" value="<?php echo isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0; ?>">
                 <button type="submit" class="btn-submit"><i class="fa fa-paper-plane"></i> <?=$xml->request?></button>
             </div>
         </div>
@@ -799,6 +792,3 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php endif; ?>
     </div>
 </div>
-
-</body>
-</html>

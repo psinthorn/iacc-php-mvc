@@ -31,7 +31,12 @@
 	    $date_cond .= " AND pr.date <= '$date_to'";
 	}
 	
-	$com_id = intval($_SESSION['com_id']);
+	// Get company ID - ensure proper handling for admin mode
+	$com_id = isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0;
+	
+	// Build vendor filter condition - admin (com_id=0) sees all PRs
+	$ven_filter = ($com_id > 0) ? "ven_id='".$com_id."'" : "1=1";
+	$cus_filter = ($com_id > 0) ? "cus_id='".$com_id."'" : "1=1";
 ?>
 
 <!-- Modern Font -->
@@ -297,7 +302,7 @@
             </thead>
             <tbody>
 <?php
-$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ven_id='".$com_id."' ".$condition." $search_cond $date_cond order by cancel,id desc");
+$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ".$ven_filter." ".$condition." $search_cond $date_cond order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>PR-".str_pad($data['id'], 6, "0", STR_PAD_LEFT)."</td><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['date'])."</td>";
@@ -315,7 +320,8 @@ echo "</td>
 	}
 	
 	 if($_REQUEST['status']=="5"){
-		$query= mysqli_query($db->conn, "select * from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where ven_id='".$_SESSION['com_id']."' and deliver.id in (select deliver_id from receive)");
+		$ven_filter_sendout = ($com_id > 0) ? "ven_id='".$com_id."'" : "1=1";
+		$query= mysqli_query($db->conn, "select * from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.cus_id=company.id where ".$ven_filter_sendout." and deliver.id in (select deliver_id from receive)");
 		 
 		 while($data=mysqli_fetch_array($query)){
 echo "<tr><td>Send out</td><td>".htmlspecialchars($data['tmp'])."</td><td>".htmlspecialchars($data['name_sh'])."</td><td>".htmlspecialchars($data['deliver_date'])."</td><td><span class='status-badge success'>Success</span></td><td><a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href='#'><i class=\"fa fa-trash\"></i></a></td>
@@ -349,7 +355,7 @@ echo "<tr><td>Send out</td><td>".htmlspecialchars($data['tmp'])."</td><td>".html
             </thead>
             <tbody>
 <?php
-$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where cus_id='".$_SESSION['com_id']."' ".$condition." $search_cond $date_cond order by cancel,id desc");
+$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where ".$cus_filter." ".$condition." $search_cond $date_cond order by cancel,id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>PR-".str_pad($data['id'], 6, "0", STR_PAD_LEFT)."</td><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['date'])."</td>";
@@ -368,7 +374,8 @@ echo "</td>
 	
 	}
 	 if($_REQUEST['status']=="5"){
-		$query= mysqli_query($db->conn, "select * from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.ven_id=company.id where cus_id='".$_SESSION['com_id']."' and deliver.id in (select deliver_id from receive)");
+		$cus_filter_sendout = ($com_id > 0) ? "cus_id='".$com_id."'" : "1=1";
+		$query= mysqli_query($db->conn, "select * from sendoutitem join deliver on sendoutitem.id=deliver.out_id join company on sendoutitem.ven_id=company.id where ".$cus_filter_sendout." and deliver.id in (select deliver_id from receive)");
 		 
 		 while($data=mysqli_fetch_array($query)){
 echo "<tr><td>Send out</td><td>".htmlspecialchars($data['tmp'])."</td><td>".htmlspecialchars($data['name_sh'])."</td><td>".htmlspecialchars($data['deliver_date'])."</td><td><span class='status-badge success'>Success</span></td><td><a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href=\"#\"><i class=\"fa fa-trash\"></i></a></td>

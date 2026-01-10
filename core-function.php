@@ -1,5 +1,9 @@
 <?php session_start();
 
+// Debug: Log all incoming requests to core-function.php
+$logFile = '/var/www/html/logs/app.log';
+file_put_contents($logFile, date('Y-m-d H:i:s') . " CORE-FUNCTION: page=" . ($_REQUEST['page'] ?? 'NOT SET') . ", method=" . ($_REQUEST['method'] ?? 'NOT SET') . "\n", FILE_APPEND);
+
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/class.hard.php");
@@ -9,6 +13,7 @@ require_once("inc/class.company_filter.php");
 // CSRF protection for all POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify()) {
+        file_put_contents($logFile, date('Y-m-d H:i:s') . " CORE-FUNCTION: CSRF FAILED\n", FILE_APPEND);
         die('CSRF token validation failed. Please refresh the page and try again.');
     }
 }
@@ -307,6 +312,10 @@ case "brand" : {
 }break;
 case "pr_list" : {
 	$args['table']="pr";
+	// Debug logging
+	$logFile = '/var/www/html/logs/app.log';
+	file_put_contents($logFile, date('Y-m-d H:i:s') . " PR_LIST: method=" . ($_REQUEST['method'] ?? 'NOT SET') . "\n", FILE_APPEND);
+	
 	if($_REQUEST['method']=="D"){
 			$args['table']="pr";
 	$args['value']="cancel='1'";
@@ -316,10 +325,21 @@ case "pr_list" : {
 		}else
 	if($_REQUEST['method']=="A"){
 	// Include company_id for multi-tenant and deleted_at as NULL
-	$owner_company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
-	$args['value']="'".$owner_company_id."','".$_REQUEST['name']."','".$_REQUEST['des']."','".$_SESSION['user_id']."','".$_REQUEST['cus_id']."','".$_REQUEST['ven_id']."','".date('Y-m-d')."','0','0','0','0',NULL";
+	$owner_company_id = isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0;
+	// Ensure ven_id is properly set - use session company if form value is empty
+	$ven_id = isset($_REQUEST['ven_id']) && $_REQUEST['ven_id'] !== '' ? intval($_REQUEST['ven_id']) : $owner_company_id;
+	// Escape user inputs for safety
+	$pr_name = sql_escape($_REQUEST['name']);
+	$pr_des = sql_escape($_REQUEST['des']);
+	$cus_id = intval($_REQUEST['cus_id']);
+	$user_id = intval($_SESSION['user_id']);
+	$args['value']="'".$owner_company_id."','".$pr_name."','".$pr_des."','".$user_id."','".$cus_id."','".$ven_id."','".date('Y-m-d')."','0','0','0','0',NULL";
+	
+	file_put_contents($logFile, date('Y-m-d H:i:s') . " PR INSERT: table=" . $args['table'] . ", value=" . $args['value'] . "\n", FILE_APPEND);
 	
 	 $pr_id=$har->insertDbMax($args);
+	 
+	 file_put_contents($logFile, date('Y-m-d H:i:s') . " PR INSERT RESULT: pr_id=" . $pr_id . "\n", FILE_APPEND);
 	 
 	 // Debug: Log what's being received for product rows
 	 error_log("PR INSERT: pr_id=$pr_id");

@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.7  
+**Version**: 4.8  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 9, 2026  
+**Last Updated**: January 10, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -58,6 +58,23 @@
 ---
 
 ## 📋 Changelog
+
+### v4.8 (January 10, 2026)
+- **Purchase Request Form Fix** 📝:
+  - Fixed nested HTML structure in `pr-make.php` - removed duplicate DOCTYPE/html/head/body tags that caused form submission failure when included in index.php
+  - Fixed `insertDbMax` function in `inc/class.hard.php` to use AUTO_INCREMENT properly instead of manual MAX(id)+1 calculation
+  - Expanded `pr.name` column from VARCHAR(30) to VARCHAR(255) to support longer Thai text
+  - Expanded `po.name` column from VARCHAR(30) to VARCHAR(255)
+  - Added proper session company ID handling for admin mode (empty string vs 0)
+  - Added debug logging to trace form submissions and database operations
+
+- **Invoice PDF Fix** 🧾:
+  - Fixed customer data not showing in `inv.php` PDF when `payby` field is 0
+  - Now falls back to `cus_id` when `payby` is empty or 0
+
+- **Database Schema Updates** 🗄️:
+  - `pr.name`: VARCHAR(30) → VARCHAR(255)
+  - `po.name`: VARCHAR(30) → VARCHAR(255)
 
 ### v4.7 (January 9, 2026)
 - **Developer Role & Menu Access Control** 🔐:

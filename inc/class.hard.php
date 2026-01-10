@@ -435,15 +435,20 @@ class HardClass {
 	/**
 	 * @deprecated Use insertSafeMax() instead for prepared statements
 	 * Legacy method kept for backward compatibility - now uses MySQLi
+	 * Fixed to use AUTO_INCREMENT properly instead of manual ID calculation
 	 */
 	function insertDbMax($args){
-		$id=$this->Maxid($args['table']);
 		$conn = $this->getConn();
-		// Note: This still uses string concat for backward compatibility
-		// New code should use insertSafeMax() instead
-		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES ('".$id."',".$args['value'].")";
-		$conn->query($sql);
-		return $id;
+		// Use NULL for the ID to let AUTO_INCREMENT handle it
+		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (NULL,".$args['value'].")";
+		$result = $conn->query($sql);
+		if (!$result) {
+			error_log("insertDbMax ERROR: " . $conn->error . " | SQL: " . $sql);
+			file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " insertDbMax ERROR: " . $conn->error . " | SQL: " . substr($sql, 0, 500) . "\n", FILE_APPEND);
+			return false;
+		}
+		// Return the auto-generated ID
+		return $conn->insert_id;
 		}
 	
 	/**
