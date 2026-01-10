@@ -1,11 +1,16 @@
 <?php
 /**
  * Billing Note List Page
- * Displays and manages billing notes linked to invoices
+ * Displays all invoices - those with billing notes are grouped, those without show individually
  */
 require_once("inc/security.php");
+require_once("inc/pagination.php");
 
 $com_id = isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0;
+
+// Pagination settings
+$per_page = 15;
+$current_page = isset($_GET['pg']) ? max(1, intval($_GET['pg'])) : 1;
 
 // Get filter parameters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -13,7 +18,7 @@ $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 
-// Build search condition
+// Build search condition for invoices
 $search_cond = '';
 if (!empty($search)) {
     $search_escaped = sql_escape($search);
@@ -26,7 +31,7 @@ if (!empty($date_from)) {
     $date_cond .= " AND iv.createdate >= '$date_from'";
 }
 if (!empty($date_to)) {
-    $date_cond .= " AND iv.createdate <= '$date_to'";
+    $date_cond .= " AND iv.createdate <= '$date_to 23:59:59'";
 }
 
 // Company filter for multi-tenant
@@ -35,7 +40,37 @@ if ($com_id > 0) {
     $company_filter = " AND (pr.ven_id = '$com_id' OR pr.cus_id = '$com_id')";
 }
 
-// Query for invoices that can have billing notes
+// Status filter condition
+$status_cond = '';
+if ($status_filter === 'with_billing') {
+    $status_cond = " AND bi.bil_id IS NOT NULL";
+} elseif ($status_filter === 'without_billing') {
+    $status_cond = " AND bi.bil_id IS NULL";
+}
+
+// ============== COUNT TOTAL ITEMS ==============
+// For pagination, count unique rows (billing notes count as 1, invoices without billing count as 1 each)
+$count_sql = "
+    SELECT COUNT(*) as total FROM (
+        SELECT DISTINCT COALESCE(bi.bil_id, CONCAT('inv_', iv.id)) as row_key
+        FROM iv
+        JOIN po ON iv.tex = po.id
+        JOIN pr ON po.ref = pr.id
+        JOIN company ON (CASE WHEN pr.payby > 0 THEN pr.payby ELSE pr.cus_id END) = company.id
+        LEFT JOIN billing_items bi ON bi.inv_id = iv.id
+        WHERE pr.status >= 3 
+        AND po.po_id_new = ''
+        $company_filter
+        $search_cond
+        $date_cond
+        $status_cond
+    ) as counted
+";
+$count_result = mysqli_query($db->conn, $count_sql);
+$total_items = $count_result ? intval(mysqli_fetch_assoc($count_result)['total']) : 0;
+$total_pages = max(1, ceil($total_items / $items_per_page));
+
+// ============== QUERY ALL INVOICES ==============
 $sql = "
     SELECT 
         iv.id as iv_id,
@@ -50,6 +85,7 @@ $sql = "
         pr.payby,
         bi.bil_id,
         b.des as billing_des,
+        DATE_FORMAT(b.created_at, '%d/%m/%Y %H:%i') as billing_date,
         bi.amount as billing_amount,
         (SELECT SUM(
             (product.price * product.quantity) + 
@@ -70,18 +106,17 @@ $sql = "
     $company_filter
     $search_cond
     $date_cond
-    ORDER BY iv.createdate DESC, iv.id DESC
+    $status_cond
+    ORDER BY COALESCE(b.created_at, iv.createdate) DESC, bi.bil_id DESC, iv.id DESC
 ";
 
 $result = mysqli_query($db->conn, $sql);
 
-// Calculate totals
-$total_invoices = 0;
-$total_with_billing = 0;
-$total_without_billing = 0;
-$total_amount = 0;
+// Process results - group by billing note ID or keep as individual
+$all_invoices = [];
+$billing_groups = []; // bil_id => array of invoices
+$ungrouped_invoices = []; // invoices without billing
 
-$invoices = [];
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
         // Calculate invoice total
@@ -96,24 +131,69 @@ if ($result) {
         $total = $after_discount + $vat_amount - $withholding_amount;
         
         $row['total_amount'] = $total;
-        $invoices[] = $row;
-        
-        $total_invoices++;
-        $total_amount += $total;
         
         if (!empty($row['bil_id'])) {
-            $total_with_billing++;
+            // Group by billing note
+            if (!isset($billing_groups[$row['bil_id']])) {
+                $billing_groups[$row['bil_id']] = [
+                    'bil_id' => $row['bil_id'],
+                    'billing_des' => $row['billing_des'],
+                    'billing_date' => $row['billing_date'],
+                    'customer_name' => $row['customer_name'],
+                    'invoices' => [],
+                    'total_amount' => 0,
+                    'row_type' => 'billing_group',
+                    'sort_date' => $row['raw_date']
+                ];
+            }
+            $billing_groups[$row['bil_id']]['invoices'][] = $row;
+            $billing_groups[$row['bil_id']]['total_amount'] += floatval($row['billing_amount'] ?? $total);
         } else {
-            $total_without_billing++;
+            // Individual invoice without billing
+            $row['row_type'] = 'single_invoice';
+            $row['sort_date'] = $row['raw_date'];
+            $ungrouped_invoices[] = $row;
         }
     }
 }
 
-// Filter by status if needed
-if ($status_filter === 'with_billing') {
-    $invoices = array_filter($invoices, fn($inv) => !empty($inv['bil_id']));
-} elseif ($status_filter === 'without_billing') {
-    $invoices = array_filter($invoices, fn($inv) => empty($inv['bil_id']));
+// Merge billing groups and ungrouped invoices into a single list
+$display_rows = [];
+foreach ($billing_groups as $group) {
+    $display_rows[] = $group;
+}
+foreach ($ungrouped_invoices as $inv) {
+    $display_rows[] = $inv;
+}
+
+// Sort by date descending
+usort($display_rows, function($a, $b) {
+    return strcmp($b['sort_date'], $a['sort_date']);
+});
+
+// Use pagination helper
+$total_items = count($display_rows);
+$pagination = paginate($total_items, $per_page, $current_page);
+$offset = $pagination['offset'];
+$total_pages = $pagination['total_pages'];
+
+// Preserve query params for pagination
+$query_params = $_GET;
+unset($query_params['pg']);
+
+// Apply pagination to the merged list
+$paginated_rows = array_slice($display_rows, $offset, $per_page);
+
+// ============== SUMMARY STATS ==============
+$total_invoices = count($all_invoices) ?: (count($billing_groups) > 0 ? array_sum(array_map(fn($g) => count($g['invoices']), $billing_groups)) : 0) + count($ungrouped_invoices);
+$total_with_billing = count($billing_groups) > 0 ? array_sum(array_map(fn($g) => count($g['invoices']), $billing_groups)) : 0;
+$total_without_billing = count($ungrouped_invoices);
+$total_billing_notes = count($billing_groups);
+
+// Total billed amount
+$total_billed = 0;
+foreach ($billing_groups as $group) {
+    $total_billed += $group['total_amount'];
 }
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -262,6 +342,22 @@ if ($status_filter === 'with_billing') {
 .status-badge.has-billing { background: #dcfce7; color: #166534; }
 .status-badge.no-billing { background: #fef3c7; color: #92400e; }
 
+.status-tabs { display: flex; gap: 4px; margin-left: 8px; }
+.status-tabs .btn { border-radius: 20px; font-size: 13px; font-weight: 500; }
+.status-tabs .btn.active { background: #7c3aed; color: #fff; }
+.status-tabs .btn.active-with { background: #16a34a; color: #fff; }
+.status-tabs .btn.active-without { background: #f59e0b; color: #fff; }
+
+.billing-badge { 
+    display: inline-block;
+    background: #7c3aed; 
+    color: #fff; 
+    padding: 4px 10px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    font-weight: 600; 
+}
+
 .btn-action { 
     display: inline-flex; 
     align-items: center; 
@@ -331,78 +427,175 @@ if ($status_filter === 'with_billing') {
     <div class="summary-cards">
         <div class="summary-card">
             <div class="card-icon total"><i class="fa fa-file-text-o"></i></div>
-            <h3><?=$total_invoices?></h3>
-            <p><?=$xml->totalinvoices ?? 'Total Invoices'?></p>
+            <h3><?=$total_billing_notes?></h3>
+            <p><?=$xml->totalbillingnotes ?? 'Billing Notes'?></p>
         </div>
         <div class="summary-card">
             <div class="card-icon with-billing"><i class="fa fa-check-circle"></i></div>
             <h3><?=$total_with_billing?></h3>
-            <p><?=$xml->withbillingnote ?? 'With Billing Note'?></p>
+            <p><?=$xml->invoiceswithbilling ?? 'Invoices with Billing'?></p>
         </div>
         <div class="summary-card">
             <div class="card-icon without-billing"><i class="fa fa-exclamation-circle"></i></div>
             <h3><?=$total_without_billing?></h3>
-            <p><?=$xml->withoutbillingnote ?? 'Without Billing Note'?></p>
+            <p><?=$xml->invoiceswithoutbilling ?? 'Invoices without Billing'?></p>
         </div>
         <div class="summary-card">
             <div class="card-icon amount"><i class="fa fa-money"></i></div>
-            <h3>฿<?=number_format($total_amount, 0)?></h3>
-            <p><?=$xml->totalamount ?? 'Total Amount'?></p>
+            <h3>฿<?=number_format($total_billed, 0)?></h3>
+            <p><?=$xml->totalbilledamount ?? 'Total Billed Amount'?></p>
         </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+        <a href="index.php?page=billing_make" class="btn btn-primary" style="border-radius: 10px; padding: 10px 20px; font-weight: 600;">
+            <i class="fa fa-plus"></i> <?=$xml->createbilling ?? 'Create Billing Note'?>
+        </a>
     </div>
 
     <!-- Data Table -->
     <div class="data-card">
-        <div class="card-header">
-            <i class="fa fa-list"></i> <?=$xml->billinglist ?? 'Billing Note List'?>
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fa fa-list"></i> <?=$xml->invoiceandbillinglist ?? 'Invoice & Billing List'?></span>
+            <span style="font-size: 13px; font-weight: 500; color: #6b7280;">
+                <?=$xml->showing ?? 'Showing'?> <?=count($paginated_rows)?> <?=$xml->of ?? 'of'?> <?=$total_items?> <?=$xml->items ?? 'items'?>
+            </span>
         </div>
         
-        <?php if (count($invoices) > 0): ?>
+        <?php if (count($paginated_rows) > 0): ?>
         <table class="table table-modern">
             <thead>
                 <tr>
-                    <th><?=$xml->invoiceno ?? 'Invoice #'?></th>
+                    <th width="140"><?=$xml->invoiceno ?? 'Invoice #'?></th>
                     <th><?=$xml->customer ?? 'Customer'?></th>
                     <th><?=$xml->description ?? 'Description'?></th>
                     <th><?=$xml->date ?? 'Date'?></th>
                     <th style="text-align: right;"><?=$xml->amount ?? 'Amount'?></th>
-                    <th><?=$xml->billingstatus ?? 'Billing Status'?></th>
-                    <th width="120"><?=$xml->actions ?? 'Actions'?></th>
+                    <th><?=$xml->status ?? 'Status'?></th>
+                    <th width="140"><?=$xml->actions ?? 'Actions'?></th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($invoices as $inv): ?>
-                <tr>
-                    <td class="inv-number"><?=htmlspecialchars($inv['po_number'])?></td>
-                    <td><?=htmlspecialchars($inv['customer_name'])?></td>
-                    <td><?=htmlspecialchars(mb_substr($inv['po_name'], 0, 40))?><?=mb_strlen($inv['po_name']) > 40 ? '...' : ''?></td>
-                    <td><?=htmlspecialchars($inv['invoice_date'])?></td>
-                    <td class="amount-display">฿<?=number_format($inv['total_amount'], 2)?></td>
-                    <td>
-                        <?php if (!empty($inv['bil_id'])): ?>
-                            <span class="status-badge has-billing"><i class="fa fa-check"></i> <?=$xml->hasbilling ?? 'Has Billing'?></span>
-                        <?php else: ?>
+                <?php foreach ($paginated_rows as $row): ?>
+                    <?php if ($row['row_type'] === 'billing_group'): ?>
+                    <!-- Billing Group Row -->
+                    <tr class="billing-row" style="background: #faf5ff;">
+                        <td class="inv-number">
+                            <span class="billing-badge">BIL-<?=str_pad($row['bil_id'], 5, '0', STR_PAD_LEFT)?></span>
+                        </td>
+                        <td><?=htmlspecialchars($row['customer_name'] ?? '-')?></td>
+                        <td><?=htmlspecialchars(mb_substr($row['billing_des'] ?? '-', 0, 40))?><?=mb_strlen($row['billing_des'] ?? '') > 40 ? '...' : ''?></td>
+                        <td><?=htmlspecialchars($row['billing_date'])?></td>
+                        <td class="amount-display">฿<?=number_format($row['total_amount'] ?? 0, 2)?></td>
+                        <td>
+                            <span class="invoice-count-badge" onclick="toggleInvoices(<?=$row['bil_id']?>)" style="cursor: pointer;">
+                                <i class="fa fa-file-text-o"></i> <?=count($row['invoices'])?> <?=$xml->invoices ?? 'Invoices'?>
+                                <i class="fa fa-chevron-down expand-icon" id="expand-icon-<?=$row['bil_id']?>"></i>
+                            </span>
+                        </td>
+                        <td>
+                            <a href="billing-print.php?id=<?=$row['bil_id']?>" class="btn-action btn-action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>
+                            <a href="core-function.php?page=billing&method=D&id=<?=$row['bil_id']?>" class="btn-action btn-action-delete" title="<?=$xml->delete ?? 'Delete'?>" onclick="return confirm('<?=$xml->confirmdelete ?? 'Are you sure you want to delete this billing note?'?>')"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    <!-- Invoice sub-rows (hidden by default) -->
+                    <tr class="invoice-group" id="invoices-<?=$row['bil_id']?>" style="display: none;">
+                        <td colspan="7" style="padding: 0; background: #f8fafc;">
+                            <div style="padding: 12px 20px 12px 40px;">
+                                <table class="table" style="margin: 0; font-size: 13px;">
+                                    <thead>
+                                        <tr style="background: #ede9fe;">
+                                            <th style="padding: 8px 12px;"><?=$xml->invoiceno ?? 'Invoice #'?></th>
+                                            <th style="padding: 8px 12px;"><?=$xml->description ?? 'Description'?></th>
+                                            <th style="padding: 8px 12px;"><?=$xml->invoicedate ?? 'Invoice Date'?></th>
+                                            <th style="padding: 8px 12px; text-align: right;"><?=$xml->amount ?? 'Amount'?></th>
+                                            <th style="padding: 8px 12px;" width="60"><?=$xml->view ?? 'View'?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($row['invoices'] as $inv): ?>
+                                        <tr>
+                                            <td style="padding: 8px 12px; font-weight: 600; color: #7c3aed;"><?=htmlspecialchars($inv['po_number'])?></td>
+                                            <td style="padding: 8px 12px;"><?=htmlspecialchars(mb_substr($inv['po_name'], 0, 50))?><?=mb_strlen($inv['po_name']) > 50 ? '...' : ''?></td>
+                                            <td style="padding: 8px 12px;"><?=htmlspecialchars($inv['invoice_date'])?></td>
+                                            <td style="padding: 8px 12px; text-align: right; font-weight: 600;">฿<?=number_format($inv['billing_amount'] ?? $inv['total_amount'], 2)?></td>
+                                            <td style="padding: 8px 12px;">
+                                                <a href="inv.php?id=<?=$inv['po_id']?>" class="btn-action btn-action-view" title="<?=$xml->viewinvoice ?? 'View Invoice'?>" target="_blank" style="width: 28px; height: 28px;"><i class="fa fa-file-pdf-o"></i></a>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php else: ?>
+                    <!-- Single Invoice Row (without billing) -->
+                    <tr>
+                        <td class="inv-number"><?=htmlspecialchars($row['po_number'])?></td>
+                        <td><?=htmlspecialchars($row['customer_name'])?></td>
+                        <td><?=htmlspecialchars(mb_substr($row['po_name'], 0, 40))?><?=mb_strlen($row['po_name']) > 40 ? '...' : ''?></td>
+                        <td><?=htmlspecialchars($row['invoice_date'])?></td>
+                        <td class="amount-display">฿<?=number_format($row['total_amount'], 2)?></td>
+                        <td>
                             <span class="status-badge no-billing"><i class="fa fa-clock-o"></i> <?=$xml->nobilling ?? 'No Billing'?></span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (!empty($inv['bil_id'])): ?>
-                            <a href="billing-view.php?id=<?=$inv['bil_id']?>" class="btn-action btn-action-view" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
-                            <a href="billing-print.php?id=<?=$inv['bil_id']?>" class="btn-action btn-action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>
-                        <?php else: ?>
-                            <a href="index.php?page=billing_make&inv_id=<?=$inv['iv_id']?>" class="btn-action btn-action-create" title="<?=$xml->createbilling ?? 'Create Billing Note'?>"><i class="fa fa-plus"></i></a>
-                        <?php endif; ?>
-                        <a href="inv.php?id=<?=$inv['po_id']?>" class="btn-action btn-action-print" title="<?=$xml->viewinvoice ?? 'View Invoice'?>" target="_blank"><i class="fa fa-file-pdf-o"></i></a>
-                    </td>
-                </tr>
+                        </td>
+                        <td>
+                            <a href="index.php?page=billing_make&inv_id=<?=$row['iv_id']?>" class="btn-action btn-action-create" title="<?=$xml->createbilling ?? 'Create Billing Note'?>"><i class="fa fa-plus"></i></a>
+                            <a href="inv.php?id=<?=$row['po_id']?>" class="btn-action btn-action-print" title="<?=$xml->viewinvoice ?? 'View Invoice'?>" target="_blank"><i class="fa fa-file-pdf-o"></i></a>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </tbody>
         </table>
+        
+        <!-- Pagination -->
+        <?= render_pagination($pagination, '?page=billing', $query_params, 'pg') ?>
+        
         <?php else: ?>
         <div class="empty-state">
             <i class="fa fa-file-text-o"></i>
-            <p><?=$xml->nobillingsyet ?? 'No invoices found. Create invoices first to add billing notes.'?></p>
+            <p><?=$xml->nobillingsyet ?? 'No billing notes found. Create billing notes to see them here.'?></p>
+            <a href="index.php?page=billing_make" class="btn btn-primary" style="margin-top: 16px; border-radius: 10px;"><i class="fa fa-plus"></i> <?=$xml->createbilling ?? 'Create Billing Note'?></a>
         </div>
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+function toggleInvoices(bilId) {
+    var row = document.getElementById('invoices-' + bilId);
+    var icon = document.getElementById('expand-icon-' + bilId);
+    if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        row.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+</script>
+
+<style>
+.invoice-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ede9fe;
+    color: #7c3aed;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.invoice-count-badge:hover {
+    background: #ddd6fe;
+}
+.btn-action-delete { background: #fee2e2; color: #dc2626; }
+.btn-action-delete:hover { background: #dc2626; color: #fff; }
+.billing-row:hover + .invoice-group { background: #faf5ff !important; }
+</style>
