@@ -302,20 +302,16 @@
             </thead>
             <tbody>
 <?php
-$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ".$ven_filter." ".$condition." $search_cond $date_cond order by cancel,id desc");
+// Only show non-cancelled PRs (cancel=0)
+$query=mysqli_query($db->conn, "select pr.id as id, name,DATE_FORMAT(date,'%d-%m-%Y') as date,cancel, des, name_en, status from pr join company on pr.cus_id=company.id where ".$ven_filter." ".$condition." $search_cond $date_cond and cancel='0' order by id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>PR-".str_pad($data['id'], 6, "0", STR_PAD_LEFT)."</td><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['date'])."</td>";
 $var=decodenum($data['status']);
-if($data['cancel']=="1"){
-echo "<td><span class='status-badge cancelled'>".$xml->$var."</span></td><td><a class='action-btn' href='index.php?page=po_make&id=".$data['id']."' title='Edit'><i class=\"fa fa-pencil\"></i></a>";}
-else {
-	echo "<td><span class='status-badge active'>".$xml->$var."</span></td><td><a class='action-btn' href='index.php?page=po_make&id=".$data['id']."' title='Edit'><i class=\"fa fa-pencil\"></i></a><a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href='core-function.php?page=pr_list&id=".$data['id']."&method=D'><i class=\"fa fa-trash\"></i></a>";
-	
-	}
+// All visible PRs are not cancelled, so always show edit and delete buttons
+echo "<td><span class='status-badge active'>".$xml->$var."</span></td><td><a class='action-btn' href='index.php?page=po_make&id=".$data['id']."' title='Edit'><i class=\"fa fa-pencil\"></i></a><a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href='core-function.php?page=pr_list&id=".$data['id']."&method=D'><i class=\"fa fa-trash\"></i></a></td>";
 
-echo "</td>
-</tr>";	
+echo "</tr>";	
 
 	}
 	
@@ -355,21 +351,17 @@ echo "<tr><td>Send out</td><td>".htmlspecialchars($data['tmp'])."</td><td>".html
             </thead>
             <tbody>
 <?php
-$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where ".$cus_filter." ".$condition." $search_cond $date_cond order by cancel,id desc");
+// Only show non-cancelled PRs (cancel=0)
+$query=mysqli_query($db->conn,"select pr.id as id, name,cancel,DATE_FORMAT(date,'%d-%m-%Y') as date,des, name_en, status from pr join company on pr.ven_id=company.id where ".$cus_filter." ".$condition." $search_cond $date_cond and cancel='0' order by id desc");
 
  while($data=mysqli_fetch_array($query)){
 echo "<tr><td>PR-".str_pad($data['id'], 6, "0", STR_PAD_LEFT)."</td><td>".htmlspecialchars($data['name_en'])."</td><td>".htmlspecialchars($data['des'])."</td><td>".htmlspecialchars($data['date'])."</td>";
 
 $val=decodenum($data['status']);
-if($data['cancel']=="1"){
-	
-echo "<td><span class='status-badge cancelled'>".$xml->$val."</span></td><td>";}
-else {
-	echo "<td><span class='status-badge active'>".$xml->$val."</span></td><td><a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href='core-function.php?page=pr_list&id=".$data['id']."&method=D'><i class=\"fa fa-trash\"></i></a></td><td>";
-	
-	}
+// All visible PRs are not cancelled, so always show edit and delete buttons
+echo "<td><span class='status-badge active'>".$xml->$val."</span></td><td><a class='action-btn' href='index.php?page=po_make&id=".$data['id']."' title='Edit'><i class=\"fa fa-pencil\"></i></a><a class='action-btn danger' onClick='return Conf(this)' title='Cancel' href='core-function.php?page=pr_list&id=".$data['id']."&method=D'><i class=\"fa fa-trash\"></i></a></td>";
 
-echo "</td>
+echo "
 </tr>";	
 	
 	}
