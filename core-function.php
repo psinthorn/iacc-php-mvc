@@ -317,12 +317,26 @@ case "pr_list" : {
 	file_put_contents($logFile, date('Y-m-d H:i:s') . " PR_LIST: method=" . ($_REQUEST['method'] ?? 'NOT SET') . "\n", FILE_APPEND);
 	
 	if($_REQUEST['method']=="D"){
-			$args['table']="pr";
-	$args['value']="cancel='1'";
-	$args['condition']="id='".$_REQUEST['id']."' and (ven_id='".$_SESSION['com_id']."' or cus_id='".$_SESSION['com_id']."')";
-	$har->updateDb($args);
+		$args['table']="pr";
+		$args['value']="cancel='1'";
+		$pr_id = intval($_REQUEST['id']);
+		$com_id = isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0;
 		
-		}else
+		// Admin (com_id=0) can delete any PR, regular users can only delete their own
+		if ($com_id > 0) {
+			$args['condition']="id='".$pr_id."' and (ven_id='".$com_id."' or cus_id='".$com_id."')";
+		} else {
+			// Admin mode - allow delete without company restriction
+			$args['condition']="id='".$pr_id."'";
+		}
+		
+		file_put_contents($logFile, date('Y-m-d H:i:s') . " PR DELETE: id=$pr_id, com_id=$com_id, condition=" . $args['condition'] . "\n", FILE_APPEND);
+		$har->updateDb($args);
+		// Redirect back to pr_list after delete
+		header("Location: index.php?page=pr_list");
+		exit;
+		
+	}else
 	if($_REQUEST['method']=="A"){
 	// Include company_id for multi-tenant and deleted_at as NULL
 	$owner_company_id = isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0;
@@ -364,13 +378,23 @@ case "pr_list" : {
 case "po_list" : {
 	$args['table']="po";
 	if($_REQUEST['method']=="D"){
-		$dataref=mysqli_fetch_array(mysqli_query($db->conn, "select ref,status from po join pr on po.ref=pr.id where po.id='".sql_int($_REQUEST['id'])."'"));
-			$args['table']="pr";
-	$args['value']="cancel='1'";
-	$args['condition']="id='".$dataref[ref]."' and (ven_id='".$_SESSION['com_id']."' or cus_id='".$_SESSION['com_id']."')";
-	$har->updateDb($args);
-	if($dataref[status]=="1"){exit("<script>window.location = 'index.php?page=qa_list'</script>");break;}
-	
+		$po_id = sql_int($_REQUEST['id']);
+		$dataref=mysqli_fetch_array(mysqli_query($db->conn, "select ref,status from po join pr on po.ref=pr.id where po.id='".$po_id."'"));
+		$args['table']="pr";
+		$args['value']="cancel='1'";
+		$com_id = isset($_SESSION['com_id']) && $_SESSION['com_id'] !== '' ? intval($_SESSION['com_id']) : 0;
+		
+		// Admin (com_id=0) can delete any, regular users can only delete their own
+		if ($com_id > 0) {
+			$args['condition']="id='".$dataref['ref']."' and (ven_id='".$com_id."' or cus_id='".$com_id."')";
+		} else {
+			$args['condition']="id='".$dataref['ref']."'";
+		}
+		$har->updateDb($args);
+		if($dataref['status']=="1"){
+			header("Location: index.php?page=qa_list");
+			exit;
+		}
 		
 		}else
 	if($_REQUEST['method']=="A"){

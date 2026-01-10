@@ -488,6 +488,22 @@ if (empty($categories) && $com_id == 0) {
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
     }
     
+    .product-item.highlighted {
+        border-color: #667eea;
+        background: #ede9fe;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+    }
+    
+    .smart-search-input {
+        font-size: 15px !important;
+        padding: 14px 18px !important;
+        font-weight: 500;
+    }
+    
+    .smart-search-input::placeholder {
+        color: #9ca3af;
+    }
+    
     .product-item-name {
         font-weight: 600;
         color: #1f2937;
@@ -541,13 +557,18 @@ var currentRowIndex = null;
 function openProductModal(rowIndex) {
     currentRowIndex = rowIndex;
     document.getElementById('productModal').classList.add('active');
-    document.getElementById('productSearch').value = '';
+    var searchInput = document.getElementById('productSearch');
+    searchInput.value = '';
     filterProducts('');
     // Show first tab
     var tabs = document.querySelectorAll('.product-modal-tab');
     if (tabs.length > 0) {
         tabs[0].click();
     }
+    // Auto-focus search input after modal animation
+    setTimeout(function() {
+        searchInput.focus();
+    }, 100);
 }
 
 function closeProductModal() {
@@ -584,16 +605,60 @@ function showCategory(catId, btn) {
     });
 }
 
+var highlightedIndex = -1;
+var visibleItems = [];
+
 function filterProducts(search) {
     search = search.toLowerCase();
+    visibleItems = [];
+    highlightedIndex = -1;
+    
     document.querySelectorAll('.product-item').forEach(item => {
         var name = item.querySelector('.product-item-name').textContent.toLowerCase();
+        item.classList.remove('highlighted');
         if (name.includes(search)) {
             item.style.display = 'block';
+            visibleItems.push(item);
         } else {
             item.style.display = 'none';
         }
     });
+    
+    // Auto-highlight first result
+    if (visibleItems.length > 0 && search.length > 0) {
+        highlightedIndex = 0;
+        visibleItems[0].classList.add('highlighted');
+        visibleItems[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+}
+
+function handleSearchKeydown(event) {
+    if (visibleItems.length === 0) return;
+    
+    if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (highlightedIndex < visibleItems.length - 1) {
+            if (highlightedIndex >= 0) visibleItems[highlightedIndex].classList.remove('highlighted');
+            highlightedIndex++;
+            visibleItems[highlightedIndex].classList.add('highlighted');
+            visibleItems[highlightedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (highlightedIndex > 0) {
+            visibleItems[highlightedIndex].classList.remove('highlighted');
+            highlightedIndex--;
+            visibleItems[highlightedIndex].classList.add('highlighted');
+            visibleItems[highlightedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (highlightedIndex >= 0 && visibleItems[highlightedIndex]) {
+            visibleItems[highlightedIndex].click();
+        }
+    } else if (event.key === 'Escape') {
+        closeProductModal();
+    }
 }
 
 function sortProducts(order, btn) {
@@ -744,7 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         
         <div class="product-modal-search">
-            <input type="text" id="productSearch" placeholder="🔍 Search models..." oninput="filterProducts(this.value)">
+            <input type="text" id="productSearch" class="smart-search-input" placeholder="🔍 Type to search models..." oninput="filterProducts(this.value)" onkeydown="handleSearchKeydown(event)" autocomplete="off">
             <div class="product-sort-buttons">
                 <button type="button" class="product-sort-btn" onclick="sortProducts('az', this)">
                     <i class="fa fa-sort-alpha-asc"></i> A-Z
