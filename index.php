@@ -125,6 +125,8 @@ $routes = [
     // Payment & Reports
     'payment'           => 'payment-list.php',
     'invoice_payments'  => 'invoice-payments.php',
+    'billing'           => 'billing.php',
+    'billing_make'      => 'billing-make.php',
     'mo_list'           => 'mo-list.php',
     'report'            => 'report.php',
     'receipt_list'      => 'rep-list.php',

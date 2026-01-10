@@ -914,6 +914,93 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 
 }
 
+case "billing" : {
+	if($_REQUEST['method']=="A"){
+		// Insert new billing note with multi-invoice support
+		$des = sql_escape($_REQUEST['des']);
+		$price = floatval(str_replace(',', '', $_REQUEST['price']));
+		$customer_id = sql_int($_REQUEST['customer_id'] ?? 0);
+		$invoices = isset($_REQUEST['invoices']) ? $_REQUEST['invoices'] : [];
+		
+		// Handle legacy single invoice mode
+		if (empty($invoices) && !empty($_REQUEST['inv_id'])) {
+			$invoices = [sql_int($_REQUEST['inv_id'])];
+		}
+		
+		if (!empty($invoices)) {
+			// Get first invoice id for legacy compatibility
+			$first_inv_id = sql_int($invoices[0]);
+			
+			// Insert billing note
+			$sql = "INSERT INTO billing (bil_id, des, inv_id, customer_id, price, created_at) 
+			        VALUES (NULL, '".$des."', '".$first_inv_id."', '".$customer_id."', '".$price."', NOW())";
+			mysqli_query($db->conn, $sql);
+			$bil_id = mysqli_insert_id($db->conn);
+			
+			// Insert billing items for each invoice
+			foreach ($invoices as $inv_id) {
+				$inv_id = sql_int($inv_id);
+				// Calculate individual invoice amount
+				$inv_sql = "SELECT 
+					(SELECT SUM(
+						(product.price * product.quantity) + 
+						(product.valuelabour * product.activelabour * product.quantity) -
+						(product.discount * product.quantity)
+					) FROM product WHERE product.po_id = po.id) as subtotal,
+					po.vat, po.dis as discount, po.over as withholding
+					FROM iv JOIN po ON iv.tex = po.id
+					WHERE iv.id = '".$inv_id."' AND po.po_id_new = ''
+					ORDER BY iv.createdate DESC LIMIT 1";
+				$inv_result = mysqli_query($db->conn, $inv_sql);
+				$inv_data = mysqli_fetch_assoc($inv_result);
+				
+				$subtotal = floatval($inv_data['subtotal'] ?? 0);
+				$vat_percent = floatval($inv_data['vat'] ?? 0);
+				$discount = floatval($inv_data['discount'] ?? 0);
+				$withholding = floatval($inv_data['withholding'] ?? 0);
+				$after_discount = $subtotal - $discount;
+				$vat_amount = $after_discount * ($vat_percent / 100);
+				$withholding_amount = $after_discount * ($withholding / 100);
+				$amount = $after_discount + $vat_amount - $withholding_amount;
+				
+				$item_sql = "INSERT INTO billing_items (bil_id, inv_id, amount) VALUES ('".$bil_id."', '".$inv_id."', '".$amount."')";
+				mysqli_query($db->conn, $item_sql);
+			}
+		}
+		
+		// Redirect back to billing list
+		exit("<script>window.location = 'index.php?page=billing'</script>");
+	}
+	
+	if($_REQUEST['method']=="E"){
+		// Update existing billing note
+		$bil_id = sql_int($_REQUEST['bil_id']);
+		$des = sql_escape($_REQUEST['des']);
+		$price = floatval(str_replace(',', '', $_REQUEST['price']));
+		
+		$sql = "UPDATE billing SET des='".$des."', price='".$price."' WHERE bil_id='".$bil_id."'";
+		mysqli_query($db->conn, $sql);
+		
+		// Redirect back to billing list
+		exit("<script>window.location = 'index.php?page=billing'</script>");
+	}
+	
+	if($_REQUEST['method']=="D"){
+		// Delete billing note and its items
+		$bil_id = sql_int($_REQUEST['bil_id']);
+		
+		// Delete billing items first
+		$sql = "DELETE FROM billing_items WHERE bil_id='".$bil_id."'";
+		mysqli_query($db->conn, $sql);
+		
+		// Delete billing note
+		$sql = "DELETE FROM billing WHERE bil_id='".$bil_id."'";
+		mysqli_query($db->conn, $sql);
+		
+		// Redirect back to billing list
+		exit("<script>window.location = 'index.php?page=billing'</script>");
+	}
+}
 
 }
 exit("<script>window.location = 'index.php?page=".$_REQUEST['page']."'</script>");
