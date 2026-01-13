@@ -1,0 +1,149 @@
+# =============================================================================
+# iACC - Production Deployment Workflow
+# =============================================================================
+# Triggered on push to main branch
+# Deploys to: iacc.f2.co.th (production)
+# =============================================================================
+
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  DEPLOY_PATH: public_html  # cPanel public folder for iacc.f2.co.th
+
+jobs:
+  # =========================================================================
+  # Job 1: Build and Test
+  # =========================================================================
+  build:
+    name: 🔨 Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mysqli, mbstring, xml, gd, curl
+          
+      - name: ✅ PHP Syntax Check
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -not -path "./MPDF/*" -not -path "./PHPMailer/*" | head -50 | xargs -I {} php -l {}
+          
+      - name: 📦 Create deployment artifact
+        run: |
+          mkdir -p deploy
+          rsync -av --progress \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='.DS_Store' \
+            --exclude='.venv' \
+            --exclude='.env' \
+            --exclude='docker' \
+            --exclude='docker-compose*.yml' \
+            --exclude='Dockerfile' \
+            --exclude='*.bak' \
+            --exclude='*.backup' \
+            --exclude='build' \
+            --exclude='node_modules' \
+            --exclude='TODAY_WORK_SUMMARY*.txt' \
+            --exclude='phpstan.neon' \
+            --exclude='deploy-cpanel.sh' \
+            --exclude='inc/sys.configs.php' \
+            --exclude='inc/docker-settings.json' \
+            --exclude='logs/*.log' \
+            --exclude='cache/*' \
+            --exclude='backups/*' \
+            ./ deploy/
+            
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-deploy
+          path: deploy/
+          retention-days: 5
+
+  # =========================================================================
+  # Job 2: Deploy to Production
+  # =========================================================================
+  deploy:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: production
+      url: https://iacc.f2.co.th
+    
+    steps:
+      - name: 📥 Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: production-deploy
+          path: deploy/
+          
+      - name: 🔧 Prepare production config
+        run: |
+          # Use production config
+          if [ -f deploy/inc/sys.configs.cpanel.php ]; then
+            cp deploy/inc/sys.configs.cpanel.php deploy/inc/sys.configs.php
+          fi
+          # Use production htaccess
+          if [ -f deploy/.htaccess.cpanel ]; then
+            cp deploy/.htaccess.cpanel deploy/.htaccess
+          fi
+          
+      - name: 📤 Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./deploy/
+          server-dir: ${{ env.DEPLOY_PATH }}/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/logs/*.log
+            **/cache/*
+            **/backups/*
+            
+      - name: ✅ Deployment notification
+        run: |
+          echo "✅ Production deployment completed!"
+          echo "🌐 URL: https://iacc.f2.co.th"
+          echo "📅 Time: $(date)"
+          echo "🔖 Commit: ${{ github.sha }}"
+
+  # =========================================================================
+  # Job 3: Post-Deploy Health Check
+  # =========================================================================
+  health-check:
+    name: 🏥 Health Check
+    runs-on: ubuntu-latest
+    needs: deploy
+    
+    steps:
+      - name: 🔍 Check site availability
+        run: |
+          echo "Waiting for deployment to propagate..."
+          sleep 30
+          
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://iacc.f2.co.th || echo "000")
+          
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ]; then
+            echo "✅ Site is up! HTTP Status: $HTTP_STATUS"
+          else
+            echo "⚠️ Site may have issues. HTTP Status: $HTTP_STATUS"
+            # Don't fail the workflow, just warn
+          fi
