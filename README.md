@@ -2,9 +2,19 @@
 
 **Version**: 4.8  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 10, 2026  
+**Last Updated**: January 13, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
+
+## 🚀 Deployment Status
+
+[![Deploy to Production](https://github.com/psinthorn/iacc-php-mvc/actions/workflows/deploy-production.yml/badge.svg)](https://github.com/psinthorn/iacc-php-mvc/actions/workflows/deploy-production.yml)
+[![Deploy to Staging](https://github.com/psinthorn/iacc-php-mvc/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/psinthorn/iacc-php-mvc/actions/workflows/deploy-staging.yml)
+
+| Environment | URL | Branch |
+|-------------|-----|--------|
+| **Production** | [iacc.f2.co.th](https://iacc.f2.co.th) | `main` |
+| **Staging** | [dev.iacc.f2.co.th](https://dev.iacc.f2.co.th) | `develop` |
 
 ---
 
