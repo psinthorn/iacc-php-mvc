@@ -55,12 +55,13 @@ $vender = mysqli_fetch_array(mysqli_query($db->conn, "
     AND valid_end = '0000-00-00'
 "));
 
-// Fetch customer info
+// Fetch customer info - use payby if set, otherwise use cus_id
+$customer_id = !empty($data['payby']) ? $data['payby'] : $data['cus_id'];
 $customer = mysqli_fetch_array(mysqli_query($db->conn, "
     SELECT name_en, name_sh, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email 
     FROM company 
     JOIN company_addr ON company.id = company_addr.com_id 
-    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['payby']) . "' 
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $customer_id) . "' 
     AND valid_end = '0000-00-00'
 "));
 
