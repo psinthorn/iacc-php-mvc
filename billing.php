@@ -496,7 +496,7 @@ foreach ($billing_groups as $group) {
                         </td>
                         <td>
                             <a href="billing-print.php?id=<?=$row['bil_id']?>" class="btn-action btn-action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>
-                            <a href="core-function.php?page=billing&method=D&id=<?=$row['bil_id']?>" class="btn-action btn-action-delete" title="<?=$xml->delete ?? 'Delete'?>" onclick="return confirm('<?=$xml->confirmdelete ?? 'Are you sure you want to delete this billing note?'?>')"><i class="fa fa-trash"></i></a>
+                            <a href="core-function.php?page=billing&method=D&bil_id=<?=$row['bil_id']?>" class="btn-action btn-action-delete" title="<?=$xml->delete ?? 'Delete'?>" onclick="return confirm('<?=$xml->confirmdelete ?? 'Are you sure you want to delete this billing note?'?>')"><i class="fa fa-trash"></i></a>
                         </td>
                     </tr>
                     <!-- Invoice sub-rows (hidden by default) -->
