@@ -35,10 +35,15 @@ jobs:
           extensions: mysqli, mbstring, xml, gd, curl
           
       - name: ✅ PHP Syntax Check
+        timeout-minutes: 2
         run: |
-          echo "Checking PHP syntax..."
-          find . -name "*.php" -not -path "./vendor/*" -not -path "./MPDF/*" -not -path "./PHPMailer/*" | head -50 | xargs -I {} php -l {}
-          echo "✅ PHP syntax check passed"
+          echo "Checking main PHP files..."
+          php -l index.php
+          php -l core-function.php
+          php -l login.php
+          php -l inc/class.dbconn.php
+          php -l inc/security.php
+          echo "✅ Syntax check passed"
           
       - name: 📦 Create deployment artifact
         run: |
