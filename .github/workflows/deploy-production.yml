@@ -112,10 +112,11 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         timeout-minutes: 10
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          # server: ${{ secrets.FTP_SERVER }}
+          server: ftp.f2.co.th
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || 21 }}
+          # port: ${{ secrets.FTP_PORT || 21 }}
           protocol: ftp
           local-dir: ./deploy/
           server-dir: ${{ env.DEPLOY_PATH }}/
