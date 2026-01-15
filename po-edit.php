@@ -60,7 +60,7 @@ if($numRows >= 1):
     $limit_day = mysqli_fetch_array(mysqli_query($db->conn, "select limit_day from company_credit where ven_id='".$data['ven_id']."' and cus_id='".$data['cus_id']."'"));
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- smart-dropdown.css removed: using Bootstrap 5 only -->
+<link href="css/smart-dropdown.css" rel="stylesheet">
 <style>
     .po-form-wrapper {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -752,7 +752,7 @@ if($numRows >= 1):
     </form>
 </div>
 
-<!-- smart-dropdown.js removed: using Bootstrap 5 only -->
+<script src="js/smart-dropdown.js"></script>
 <script type="text/javascript">
 // Store all models data for dynamic population (same approach as po-make.php)
 var allModelsData = <?=$allModelsJson?>;

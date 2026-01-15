@@ -1,10 +1,6 @@
 <?php
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
 // Dashboard page for iacc system - REAL DATA WIRED
 // Pulls actual data from database tables
-
 
 $cur_date = date('Y-m-d');
 $month_start = date('Y-m-01');
@@ -98,7 +94,7 @@ if ($is_admin) {
     
     // Recent login attempts (failed)
     $sql_failed = "SELECT COUNT(*) as count FROM login_attempts 
-                   WHERE successful = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+                   WHERE success = 0 AND attempt_time > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
     $result_failed = mysqli_query($db->conn, $sql_failed);
     $failed_logins_24h = mysqli_fetch_assoc($result_failed)['count'] ?? 0;
     
@@ -968,37 +964,6 @@ function get_status_badge($status) {
     <!-- ============ USER DASHBOARD (Company-specific data) ============ -->
     
     <!-- KPI Cards Row -->
-        <!-- Chart.js Dashboard Charts Row -->
-        <div class="row kpi-row">
-            <div class="col-lg-8">
-                <div class="content-card">
-                    <h5 class="card-title">
-                        <i class="fa fa-bar-chart-o fa-fw"></i> Area Chart Example
-                    </h5>
-                    <div class="panel-body">
-                        <canvas id="area-chart" height="250"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="content-card">
-                    <h5 class="card-title">
-                        <i class="fa fa-bar-chart-o fa-fw"></i> Bar Chart Example
-                    </h5>
-                    <div class="panel-body">
-                        <canvas id="bar-chart" height="250"></canvas>
-                    </div>
-                </div>
-                <div class="content-card">
-                    <h5 class="card-title">
-                        <i class="fa fa-bar-chart-o fa-fw"></i> Donut Chart Example
-                    </h5>
-                    <div class="panel-body">
-                        <canvas id="donut-chart" height="250"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
     <div class="row kpi-row">
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card">

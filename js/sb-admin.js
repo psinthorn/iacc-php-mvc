@@ -1,6 +1,18 @@
+$(function() {
 
+    $('#side-menu').metisMenu();
 
+});
 
-
-// Enable Bootstrap 5 sidebar collapse and dropdowns for nav-link dropdown-toggle
-// No custom JS needed for sidebar collapse: Bootstrap 5 handles [data-bs-toggle="collapse"] with data-bs-target automatically.
+//Loads the correct sidebar on window load,
+//collapses the sidebar on window resize.
+$(function() {
+    $(window).bind("load resize", function() {
+        console.log($(this).width())
+        if ($(this).width() < 768) {
+            $('div.sidebar-collapse').addClass('collapse')
+        } else {
+            $('div.sidebar-collapse').removeClass('collapse')
+        }
+    })
+})

@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.9  
+**Version**: 4.8  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 16, 2026  
+**Last Updated**: January 13, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -68,16 +68,6 @@
 ---
 
 ## 📋 Changelog
-
-### v4.9 (January 16, 2026)
-- **Frontend Modernization & Cleanup** 🚀:
-  - Completely removed all jQuery and legacy plugins (MetisMenu, Flot, Morris, Raphael, jqBootstrapValidation, smart-dropdown)
-  - Migrated all dashboard and chart functionality to Chart.js (CDN)
-  - Updated all chart containers to use `<canvas>` and Chart.js logic
-  - Removed all jQuery includes and dependencies from HTML, PHP, and scripts
-  - Cleaned up and deleted all unused/empty plugin files and folders
-  - Final codebase is now jQuery-free, modern, and optimized for production
-  - Improved maintainability and performance
 
 ### v4.8 (January 10, 2026)
 - **Purchase Request Form Fix** 📝:

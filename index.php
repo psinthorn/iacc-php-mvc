@@ -188,6 +188,7 @@ $pageFile = isset($routes[$page]) ? $routes[$page] : null;
 
 <head>
     <?php include_once "css.php";?>
+    <script src="js/tooltip.js"></script>
 </head>
 
 <body class="has-top-nav">
@@ -197,7 +198,6 @@ $pageFile = isset($routes[$page]) ? $routes[$page] : null;
 
         <div id="page-wrapper">
             <div class="row">
-    <!-- Removed tooltip.js: now using Bootstrap 5 tooltips -->
                 <?php 
                 // Debug routing
                 file_put_contents('logs/app.log', date('Y-m-d H:i:s') . " DEBUG index.php: page=$page, pageFile=$pageFile, exists=" . (file_exists($pageFile) ? 'yes' : 'no') . "\n", FILE_APPEND);
