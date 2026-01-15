@@ -99,13 +99,24 @@ jobs:
           
       - name: 🔧 Prepare production config
         run: |
-          # Use production config
+          # Always copy production config if present
+          if [ -f deploy/inc/sys.configs.production.php ]; then
+            cp deploy/inc/sys.configs.production.php deploy/inc/sys.configs.php
+          fi
+          # Fallback: copy cpanel config if present
           if [ -f deploy/inc/sys.configs.cpanel.php ]; then
             cp deploy/inc/sys.configs.cpanel.php deploy/inc/sys.configs.php
           fi
           # Use production htaccess
           if [ -f deploy/.htaccess.cpanel ]; then
             cp deploy/.htaccess.cpanel deploy/.htaccess
+          fi
+          # Ensure all config templates and .htaccess.cpanel are deployed
+          for f in deploy/inc/sys.configs.*.php; do
+            [ -e "$f" ] && cp "$f" deploy/inc/ || true
+          done
+          if [ -f deploy/.htaccess.cpanel ]; then
+            cp deploy/.htaccess.cpanel deploy/
           fi
           
       - name: 📤 Deploy via FTP
