@@ -75,7 +75,7 @@ if (empty($categories) && $com_id == 0) {
 <!-- Modern Font - loaded inline for included page -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Smart Dropdown Component -->
-<link href="css/smart-dropdown.css" rel="stylesheet">
+<!-- smart-dropdown.css removed: using Bootstrap 5 only -->
 <style>
     .pr-form-wrapper {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -719,7 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="subtitle">Create a new purchase request for a customer</div>
     </div>
 
-    <form action="core-function.php" method="post" id="company-form">
+    <form action="core-function.php" method="post" id="company-form" class="needs-validation" novalidate>
         <?= csrf_field() ?>
         <!-- Basic Info Card -->
         <div class="form-card">
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="form-group">
                     <label for="cus_id"><?=$xml->customer?></label>
-                    <select id="cus_id" name="cus_id" class="form-control smart-dropdown" data-placeholder="Select Customer..." data-sort-order="asc">
+                    <select id="cus_id" name="cus_id" class="form-control" required>
                         <?php 
                         $com_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
                         if ($com_id > 0) {

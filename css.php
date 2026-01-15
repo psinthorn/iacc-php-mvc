@@ -20,7 +20,7 @@
     <link href="css/mobile-first.css" rel="stylesheet">
 
     <!-- Page-Level Plugin CSS - Dashboard -->
-    <link href="css/plugins/morris/morris-0.4.3.min.css" rel="stylesheet">
+    <!-- Morris.js CSS removed: using Chart.js only -->
     <link href="css/plugins/timeline/timeline.css" rel="stylesheet">
 
     <!-- SB Admin CSS - Include with every page -->
@@ -32,12 +32,7 @@
     <!-- Smart Dropdown Component - Searchable & Sortable dropdowns -->
     <link href="css/smart-dropdown.css" rel="stylesheet">
     
-    <!-- jQuery - Use 3.x with 1.x migrate for compatibility -->
-    <?php if ($useBootstrap5): ?>
-    <script src="js/jquery-3.7.1.min.js"></script>
-    <?php else: ?>
-    <script src="js/jquery-1.10.2.js"></script>
-    <?php endif; ?>
+
     <script src="js/ajaxpagefetcher.js"></script>
     
     

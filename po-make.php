@@ -610,7 +610,7 @@ $(function(){
                 <div class="product-row-main">
                     <div class="form-group">
                         <label><?=$xml->product ?? 'Product'?></label>
-                        <select id="type${indexthis}" name="type[${indexthis}]" class="form-control product-select smart-dropdown" data-index="${indexthis}" required>
+                        <select id="type${indexthis}" name="type[${indexthis}]" class="form-control product-select" data-index="${indexthis}" required>
                             <?php 
                             echo "<option value=''>-- Select --</option>";
                             foreach($allProducts as $prod){
@@ -625,7 +625,7 @@ $(function(){
                     </div>
                     <div class="form-group">
                         <label><?=$xml->model ?? 'Model'?></label>
-                        <select id="model${indexthis}" name="model[${indexthis}]" class="form-control model-select smart-dropdown" data-index="${indexthis}">
+                        <select id="model${indexthis}" name="model[${indexthis}]" class="form-control model-select" data-index="${indexthis}">
                             <option value="0">-- No Model --</option>
                         </select>
                     </div>
@@ -698,7 +698,7 @@ $(function(){
         <a href="index.php?page=pr_list" class="btn-back"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
     </div>
 
-    <form action="core-function.php" method="post" id="company-form">
+    <form action="core-function.php" method="post" id="company-form" class="needs-validation" novalidate>
         <?= csrf_field() ?>
         
         <!-- Request Information Card -->
@@ -712,7 +712,7 @@ $(function(){
                 </div>
                 <div class="form-group">
                     <label><?=$xml->brand ?? 'Vendor Brand'?></label>
-                    <select id="brandven" name="brandven" class="form-control smart-dropdown">
+                    <select id="brandven" name="brandven" class="form-control" required>
                         <option value="0"><?= htmlspecialchars($vender['name_sh'] ?? $vender['name_en']) ?></option>
                         <?php 
                         $querycustomer = mysqli_query($db->conn, "SELECT brand_name, id FROM brand WHERE ven_id='".$data['ven_id']."'");
@@ -730,7 +730,7 @@ $(function(){
                             <option value="vendor">Vendor</option>
                             <option value="all">All</option>
                         </select>
-                        <select id="cus_id" name="cus_id" class="form-control smart-dropdown" style="flex: 1;">
+                        <select id="cus_id" name="cus_id" class="form-control" style="flex: 1;" required>
                             <?php 
                             $queryCompanies = mysqli_query($db->conn, "SELECT id, name_sh, name_en, customer, vender FROM company WHERE deleted_at IS NULL ORDER BY name_en");
                             $allCompanies = [];
@@ -874,7 +874,7 @@ $(function(){
                             <!-- Product -->
                             <div class="form-group">
                                 <label><?=$xml->product ?? 'Product'?></label>
-                                <select name="type[<?=$i?>]" id="type<?=$i?>" class="form-control product-select smart-dropdown" data-index="<?=$i?>" required>
+                                <select name="type[<?=$i?>]" id="type<?=$i?>" class="form-control product-select" data-index="<?=$i?>" required>
                                     <?php 
                                     if(empty($allProducts)){
                                         echo "<option value=''>No products available</option>";
@@ -895,7 +895,7 @@ $(function(){
                             <!-- Model -->
                             <div class="form-group">
                                 <label><?=$xml->model ?? 'Model'?></label>
-                                <select name="model[<?=$i?>]" id="model<?=$i?>" class="form-control model-select smart-dropdown" data-index="<?=$i?>">
+                                <select name="model[<?=$i?>]" id="model<?=$i?>" class="form-control model-select" data-index="<?=$i?>">
                                     <option value="0">-- No Model --</option>
                                     <?php 
                                     $typeId = $data_fetitem['type'];

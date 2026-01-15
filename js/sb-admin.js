@@ -1,18 +1,18 @@
-$(function() {
 
-    $('#side-menu').metisMenu();
 
-});
 
-//Loads the correct sidebar on window load,
-//collapses the sidebar on window resize.
-$(function() {
-    $(window).bind("load resize", function() {
-        console.log($(this).width())
-        if ($(this).width() < 768) {
-            $('div.sidebar-collapse').addClass('collapse')
-        } else {
-            $('div.sidebar-collapse').removeClass('collapse')
-        }
-    })
-})
+// Loads the correct sidebar on window load and resizes
+function handleSidebarCollapse() {
+    var width = window.innerWidth;
+    console.log(width);
+    var sidebar = document.querySelector('div.sidebar-collapse');
+    if (!sidebar) return;
+    if (width < 768) {
+        sidebar.classList.add('collapse');
+    } else {
+        sidebar.classList.remove('collapse');
+    }
+}
+
+window.addEventListener('load', handleSidebarCollapse);
+window.addEventListener('resize', handleSidebarCollapse);
