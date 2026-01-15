@@ -14,7 +14,7 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 env:
-  DEPLOY_PATH: public_html  # cPanel public folder for iacc.f2.co.th
+  DEPLOY_PATH: .  # Deploy to the root of the FTP target directory
 
 jobs:
   # =========================================================================

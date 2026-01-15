@@ -187,8 +187,8 @@ $pageFile = isset($routes[$page]) ? $routes[$page] : null;
 <html>
 
 <head>
+    <?php include_once "css.php";?>
     <script src="js/tooltip.js"></script>
-	<?php include_once "css.php";?>
 </head>
 
 <body class="has-top-nav">
