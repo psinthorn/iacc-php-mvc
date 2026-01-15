@@ -99,11 +99,13 @@ jobs:
           
       - name: 🔧 Prepare staging config
         run: |
-          # Use staging config (same as cpanel but with staging DB)
+          # Always copy staging config if present
+          if [ -f deploy/inc/sys.configs.staging.php ]; then
+            cp deploy/inc/sys.configs.staging.php deploy/inc/sys.configs.php
+          fi
+          # Fallback: copy cpanel config if present
           if [ -f deploy/inc/sys.configs.cpanel.php ]; then
             cp deploy/inc/sys.configs.cpanel.php deploy/inc/sys.configs.php
-            # Note: You'll need to update the config with staging DB credentials
-            # This is done via GitHub secrets or a staging-specific config file
           fi
           # Use production htaccess (security settings same for staging)
           if [ -f deploy/.htaccess.cpanel ]; then
