@@ -47,7 +47,7 @@ $connTest = runTest('db_connection', function() use ($db) {
 $tables = ['brand', 'category', 'type', 'company', 'company_addr', 'payment', 'pr', 'po', 'authorize'];
 $tableResults = [];
 foreach ($tables as $table) {
-    $result = mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM \`$table\`");
+    $result = mysqli_query($db->conn, "SELECT COUNT(*) as cnt FROM `$table`");
     if ($result) {
         $row = mysqli_fetch_assoc($result);
         $tableResults[$table] = ['exists' => true, 'count' => $row['cnt']];
