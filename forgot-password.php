@@ -99,6 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     
 
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-5.3.3.bundle.min.js"></script>
 </body>
 </html>

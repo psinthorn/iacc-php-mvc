@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
     </div>
     
 
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-5.3.3.bundle.min.js"></script>
     <script>
     // Simple password strength indicator
     document.getElementById('password')?.addEventListener('input', function() {

@@ -505,7 +505,7 @@ document.addEventListener('click', function(e) {
 
 // Sidebar toggle for mobile
 document.getElementById('sidebarToggle').addEventListener('click', function() {
-    const sidebar = document.querySelector('.navbar-static-side');
+    const sidebar = document.getElementById('sidebar');
     if (sidebar) {
         sidebar.classList.toggle('mobile-visible');
     }
