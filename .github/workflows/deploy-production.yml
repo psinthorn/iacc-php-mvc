@@ -97,16 +97,17 @@ jobs:
           name: production-deploy
           path: deploy/
           
-      - name: 🔧 Prepare production config
+      - name: 🛠️ Generate production config from secrets
         run: |
-          # Always copy production config if present
-          if [ -f deploy/inc/sys.configs.production.php ]; then
-            cp deploy/inc/sys.configs.production.php deploy/inc/sys.configs.php
-          fi
-          # Fallback: copy cpanel config if present
-          if [ -f deploy/inc/sys.configs.cpanel.php ]; then
-            cp deploy/inc/sys.configs.cpanel.php deploy/inc/sys.configs.php
-          fi
+          mkdir -p deploy/inc
+          cat > deploy/inc/sys.configs.php <<EOL
+          <?php
+          $config["username"] = "${{ secrets.DB_USERNAME }}";
+          $config["password"] = "${{ secrets.DB_PASSWORD }}";
+          $config["dbname"]   = "${{ secrets.DB_NAME }}";
+          $config["host"]     = "${{ secrets.DB_HOST }}";
+          // ...other config...
+          EOL
           # Use production htaccess
           if [ -f deploy/.htaccess.cpanel ]; then
             cp deploy/.htaccess.cpanel deploy/.htaccess
