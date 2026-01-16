@@ -106,7 +106,6 @@ jobs:
           $config["password"] = "${{ secrets.DB_PASSWORD }}";
           $config["dbname"]   = "${{ secrets.DB_NAME }}";
           $config["host"]     = "${{ secrets.DB_HOST }}";
-          // ...other config...
           EOL
           # Use production htaccess
           if [ -f deploy/.htaccess.cpanel ]; then

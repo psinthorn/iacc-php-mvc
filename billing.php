@@ -1,4 +1,11 @@
 <?php
+ // Error reporting settings
+ini_set('display_errors', 1); // Hide errors from browser
+ini_set('log_errors', 1);     // Enable error logging
+ini_set('display_startup_errors', 1);
+ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
+error_reporting(E_ALL);       // Report all errors
+
 /**
  * Billing Note List Page
  * Displays all invoices - those with billing notes are grouped, those without show individually
@@ -68,7 +75,7 @@ $count_sql = "
 ";
 $count_result = mysqli_query($db->conn, $count_sql);
 $total_items = $count_result ? intval(mysqli_fetch_assoc($count_result)['total']) : 0;
-$total_pages = max(1, ceil($total_items / $items_per_page));
+$total_pages = max(1, ceil($total_items / $per_page));
 
 // ============== QUERY ALL INVOICES ==============
 $sql = "

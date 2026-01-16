@@ -1,4 +1,12 @@
 <?php
+
+// Error reporting settings
+ini_set('display_errors', 1); // Hide errors from browser
+ini_set('log_errors', 1);     // Enable error logging
+ini_set('display_startup_errors', 1);
+ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
+error_reporting(E_ALL);       // Report all errors
+
 // Dashboard page for iacc system - REAL DATA WIRED
 // Pulls actual data from database tables
 

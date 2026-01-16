@@ -1,4 +1,10 @@
 <?php
+// Error reporting settings
+ini_set('display_errors', 1); // Show errors in browser for debug
+ini_set('log_errors', 1);     // Enable error logging
+ini_set('display_startup_errors', 1);
+ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
+error_reporting(E_ALL);       // Report all errors
 /**
  * Forgot Password Page
  * Sends password reset email to user

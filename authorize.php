@@ -1,5 +1,10 @@
 <?php 
-error_reporting(E_ALL & ~E_NOTICE);
+// Error reporting settings
+ini_set('display_errors', 1); // Show errors in browser for debug
+ini_set('log_errors', 1);     // Enable error logging
+ini_set('display_startup_errors', 1);
+ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
+error_reporting(E_ALL);
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");

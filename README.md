@@ -18,6 +18,21 @@
 
 ---
 
+
+## 📝 How to Commit and Push Changes
+
+To commit and push your changes to the repository, use the following commands in your terminal:
+
+```bash
+git add .
+git commit -m "Describe your changes here"
+git push origin main
+```
+
+Replace the commit message with a meaningful description of your changes.
+
+---
+
 ## 🎯 Current Status Summary
 
 ### ✅ Security Features - COMPLETED
