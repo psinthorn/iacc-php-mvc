@@ -53,31 +53,99 @@ $payment_labels_with_icons = getPaymentMethodLabelsWithIcons($db->conn, $lang);
 .receipt-container { max-width: 1400px; margin: 0 auto; }
 
 .page-header-rep {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
     color: #fff;
-    padding: 25px 30px;
-    border-radius: 10px;
+    padding: 28px 32px;
+    border-radius: 16px;
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 15px rgba(39,174,96,0.3);
+    box-shadow: 0 8px 32px rgba(5,150,105,0.3);
+    position: relative;
+    overflow: hidden;
 }
-.page-header-rep h2 { margin: 0; font-size: 26px; font-weight: 600; }
-.page-header-rep p { margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; }
+.page-header-rep::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.page-header-rep::after {
+    content: '';
+    position: absolute;
+    bottom: -60%;
+    right: 15%;
+    width: 180px;
+    height: 180px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.page-header-rep > div { position: relative; z-index: 1; }
+.page-header-rep h2 { margin: 0; font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+.page-header-rep h2 i { font-size: 28px; }
+.page-header-rep p { margin: 8px 0 0 0; opacity: 0.9; font-size: 14px; }
 .btn-create {
+    position: relative;
+    z-index: 1;
     background: #fff;
-    color: #27ae60;
-    padding: 12px 25px;
-    border-radius: 6px;
+    color: #059669;
+    padding: 14px 28px;
+    border-radius: 12px;
     text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border: 2px solid transparent;
 }
-.btn-create:hover { background: #f8f9fa; color: #27ae60; transform: translateY(-2px); }
+.btn-create:hover { 
+    background: #ecfdf5; 
+    color: #047857; 
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    text-decoration: none;
+}
+.btn-create:active {
+    transform: translateY(-1px);
+}
+.btn-create i {
+    font-size: 16px;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Pulse animation for create button */
+@keyframes pulse-ring {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1); opacity: 0.4; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+.btn-create::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    border-radius: 14px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.btn-create:hover::before {
+    opacity: 1;
+    animation: pulse-ring 1.5s ease infinite;
+}
 
 /* Stats Cards */
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
@@ -194,6 +262,16 @@ $payment_labels_with_icons = getPaymentMethodLabelsWithIcons($db->conn, $lang);
 .empty-state i { font-size: 50px; margin-bottom: 15px; opacity: 0.5; }
 
 @media (max-width: 992px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { 
+    .page-header-rep { 
+        flex-direction: column; 
+        text-align: center; 
+        gap: 20px;
+        padding: 24px;
+    }
+    .page-header-rep h2 { justify-content: center; font-size: 22px; }
+    .btn-create { width: 100%; justify-content: center; }
+}
 @media (max-width: 576px) { .stats-row { grid-template-columns: 1fr; } .filter-row { flex-direction: column; } }
 </style>
 

@@ -36,10 +36,22 @@ case "company" : {
 		$args['table']="company";
 		$args2['table']="company_addr";
 		//$args3['table']="company_credit";
+		
+		// Handle logo upload for new company
+		$logoFilename = '';
+		if (isset($_FILES["logo"]) && $_FILES["logo"]["error"] == 0 && $_FILES["logo"]["tmp_name"] != "") {
+			$allowedTypes = array("image/jpg", "image/jpeg", "image/JPG", "image/pjpeg", "image/png", "image/PNG");
+			if (in_array($_FILES["logo"]["type"], $allowedTypes)) {
+				$ext = (strpos($_FILES["logo"]["type"], 'png') !== false || strpos($_FILES["logo"]["type"], 'PNG') !== false) ? '.png' : '.jpg';
+				$logoFilename = "logo".md5(rand().$_REQUEST['name_en']).$ext;
+				move_uploaded_file($_FILES["logo"]["tmp_name"], "upload/".$logoFilename);
+			}
+		}
+		
 		// Include company_id for multi-tenant: assign new customer/vendor to logged-in company
 		$id = $har->Maxid('company');
 		$sql = "INSERT INTO company (id, name_en, name_th, name_sh, contact, email, phone, fax, tax, customer, vender, logo, term, company_id) 
-		        VALUES ('".$id."', '".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".sql_escape($_REQUEST['customer'])."','".sql_escape($_REQUEST['vender'])."','','".sql_escape($_REQUEST['term'])."','".$owner_company_id."')";
+		        VALUES ('".$id."', '".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".sql_escape($_REQUEST['customer'])."','".sql_escape($_REQUEST['vender'])."','".sql_escape($logoFilename)."','".sql_escape($_REQUEST['term'])."','".$owner_company_id."')";
 		mysqli_query($db->conn, $sql);
 	$tmpid = $id;	
 	
@@ -48,33 +60,68 @@ case "company" : {
 	if($_REQUEST['district_bil']=="")$_REQUEST['district_bil']=$_REQUEST['district_tax'];
 	if($_REQUEST['province_bil']=="")$_REQUEST['province_bil']=$_REQUEST['province_tax'];
 	if($_REQUEST['zip_bil']=="")$_REQUEST['zip_bil']=$_REQUEST['zip_tax'];
-	$args2['value']="'','".$tmpid."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'])."','".sql_escape($_REQUEST['district_tax'])."','".sql_escape($_REQUEST['province_tax'])."','".sql_escape($_REQUEST['zip_tax'])."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','0000-00-00'";
+	$args2['value']="NULL,'".$tmpid."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'])."','".sql_escape($_REQUEST['district_tax'])."','".sql_escape($_REQUEST['province_tax'])."','".sql_escape($_REQUEST['zip_tax'])."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','9999-12-31',NULL";
 	$har->insertDB($args2);	
 		}
 	else if($_REQUEST['method']=="E"){
 		
-	if (($_FILES["logo"] != "") && 
-		(($_FILES["logo"]["type"] == "image/jpg")|| 
-		($_FILES["logo"]["type"] == "image/jpeg") ||
-		($_FILES["logo"]["type"] == "image/JPG") || 
-		($_FILES["logo"]["type"] == "image/pjpeg"))) {
-		$filepath = "logo".md5(rand().$_REQUEST['name_en']).".jpg";
-		copy($_FILES["logo"]["tmp_name"], "upload/".$filepath);
-		$tmpupdate=",logo='".$filepath."'";
-	}else{$tmpupdate="";}
+	// Handle logo upload - support JPG and PNG
+	$tmpupdate = "";
+	if (isset($_FILES["logo"]) && $_FILES["logo"]["error"] == 0 && $_FILES["logo"]["tmp_name"] != "") {
+		$allowedTypes = array("image/jpg", "image/jpeg", "image/JPG", "image/pjpeg", "image/png", "image/PNG");
+		if (in_array($_FILES["logo"]["type"], $allowedTypes)) {
+			$ext = (strpos($_FILES["logo"]["type"], 'png') !== false || strpos($_FILES["logo"]["type"], 'PNG') !== false) ? '.png' : '.jpg';
+			$filepath = "logo".md5(rand().$_REQUEST['name_en']).$ext;
+			if(move_uploaded_file($_FILES["logo"]["tmp_name"], "upload/".$filepath)) {
+				$tmpupdate = ",logo='".$filepath."'";
+			}
+		}
+	}
 		
 	$args['table']="company";
 	$args['value']="name_en='".sql_escape($_REQUEST['name_en'])."',name_th='".sql_escape($_REQUEST['name_th'])."',name_sh='".sql_escape($_REQUEST['name_sh'])."',contact='".sql_escape($_REQUEST['contact'])."',email='".sql_escape($_REQUEST['email'])."',phone='".sql_escape($_REQUEST['phone'])."',fax='".sql_escape($_REQUEST['fax'])."',tax='".sql_escape($_REQUEST['tax'])."',customer='".sql_escape($_REQUEST['customer'])."',vender='".sql_escape($_REQUEST['vender'])."'".$tmpupdate.",term='".sql_escape($_REQUEST['term'])."'";
 	
 	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
-	$har->updateDb($args);	
+	$har->updateDb($args);
+	
+	// Update or insert address data
+	if(!isset($_REQUEST['adr_bil']) || $_REQUEST['adr_bil']=="") $_REQUEST['adr_bil'] = $_REQUEST['adr_tax'] ?? '';
+	if(!isset($_REQUEST['city_bil']) || $_REQUEST['city_bil']=="") $_REQUEST['city_bil'] = $_REQUEST['city_tax'] ?? '';
+	if(!isset($_REQUEST['district_bil']) || $_REQUEST['district_bil']=="") $_REQUEST['district_bil'] = $_REQUEST['district_tax'] ?? '';
+	if(!isset($_REQUEST['province_bil']) || $_REQUEST['province_bil']=="") $_REQUEST['province_bil'] = $_REQUEST['province_tax'] ?? '';
+	if(!isset($_REQUEST['zip_bil']) || $_REQUEST['zip_bil']=="") $_REQUEST['zip_bil'] = $_REQUEST['zip_tax'] ?? '';
+	
+	// Debug logging
+	file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY EDIT: id=" . ($_REQUEST['id'] ?? 'NONE') . ", addr_id=" . ($_REQUEST['addr_id'] ?? 'NONE') . ", adr_tax=" . ($_REQUEST['adr_tax'] ?? 'NONE') . "\n", FILE_APPEND);
+	
+	// Process address - insert if adr_tax provided (even if no existing addr_id)
+	$adr_tax = trim($_REQUEST['adr_tax'] ?? '');
+	if($adr_tax !== '') {
+		if(!empty($_REQUEST['addr_id'])) {
+			// Update existing address
+			file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY EDIT: Updating existing address ID=" . $_REQUEST['addr_id'] . "\n", FILE_APPEND);
+			$addr_args['table']="company_addr";
+			$addr_args['value']="adr_tax='".sql_escape($_REQUEST['adr_tax'])."',city_tax='".sql_escape($_REQUEST['city_tax'] ?? '')."',district_tax='".sql_escape($_REQUEST['district_tax'] ?? '')."',province_tax='".sql_escape($_REQUEST['province_tax'] ?? '')."',zip_tax='".sql_escape($_REQUEST['zip_tax'] ?? '')."',adr_bil='".sql_escape($_REQUEST['adr_bil'])."',city_bil='".sql_escape($_REQUEST['city_bil'])."',district_bil='".sql_escape($_REQUEST['district_bil'])."',province_bil='".sql_escape($_REQUEST['province_bil'])."',zip_bil='".sql_escape($_REQUEST['zip_bil'])."'";
+			$addr_args['condition']="id='".sql_int($_REQUEST['addr_id'])."'";
+			$har->updateDb($addr_args);
+		} else {
+			// Insert new address if none exists
+			file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY EDIT: Inserting new address for company ID=" . $_REQUEST['id'] . "\n", FILE_APPEND);
+			$addr_args['table']="company_addr";
+			$addr_args['value']="NULL,'".sql_int($_REQUEST['id'])."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'] ?? '')."','".sql_escape($_REQUEST['district_tax'] ?? '')."','".sql_escape($_REQUEST['province_tax'] ?? '')."','".sql_escape($_REQUEST['zip_tax'] ?? '')."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','9999-12-31',NULL";
+			$result = $har->insertDb($addr_args);
+			file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY EDIT: Insert result=" . ($result ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
+		}
+	} else {
+		file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY EDIT: No address to save (adr_tax empty)\n", FILE_APPEND);
+	}
 		}
 		else if($_REQUEST['method']=="A2"){
 	$args['table']="company_addr";
 	$args['value']="valid_end='".date('Y-m-d')."'";
 	$args['condition']="com_id='".sql_int($_REQUEST['id'])."' and valid_end='0000-00-00'";
 	$har->updateDb($args);
-		$args['value']="'','".sql_int($_REQUEST['com_id'])."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'])."','".sql_escape($_REQUEST['district_tax'])."','".sql_escape($_REQUEST['province_tax'])."','".sql_escape($_REQUEST['zip_tax'])."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','0000-00-00'";
+		$args['value']="NULL,'".sql_int($_REQUEST['com_id'])."','".sql_escape($_REQUEST['adr_tax'])."','".sql_escape($_REQUEST['city_tax'])."','".sql_escape($_REQUEST['district_tax'])."','".sql_escape($_REQUEST['province_tax'])."','".sql_escape($_REQUEST['zip_tax'])."','".sql_escape($_REQUEST['adr_bil'])."','".sql_escape($_REQUEST['city_bil'])."','".sql_escape($_REQUEST['district_bil'])."','".sql_escape($_REQUEST['province_bil'])."','".sql_escape($_REQUEST['zip_bil'])."','".date('Y-m-d')."','9999-12-31',NULL";
 	$har->insertDb($args);	
 		}
 	else if($_REQUEST['method']=="A3"){
@@ -91,7 +138,23 @@ case "company" : {
 	$args['value']="'','".sql_int($_REQUEST['cus_id'])."','".sql_int($_REQUEST['ven_id'])."','".sql_escape($_REQUEST['limit_credit'])."','".sql_escape($_REQUEST['limit_day'])."','".date('Y-m-d')."','0000-00-00'";
 	$har->insertDb($args);	
 		}
+		else if($_REQUEST['method']=="D"){
+	// Soft delete company
+	$id = sql_int($_REQUEST['id']);
+	if($id > 0) {
+		// Soft delete company (set deleted_at)
+		$sql = "UPDATE company SET deleted_at = NOW() WHERE id = '".$id."'";
+		mysqli_query($db->conn, $sql);
+		
+		// Also soft delete related addresses
+		$sql2 = "UPDATE company_addr SET deleted_at = NOW() WHERE com_id = '".$id."' AND deleted_at IS NULL";
+		mysqli_query($db->conn, $sql2);
+	}
+		}
 	
+	// Redirect back to company list after any company operation
+	header("Location: index.php?page=company");
+	exit;
 	
 }break;		
 case "type" : {

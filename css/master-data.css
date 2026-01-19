@@ -311,18 +311,18 @@
 
 .master-data-table table {
     margin-bottom: 0;
-    font-size: 15px !important;
+    font-size: 13px !important;
     width: 100%;
 }
 
 .master-data-table thead th {
     background: var(--md-bg-light);
     border-bottom: 2px solid var(--md-border);
-    padding: 16px 18px !important;
+    padding: 10px 12px !important;
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 12px !important;
-    letter-spacing: 0.8px;
+    font-size: 11px !important;
+    letter-spacing: 0.5px;
     color: var(--md-text-secondary);
 }
 
@@ -335,31 +335,31 @@
 }
 
 .master-data-table tbody td {
-    padding: 16px 18px !important;
+    padding: 8px 12px !important;
     vertical-align: middle;
     border-bottom: 1px solid var(--md-border);
-    font-size: 15px !important;
+    font-size: 13px !important;
     color: var(--md-text-primary);
 }
 
 .master-data-table .item-name {
     font-weight: 600;
     color: var(--md-text-primary);
-    font-size: 16px !important;
+    font-size: 14px !important;
 }
 
 .master-data-table .item-desc {
     color: var(--md-text-secondary);
-    font-size: 14px !important;
+    font-size: 12px !important;
 }
 
 /* ========== Logo Preview ========== */
 .logo-preview {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--md-radius-sm);
     object-fit: cover;
-    border: 2px solid var(--md-border);
+    border: 1px solid var(--md-border);
     background: var(--md-bg-light);
 }
 
@@ -380,8 +380,8 @@
 }
 
 .action-buttons .btn {
-    width: 38px;
-    height: 38px;
+    width: 30px;
+    height: 30px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -392,7 +392,7 @@
 }
 
 .action-buttons .btn i {
-    font-size: 14px !important;
+    font-size: 12px !important;
     line-height: 1;
 }
 
@@ -436,6 +436,33 @@
     border-color: #16a34a;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.action-buttons .btn-select {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    color: #059669;
+    border: 1px solid #6ee7b7;
+}
+
+.action-buttons .btn-select:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    border-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.action-buttons .btn-select.active {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    border-color: #059669;
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+}
+
+.action-buttons .btn-select.active:hover {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
 }
 
 /* ========== Inline Form Container - Card Style ========== */

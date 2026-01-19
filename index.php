@@ -80,6 +80,56 @@ if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'remote') {
     exit;
 }
 
+// ========== Company Search API for Dashboard Smart Search ==========
+if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'company_search_api') {
+    header('Content-Type: application/json');
+    
+    $userLevel = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
+    if ($userLevel < 1) {
+        echo json_encode([]);
+        exit;
+    }
+    
+    $query = isset($_GET['q']) ? trim($_GET['q']) : '';
+    if (strlen($query) < 2) {
+        echo json_encode([]);
+        exit;
+    }
+    
+    $search_escaped = sql_escape($query);
+    $sql = "SELECT id, name_en, name_th, name_sh, contact, email, logo, customer, vender 
+            FROM company 
+            WHERE deleted_at IS NULL 
+            AND (name_en LIKE '%$search_escaped%' 
+                 OR name_th LIKE '%$search_escaped%' 
+                 OR name_sh LIKE '%$search_escaped%'
+                 OR contact LIKE '%$search_escaped%' 
+                 OR email LIKE '%$search_escaped%')
+            ORDER BY name_en ASC
+            LIMIT 10";
+    
+    $result = mysqli_query($db->conn, $sql);
+    $companies = [];
+    
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $companies[] = [
+                'id' => $row['id'],
+                'name_en' => $row['name_en'],
+                'name_th' => $row['name_th'],
+                'contact' => $row['contact'],
+                'email' => $row['email'],
+                'logo' => $row['logo'],
+                'customer' => $row['customer'],
+                'vender' => $row['vender']
+            ];
+        }
+    }
+    
+    echo json_encode($companies);
+    exit;
+}
+
 // Page routing configuration - maps page parameter to file
 $routes = [
     // Dashboard

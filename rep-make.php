@@ -5,6 +5,7 @@ ini_set('log_errors', 1);     // Enable error logging
 ini_set('display_startup_errors', 1);
 ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
 error_reporting(E_ALL);       // Report all errors
+
 session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
@@ -252,11 +253,11 @@ $(function(){
 		var indexthis = document.getElementById("countloop").value;
 		document.getElementById("countloop").value=parseInt(indexthis)+1;
 		
-		var NR ="<tr id=fr["+indexthis+"]> <td style=' margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;'><div id='box' style='width:18%'><select required id='type["+indexthis+"]' name='type["+indexthis+"]' onchange='checkorder(this.value,this.id)' class='form-control'><?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type'));
+		var NR ="<tr id=fr["+indexthis+"]> <td style=' margin-left:0; padding-left:0px; margin-right:0; padding-right:0px;margin-bottom:5px; padding-bottom:10px;'><div id='box' style='width:18%'><select required id='type["+indexthis+"]' name='type["+indexthis+"]' onchange='checkorder(this.value,this.id)' class='form-control'><?php $querycustomer=mysqli_query($db->conn, "select name,id from `type` WHERE 1=1" . $companyFilter->andCompanyFilter(`type`));
 			echo "<option value='' >Please Select Product</option>";
 			while($fetch_customer=mysqli_fetch_array($querycustomer)){
 				
-			echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name]."</option>";}?></select></div><div id='box' style='width:18%'><div id='slotbrand["+indexthis+"]'><select id='ban_id["+indexthis+"]' name='ban_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:18%'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:14%'><div class='input-group'><input type='number' class='form-control' name='quantity["+indexthis+"]' id='quantity["+indexthis+"]' required placeholder='Quantity' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity["+indexthis+"]' id='pack_quantity["+indexthis+"]' required placeholder='<?=$xml->unit?>' /><div id='box2'  style='width:15%'><div class='input-group'><input type='text' class='form-control' placeholder='<?=$xml->price?>' required name='price["+indexthis+"]' id='price["+indexthis+"]' /><span class='input-group-addon'><?=$xml->baht?></span></div></div><div id='box' style='width:12%'><input type='text' name='warranty["+indexthis+"]' id='warranty["+indexthis+"]' value='<?=date("d-m-Y")?>' class='form-control'></div></div><div id='box' style='width:5%'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div><div id='box' style='width:100%'><textarea name='des["+indexthis+"]' id='des["+indexthis+"]' placeholder='<?=$xml->notes?>' class='form-control'></textarea></div></td></tr>";
+			echo "<option value='".$fetch_customer[`id`]."' >".$fetch_customer[`name`]."</option>";}?></select></div><div id='box' style='width:18%'><div id='slotbrand["+indexthis+"]'><select id='ban_id["+indexthis+"]' name='ban_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:18%'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'  style='width:14%'><div class='input-group'><input type='number' class='form-control' name='quantity["+indexthis+"]' id='quantity["+indexthis+"]' required placeholder='Quantity' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity["+indexthis+"]' id='pack_quantity["+indexthis+"]' required placeholder='<?=$xml->unit?>' /><div id='box2'  style='width:15%'><div class='input-group'><input type='text' class='form-control' placeholder='<?=$xml->price?>' required name='price["+indexthis+"]' id='price["+indexthis+"]' /><span class='input-group-addon'><?=$xml->baht?></span></div></div><div id='box' style='width:12%'><input type='text' name='warranty["+indexthis+"]' id='warranty["+indexthis+"]' value='<?=date("d-m-Y")?>' class='form-control'></div></div><div id='box' style='width:5%'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div><div id='box' style='width:100%'><textarea name='des["+indexthis+"]' id='des["+indexthis+"]' placeholder='<?=$xml->notes?>' class='form-control'></textarea></div></td></tr>";
 		//$("#myTbl").append($("#firstTr").clone());
 		$("#myTbl").append($(NR));
 	});
@@ -291,12 +292,24 @@ function del_id(id)
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 
-$queryvou=mysqli_query($db->conn, "select * from receipt where id='".$id."' and vender='".$com_id."'");
-if(mysqli_num_rows($queryvou)==1){$mode="E";
-$fetvou=mysqli_fetch_array($queryvou);
-}else{$mode="A";}
+// Debugging: Log the query for troubleshooting
+$query = "SELECT * FROM receipt WHERE id='" . $id . "' AND vender='" . $com_id . "'";
+error_log("Executing query: $query");
+
+$queryvou = mysqli_query($db->conn, $query);
+if (!$queryvou) {
+    error_log("SQL Error: " . mysqli_error($db->conn));
+}
+
+if (mysqli_num_rows($queryvou) == 1) {
+    $mode = "E";
+    $fetvou = mysqli_fetch_array($queryvou);
+} else {
+    $mode = "A";
+}
 
 $hasLinkedInvoice = !empty($fetvou['invoice_id']);
+
 ?>
 
 <div class="receipt-container" id="receipt-form-container" <?=$hasLinkedInvoice?'class="invoice-linked"':''?>>
@@ -792,11 +805,11 @@ function updateVatDisplay() {
         <div class="product-header">
             <div style="width:18%; margin-left:0.5%"><?=$xml->product ?? 'Product'?></div>
             <div style="width:18%;"><?=$xml->brand ?? 'Brand'?></div>
-            <div style="width:18%;"><?=$xml->model ?? 'Model'?></div>
-            <div style="width:14%;"><?=$xml->unit ?? 'Qty'?></div>
-            <div style="width:15%;"><?=$xml->price ?? 'Price'?></div> 
-            <div style="width:10%;"><?=$xml->warranty ?? 'Date'?></div>
-            <div style="width:5%;"></div>
+            <div style="width:18%"><?=$xml->model ?? 'Model'?></div>
+            <div style="width:14%"><?=$xml->unit ?? 'Qty'?></div>
+            <div style="width:15%"><?=$xml->price ?? 'Price'?></div> 
+            <div style="width:10%"><?=$xml->warranty ?? 'Date'?></div>
+            <div style="width:5%"></div>
         </div> 
 <table id="myTbl" class ="table" width="100%" border="0" cellpadding="0" cellspacing="0">
 <?php $i=0;

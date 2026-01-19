@@ -113,39 +113,271 @@ $show_form = isset($_GET['new']);
 
 <!-- Action Toolbar -->
 <div class="action-toolbar">
-    <div class="search-box" style="display:flex;gap:10px;max-width:500px;flex-wrap:wrap;">
-        <div style="position:relative;flex:1;min-width:200px;">
-            <form method="get" action="" style="margin:0;">
-                <i class="fa fa-search"></i>
+    <div class="search-section">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+            <form method="get" action="" class="search-form">
+                <i class="fa fa-search search-icon"></i>
                 <input type="hidden" name="page" value="company">
                 <input type="hidden" name="type" value="<?=$type_filter?>">
-                <input type="text" class="form-control" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> name, contact, email..." 
-                       value="<?=htmlspecialchars($search)?>" 
-                       onchange="this.form.submit()">
+                <input type="text" class="search-input" name="search" 
+                       placeholder="<?=$xml->search ?? 'Search'?> company, contact, email, phone..." 
+                       value="<?=htmlspecialchars($search)?>"
+                       autocomplete="off">
+                <button type="submit" class="search-btn">
+                    <i class="fa fa-arrow-right"></i>
+                </button>
             </form>
         </div>
-        <div class="btn-group">
+        
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
             <a href="?page=company&search=<?=urlencode($search)?>" 
-               class="btn btn-sm <?=$type_filter == '' ? 'btn-primary' : 'btn-default'?>"><?=$xml->all ?? 'All'?></a>
+               class="filter-tab <?=$type_filter == '' ? 'active' : ''?>">
+               <i class="fa fa-th-list"></i>
+               <span><?=$xml->all ?? 'All'?></span>
+               <span class="tab-count"><?=$total_items?></span>
+            </a>
             <a href="?page=company&type=vendor&search=<?=urlencode($search)?>" 
-               class="btn btn-sm <?=$type_filter == 'vendor' ? 'btn-info' : 'btn-default'?>">
-               <i class="fa fa-truck"></i> <?=$xml->vendor ?? 'Vendors'?></a>
+               class="filter-tab <?=$type_filter == 'vendor' ? 'active vendor' : ''?>">
+               <i class="fa fa-truck"></i>
+               <span><?=$xml->vendor ?? 'Vendors'?></span>
+               <span class="tab-count"><?=$total_vendors?></span>
+            </a>
             <a href="?page=company&type=customer&search=<?=urlencode($search)?>" 
-               class="btn btn-sm <?=$type_filter == 'customer' ? 'btn-success' : 'btn-default'?>">
-               <i class="fa fa-users"></i> <?=$xml->customer ?? 'Customers'?></a>
+               class="filter-tab <?=$type_filter == 'customer' ? 'active customer' : ''?>">
+               <i class="fa fa-users"></i>
+               <span><?=$xml->customer ?? 'Customers'?></span>
+               <span class="tab-count"><?=$total_customers?></span>
+            </a>
         </div>
     </div>
-    <div>
+    
+    <!-- Action Buttons -->
+    <div class="action-buttons-group">
         <?php if (!empty($search) || $type_filter != ''): ?>
-        <a href="?page=company" class="btn btn-default"><i class="fa fa-times"></i> <?=$xml->clear ?? 'Clear'?></a>
+        <a href="?page=company" class="btn-clear" title="Clear filters">
+            <i class="fa fa-times"></i>
+            <span><?=$xml->clear ?? 'Clear'?></span>
+        </a>
         <?php endif; ?>
         <a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'company.php', true);" class="btn btn-add">
             <i class="fa fa-plus"></i> <?=$xml->create ?? 'Add New'?>
         </a>
-        <a href="master-data-guide.php" class="btn btn-info" style="border-radius:20px;"><i class="fa fa-book"></i> <?=$xml->guide ?? 'Guide'?></a>
     </div>
 </div>
+
+<style>
+/* Enhanced Search Section Styles */
+.search-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+}
+
+.search-input-wrapper {
+    position: relative;
+    max-width: 500px;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 16px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    height: 48px;
+    padding: 12px 50px 12px 46px !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    background: #f8fafc;
+    color: #1e293b;
+    transition: all 0.2s ease;
+}
+
+.search-input:hover {
+    border-color: #cbd5e1 !important;
+    background: #fff;
+}
+
+.search-input:focus {
+    border-color: #667eea !important;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12) !important;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #94a3b8;
+}
+
+.search-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    background: #f1f5f9;
+    border: 2px solid transparent;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+    background: #e2e8f0;
+    color: #475569;
+    text-decoration: none;
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+}
+
+.filter-tab.active.vendor {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.filter-tab.active.customer {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.filter-tab i {
+    font-size: 14px;
+}
+
+.tab-count {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.filter-tab:not(.active) .tab-count {
+    background: #e2e8f0;
+    color: #64748b;
+}
+
+/* Action Buttons Group */
+.action-buttons-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.btn-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ef4444;
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    text-decoration: none;
+    color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-section {
+        width: 100%;
+    }
+    
+    .search-input-wrapper {
+        max-width: 100%;
+    }
+    
+    .filter-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+    }
+    
+    .filter-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .filter-tab span:not(.tab-count) {
+        display: none;
+    }
+    
+    .action-buttons-group {
+        justify-content: flex-end;
+    }
+    
+    .btn-clear span {
+        display: none;
+    }
+}
+</style>
 
 <!-- Inline Form Container for AJAX -->
 <div id="fetch_state"></div>
@@ -215,22 +447,18 @@ $show_form = isset($_GET['new']);
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <?php if ($com_id == 0): ?>
-                        <a href="remoteuser.php?id=<?=$data['id']?>" class="btn btn-view" title="<?=$xml->remote ?? 'Remote Login'?>">
+                        <a href="index.php?page=remote&select_company=<?=$data['id']?>" 
+                           class="btn btn-select <?=($com_id == $data['id']) ? 'active' : ''?>" 
+                           title="<?=($com_id == $data['id']) ? 'Currently Selected' : ($xml->select ?? 'Select Company')?>">
                             <i class="fa fa-sign-in"></i>
                         </a>
-                        <?php endif; ?>
                         <a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'company.php?id=<?=$data['id']?>', true);" 
                            class="btn btn-edit" title="<?=$xml->edit ?? 'Edit'?>">
                             <i class="fa fa-pencil"></i>
                         </a>
-                        <a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'company-addr.php?id=<?=$data['id']?>', true);" 
-                           class="btn btn-view" title="<?=$xml->address ?? 'Address'?>">
-                            <i class="fa fa-map-marker"></i>
-                        </a>
-                        <a href="#" onclick="ajaxpagefetcher.load('fetch_state', 'credit-list.php?id=<?=$data['id']?>', true);" 
-                           class="btn" style="background:#fff3cd;color:#856404;border:1px solid #ffeeba;" title="<?=$xml->credit ?? 'Credit'?>">
-                            <i class="fa fa-credit-card"></i>
+                        <a href="#" onclick="confirmDelete(<?=$data['id']?>, '<?=htmlspecialchars(addslashes($data['name_en']))?>')" 
+                           class="btn btn-delete" title="<?=$xml->delete ?? 'Delete'?>">
+                            <i class="fa fa-trash"></i>
                         </a>
                     </div>
                 </td>
@@ -256,3 +484,32 @@ $show_form = isset($_GET['new']);
 </div>
 
 </div><!-- /.master-data-container -->
+
+<script>
+function confirmDelete(id, name) {
+    if (confirm('Are you sure you want to delete "' + name + '"?\n\nThis action cannot be undone.')) {
+        // Create form and submit
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'core-function.php';
+        
+        var fields = {
+            'page': 'company',
+            'method': 'D',
+            'id': id,
+            'csrf_token': '<?= $_SESSION['csrf_token'] ?? '' ?>'
+        };
+        
+        for (var key in fields) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = fields[key];
+            form.appendChild(input);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>

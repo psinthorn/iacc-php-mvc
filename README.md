@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.8  
+**Version**: 4.9  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 13, 2026  
+**Last Updated**: January 19, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -83,6 +83,38 @@ Replace the commit message with a meaningful description of your changes.
 ---
 
 ## 📋 Changelog
+
+### v4.9 (January 19, 2026)
+- **Company Management Improvements** 🏢:
+  - Fixed `exp.php` vendor/customer data not displaying - Added LEFT JOIN for missing addresses
+  - Fixed `company.php` address data not saving/fetching on edit - Proper address query with fallback
+  - Fixed MySQL strict mode INSERT errors - Using NULL for auto-increment, '9999-12-31' for valid_end
+  - Fixed logo upload for new companies - PNG support added, logo saved on method=A
+  - Added soft delete for companies (method=D) with `deleted_at` timestamp
+  - Modernized company edit/add form with compact card-based design
+
+- **Company List Page Redesign** 📋:
+  - New search section with filter tabs (All, Customers, Vendors) and counts
+  - Compact table rows - reduced padding, font sizes, logo size (50px → 36px)
+  - Added delete icon with confirmation modal and soft delete
+  - Added "Select Company" icon for remote company selection
+  - Action buttons: Edit (blue), Delete (red), Select (emerald)
+  - Currently selected company shows filled emerald button
+
+- **Dashboard Company Selector** 🎯:
+  - New smart company search with live filtering
+  - Modern card-based company selection UI
+  - Search by name, tax ID, or contact
+  - Visual feedback for selected company
+  - Quick stats display (total companies, customers, vendors)
+
+- **Receipt List Page** 🧾:
+  - Improved create button UX/UI with modern gradient styling
+
+- **CSS Updates** 🎨:
+  - Added `.btn-select` and `.btn-select.active` styles for company selection
+  - Reduced table row sizes globally in master-data.css
+  - Compact form styling for company edit/add page
 
 ### v4.8 (January 10, 2026)
 - **Purchase Request Form Fix** 📝:

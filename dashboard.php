@@ -665,46 +665,490 @@ function get_status_badge($status) {
     <!-- Company Selection for Admin -->
     <div class="row kpi-row">
         <div class="col-md-12">
-            <div class="content-card">
-                <h5 class="card-title">
-                    <i class="fa fa-building"></i> Select Company to View Data
-                </h5>
-                <p style="color: #6c757d; margin-bottom: 15px;">Choose a company to view their specific business data (sales, orders, invoices)</p>
+            <div class="company-selector-card">
+                <div class="company-selector-header">
+                    <div class="selector-title">
+                        <i class="fa fa-building"></i>
+                        <div>
+                            <h5>Select Company to View Data</h5>
+                            <p>Choose a company to view their specific business data</p>
+                        </div>
+                    </div>
+                    <?php if($com_id > 0): ?>
+                    <a href="index.php?page=remote&clear=1" class="btn-clear-company">
+                        <i class="fa fa-times"></i> Clear Selection
+                    </a>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Smart Search -->
+                <div class="company-search-box">
+                    <i class="fa fa-search search-icon"></i>
+                    <input type="text" id="companySearchInput" class="company-search-input" 
+                           placeholder="Search companies by name, contact, email..." 
+                           autocomplete="off">
+                    <div id="companySearchResults" class="company-search-results"></div>
+                </div>
+                
+                <!-- Quick Selection Grid -->
+                <div class="quick-selection-label">
+                    <i class="fa fa-clock-o"></i> Recently Active Companies
+                </div>
                 <?php
                 // Get recent active companies for quick selection
-                $sql_quick_companies = "SELECT DISTINCT c.id, c.name_en, c.name_th,
-                    (SELECT MAX(pr.date) FROM pr WHERE pr.ven_id = c.id OR pr.cus_id = c.id) as last_activity
+                $sql_quick_companies = "SELECT DISTINCT c.id, c.name_en, c.name_th, c.name_sh, c.logo,
+                    (SELECT MAX(pr.date) FROM pr WHERE pr.ven_id = c.id OR pr.cus_id = c.id) as last_activity,
+                    c.customer, c.vender
                     FROM company c
                     WHERE c.deleted_at IS NULL
                     ORDER BY last_activity DESC
                     LIMIT 8";
                 $quick_companies = mysqli_query($db->conn, $sql_quick_companies);
                 ?>
-                <div class="row">
+                <div class="company-quick-grid">
                     <?php if($quick_companies && mysqli_num_rows($quick_companies) > 0): ?>
                         <?php while($qc = mysqli_fetch_assoc($quick_companies)): ?>
-                        <div class="col-md-3 col-sm-6" style="margin-bottom: 10px;">
-                            <a href="index.php?page=remote&select_company=<?php echo $qc['id']; ?>" 
-                               class="btn btn-block" 
-                               style="background: #f8f9fa; border: 1px solid #dee2e6; color: #333; text-align: left; padding: 12px 15px;">
-                                <i class="fa fa-building" style="color: #667eea;"></i>
-                                <strong><?php echo htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 20)); ?></strong>
-                                <?php if($qc['last_activity']): ?>
-                                <br><small style="color: #6c757d;">Last: <?php echo date('M d', strtotime($qc['last_activity'])); ?></small>
+                        <a href="index.php?page=remote&select_company=<?php echo $qc['id']; ?>" class="company-quick-card <?php echo ($com_id == $qc['id']) ? 'active' : ''; ?>">
+                            <div class="company-quick-logo">
+                                <?php if(!empty($qc['logo'])): ?>
+                                <img src="upload/<?php echo htmlspecialchars($qc['logo']); ?>" alt="">
+                                <?php else: ?>
+                                <i class="fa fa-building"></i>
                                 <?php endif; ?>
-                            </a>
-                        </div>
+                            </div>
+                            <div class="company-quick-info">
+                                <div class="company-quick-name"><?php echo htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 25)); ?></div>
+                                <div class="company-quick-meta">
+                                    <?php if($qc['vender'] == '1' && $qc['customer'] == '1'): ?>
+                                    <span class="badge-both">Both</span>
+                                    <?php elseif($qc['vender'] == '1'): ?>
+                                    <span class="badge-vendor">Vendor</span>
+                                    <?php elseif($qc['customer'] == '1'): ?>
+                                    <span class="badge-customer">Customer</span>
+                                    <?php endif; ?>
+                                    <?php if($qc['last_activity']): ?>
+                                    <span class="last-activity"><?php echo date('M d', strtotime($qc['last_activity'])); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php if($com_id == $qc['id']): ?>
+                            <div class="company-selected-badge"><i class="fa fa-check"></i></div>
+                            <?php endif; ?>
+                        </a>
                         <?php endwhile; ?>
                     <?php endif; ?>
-                    <div class="col-md-3 col-sm-6" style="margin-bottom: 10px;">
-                        <a href="index.php?page=remote" class="btn btn-block" style="background: #667eea; color: white; text-align: center; padding: 20px 15px;">
-                            <i class="fa fa-search"></i> Browse All Companies
-                        </a>
-                    </div>
+                </div>
+                
+                <div class="company-selector-footer">
+                    <a href="index.php?page=company" class="btn-browse-all">
+                        <i class="fa fa-th-list"></i> Browse All Companies
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+    
+    <style>
+    /* Company Selector Card */
+    .company-selector-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .company-selector-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #fff;
+    }
+    
+    .selector-title {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    
+    .selector-title > i {
+        font-size: 28px;
+        opacity: 0.9;
+    }
+    
+    .selector-title h5 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+    }
+    
+    .selector-title p {
+        margin: 4px 0 0 0;
+        font-size: 13px;
+        opacity: 0.85;
+    }
+    
+    .btn-clear-company {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-clear-company:hover {
+        background: rgba(255,255,255,0.3);
+        color: #fff;
+        text-decoration: none;
+    }
+    
+    /* Smart Search */
+    .company-search-box {
+        padding: 20px 24px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+        position: relative;
+    }
+    
+    .company-search-input {
+        width: 100%;
+        height: 48px;
+        padding: 12px 16px 12px 46px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+    
+    .company-search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.12);
+        outline: none;
+    }
+    
+    .company-search-box .search-icon {
+        position: absolute;
+        left: 40px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 16px;
+    }
+    
+    .company-search-results {
+        position: absolute;
+        top: 100%;
+        left: 24px;
+        right: 24px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        border: 1px solid #e5e7eb;
+        max-height: 320px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .company-search-results.show {
+        display: block;
+    }
+    
+    .search-result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .search-result-item:hover {
+        background: #f1f5f9;
+        text-decoration: none;
+    }
+    
+    .search-result-item .result-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .search-result-item .result-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .search-result-item .result-logo i {
+        color: #94a3b8;
+    }
+    
+    .search-result-item .result-info {
+        flex: 1;
+    }
+    
+    .search-result-item .result-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 14px;
+    }
+    
+    .search-result-item .result-meta {
+        font-size: 12px;
+        color: #64748b;
+    }
+    
+    .search-no-results {
+        padding: 24px;
+        text-align: center;
+        color: #64748b;
+    }
+    
+    .search-no-results i {
+        font-size: 32px;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+    
+    /* Quick Selection Grid */
+    .quick-selection-label {
+        padding: 16px 24px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .company-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        padding: 12px 24px 24px;
+    }
+    
+    @media (max-width: 1200px) { .company-quick-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 900px) { .company-quick-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .company-quick-grid { grid-template-columns: 1fr; } }
+    
+    .company-quick-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    
+    .company-quick-card:hover {
+        border-color: #667eea;
+        background: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102,126,234,0.15);
+        text-decoration: none;
+    }
+    
+    .company-quick-card.active {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%);
+    }
+    
+    .company-quick-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .company-quick-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 4px;
+    }
+    
+    .company-quick-logo i {
+        font-size: 18px;
+        color: #94a3b8;
+    }
+    
+    .company-quick-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .company-quick-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .company-quick-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+    }
+    
+    .company-quick-meta .badge-vendor,
+    .company-quick-meta .badge-customer,
+    .company-quick-meta .badge-both {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    
+    .company-quick-meta .badge-vendor { background: #dbeafe; color: #1d4ed8; }
+    .company-quick-meta .badge-customer { background: #dcfce7; color: #15803d; }
+    .company-quick-meta .badge-both { background: #fef3c7; color: #b45309; }
+    
+    .company-quick-meta .last-activity {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    .company-selected-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 22px;
+        height: 22px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 10px;
+        box-shadow: 0 2px 8px rgba(102,126,234,0.4);
+    }
+    
+    /* Footer */
+    .company-selector-footer {
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+    }
+    
+    .btn-browse-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-browse-all:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(102,126,234,0.4);
+        color: #fff;
+        text-decoration: none;
+    }
+    </style>
+    
+    <script>
+    // Smart Company Search
+    (function() {
+        const searchInput = document.getElementById('companySearchInput');
+        const resultsContainer = document.getElementById('companySearchResults');
+        let searchTimeout;
+        
+        if (!searchInput || !resultsContainer) return;
+        
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                resultsContainer.classList.remove('show');
+                return;
+            }
+            
+            searchTimeout = setTimeout(function() {
+                fetch('index.php?page=company_search_api&q=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            resultsContainer.innerHTML = '<div class="search-no-results"><i class="fa fa-search"></i><div>No companies found</div></div>';
+                        } else {
+                            resultsContainer.innerHTML = data.map(company => `
+                                <a href="index.php?page=remote&select_company=${company.id}" class="search-result-item">
+                                    <div class="result-logo">
+                                        ${company.logo ? `<img src="upload/${company.logo}" alt="">` : '<i class="fa fa-building"></i>'}
+                                    </div>
+                                    <div class="result-info">
+                                        <div class="result-name">${company.name_en || company.name_th}</div>
+                                        <div class="result-meta">${company.contact || ''} ${company.email ? '• ' + company.email : ''}</div>
+                                    </div>
+                                </a>
+                            `).join('');
+                        }
+                        resultsContainer.classList.add('show');
+                    })
+                    .catch(err => {
+                        console.error('Search error:', err);
+                    });
+            }, 300);
+        });
+        
+        // Close results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.classList.remove('show');
+            }
+        });
+        
+        // Show results on focus if there's a query
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2 && resultsContainer.innerHTML) {
+                resultsContainer.classList.add('show');
+            }
+        });
+    })();
+    </script>
     
     <!-- Business Summary Report -->
     <div class="row kpi-row">
