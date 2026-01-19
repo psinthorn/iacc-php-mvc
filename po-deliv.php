@@ -490,8 +490,9 @@ if($hasData){
             <thead>
                 <tr>
                     <th style="width:5%">#</th>
-                    <th style="width:45%"><?=$xml->product ?? 'Product'?></th>
-                    <th style="width:30%"><?=$xml->sn ?? 'Serial Number'?></th>
+                    <th style="width:20%"><?=$xml->product ?? 'Product'?></th>
+                    <th style="width:30%"><?=$xml->description ?? 'Description'?></th>
+                    <th style="width:25%"><?=$xml->sn ?? 'Serial Number'?></th>
                     <th style="width:20%"><?=$xml->warranty ?? 'Warranty Expiry'?></th>
                 </tr>
             </thead>
@@ -517,6 +518,9 @@ if($hasData){
                             <small style="color:#6b7280; font-size:11px;"><?=safe_html($data_pro['model_des'])?></small>
                             <?php endif; ?>
                         </div>
+                    </td>
+                    <td style="color:#374151; font-size:13px;">
+                        <?=safe_html($data_pro['des'] ?? '')?>
                     </td>
                     <td>
                         <?php if($action=="m"): ?>

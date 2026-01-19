@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.9  
+**Version**: 4.10  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 19, 2026  
+**Last Updated**: January 20, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -83,6 +83,31 @@ Replace the commit message with a meaningful description of your changes.
 ---
 
 ## 📋 Changelog
+
+### v4.10 (January 20, 2026)
+- **Quotation View (po-view.php) Enhancements** 📄:
+  - Data display now matches exp.php (vendor/customer with addresses, product descriptions, bank accounts)
+  - Changed product column header from "Product" to "Description"
+  - Removed vendor card and description card for cleaner layout
+  - Added PO Reference field in Customer section (optional, editable before confirm)
+  - Renamed "Upload QUO" section to "Upload PO"
+  - Fixed file upload - now supports PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (max 10MB)
+  - Upload is now optional (can confirm without file)
+  - Shows selected filename after choosing file
+
+- **Delivery View (deliv-view.php) Updates** 📦:
+  - Added Description column to products table
+  - Changed "Confirm Receipt" button text to "Confirm"
+
+- **Delivery Note PDF (rec.php) Fixes** 🧾:
+  - Fixed customer not displaying - updated to LEFT JOIN pattern
+  - Added description row below each product in PDF
+
+- **Create Delivery (po-deliv.php) Enhancement** 📋:
+  - Added Description column between Product and Serial Number columns
+
+- **Database Schema Updates** 🗄️:
+  - Added `po.po_ref` VARCHAR(100) - Customer PO reference number
 
 ### v4.9 (January 19, 2026)
 - **Company Management Improvements** 🏢:

@@ -13,7 +13,7 @@ $year = $_date[2];
 
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
-$query=mysqli_query($db->conn, "select po.id as po_id, po.name as name, po.tax as tax, ven_id, cus_id, vat, des, over, dis, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
+$query=mysqli_query($db->conn, "select po.id as po_id, po.name as name, po.tax as tax, ven_id, cus_id, vat, des, over, dis, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, po_ref, status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
 ?>
 <!DOCTYPE html>
 <html>
@@ -494,8 +494,32 @@ $query=mysqli_query($db->conn, "select po.id as po_id, po.name as name, po.tax a
 <?php
 if(mysqli_num_rows($query)=="1"){
     $data=mysqli_fetch_array($query);
-    $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh, name_en from company where id='".$data['ven_id']."'"));
-    $customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh, name_en from company where id='".$data['cus_id']."'"));
+    
+    // Fetch vendor info - use LEFT JOIN and get the current/latest valid address (same as exp.php)
+    $vender = mysqli_fetch_array(mysqli_query($db->conn, "
+        SELECT company.name_en, company.name_sh, company_addr.adr_tax, company_addr.city_tax, 
+               company_addr.district_tax, company_addr.province_tax, company.tax, company_addr.zip_tax, 
+               company.fax, company.phone, company.email, company.logo, company.term 
+        FROM company 
+        LEFT JOIN company_addr ON company.id = company_addr.com_id 
+            AND company_addr.deleted_at IS NULL
+        WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "'
+        ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+        LIMIT 1
+    "));
+
+    // Fetch customer info - use LEFT JOIN and get the current/latest valid address (same as exp.php)
+    $customer = mysqli_fetch_array(mysqli_query($db->conn, "
+        SELECT company.name_en, company.name_sh, company_addr.adr_tax, company_addr.city_tax, 
+               company_addr.district_tax, company_addr.province_tax, company.tax, company_addr.zip_tax, 
+               company.fax, company.phone, company.email 
+        FROM company 
+        LEFT JOIN company_addr ON company.id = company_addr.com_id 
+            AND company_addr.deleted_at IS NULL
+        WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['cus_id']) . "'
+        ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+        LIMIT 1
+    "));
     
     // Get product count
     $product_count = mysqli_fetch_array(mysqli_query($db->conn, "select count(*) as cnt from product where po_id='".$id."'"));
@@ -548,19 +572,59 @@ if(mysqli_num_rows($query)=="1"){
             </div>
         </div>
         
-        <!-- Vendor & Customer -->
+        <!-- Customer Info -->
         <div class="info-card">
             <div class="info-card-header">
-                <div class="icon green"><i class="fa fa-building"></i></div>
-                <h3><?=$xml->parties ?? 'Parties'?></h3>
+                <div class="icon blue"><i class="fa fa-user"></i></div>
+                <h3><?=$xml->customer?></h3>
             </div>
             <div class="info-row">
-                <span class="label"><?=$xml->vender?></span>
-                <span class="value"><?=htmlspecialchars($vender['name_en'] ?: $vender['name_sh'])?></span>
-            </div>
-            <div class="info-row">
-                <span class="label"><?=$xml->customer?></span>
+                <span class="label"><?=$xml->nameen ?? 'Company'?></span>
                 <span class="value"><?=htmlspecialchars($customer['name_en'] ?: $customer['name_sh'])?></span>
+            </div>
+            <?php if(!empty($customer['adr_tax'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->address ?? 'Address'?></span>
+                <span class="value" style="text-align:right; max-width:200px;"><?=htmlspecialchars($customer['adr_tax'])?></span>
+            </div>
+            <?php endif; ?>
+            <?php if(!empty($customer['district_tax']) || !empty($customer['city_tax']) || !empty($customer['province_tax'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->rcity ?? 'City/Province'?></span>
+                <span class="value"><?=htmlspecialchars(trim($customer['district_tax'] . ' ' . $customer['city_tax'] . ' ' . $customer['province_tax']))?></span>
+            </div>
+            <?php endif; ?>
+            <?php if(!empty($customer['zip_tax'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->rzip ?? 'Postal Code'?></span>
+                <span class="value"><?=htmlspecialchars($customer['zip_tax'])?></span>
+            </div>
+            <?php endif; ?>
+            <?php if(!empty($customer['tax'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->tax ?? 'Tax ID'?></span>
+                <span class="value"><?=htmlspecialchars($customer['tax'])?></span>
+            </div>
+            <?php endif; ?>
+            <?php if(!empty($customer['phone'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->phone ?? 'Phone'?></span>
+                <span class="value"><?=htmlspecialchars($customer['phone'])?></span>
+            </div>
+            <?php endif; ?>
+            <?php if(!empty($customer['email'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->email ?? 'Email'?></span>
+                <span class="value"><?=htmlspecialchars($customer['email'])?></span>
+            </div>
+            <?php endif; ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->poref ?? 'PO Reference'?></span>
+                <?php if($data['status']=="1"): ?>
+                <input type="text" name="po_ref" class="form-control" style="width:150px; height:28px; font-size:13px;" value="<?=htmlspecialchars($data['po_ref'] ?? '')?>" placeholder="Customer PO #">
+                <?php else: ?>
+                <span class="value"><?=htmlspecialchars($data['po_ref'] ?? '-')?></span>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -568,7 +632,7 @@ if(mysqli_num_rows($query)=="1"){
         <div class="info-card">
             <div class="info-card-header">
                 <div class="icon orange"><i class="fa fa-file-pdf-o"></i></div>
-                <h3><?=$xml->uploadquo?></h3>
+                <h3><?=$xml->uploadpo ?? 'Upload PO'?></h3>
             </div>
             <?php if($data['status']=="2" && !empty($data['pic'])): ?>
                 <a href="upload/<?=htmlspecialchars($data['pic'])?>" target="_blank" class="view-file-btn">
@@ -581,19 +645,14 @@ if(mysqli_num_rows($query)=="1"){
                         <div class="upload-text"><strong>Click to upload</strong> or drag and drop</div>
                         <div class="upload-text" style="font-size:12px;">PDF, DOC, XLS (max 10MB)</div>
                     </label>
-                    <input type="file" name="file" id="file-upload">
+                    <input type="file" name="file" id="file-upload" onchange="showFileName(this)">
+                    <div id="file-name-display" style="display:none; margin-top:10px; padding:8px 12px; background:#e8f5e9; border-radius:6px; color:#2e7d32; font-size:13px;">
+                        <i class="fa fa-file-o"></i> <span id="selected-file-name"></span>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
     </div>
-    
-    <!-- Description Section -->
-    <?php if(!empty($data['des'])): ?>
-    <div class="description-card">
-        <h3><i class="fa fa-align-left"></i> <?=$xml->description ?? 'Description'?></h3>
-        <div class="description-content"><?=safe_html($data['des'])?></div>
-    </div>
-    <?php endif; ?>
     
     <!-- Products Table -->
     <div class="products-card">
@@ -611,7 +670,7 @@ if(mysqli_num_rows($query)=="1"){
             <thead>
                 <tr>
                     <th style="width:15%"><?=$xml->model?></th>
-                    <th <?=$hasLabour ? '' : 'colspan="4"'?>><?=$xml->product?></th>
+                    <th <?=$hasLabour ? '' : 'colspan="4"'?>><?=$xml->description ?? 'Description'?></th>
                     <th class="text-center" style="width:8%"><?=$xml->unit?></th>
                     <th class="text-right" style="width:10%"><?=$xml->price?></th>
                     <?php if($hasLabour): ?>
@@ -624,12 +683,12 @@ if(mysqli_num_rows($query)=="1"){
             </thead>
             <tbody>
             <?php 
-            $que_pro=mysqli_query($db->conn, "select type.name as name,product.price as price,discount,model.model_name as model,model.des as model_des,quantity,pack_quantity,activelabour,valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+            $que_pro=mysqli_query($db->conn, "select type.name as name, product.price as price, product.des as product_des, discount, model.model_name as model, quantity, pack_quantity, activelabour, valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
             $summary=0;
             
             while($data_pro=mysqli_fetch_array($que_pro)){
-                // Use model description as product description
-                $product_desc = !empty($data_pro['model_des']) ? $data_pro['model_des'] : $data_pro['name'];
+                // Use product description (product.des) - same as exp.php
+                $product_desc = !empty($data_pro['product_des']) ? $data_pro['product_des'] : $data_pro['name'];
                 
                 if($hasLabour){
                     $equip=$data_pro['price']*$data_pro['quantity'];
@@ -718,6 +777,72 @@ if(mysqli_num_rows($query)=="1"){
         </div>
     </div>
     
+    <!-- Bank Account / Payment Methods Section -->
+    <?php
+    // Fetch payment methods for vendor - order by updated_at DESC to get latest updated first
+    $paymentMethods = [];
+    $pm_query = mysqli_query($db->conn, "
+        SELECT method_type, method_name, account_name, account_number, branch, qr_image 
+        FROM payment_methods 
+        WHERE com_id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' 
+        AND is_active = 1 
+        ORDER BY updated_at DESC, created_at DESC
+    ");
+    if ($pm_query) {
+        while ($pm = mysqli_fetch_array($pm_query)) {
+            $paymentMethods[] = $pm;
+        }
+    }
+    ?>
+    <?php if(!empty($paymentMethods)): ?>
+    <div class="products-card" style="margin-top: 24px;">
+        <div class="products-header">
+            <h3><i class="fa fa-bank"></i> <?=$xml->bankaccount ?? 'Bank Account'?></h3>
+            <span class="item-count"><?=count($paymentMethods)?> <?=count($paymentMethods) == 1 ? 'account' : 'accounts'?></span>
+        </div>
+        <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <?php foreach($paymentMethods as $pm): ?>
+                <div style="background: #f9fafb; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fa fa-<?=$pm['method_type'] == 'bank' ? 'bank' : ($pm['method_type'] == 'promptpay' ? 'mobile' : 'credit-card')?>"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #374151; font-size: 14px;"><?=htmlspecialchars($pm['method_name'])?></div>
+                            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase;"><?=htmlspecialchars($pm['method_type'])?></div>
+                        </div>
+                    </div>
+                    <?php if(!empty($pm['account_name'])): ?>
+                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span style="color: #6b7280; font-size: 12px;"><?=$xml->accountname ?? 'Account Name'?></span>
+                        <span style="color: #374151; font-size: 13px; font-weight: 500;"><?=htmlspecialchars($pm['account_name'])?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if(!empty($pm['account_number'])): ?>
+                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span style="color: #6b7280; font-size: 12px;"><?=$xml->accountnumber ?? 'Account Number'?></span>
+                        <span style="color: #374151; font-size: 13px; font-weight: 600; font-family: 'SF Mono', monospace;"><?=htmlspecialchars($pm['account_number'])?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if(!empty($pm['branch'])): ?>
+                    <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                        <span style="color: #6b7280; font-size: 12px;"><?=$xml->branch ?? 'Branch'?></span>
+                        <span style="color: #374151; font-size: 13px;"><?=htmlspecialchars($pm['branch'])?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if(!empty($pm['qr_image'])): ?>
+                    <div style="margin-top: 10px; text-align: center;">
+                        <img src="upload/<?=htmlspecialchars($pm['qr_image'])?>" alt="QR Code" style="max-width: 120px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+    
     <input type="hidden" name="method" value="C">
     <input type="hidden" name="ref" value="<?=$data['ref']?>">
     <input type="hidden" name="page" value="po_list">
@@ -745,6 +870,20 @@ if(mysqli_num_rows($query)=="1"){
     </div>
 <?php } ?>
 </div>
+
+<script>
+function showFileName(input) {
+    var fileNameDisplay = document.getElementById('file-name-display');
+    var selectedFileName = document.getElementById('selected-file-name');
+    
+    if (input.files && input.files[0]) {
+        selectedFileName.textContent = input.files[0].name;
+        fileNameDisplay.style.display = 'block';
+    } else {
+        fileNameDisplay.style.display = 'none';
+    }
+}
+</script>
 
 </body>
 </html>

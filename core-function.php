@@ -77,12 +77,28 @@ case "company" : {
 			}
 		}
 	}
+	
+	// Handle checkboxes - if not set, default to 0
+	$customer_val = isset($_REQUEST['customer']) && $_REQUEST['customer'] == '1' ? '1' : '0';
+	$vender_val = isset($_REQUEST['vender']) && $_REQUEST['vender'] == '1' ? '1' : '0';
+	
+	// Debug logging for company update
+	file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY UPDATE: id=" . ($_REQUEST['id'] ?? 'NONE') . ", name_en=" . ($_REQUEST['name_en'] ?? 'NONE') . ", customer=" . $customer_val . ", vender=" . $vender_val . "\n", FILE_APPEND);
 		
 	$args['table']="company";
-	$args['value']="name_en='".sql_escape($_REQUEST['name_en'])."',name_th='".sql_escape($_REQUEST['name_th'])."',name_sh='".sql_escape($_REQUEST['name_sh'])."',contact='".sql_escape($_REQUEST['contact'])."',email='".sql_escape($_REQUEST['email'])."',phone='".sql_escape($_REQUEST['phone'])."',fax='".sql_escape($_REQUEST['fax'])."',tax='".sql_escape($_REQUEST['tax'])."',customer='".sql_escape($_REQUEST['customer'])."',vender='".sql_escape($_REQUEST['vender'])."'".$tmpupdate.",term='".sql_escape($_REQUEST['term'])."'";
+	$args['value']="name_en='".sql_escape($_REQUEST['name_en'])."',name_th='".sql_escape($_REQUEST['name_th'])."',name_sh='".sql_escape($_REQUEST['name_sh'])."',contact='".sql_escape($_REQUEST['contact'])."',email='".sql_escape($_REQUEST['email'])."',phone='".sql_escape($_REQUEST['phone'])."',fax='".sql_escape($_REQUEST['fax'])."',tax='".sql_escape($_REQUEST['tax'])."',customer='".$customer_val."',vender='".$vender_val."'".$tmpupdate.",term='".sql_escape($_REQUEST['term'])."'";
+	
+	file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY UPDATE SQL: UPDATE company SET " . $args['value'] . " WHERE id='" . sql_int($_REQUEST['id']) . "'\n", FILE_APPEND);
 	
 	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);
+	
+	// Log any MySQL errors
+	if (mysqli_error($db->conn)) {
+		file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY UPDATE ERROR: " . mysqli_error($db->conn) . "\n", FILE_APPEND);
+	} else {
+		file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY UPDATE SUCCESS: Affected rows=" . mysqli_affected_rows($db->conn) . "\n", FILE_APPEND);
+	}
 	
 	// Update or insert address data
 	if(!isset($_REQUEST['adr_bil']) || $_REQUEST['adr_bil']=="") $_REQUEST['adr_bil'] = $_REQUEST['adr_tax'] ?? '';
@@ -538,21 +554,31 @@ case "po_list" : {
 	
 		}else if($_REQUEST['method']=="C"){
 			
-			
-   $temp = explode(".", $_FILES["file"]["name"]);
-$extension = end($temp);
-if (( ($_FILES["file"]["type"] == "application/pdf")
-|| ($_FILES["file"]["type"] == "image/jpg"))
-&& ($_FILES["file"]["size"] < 5000000))
-  {
-	if($_FILES["file"]["type"] == "application/pdf")$type="pdf";else $type="jpg"; 
-	$namefile=md5(date("Y:m:d:h:m:s").rand()); 
-  move_uploaded_file($_FILES["file"]["tmp_name"],
-      "upload/".$namefile.".".$type);
-    
-  }
+	$namefile = '';
+	$type = '';
+	
+	// Handle file upload if file was provided
+	if(!empty($_FILES["file"]["name"]) && $_FILES["file"]["error"] == 0) {
+		$temp = explode(".", $_FILES["file"]["name"]);
+		$extension = strtolower(end($temp));
+		$allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xls', 'xlsx'];
+		
+		if(in_array($extension, $allowed_types) && $_FILES["file"]["size"] < 10000000) {
+			$type = $extension;
+			$namefile = md5(date("Y:m:d:h:m:s").rand()); 
+			move_uploaded_file($_FILES["file"]["tmp_name"], "upload/".$namefile.".".$type);
+		}
+	}
+	
+	// Update PO record with file and po_ref
 	$args['table']="po";
-	$args['value']="pic='". $namefile.".".$type."'";
+	$po_ref = isset($_REQUEST['po_ref']) ? mysqli_real_escape_string($db->conn, $_REQUEST['po_ref']) : '';
+	
+	if(!empty($namefile)) {
+		$args['value']="pic='".$namefile.".".$type."', po_ref='".$po_ref."'";
+	} else {
+		$args['value']="po_ref='".$po_ref."'";
+	}
 	$args['condition']="po_id_new='' and ref='".$_REQUEST['ref']."'";
 	$har->updateDb($args);			
 	

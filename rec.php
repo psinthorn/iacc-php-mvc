@@ -20,12 +20,36 @@ if($modep=="ad"){
  }
 if(mysqli_num_rows($query)=="1"){
 	$data=mysqli_fetch_array($query);
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$data[ven_id]."' and valid_end='0000-00-00'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,tax,province_tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data[cus_id]."' and valid_end='0000-00-00'"));
 	
-if($data[bandven]==0){$logo=$vender[logo];}else{
-		$bandlogo=mysqli_fetch_array(mysqli_query($db->conn, "select logo from brand where id='".$data[bandven]."'"));
-		$logo=$bandlogo[logo];
+	// Fetch vendor info - use LEFT JOIN and get the current/latest valid address
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "
+		SELECT company.name_en, company_addr.adr_tax, company_addr.city_tax, company_addr.district_tax, 
+		       company.tax, company_addr.province_tax, company_addr.zip_tax, company.fax, company.phone, 
+		       company.email, company.logo, company.term 
+		FROM company 
+		LEFT JOIN company_addr ON company.id = company_addr.com_id 
+		    AND company_addr.deleted_at IS NULL
+		WHERE company.id = '".$data['ven_id']."'
+		ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+		LIMIT 1
+	"));
+	
+	// Fetch customer info - use LEFT JOIN and get the current/latest valid address
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "
+		SELECT company.name_en, company.name_sh, company_addr.adr_tax, company_addr.city_tax, 
+		       company_addr.district_tax, company.tax, company_addr.province_tax, company_addr.zip_tax, 
+		       company.fax, company.phone, company.email 
+		FROM company 
+		LEFT JOIN company_addr ON company.id = company_addr.com_id 
+		    AND company_addr.deleted_at IS NULL
+		WHERE company.id = '".$data['cus_id']."'
+		ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+		LIMIT 1
+	"));
+	
+if($data['bandven']==0){$logo=$vender['logo'];}else{
+		$bandlogo=mysqli_fetch_array(mysqli_query($db->conn, "select logo from brand where id='".$data['bandven']."'"));
+		$logo=$bandlogo['logo'];
 		
 		}
 
@@ -147,6 +171,13 @@ while($data_pro = mysqli_fetch_array($que_pro)) {
         <td class="c">1</td>
         <td>' . ($data_pro['warranty'] ?? '') . '</td>
     </tr>';
+    // Add description row if exists
+    if(!empty($data_pro['des'])) {
+        $html .= '<tr style="background:#f9fafb;">
+            <td></td>
+            <td colspan="5" style="font-size:9px; color:#666; padding:4px 8px; border-bottom:1px solid #ddd;"><em>' . htmlspecialchars($data_pro['des']) . '</em></td>
+        </tr>';
+    }
     $cot++;
 }
 

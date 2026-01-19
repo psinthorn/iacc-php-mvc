@@ -389,9 +389,9 @@ if($hasData){
     <!-- Products Table -->
     <?php 
     if($modep=="ad"){
-        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.price as price, discount, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id JOIN type ON product.type=type.id JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE so_id='".$data['id']."'");
+        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.des as product_des, product.price as price, discount, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id JOIN type ON product.type=type.id JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE so_id='".$data['id']."'");
     } else {
-        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.price as price, discount, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id JOIN type ON product.type=type.id JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE po_id='".$data['id']."'");
+        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.des as product_des, product.price as price, discount, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id JOIN type ON product.type=type.id JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE po_id='".$data['id']."'");
     }
     ?>
     
@@ -404,10 +404,11 @@ if($hasData){
             <thead>
                 <tr>
                     <th style="width:5%">#</th>
-                    <th style="width:25%"><?=$xml->name ?? 'Name'?></th>
-                    <th style="width:20%"><?=$xml->model ?? 'Model'?></th>
-                    <th style="width:25%"><?=$xml->sn ?? 'Serial Number'?></th>
-                    <th style="width:25%"><?=$xml->warranty ?? 'Warranty'?></th>
+                    <th style="width:15%"><?=$xml->name ?? 'Name'?></th>
+                    <th style="width:25%"><?=$xml->description ?? 'Description'?></th>
+                    <th style="width:15%"><?=$xml->model ?? 'Model'?></th>
+                    <th style="width:20%"><?=$xml->sn ?? 'Serial Number'?></th>
+                    <th style="width:20%"><?=$xml->warranty ?? 'Warranty'?></th>
                 </tr>
             </thead>
             <tbody>
@@ -419,6 +420,7 @@ if($hasData){
                 <tr>
                     <td style="text-align:center; color:#6b7280;"><?=$row_num?></td>
                     <td><?=htmlspecialchars($data_pro['name'])?></td>
+                    <td style="color:#6b7280; font-size:13px;"><?=htmlspecialchars($data_pro['product_des'] ?? '-')?></td>
                     <td><span class="product-model"><?=htmlspecialchars($data_pro['model'])?></span></td>
                     <td><?=htmlspecialchars($data_pro['s_n'])?></td>
                     <td><?=htmlspecialchars($data_pro['warranty'] ?? '-')?></td>
@@ -426,7 +428,7 @@ if($hasData){
             <?php endwhile; ?>
             <?php if($row_num == 0): ?>
                 <tr>
-                    <td colspan="5" style="text-align:center; color:#6b7280; padding:40px;">
+                    <td colspan="6" style="text-align:center; color:#6b7280; padding:40px;">
                         <i class="fa fa-inbox" style="font-size:24px; margin-bottom:10px; display:block;"></i>
                         No products found
                     </td>
@@ -445,7 +447,7 @@ if($hasData){
             
             <div class="action-section">
                 <button type="submit" class="btn-receive">
-                    <i class="fa fa-check"></i> <?=$xml->recieve ?? 'Confirm Receipt'?>
+                    <i class="fa fa-check"></i> <?=$xml->recieve ?? 'Confirm'?>
                 </button>
             </div>
         </form>
