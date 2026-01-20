@@ -543,37 +543,6 @@ if($numRows >= 1):
             </div>
         </div>
         
-        <!-- Address Card -->
-        <div class="form-card">
-            <div class="section-title">
-                <i class="fa fa-map-marker"></i>
-                <?=$xml->address ?? 'Address Information'?>
-            </div>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label><?=$xml->raddress ?? 'Address'?></label>
-                    <input type="text" id="adr_tax" class="form-control" disabled value="<?php echo htmlspecialchars($data['adr_tax']);?>">
-                </div>
-                <div class="form-group">
-                    <label><?=$xml->rcity ?? 'City'?></label>
-                    <input type="text" id="city_tax" class="form-control" disabled value="<?php echo htmlspecialchars($data['city_tax']);?>">
-                </div>
-                <div class="form-group">
-                    <label><?=$xml->rdistrict ?? 'District'?></label>
-                    <input type="text" id="district_tax" class="form-control" disabled value="<?php echo htmlspecialchars($data['district_tax']);?>">
-                </div>
-                <div class="form-group">
-                    <label><?=$xml->rprovince ?? 'Province'?></label>
-                    <input type="text" id="province_tax" class="form-control" disabled value="<?php echo htmlspecialchars($data['province_tax']);?>">
-                </div>
-                <div class="form-group">
-                    <label><?=$xml->rzip ?? 'ZIP'?></label>
-                    <input type="text" id="zip_tax" class="form-control" disabled value="<?php echo htmlspecialchars($data['zip_des']);?>">
-                </div>
-            </div>
-        </div>
-        
         <!-- Pricing & Dates Card -->
         <div class="form-card">
             <div class="section-title">

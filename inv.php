@@ -32,7 +32,7 @@ $sql = "
         iv.taxrw as tax2, po.tax, pr.cus_id as cus_id, pr.payby, pr.des, po.bandven, po.valid_pay,
         DATE_FORMAT(iv.createdate,'%d/%m/%Y') as date,
         DATE_FORMAT(po.deliver_date,'%d/%m/%Y') as deliver_date,
-        po.ref, po.pic, pr.status 
+        po.ref, po.pic, po.po_ref, pr.status 
     FROM pr 
     JOIN po ON pr.id = po.ref  
     JOIN iv ON po.id = iv.tex 
@@ -79,25 +79,33 @@ if (!$query || mysqli_num_rows($query) != 1) {
 
 $data = mysqli_fetch_array($query);
 
-// Fetch vendor info
+// Fetch vendor info - use LEFT JOIN and get the current/latest valid address
 $vender = mysqli_fetch_array(mysqli_query($db->conn, "
-    SELECT name_en, adr_tax, city_tax, district_tax, tax, province_tax, zip_tax, fax, phone, email, term, logo 
+    SELECT company.name_en, company_addr.adr_tax, company_addr.city_tax, company_addr.district_tax, 
+           company.tax, company_addr.province_tax, company_addr.zip_tax, company.fax, company.phone, 
+           company.email, company.term, company.logo 
     FROM company 
-    JOIN company_addr ON company.id = company_addr.com_id 
-    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' 
-    AND valid_end = '0000-00-00'
+    LEFT JOIN company_addr ON company.id = company_addr.com_id 
+        AND company_addr.deleted_at IS NULL
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "'
+    ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+    LIMIT 1
 "));
 
 // Determine customer ID: use payby if set, otherwise fall back to cus_id
 $customer_id = (!empty($data['payby']) && $data['payby'] > 0) ? $data['payby'] : $data['cus_id'];
 
-// Fetch customer info
+// Fetch customer info - use LEFT JOIN and get the current/latest valid address
 $customer = mysqli_fetch_array(mysqli_query($db->conn, "
-    SELECT name_en, name_sh, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email 
+    SELECT company.name_en, company.name_sh, company_addr.adr_tax, company_addr.city_tax, 
+           company_addr.district_tax, company_addr.province_tax, company.tax, company_addr.zip_tax, 
+           company.fax, company.phone, company.email 
     FROM company 
-    JOIN company_addr ON company.id = company_addr.com_id 
-    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $customer_id) . "' 
-    AND valid_end = '0000-00-00'
+    LEFT JOIN company_addr ON company.id = company_addr.com_id 
+        AND company_addr.deleted_at IS NULL
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $customer_id) . "'
+    ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+    LIMIT 1
 "));
 
 // Fetch payment methods (bank accounts) for vendor
@@ -268,7 +276,7 @@ $html = '
         <td class="info-left">
             <div class="inv-box">
                 <div class="inv-num">INV-' . e($data['tax2']) . '</div>
-                <div class="inv-meta">Date: ' . e($data['date']) . ' &nbsp;|&nbsp; Ref: PO-' . e($data['tax']) . '</div>
+                <div class="inv-meta">Date: ' . e($data['date']) . ' &nbsp;|&nbsp; PO: PO-' . e($data['tax']) . (!empty($data['po_ref']) ? ' &nbsp;|&nbsp; PO Ref: ' . e($data['po_ref']) : '') . '</div>
             </div>
             <table>
                 <tr><td class="lbl">Customer</td><td class="cust-name">' . e($customer['name_en'] ?? '') . '</td></tr>

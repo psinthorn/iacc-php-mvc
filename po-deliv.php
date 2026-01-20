@@ -13,7 +13,7 @@ $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 $action = $_GET['action'] ?? 'c';
 
-$query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,ref,pic,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and ven_id='".$com_id."' and po_id_new=''");
+$query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,cus_id,des,DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,ref,pic,po_ref,status from pr join po on pr.id=po.ref where po.id='".$id."' and (status='1' or status='2') and ven_id='".$com_id."' and po_id_new=''");
 $hasData = mysqli_num_rows($query) == 1;
 
 if($hasData){
@@ -465,6 +465,12 @@ if($hasData){
                 <span class="label"><?=$xml->customer?></span>
                 <span class="value"><?=htmlspecialchars($customer['name_en'] ?: $customer['name_sh'])?></span>
             </div>
+            <?php if(!empty($data['po_ref'])): ?>
+            <div class="info-row">
+                <span class="label"><?=$xml->poref ?? 'PO Reference'?></span>
+                <span class="value"><?=htmlspecialchars($data['po_ref'])?></span>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
     
@@ -511,13 +517,7 @@ if($hasData){
                 <tr>
                     <td style="text-align:center; color:#6b7280; font-weight:500;"><?=$j?></td>
                     <td>
-                        <div class="product-info">
-                            <span class="product-name"><?=htmlspecialchars($data_pro['name'])?></span>
-                            <span class="product-model"><?=htmlspecialchars($data_pro['model'])?></span>
-                            <?php if(!empty($data_pro['model_des'])): ?>
-                            <small style="color:#6b7280; font-size:11px;"><?=safe_html($data_pro['model_des'])?></small>
-                            <?php endif; ?>
-                        </div>
+                        <span class="product-model" style="font-weight:500; color:#374151;"><?=htmlspecialchars($data_pro['model'])?></span>
                     </td>
                     <td style="color:#374151; font-size:13px;">
                         <?=safe_html($data_pro['des'] ?? '')?>

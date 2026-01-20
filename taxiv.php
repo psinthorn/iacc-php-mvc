@@ -28,7 +28,7 @@ $sql = "
         po.name as name, po.over, pr.ven_id, po.dis, 
         iv.taxrw as tax2, po.tax, pr.cus_id as cus_id, pr.payby, pr.des, po.vat,
         DATE_FORMAT(iv.texiv_create,'%d/%m/%Y') as date,
-        iv.texiv_rw, po.ref, po.pic, pr.status, po.bandven
+        iv.texiv_rw, po.ref, po.pic, po.po_ref, pr.status, po.bandven
     FROM pr 
     JOIN po ON pr.id = po.ref  
     JOIN iv ON po.id = iv.tex 
@@ -46,23 +46,31 @@ if (!$query || mysqli_num_rows($query) != 1) {
 
 $data = mysqli_fetch_array($query);
 
-// Fetch vendor info
+// Fetch vendor info - use LEFT JOIN and get the current/latest valid address
 $vender = mysqli_fetch_array(mysqli_query($db->conn, "
-    SELECT name_en, adr_tax, city_tax, district_tax, tax, province_tax, zip_tax, fax, phone, email, term, logo 
+    SELECT company.name_en, company_addr.adr_tax, company_addr.city_tax, company_addr.district_tax, 
+           company.tax, company_addr.province_tax, company_addr.zip_tax, company.fax, company.phone, 
+           company.email, company.term, company.logo 
     FROM company 
-    JOIN company_addr ON company.id = company_addr.com_id 
-    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "' 
-    AND valid_end = '0000-00-00'
+    LEFT JOIN company_addr ON company.id = company_addr.com_id 
+        AND company_addr.deleted_at IS NULL
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $data['ven_id']) . "'
+    ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+    LIMIT 1
 "));
 
 // Fetch customer info - use payby if set, otherwise use cus_id
 $customer_id = !empty($data['payby']) ? $data['payby'] : $data['cus_id'];
 $customer = mysqli_fetch_array(mysqli_query($db->conn, "
-    SELECT name_en, name_sh, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email 
+    SELECT company.name_en, company.name_sh, company_addr.adr_tax, company_addr.city_tax, 
+           company_addr.district_tax, company_addr.province_tax, company.tax, company_addr.zip_tax, 
+           company.fax, company.phone, company.email 
     FROM company 
-    JOIN company_addr ON company.id = company_addr.com_id 
-    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $customer_id) . "' 
-    AND valid_end = '0000-00-00'
+    LEFT JOIN company_addr ON company.id = company_addr.com_id 
+        AND company_addr.deleted_at IS NULL
+    WHERE company.id = '" . mysqli_real_escape_string($db->conn, $customer_id) . "'
+    ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+    LIMIT 1
 "));
 
 // Get logo

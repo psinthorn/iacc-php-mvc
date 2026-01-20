@@ -122,7 +122,12 @@ function getPdfTitle($docType) {
 /**
  * Generate PDF Info Section
  */
-function getPdfInfoSection($docPrefix, $docNumber, $date, $refNumber, $customer) {
+function getPdfInfoSection($docPrefix, $docNumber, $date, $refNumber, $customer, $poRef = '') {
+    $refLine = 'Date: ' . e($date) . ' &nbsp;|&nbsp; PO: PO-' . e($refNumber);
+    if (!empty($poRef)) {
+        $refLine .= ' &nbsp;|&nbsp; PO Ref: ' . e($poRef);
+    }
+    
     return '
 <!-- Info Section -->
 <table class="info-table">
@@ -130,7 +135,7 @@ function getPdfInfoSection($docPrefix, $docNumber, $date, $refNumber, $customer)
         <td class="info-left">
             <div class="inv-box">
                 <div class="inv-num">' . e($docPrefix) . '-' . e($docNumber) . '</div>
-                <div class="inv-meta">Date: ' . e($date) . ' &nbsp;|&nbsp; Ref: PO-' . e($refNumber) . '</div>
+                <div class="inv-meta">' . $refLine . '</div>
             </div>
             <table>
                 <tr><td class="lbl">Customer</td><td class="cust-name">' . e($customer['name_en'] ?? '') . '</td></tr>
@@ -334,7 +339,7 @@ function generatePdfHtml($docType, $docPrefix, $docNumber, $data, $vender, $cust
     $html = getPdfStyles();
     $html .= getPdfHeader($vender, $logo);
     $html .= getPdfTitle($docType);
-    $html .= getPdfInfoSection($docPrefix, $docNumber, $data['date'] ?? '', $data['tax'] ?? '', $customer);
+    $html .= getPdfInfoSection($docPrefix, $docNumber, $data['date'] ?? '', $data['tax'] ?? '', $customer, $data['po_ref'] ?? '');
     $html .= getPdfItemsTable($products, $hasLabour);
     $html .= getPdfSummarySection(
         $paymentMethods,

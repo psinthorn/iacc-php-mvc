@@ -102,9 +102,27 @@ Replace the commit message with a meaningful description of your changes.
 - **Delivery Note PDF (rec.php) Fixes** 🧾:
   - Fixed customer not displaying - updated to LEFT JOIN pattern
   - Added description row below each product in PDF
+  - Added PO + PO Ref display in document header
 
 - **Create Delivery (po-deliv.php) Enhancement** 📋:
   - Added Description column between Product and Serial Number columns
+  - Simplified Product column to show only model number
+  - Added PO Reference display in Parties card
+
+- **Invoice PDF (inv.php) Fixes** 🧾:
+  - Fixed customer/vendor not displaying - updated to LEFT JOIN pattern
+  - Added PO + PO Ref display in document header
+
+- **Tax Invoice PDF (taxiv.php) Fixes** 🧾:
+  - Fixed customer/vendor not displaying - updated to LEFT JOIN pattern
+  - Added PO + PO Ref to query and display
+
+- **Quotation Edit (po-edit.php) Update** ✏️:
+  - Removed Address Information card for cleaner layout
+
+- **Shared PDF Template (inc/pdf-template.php)** 📝:
+  - Updated to support PO Reference display
+  - Shows both PO number and PO Ref when available
 
 - **Database Schema Updates** 🗄️:
   - Added `po.po_ref` VARCHAR(100) - Customer PO reference number

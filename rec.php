@@ -16,7 +16,7 @@ if($modep=="ad"){
 	}else{
  
  
- $query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,dis,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,bandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$id."' and  status>'2'  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
+ $query=mysqli_query($db->conn, "select po.name as name,po.tax as tax,ven_id,dis,cus_id,des,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay,deliver.po_id as po_id,bandven,po.date as date,DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date,ref,pic,po_ref,status from pr join po on pr.id=po.ref  JOIN deliver on deliver.po_id=po.id where deliver.id='".$id."' and  status>'2'  and (cus_id='".$com_id."' or ven_id='".$com_id."') and po_id_new=''");
  }
 if(mysqli_num_rows($query)=="1"){
 	$data=mysqli_fetch_array($query);
@@ -126,7 +126,7 @@ $html = '
         <td class="info-left">
             <div class="dn-box">
                 <div class="dn-num">' . $dn_number . '</div>
-                <div class="dn-meta">Date: ' . $data['deliver_date'] . ($modep != "ad" ? ' &nbsp;|&nbsp; Ref: PO-' . $data['tax'] : '') . '</div>
+                <div class="dn-meta">Date: ' . $data['deliver_date'] . ($modep != "ad" ? ' &nbsp;|&nbsp; PO: PO-' . $data['tax'] . (!empty($data['po_ref']) ? ' &nbsp;|&nbsp; PO Ref: ' . htmlspecialchars($data['po_ref']) : '') : '') . '</div>
             </div>
             <table>
                 <tr><td class="lbl">Customer</td><td class="cust-name">' . ($customer['name_en'] ?? '') . '</td></tr>
