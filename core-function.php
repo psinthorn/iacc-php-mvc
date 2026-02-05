@@ -37,6 +37,10 @@ case "company" : {
 		$args2['table']="company_addr";
 		//$args3['table']="company_credit";
 		
+		// Handle checkboxes - if not set or empty, default to 0
+		$customer_val = (isset($_REQUEST['customer']) && $_REQUEST['customer'] == '1') ? '1' : '0';
+		$vender_val = (isset($_REQUEST['vender']) && $_REQUEST['vender'] == '1') ? '1' : '0';
+		
 		// Handle logo upload for new company
 		$logoFilename = '';
 		if (isset($_FILES["logo"]) && $_FILES["logo"]["error"] == 0 && $_FILES["logo"]["tmp_name"] != "") {
@@ -50,9 +54,18 @@ case "company" : {
 		
 		// Include company_id for multi-tenant: assign new customer/vendor to logged-in company
 		$id = $har->Maxid('company');
+		file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY ADD: Generated ID=" . $id . ", owner_company_id=" . $owner_company_id . ", name_en=" . ($_REQUEST['name_en'] ?? 'NONE') . ", customer=" . $customer_val . ", vender=" . $vender_val . "\n", FILE_APPEND);
+		
 		$sql = "INSERT INTO company (id, name_en, name_th, name_sh, contact, email, phone, fax, tax, customer, vender, logo, term, company_id) 
-		        VALUES ('".$id."', '".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".sql_escape($_REQUEST['customer'])."','".sql_escape($_REQUEST['vender'])."','".sql_escape($logoFilename)."','".sql_escape($_REQUEST['term'])."','".$owner_company_id."')";
-		mysqli_query($db->conn, $sql);
+		        VALUES ('".$id."', '".sql_escape($_REQUEST['name_en'])."','".sql_escape($_REQUEST['name_th'])."','".sql_escape($_REQUEST['name_sh'])."','".sql_escape($_REQUEST['contact'])."','".sql_escape($_REQUEST['email'])."','".sql_escape($_REQUEST['phone'])."','".sql_escape($_REQUEST['fax'])."','".sql_escape($_REQUEST['tax'])."','".$customer_val."','".$vender_val."','".sql_escape($logoFilename)."','".sql_escape($_REQUEST['term'] ?? '')."','".$owner_company_id."')";
+		file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY ADD SQL: " . $sql . "\n", FILE_APPEND);
+		
+		$result = mysqli_query($db->conn, $sql);
+		if (!$result) {
+			file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY ADD ERROR: " . mysqli_error($db->conn) . "\n", FILE_APPEND);
+		} else {
+			file_put_contents($logFile, date('Y-m-d H:i:s') . " COMPANY ADD SUCCESS: ID=" . $id . "\n", FILE_APPEND);
+		}
 	$tmpid = $id;	
 	
 	if($_REQUEST['adr_bil']=="")$_REQUEST['adr_bil']=$_REQUEST['adr_tax'];
@@ -478,7 +491,9 @@ case "po_list" : {
 		}else
 	if($_REQUEST['method']=="A"){
 	$id=$har->Maxid($args['table']);
-	$args['value']="'".$_SESSION['com_id']."','','".$_REQUEST['name']."','".$_REQUEST['ref']."','".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."','".date('Y-m-d')."','".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','','".$_REQUEST['dis']."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[over]."',NULL";
+	// Use explicit column names to prevent column count mismatch errors
+	$args['columns']="company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at";
+	$args['value']="'".$_SESSION['com_id']."', '', '".$_REQUEST['name']."', '".$_REQUEST['ref']."', '".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."', '".date('Y-m-d')."', '".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."', '".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."', '', '', '".$_REQUEST['dis']."', '".$_REQUEST[brandven]."', '".$_REQUEST[vat]."', '".$_REQUEST[over]."', NULL";
 	 
 	$po_id=$har->insertDbMax($args);
 	$args['table']="pr";
@@ -521,7 +536,9 @@ case "po_list" : {
 			
 			$_REQUEST['page']="qa_list";
 	$id=$har->Maxid($args['table']);
-	$args['value']="'".$_SESSION['com_id']."','','".$_REQUEST['name']."','".$_REQUEST['ref']."','".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."','".date("Y-m-d",strtotime($_REQUEST[create_date]))."','".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."','".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."','','".$_REQUEST['dis']."','".$_REQUEST[brandven]."','".$_REQUEST[vat]."','".$_REQUEST[over]."',NULL";
+	// Use explicit column names to prevent column count mismatch errors
+	$args['columns']="company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at";
+	$args['value']="'".$_SESSION['com_id']."', '', '".$_REQUEST['name']."', '".$_REQUEST['ref']."', '".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."', '".date("Y-m-d",strtotime($_REQUEST[create_date]))."', '".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."', '".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."', '', '', '".$_REQUEST['dis']."', '".$_REQUEST[brandven]."', '".$_REQUEST[vat]."', '".$_REQUEST[over]."', NULL";
 	 
 	$po_id=$har->insertDbMax($args);
 	

@@ -22,6 +22,9 @@ if ($id <= 0) {
 $id_safe = mysqli_real_escape_string($db->conn, $id);
 $session_com_id = mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? 0);
 
+// Debug mode - set to true to troubleshoot
+$debug = isset($_GET['debug']) && $_GET['debug'] == '1';
+
 // Fetch tax invoice data
 $sql = "
     SELECT 
@@ -34,11 +37,51 @@ $sql = "
     JOIN iv ON po.id = iv.tex 
     WHERE po.id = '{$id_safe}' 
     AND pr.status = '5' 
-    AND (pr.cus_id = '{$session_com_id}' OR pr.ven_id = '{$session_com_id}') 
-    AND po.po_id_new = ''
+    AND (pr.cus_id = '{$session_com_id}' OR pr.ven_id = '{$session_com_id}' OR pr.payby = '{$session_com_id}') 
+    AND (po.po_id_new = '' OR po.po_id_new IS NULL)
 ";
 
 $query = mysqli_query($db->conn, $sql);
+
+if ($debug && (!$query || mysqli_num_rows($query) != 1)) {
+    echo "<h2>Debug Info for Tax Invoice</h2>";
+    echo "<p><strong>ID:</strong> {$id_safe}</p>";
+    echo "<p><strong>Session com_id:</strong> {$session_com_id}</p>";
+    echo "<p><strong>Query:</strong></p><pre>" . htmlspecialchars($sql) . "</pre>";
+    echo "<p><strong>Error:</strong> " . mysqli_error($db->conn) . "</p>";
+    echo "<p><strong>Rows:</strong> " . ($query ? mysqli_num_rows($query) : 'query failed') . "</p>";
+    
+    // Test PO exists
+    $test = mysqli_query($db->conn, "SELECT id, ref, po_id_new FROM po WHERE id = '{$id_safe}'");
+    echo "<p><strong>PO record:</strong></p><pre>";
+    if ($test && mysqli_num_rows($test) > 0) {
+        print_r(mysqli_fetch_assoc($test));
+    } else {
+        echo "PO not found";
+    }
+    echo "</pre>";
+    
+    // Test PR status
+    $test2 = mysqli_query($db->conn, "SELECT pr.id, pr.status, pr.cus_id, pr.ven_id, pr.payby FROM pr JOIN po ON pr.id = po.ref WHERE po.id = '{$id_safe}'");
+    echo "<p><strong>PR record:</strong></p><pre>";
+    if ($test2 && mysqli_num_rows($test2) > 0) {
+        print_r(mysqli_fetch_assoc($test2));
+    } else {
+        echo "PR not found";
+    }
+    echo "</pre>";
+    
+    // Test IV record
+    $test3 = mysqli_query($db->conn, "SELECT * FROM iv WHERE tex = '{$id_safe}'");
+    echo "<p><strong>IV record:</strong></p><pre>";
+    if ($test3 && mysqli_num_rows($test3) > 0) {
+        print_r(mysqli_fetch_assoc($test3));
+    } else {
+        echo "IV not found (texiv_create/texiv_rw missing)";
+    }
+    echo "</pre>";
+    exit;
+}
 
 if (!$query || mysqli_num_rows($query) != 1) {
     die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Tax Invoice Not Found</h2><p>The requested tax invoice does not exist or you do not have permission to view it.</p></div>');
@@ -176,6 +219,9 @@ $totals = [
     'vat' => $vat,
     'grandTotal' => $grandTotal
 ];
+
+// Fix: Use 'ref' for PO reference number (the 'tax' field in getPdfInfoSection expects ref number)
+$data['tax'] = $data['ref'];
 
 // Generate PDF HTML using shared template
 $html = generatePdfHtml(

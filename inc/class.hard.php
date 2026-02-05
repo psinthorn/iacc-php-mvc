@@ -436,11 +436,17 @@ class HardClass {
 	 * @deprecated Use insertSafeMax() instead for prepared statements
 	 * Legacy method kept for backward compatibility - now uses MySQLi
 	 * Fixed to use AUTO_INCREMENT properly instead of manual ID calculation
+	 * Now supports optional 'columns' parameter for explicit column names
 	 */
 	function insertDbMax($args){
 		$conn = $this->getConn();
-		// Use NULL for the ID to let AUTO_INCREMENT handle it
-		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (NULL,".$args['value'].")";
+		// Build SQL with optional column names
+		if (isset($args['columns']) && !empty($args['columns'])) {
+			$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." (".$args['columns'].") VALUES (".$args['value'].")";
+		} else {
+			// Legacy: Use NULL for the ID to let AUTO_INCREMENT handle it
+			$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (NULL,".$args['value'].")";
+		}
 		$result = $conn->query($sql);
 		if (!$result) {
 			error_log("insertDbMax ERROR: " . $conn->error . " | SQL: " . $sql);
@@ -454,6 +460,7 @@ class HardClass {
 	/**
 	 * @deprecated Use insertSafe() instead for prepared statements
 	 * Legacy method kept for backward compatibility - now uses MySQLi
+	 * Now supports optional 'columns' parameter for explicit column names
 	 */
 	function insertDb($args){
 		$conn = $this->getConn();
@@ -461,9 +468,13 @@ class HardClass {
 			error_log("insertDb ERROR: No database connection available");
 			return false;
 		}
-		// Note: This still uses string concat for backward compatibility
-		// New code should use insertSafe() instead
-		$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (".$args['value'].")";
+		// Build SQL with optional column names
+		if (isset($args['columns']) && !empty($args['columns'])) {
+			$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." (".$args['columns'].") VALUES (".$args['value'].")";
+		} else {
+			// Legacy: No column names specified
+			$sql = "INSERT INTO ".$conn->real_escape_string($args['table'])." VALUES (".$args['value'].")";
+		}
 		$result = $conn->query($sql);
 		if (!$result) {
 			error_log("insertDb ERROR: " . $conn->error . " | SQL: " . $sql);

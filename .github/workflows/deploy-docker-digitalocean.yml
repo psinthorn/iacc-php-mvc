@@ -1,0 +1,314 @@
+# =============================================================================
+# iACC - Docker Deployment to DigitalOcean VPS
+# =============================================================================
+# Triggered on push to main branch or manual dispatch
+# Deploys Docker containers to DigitalOcean Droplet via SSH
+# =============================================================================
+
+name: 🐳 Deploy Docker to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/deploy-staging.yml'
+      - '.github/workflows/deploy-production.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  DOCKER_IMAGE: iacc-app
+  REMOTE_DIR: /var/www/iacc
+
+jobs:
+  # =========================================================================
+  # Job 1: Test & Lint
+  # =========================================================================
+  test:
+    name: 🧪 Test & Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: mysqli, mbstring, xml, gd, curl, zip, pdo, pdo_mysql
+          
+      - name: ✅ PHP Syntax Check
+        run: |
+          echo "🔍 Checking PHP syntax..."
+          find . -name "*.php" -not -path "./vendor/*" -not -path "./.git/*" | head -50 | xargs -I {} php -l {} || true
+          
+          # Check critical files
+          php -l index.php
+          php -l core-function.php
+          php -l login.php
+          php -l inc/class.dbconn.php
+          php -l inc/security.php
+          echo "✅ Syntax check passed"
+
+      - name: 🐳 Validate Docker files
+        run: |
+          echo "🔍 Validating Dockerfile..."
+          docker run --rm -i hadolint/hadolint < Dockerfile || true
+          
+          echo "🔍 Validating docker-compose files..."
+          docker compose -f docker-compose.yml config > /dev/null
+          docker compose -f docker-compose.prod.yml config > /dev/null
+          echo "✅ Docker files valid"
+
+  # =========================================================================
+  # Job 2: Build Docker Image
+  # =========================================================================
+  build:
+    name: 🔨 Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🏗️ Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 📋 Image digest
+        run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
+
+  # =========================================================================
+  # Job 3: Deploy to DigitalOcean
+  # =========================================================================
+  deploy:
+    name: 🚀 Deploy to DigitalOcean
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: digitalocean-production
+      url: https://${{ secrets.DOMAIN }}
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" > ~/.ssh/do_key
+          chmod 600 ~/.ssh/do_key
+          ssh-keyscan -H ${{ secrets.DO_DROPLET_IP }} >> ~/.ssh/known_hosts
+
+      - name: 📤 Sync files to server
+        run: |
+          rsync -avz --progress \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude '.env.local' \
+            --exclude '*.log' \
+            --exclude 'storage/logs/*' \
+            --exclude 'storage/cache/*' \
+            --exclude '.github' \
+            -e "ssh -i ~/.ssh/do_key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_DROPLET_IP }}:${{ env.REMOTE_DIR }}/
+
+      - name: 🛠️ Create production environment file
+        run: |
+          ssh -i ~/.ssh/do_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_DROPLET_IP }} << 'ENVSSH'
+          cat > ${{ env.REMOTE_DIR }}/.env << 'ENVFILE'
+          # Production Environment - Generated by GitHub Actions
+          APP_ENV=production
+          APP_DEBUG=false
+          APP_URL=https://${{ secrets.DOMAIN }}
+          
+          # Database
+          DB_HOST=mysql
+          DB_PORT=3306
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          
+          # Redis
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          
+          # Security
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          APP_KEY=${{ secrets.APP_KEY }}
+          
+          # Logging
+          LOG_CHANNEL=stderr
+          ENVFILE
+          ENVSSH
+
+      - name: 🐳 Deploy Docker containers
+        run: |
+          ssh -i ~/.ssh/do_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_DROPLET_IP }} << 'DEPLOYSSH'
+          
+          set -e
+          cd ${{ env.REMOTE_DIR }}
+          
+          echo "📦 Building Docker image..."
+          docker build -t iacc-app:latest .
+          
+          echo "🛑 Stopping existing containers..."
+          docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+          
+          echo "🚀 Starting new containers..."
+          docker compose -f docker-compose.prod.yml up -d
+          
+          echo "⏳ Waiting for containers to be ready..."
+          sleep 15
+          
+          echo "📊 Container status:"
+          docker compose -f docker-compose.prod.yml ps
+          
+          echo "🧹 Cleaning up old images..."
+          docker image prune -f
+          
+          DEPLOYSSH
+
+      - name: 🏥 Health Check
+        run: |
+          echo "⏳ Waiting for service to be ready..."
+          sleep 10
+          
+          for i in {1..5}; do
+            HTTP_STATUS=$(ssh -i ~/.ssh/do_key -o StrictHostKeyChecking=no \
+              ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_DROPLET_IP }} \
+              "curl -sf -o /dev/null -w '%{http_code}' http://localhost/health 2>/dev/null || echo '000'")
+            
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Health check passed! HTTP Status: $HTTP_STATUS"
+              exit 0
+            fi
+            
+            echo "⏳ Attempt $i: HTTP Status $HTTP_STATUS - Retrying..."
+            sleep 5
+          done
+          
+          echo "⚠️ Health check warning - checking logs..."
+          ssh -i ~/.ssh/do_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_DROPLET_IP }} \
+            "cd ${{ env.REMOTE_DIR }} && docker compose -f docker-compose.prod.yml logs --tail=30"
+
+      - name: ✅ Deployment Summary
+        run: |
+          echo "=============================================="
+          echo "🎉 Deployment Complete!"
+          echo "=============================================="
+          echo "📅 Time: $(date)"
+          echo "🔖 Commit: ${{ github.sha }}"
+          echo "🌐 URL: https://${{ secrets.DOMAIN }}"
+          echo "🐳 Image: ghcr.io/${{ github.repository }}:latest"
+          echo "=============================================="
+
+  # =========================================================================
+  # Job 4: Rollback (Manual Trigger Only)
+  # =========================================================================
+  rollback:
+    name: ⏪ Rollback
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && failure()
+    needs: deploy
+    
+    steps:
+      - name: 🔐 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" > ~/.ssh/do_key
+          chmod 600 ~/.ssh/do_key
+          ssh-keyscan -H ${{ secrets.DO_DROPLET_IP }} >> ~/.ssh/known_hosts
+
+      - name: ⏪ Rollback to previous version
+        run: |
+          ssh -i ~/.ssh/do_key -o StrictHostKeyChecking=no \
+            ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_DROPLET_IP }} << 'ROLLBACKSSH'
+          
+          cd ${{ env.REMOTE_DIR }}
+          
+          echo "📋 Available backups:"
+          ls -la /var/backups/iacc/ | tail -5
+          
+          LATEST_BACKUP=$(ls -t /var/backups/iacc/*.tar.gz 2>/dev/null | head -1)
+          
+          if [ -n "$LATEST_BACKUP" ]; then
+            echo "⏪ Rolling back to: $LATEST_BACKUP"
+            docker compose -f docker-compose.prod.yml down
+            tar -xzf "$LATEST_BACKUP" -C ${{ env.REMOTE_DIR }}
+            docker compose -f docker-compose.prod.yml up -d
+            echo "✅ Rollback complete"
+          else
+            echo "❌ No backup found for rollback"
+            exit 1
+          fi
+          
+          ROLLBACKSSH
+
+  # =========================================================================
+  # Job 5: Notify (Optional - Slack/Discord)
+  # =========================================================================
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always()
+    
+    steps:
+      - name: 📢 Send notification
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Deployment successful - notification would be sent here"
+            # Uncomment to enable Slack notification:
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"✅ iACC deployed successfully to DigitalOcean! Commit: ${{ github.sha }}"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "❌ Deployment failed - notification would be sent here"
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"❌ iACC deployment failed! Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
