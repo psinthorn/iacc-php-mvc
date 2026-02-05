@@ -490,84 +490,104 @@ case "po_list" : {
 		
 		}else
 	if($_REQUEST['method']=="A"){
-	$id=$har->Maxid($args['table']);
-	// Use explicit column names to prevent column count mismatch errors
-	$args['columns']="company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at";
-	$args['value']="'".$_SESSION['com_id']."', '', '".$_REQUEST['name']."', '".$_REQUEST['ref']."', '".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."', '".date('Y-m-d')."', '".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."', '".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."', '', '', '".$_REQUEST['dis']."', '".$_REQUEST[brandven]."', '".$_REQUEST[vat]."', '".$_REQUEST[over]."', NULL";
-	 
-	$po_id=$har->insertDbMax($args);
-	$args['table']="pr";
-	$args['value']="status='1'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
-	$har->updateDb($args);	
+	// ============================================================
+	// PO CREATE (method=A) - Create new PO with products
+	// Each operation uses isolated $args to prevent state leakage
+	// ============================================================
 	
+	// 1. Create new PO record
+	$argsPO = array();
+	$argsPO['table'] = "po";
+	$newPoId = $har->Maxid($argsPO['table']);
+	$taxNumber = (date("y") + 43) . str_pad($newPoId, 6, '0', STR_PAD_LEFT);
 	
+	$argsPO['columns'] = "company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at";
+	$argsPO['value'] = "'" . intval($_SESSION['com_id']) . "', '', '" . mysqli_real_escape_string($db->conn, $_REQUEST['name']) . "', '" . intval($_REQUEST['ref']) . "', '" . $taxNumber . "', '" . date('Y-m-d') . "', '" . date("Y-m-d", strtotime($_REQUEST['valid_pay'])) . "', '" . date("Y-m-d", strtotime($_REQUEST['deliver_date'])) . "', '', '', '" . floatval($_REQUEST['dis'] ?? 0) . "', '" . intval($_REQUEST['brandven'] ?? 0) . "', '" . floatval($_REQUEST['vat'] ?? 0) . "', '" . floatval($_REQUEST['over'] ?? 0) . "', NULL";
 	
-	$args['table']="product";
-	$i=0;
-	file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - type array: " . print_r($_REQUEST['type'] ?? 'NOT SET', true) . "\n", FILE_APPEND);
-	file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - price array: " . print_r($_REQUEST['price'] ?? 'NOT SET', true) . "\n", FILE_APPEND);
-	file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - model array: " . print_r($_REQUEST['model'] ?? 'NOT SET', true) . "\n", FILE_APPEND);
-	if(isset($_REQUEST['type']) && is_array($_REQUEST['type'])) {
-	foreach ($_REQUEST[type] as $type) {
-		$a_labour = !empty($_REQUEST['a_labour'][$i]) ? intval($_REQUEST['a_labour'][$i]) : 0;
-		$v_labour = !empty($_REQUEST['v_labour'][$i]) ? floatval($_REQUEST['v_labour'][$i]) : 0;
-		$des = isset($_REQUEST['des'][$i]) ? mysqli_real_escape_string($db->conn, $_REQUEST['des'][$i]) : '';
-		$price = !empty($_REQUEST['price'][$i]) ? floatval($_REQUEST['price'][$i]) : 0;
-		$model = !empty($_REQUEST['model'][$i]) ? intval($_REQUEST['model'][$i]) : 0;
-		$quantity = !empty($_REQUEST['quantity'][$i]) ? floatval($_REQUEST['quantity'][$i]) : 1;
-		$ban_id = !empty($_REQUEST['ban_id'][$i]) ? intval($_REQUEST['ban_id'][$i]) : 0;
-		
-		$args['value']="NULL,'".$_SESSION['com_id']."','".$po_id."','".$price."','0','".$ban_id."','".$model."','".$type."','".$quantity."','1','0','".$des."','".$a_labour."','".$v_labour."','0','1970-01-01','0',NULL";
-		file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG product insert value: " . $args['value'] . "\n", FILE_APPEND);
-		$har->insertDB($args);	
-		$i++;
+	$createdPoId = $har->insertDbMax($argsPO);
+	
+	// 2. Update PR status
+	$argsPR = array();
+	$argsPR['table'] = "pr";
+	$argsPR['value'] = "status='1'";
+	$argsPR['condition'] = "id='" . intval($_REQUEST['ref']) . "'";
+	$har->updateDb($argsPR);
+	
+	// 3. Insert products for new PO
+	if(isset($_REQUEST['type']) && is_array($_REQUEST['type']) && count($_REQUEST['type']) > 0) {
+		$i = 0;
+		foreach ($_REQUEST['type'] as $typeValue) {
+			$argsProduct = array(); // Fresh array for each product
+			$argsProduct['table'] = "product";
+			
+			$a_labour = !empty($_REQUEST['a_labour'][$i]) ? intval($_REQUEST['a_labour'][$i]) : 0;
+			$v_labour = !empty($_REQUEST['v_labour'][$i]) ? floatval($_REQUEST['v_labour'][$i]) : 0;
+			$des = isset($_REQUEST['des'][$i]) ? mysqli_real_escape_string($db->conn, $_REQUEST['des'][$i]) : '';
+			$price = !empty($_REQUEST['price'][$i]) ? floatval($_REQUEST['price'][$i]) : 0;
+			$model = !empty($_REQUEST['model'][$i]) ? intval($_REQUEST['model'][$i]) : 0;
+			$quantity = !empty($_REQUEST['quantity'][$i]) ? floatval($_REQUEST['quantity'][$i]) : 1;
+			$ban_id = !empty($_REQUEST['ban_id'][$i]) ? intval($_REQUEST['ban_id'][$i]) : 0;
+			
+			$argsProduct['value'] = "NULL, '" . intval($_SESSION['com_id']) . "', '" . intval($createdPoId) . "', '" . $price . "', '0', '" . $ban_id . "', '" . $model . "', '" . intval($typeValue) . "', '" . $quantity . "', '1', '0', '" . $des . "', '" . $a_labour . "', '" . $v_labour . "', '0', '1970-01-01', '0', NULL";
+			$har->insertDB($argsProduct);
+			$i++;
 		}
-	} else {
-		file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " DEBUG po_list method A - NO TYPE ARRAY!\n", FILE_APPEND);
 	}
 	
 	$_REQUEST['page']="qa_list";
 		}else if($_REQUEST['method']=="E"){
-				$argspr['table']="pr";
-	$argspr['value']="cus_id='".$_REQUEST[cus_id]."'";
-	$argspr['condition']=" id='".$_REQUEST['ref']."' and ven_id='".$_SESSION['com_id']."'";
-	$har->updateDb($argspr);	
+	// ============================================================
+	// PO EDIT (method=E) - Create new PO version with products
+	// Each operation uses isolated $args to prevent state leakage
+	// ============================================================
+	
+	$_REQUEST['page']="qa_list";
+	
+	// 1. Update PR with customer ID
+	$argsPR = array();
+	$argsPR['table'] = "pr";
+	$argsPR['value'] = "cus_id='" . mysqli_real_escape_string($db->conn, $_REQUEST['cus_id'] ?? '') . "'";
+	$argsPR['condition'] = "id='" . intval($_REQUEST['ref']) . "' AND ven_id='" . intval($_SESSION['com_id']) . "'";
+	$har->updateDb($argsPR);
+	
+	// 2. Create new PO record
+	$argsPO = array();
+	$argsPO['table'] = "po";
+	$newPoId = $har->Maxid($argsPO['table']);
+	$taxNumber = (date("y") + 43) . str_pad($newPoId, 6, '0', STR_PAD_LEFT);
+	
+	$argsPO['columns'] = "company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at";
+	$argsPO['value'] = "'" . intval($_SESSION['com_id']) . "', '', '" . mysqli_real_escape_string($db->conn, $_REQUEST['name']) . "', '" . intval($_REQUEST['ref']) . "', '" . $taxNumber . "', '" . date("Y-m-d", strtotime($_REQUEST['create_date'])) . "', '" . date("Y-m-d", strtotime($_REQUEST['valid_pay'])) . "', '" . date("Y-m-d", strtotime($_REQUEST['deliver_date'])) . "', '', '', '" . floatval($_REQUEST['dis'] ?? 0) . "', '" . intval($_REQUEST['brandven'] ?? 0) . "', '" . floatval($_REQUEST['vat'] ?? 0) . "', '" . floatval($_REQUEST['over'] ?? 0) . "', NULL";
+	
+	$createdPoId = $har->insertDbMax($argsPO);
+	
+	// 3. Update old PO to point to new version
+	$argsOldPO = array();
+	$argsOldPO['table'] = "po";
+	$argsOldPO['value'] = "po_id_new='" . intval($createdPoId) . "'";
+	$argsOldPO['condition'] = "id='" . intval($_REQUEST['id']) . "'";
+	$har->updateDb($argsOldPO);
+	
+	// 4. Insert products for new PO
+	if(isset($_REQUEST['type']) && is_array($_REQUEST['type']) && count($_REQUEST['type']) > 0) {
+		foreach ($_REQUEST['type'] as $key => $typeValue) {
+			$argsProduct = array(); // Fresh array for each product
+			$argsProduct['table'] = "product";
 			
-			$_REQUEST['page']="qa_list";
-	$id=$har->Maxid($args['table']);
-	// Use explicit column names to prevent column count mismatch errors
-	$args['columns']="company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at";
-	$args['value']="'".$_SESSION['com_id']."', '', '".$_REQUEST['name']."', '".$_REQUEST['ref']."', '".(date("y")+43).str_pad($id, 6, '0', STR_PAD_LEFT)."', '".date("Y-m-d",strtotime($_REQUEST[create_date]))."', '".date("Y-m-d",strtotime($_REQUEST['valid_pay']))."', '".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."', '', '', '".$_REQUEST['dis']."', '".$_REQUEST[brandven]."', '".$_REQUEST[vat]."', '".$_REQUEST[over]."', NULL";
-	 
-	$po_id=$har->insertDbMax($args);
-	
-	$args['value']="po_id_new='".$id."'";
-	$args['condition']="id='".$_REQUEST['id']."'";
-	$har->updateDb($args);	
-	
-	
-	
-	$args['table']="product";
-	$i=0;
-		
-	foreach ($_REQUEST[type] as $key => $type ) {
-		$price = !empty($_REQUEST['price'][$key]) ? floatval($_REQUEST['price'][$key]) : 0;
-		$discount = !empty($_REQUEST['discount'][$key]) ? floatval($_REQUEST['discount'][$key]) : 0;
-		$ban_id = !empty($_REQUEST['ban_id'][$key]) ? intval($_REQUEST['ban_id'][$key]) : 0;
-		$model = !empty($_REQUEST['model'][$key]) ? intval($_REQUEST['model'][$key]) : 0;
-		$quantity = !empty($_REQUEST['quantity'][$key]) ? floatval($_REQUEST['quantity'][$key]) : 1;
-		$pack_quantity = !empty($_REQUEST['pack_quantity'][$key]) ? floatval($_REQUEST['pack_quantity'][$key]) : 1;
-		$des = isset($_REQUEST['des'][$key]) ? mysqli_real_escape_string($db->conn, $_REQUEST['des'][$key]) : '';
-		$a_labour = !empty($_REQUEST['a_labour'][$key]) ? intval($_REQUEST['a_labour'][$key]) : 0;
-		$v_labour = !empty($_REQUEST['v_labour'][$key]) ? floatval($_REQUEST['v_labour'][$key]) : 0;
-		
-		$args['value']="NULL,'".$_SESSION['com_id']."','".$po_id."','".$price."','".$discount."','".$ban_id."','".$model."','".$type."','".$quantity."','".$pack_quantity."','0','".$des."','".$a_labour."','".$v_labour."','0','1970-01-01','0',NULL";
-		$har->insertDB($args);	
-
+			$price = !empty($_REQUEST['price'][$key]) ? floatval($_REQUEST['price'][$key]) : 0;
+			$discount = !empty($_REQUEST['discount'][$key]) ? floatval($_REQUEST['discount'][$key]) : 0;
+			$ban_id = !empty($_REQUEST['ban_id'][$key]) ? intval($_REQUEST['ban_id'][$key]) : 0;
+			$model = !empty($_REQUEST['model'][$key]) ? intval($_REQUEST['model'][$key]) : 0;
+			$quantity = !empty($_REQUEST['quantity'][$key]) ? floatval($_REQUEST['quantity'][$key]) : 1;
+			$pack_quantity = !empty($_REQUEST['pack_quantity'][$key]) ? floatval($_REQUEST['pack_quantity'][$key]) : 1;
+			$des = isset($_REQUEST['des'][$key]) ? mysqli_real_escape_string($db->conn, $_REQUEST['des'][$key]) : '';
+			$a_labour = !empty($_REQUEST['a_labour'][$key]) ? intval($_REQUEST['a_labour'][$key]) : 0;
+			$v_labour = !empty($_REQUEST['v_labour'][$key]) ? floatval($_REQUEST['v_labour'][$key]) : 0;
+			
+			$argsProduct['value'] = "NULL, '" . intval($_SESSION['com_id']) . "', '" . intval($createdPoId) . "', '" . $price . "', '" . $discount . "', '" . $ban_id . "', '" . $model . "', '" . intval($typeValue) . "', '" . $quantity . "', '" . $pack_quantity . "', '0', '" . $des . "', '" . $a_labour . "', '" . $v_labour . "', '0', '1970-01-01', '0', NULL";
+			$har->insertDB($argsProduct);
 		}
-	break;
-	
+	}
 	
 		}else if($_REQUEST['method']=="C"){
 			
