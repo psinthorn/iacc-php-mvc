@@ -126,6 +126,40 @@ docker inspect --format='{{.State.Health.Status}}' iacc_php
 4. **Checkbox handling** - Empty checkboxes need default '0' value handling
 5. **Session company** - `$_SESSION['com_id']` contains current user's company ID
 
+### Critical: Shared $args Variable Issue
+**The root cause of many bugs in this legacy codebase is the shared `$args` variable.**
+
+The original code pattern reuses `$args` across multiple database operations:
+```php
+// BAD - causes state leakage
+$args['table'] = "po";
+$args['columns'] = "col1, col2, col3";
+$args['value'] = "...";
+$har->insertDbMax($args);
+
+$args['table'] = "product";  // columns still contains PO columns!
+$args['value'] = "...";
+$har->insertDB($args);  // ERROR: column count mismatch
+```
+
+**Always use isolated arrays for each operation:**
+```php
+// GOOD - isolated arrays
+$argsPO = array();
+$argsPO['table'] = "po";
+$argsPO['columns'] = "col1, col2, col3";
+$argsPO['value'] = "...";
+$har->insertDbMax($argsPO);
+
+$argsProduct = array();  // Fresh array
+$argsProduct['table'] = "product";
+$argsProduct['value'] = "...";
+$har->insertDB($argsProduct);  // Works correctly
+```
+
+**Fixed areas:** PO create (method=A) and PO edit (method=E) in core-function.php
+**Potentially affected areas:** Any other switch case in core-function.php that does multiple DB operations
+
 ## Testing Checklist
 Before declaring production-ready:
 1. ✅ Run `test-e2e-crud.php` - all 42 tests pass
