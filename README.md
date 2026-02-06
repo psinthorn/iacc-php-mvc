@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.10  
+**Version**: 4.11  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: January 20, 2026  
+**Last Updated**: February 6, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -83,6 +83,33 @@ Replace the commit message with a meaningful description of your changes.
 ---
 
 ## 📋 Changelog
+
+### v4.11 (February 6, 2026)
+- **Critical Bug Fix: PO Edit Products Disappearing** 🔧:
+  - Fixed root cause: `$args` array state leakage across database operations
+  - Refactored `core-function.php` method=A (create) and method=E (edit) to use isolated arrays
+  - Each database operation now uses fresh arrays (`$argsPO`, `$argsPR`, `$argsProduct`)
+  - Products now correctly preserved when editing and saving PO/Quotations
+
+- **Company Checkbox Handling Fix** ☑️:
+  - Fixed checkbox fields not saving correctly (status, is_customer, is_vendor)
+  - Added proper default value handling for unchecked checkboxes
+
+- **Docker Environment Stability** 🐳:
+  - Fixed 502 Bad Gateway errors (PHP-FPM connection issues)
+  - All services healthy and stable (nginx, php, mysql, phpmyadmin, ollama, mailhog)
+
+- **Comprehensive Integration Testing** ✅:
+  - Added `test-full-integration.php` - 42 tests covering all CRUD operations
+  - Tests: Company, Category, Type, Brand, Model, PR→PO workflow, PO Edit
+  - Existing `test-e2e-crud.php` - 42 tests, 100% pass rate
+  - Both test suites validate isolated `$args` pattern works correctly
+
+- **AI Context Documentation** 📚:
+  - Created `.github/copilot-instructions.md` for AI assistant context
+  - Documents all Docker services, ports, database config
+  - Documents critical `$args` variable pattern and gotchas
+  - Includes key commands for container management
 
 ### v4.10 (January 20, 2026)
 - **Quotation View (po-view.php) Enhancements** 📄:
