@@ -1,8 +1,8 @@
 <?php
-// Error reporting settings
-ini_set('display_errors', 1); // Show errors in browser for debug
+// Error reporting settings - MUST NOT output errors to browser in PDF generation
+ini_set('display_errors', 0); // Hide errors to prevent PDF header conflicts
 ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 1);
+ini_set('display_startup_errors', 0);
 ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
 error_reporting(E_ALL);       // Report all errors
 /**

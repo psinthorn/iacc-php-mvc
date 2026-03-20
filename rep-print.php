@@ -1,8 +1,8 @@
 <?php
-// Error reporting settings
-ini_set('display_errors', 1); // Show errors in browser for debug
+// Error reporting settings - MUST NOT output errors to browser in PDF generation
+ini_set('display_errors', 0); // Hide errors to prevent PDF header conflicts
 ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 1);
+ini_set('display_startup_errors', 0);
 ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
 error_reporting(E_ALL);       // Report all errors
 /**
@@ -26,6 +26,8 @@ $com_id = sql_int($_SESSION['com_id']);
 $query = mysqli_query($db->conn, "SELECT * FROM receipt WHERE id='".$id."' AND vender='".$com_id."'");
 
 if (mysqli_num_rows($query) != 1) {
+    http_response_code(404);
+    header('Content-Type: text/html; charset=utf-8');
     die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Receipt Not Found</h2><p>The requested receipt does not exist or you do not have permission to view it.</p></div>');
 }
 
