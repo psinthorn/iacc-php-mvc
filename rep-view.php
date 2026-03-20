@@ -20,10 +20,10 @@ $db = new DbConn($config);
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
 
-// Fetch receipt data with quotation join
-$query = mysqli_query($db->conn, "SELECT r.*, c.inv_rw as invoice_no, p.tax as quotation_no 
+// Fetch receipt data with invoice and quotation joins
+$query = mysqli_query($db->conn, "SELECT r.*, i.taxrw as invoice_no, p.tax as quotation_no 
     FROM receipt r 
-    LEFT JOIN complain c ON r.invoice_id = c.id 
+    LEFT JOIN iv i ON r.invoice_id = i.id 
     LEFT JOIN po p ON r.quotation_id = p.id 
     WHERE r.id='".$id."' AND r.vender='".$com_id."'");
 if(mysqli_num_rows($query) != 1) {

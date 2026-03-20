@@ -368,7 +368,7 @@ $payment_labels_with_icons = getPaymentMethodLabelsWithIcons($db->conn, $lang);
         </thead>
         <tbody>
 <?php
-$query = mysqli_query($db->conn, "SELECT r.id, r.name, r.email, r.phone, DATE_FORMAT(r.createdate,'%d-%m-%Y') as createdate, r.description, r.rep_rw, r.brand, r.vender, r.payment_method, r.status, r.invoice_id, r.quotation_id, r.source_type, r.include_vat, r.payment_source, r.payment_transaction_id, c.inv_rw as invoice_no, p.tax as quotation_no FROM receipt r LEFT JOIN complain c ON r.invoice_id = c.id LEFT JOIN po p ON r.quotation_id = p.id WHERE r.vender='".$com_id."' $search_cond $date_cond $status_cond ORDER BY r.id DESC");
+$query = mysqli_query($db->conn, "SELECT r.id, r.name, r.email, r.phone, DATE_FORMAT(r.createdate,'%d-%m-%Y') as createdate, r.description, r.rep_rw, r.brand, r.vender, r.payment_method, r.status, r.invoice_id, r.quotation_id, r.source_type, r.include_vat, r.payment_source, r.payment_transaction_id, i.taxrw as invoice_no, p.tax as quotation_no FROM receipt r LEFT JOIN iv i ON r.invoice_id = i.id LEFT JOIN po p ON r.quotation_id = p.id WHERE r.vender='".$com_id."' $search_cond $date_cond $status_cond ORDER BY r.id DESC");
 
 $count = mysqli_num_rows($query);
 if($count > 0):
