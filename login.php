@@ -601,6 +601,12 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
             const btn = document.getElementById('submitBtn');
             btn.classList.add('loading');
         });
+        
+        // Reset button state on page load (handles browser back/forward cache)
+        window.addEventListener('pageshow', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.classList.remove('loading');
+        });
     </script>
 </body>
 </html>
