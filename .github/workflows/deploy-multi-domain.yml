@@ -1,0 +1,305 @@
+# =============================================================================
+# iACC - Multi-Domain Deployment Workflow
+# =============================================================================
+# Manually triggered workflow to deploy to multiple domains simultaneously.
+# Uses a matrix strategy to deploy to all target domains in parallel.
+#
+# Target domains:
+#   1. iacc.f2.co.th         (production)
+#   2. app.mysamuiisland.com (new domain)
+#
+# =============================================================================
+# REQUIRED SECRETS FOR app.mysamuiisland.com
+# Add these in: Settings → Secrets and variables → Actions
+# -----------------------------------------------------------------------------
+#   SAMUI_FTP_SERVER       — FTP server hostname for mysamuiisland.com
+#   SAMUI_FTP_USERNAME     — FTP username
+#   SAMUI_FTP_PASSWORD     — FTP password
+#   SAMUI_FTP_PORT         — FTP port (usually 21)
+#   SAMUI_DB_USERNAME      — MySQL database username
+#   SAMUI_DB_PASSWORD      — MySQL database password
+#   SAMUI_DB_NAME          — MySQL database name
+#   SAMUI_DB_HOST          — MySQL host (usually localhost on cPanel)
+#
+# Existing secrets for iacc.f2.co.th are reused as-is (no changes needed):
+#   FTP_SERVER, FTP_USERNAME, FTP_PASSWORD, FTP_PORT
+#   DB_USERNAME, DB_PASSWORD, DB_NAME, DB_HOST
+# =============================================================================
+
+name: 🌐 Deploy to Multiple Domains
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which domains to deploy to'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - iacc-only
+          - samui-only
+
+jobs:
+  # ===========================================================================
+  # Job 1: Build & Test (shared artifact for all domains)
+  # ===========================================================================
+  build:
+    name: 🔨 Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mysqli, mbstring, xml, gd, curl
+
+      - name: ✅ PHP Syntax Check
+        timeout-minutes: 2
+        run: |
+          echo "Checking main PHP files..."
+          php -l index.php
+          php -l core-function.php
+          php -l login.php
+          php -l inc/class.dbconn.php
+          php -l inc/security.php
+          echo "✅ Syntax check passed"
+
+      - name: 📦 Create deployment artifact
+        run: |
+          mkdir -p deploy
+          rsync -av --progress \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='.DS_Store' \
+            --exclude='.venv' \
+            --exclude='.env' \
+            --exclude='docker' \
+            --exclude='docker-compose*.yml' \
+            --exclude='Dockerfile' \
+            --exclude='*.bak' \
+            --exclude='*.backup' \
+            --exclude='build' \
+            --exclude='node_modules' \
+            --exclude='TODAY_WORK_SUMMARY*.txt' \
+            --exclude='phpstan.neon' \
+            --exclude='deploy-cpanel.sh' \
+            --exclude='inc/sys.configs.php' \
+            --exclude='inc/docker-settings.json' \
+            --exclude='logs/*.log' \
+            --exclude='cache/*' \
+            --exclude='backups/*' \
+            ./ deploy/
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: multi-domain-deploy
+          path: deploy/
+          retention-days: 5
+
+  # ===========================================================================
+  # Job 2: Deploy to domains (matrix — runs in parallel)
+  # ===========================================================================
+  deploy:
+    name: 🚀 Deploy to ${{ matrix.domain }}
+    runs-on: ubuntu-latest
+    needs: build
+    permissions: {}
+    environment:
+      name: ${{ matrix.environment }}
+      url: ${{ matrix.site_url }}
+
+    # Note: GitHub Actions does not support dynamic secret lookup (secrets[variable]).
+    # All secrets for both domains are exposed as job-level env vars; a selection
+    # step then writes only the active domain's credentials to GITHUB_ENV so that
+    # subsequent steps (including the FTP action) can use them generically.
+    env:
+      # iacc.f2.co.th credentials
+      IACC_FTP_SERVER:    ${{ secrets.FTP_SERVER }}
+      IACC_FTP_USERNAME:  ${{ secrets.FTP_USERNAME }}
+      IACC_FTP_PASSWORD:  ${{ secrets.FTP_PASSWORD }}
+      IACC_FTP_PORT:      ${{ secrets.FTP_PORT }}
+      IACC_DB_USERNAME:   ${{ secrets.DB_USERNAME }}
+      IACC_DB_PASSWORD:   ${{ secrets.DB_PASSWORD }}
+      IACC_DB_NAME:       ${{ secrets.DB_NAME }}
+      IACC_DB_HOST:       ${{ secrets.DB_HOST }}
+      # app.mysamuiisland.com credentials
+      SAMUI_FTP_SERVER:   ${{ secrets.SAMUI_FTP_SERVER }}
+      SAMUI_FTP_USERNAME: ${{ secrets.SAMUI_FTP_USERNAME }}
+      SAMUI_FTP_PASSWORD: ${{ secrets.SAMUI_FTP_PASSWORD }}
+      SAMUI_FTP_PORT:     ${{ secrets.SAMUI_FTP_PORT }}
+      SAMUI_DB_USERNAME:  ${{ secrets.SAMUI_DB_USERNAME }}
+      SAMUI_DB_PASSWORD:  ${{ secrets.SAMUI_DB_PASSWORD }}
+      SAMUI_DB_NAME:      ${{ secrets.SAMUI_DB_NAME }}
+      SAMUI_DB_HOST:      ${{ secrets.SAMUI_DB_HOST }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - domain: iacc.f2.co.th
+            environment: production
+            site_url: https://iacc.f2.co.th
+            deploy_path: .
+            secret_prefix: IACC
+            target_key: iacc-only
+
+          - domain: app.mysamuiisland.com
+            environment: production-samui
+            site_url: https://app.mysamuiisland.com
+            deploy_path: .
+            secret_prefix: SAMUI
+            target_key: samui-only
+
+    # Skip this matrix entry when the user chose a specific domain that isn't this one
+    if: >
+      github.event.inputs.target == 'all' ||
+      github.event.inputs.target == matrix.target_key
+
+    steps:
+      - name: 📥 Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: multi-domain-deploy
+          path: deploy/
+
+      - name: 🔑 Select credentials for ${{ matrix.domain }}
+        run: |
+          PREFIX="${{ matrix.secret_prefix }}"
+          # Use bash indirect expansion (${!varname}) to select the right credentials
+          FTP_SERVER_VAR="${PREFIX}_FTP_SERVER";   echo "ACTIVE_FTP_SERVER=${!FTP_SERVER_VAR}"     >> $GITHUB_ENV
+          FTP_USERNAME_VAR="${PREFIX}_FTP_USERNAME"; echo "ACTIVE_FTP_USERNAME=${!FTP_USERNAME_VAR}" >> $GITHUB_ENV
+          FTP_PASSWORD_VAR="${PREFIX}_FTP_PASSWORD"; echo "ACTIVE_FTP_PASSWORD=${!FTP_PASSWORD_VAR}" >> $GITHUB_ENV
+          FTP_PORT_VAR="${PREFIX}_FTP_PORT";       echo "ACTIVE_FTP_PORT=${!FTP_PORT_VAR}"         >> $GITHUB_ENV
+          DB_USERNAME_VAR="${PREFIX}_DB_USERNAME"; echo "ACTIVE_DB_USERNAME=${!DB_USERNAME_VAR}"   >> $GITHUB_ENV
+          DB_PASSWORD_VAR="${PREFIX}_DB_PASSWORD"; echo "ACTIVE_DB_PASSWORD=${!DB_PASSWORD_VAR}"   >> $GITHUB_ENV
+          DB_NAME_VAR="${PREFIX}_DB_NAME";         echo "ACTIVE_DB_NAME=${!DB_NAME_VAR}"           >> $GITHUB_ENV
+          DB_HOST_VAR="${PREFIX}_DB_HOST";         echo "ACTIVE_DB_HOST=${!DB_HOST_VAR}"           >> $GITHUB_ENV
+
+      - name: 🛠️ Generate config for ${{ matrix.domain }}
+        run: |
+          mkdir -p deploy/inc
+          # PHP-escape a value: escape backslashes then double-quotes
+          php_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+          DB_USER_ESC=$(php_escape "${ACTIVE_DB_USERNAME}")
+          DB_PASS_ESC=$(php_escape "${ACTIVE_DB_PASSWORD}")
+          DB_NAME_ESC=$(php_escape "${ACTIVE_DB_NAME}")
+          DB_HOST_ESC=$(php_escape "${ACTIVE_DB_HOST}")
+          printf '<?php\n$config["username"] = "%s";\n$config["password"] = "%s";\n$config["dbname"]   = "%s";\n$config["host"]     = "%s";\n' \
+            "${DB_USER_ESC}" "${DB_PASS_ESC}" "${DB_NAME_ESC}" "${DB_HOST_ESC}" \
+            > deploy/inc/sys.configs.php
+          # Use production htaccess
+          if [ -f deploy/.htaccess.cpanel ]; then
+            cp deploy/.htaccess.cpanel deploy/.htaccess
+          fi
+
+      - name: 📤 Deploy to ${{ matrix.domain }} via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        timeout-minutes: 10
+        with:
+          server: ${{ env.ACTIVE_FTP_SERVER }}
+          username: ${{ env.ACTIVE_FTP_USERNAME }}
+          password: ${{ env.ACTIVE_FTP_PASSWORD }}
+          port: ${{ env.ACTIVE_FTP_PORT || 21 }}
+          protocol: ftp
+          local-dir: ./deploy/
+          server-dir: ${{ matrix.deploy_path }}/
+          timeout: 60000
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/logs/*.log
+            **/cache/*
+            **/backups/*
+
+      - name: ✅ Deployment notification
+        run: |
+          echo "✅ Deployment to ${{ matrix.domain }} completed!"
+          echo "🌐 URL: ${{ matrix.site_url }}"
+          echo "📅 Time: $(date)"
+          echo "🔖 Commit: ${{ github.sha }}"
+
+  # ===========================================================================
+  # Job 3: Health Check (matrix — checks each deployed domain)
+  # ===========================================================================
+  health-check:
+    name: 🏥 Health Check — ${{ matrix.domain }}
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    permissions: {}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - domain: iacc.f2.co.th
+            site_url: https://iacc.f2.co.th
+            target_key: iacc-only
+
+          - domain: app.mysamuiisland.com
+            site_url: https://app.mysamuiisland.com
+            target_key: samui-only
+
+    steps:
+      - name: 🔍 Check ${{ matrix.domain }} availability
+        if: >
+          github.event.inputs.target == 'all' ||
+          github.event.inputs.target == matrix.target_key
+        run: |
+          echo "Waiting for deployment to propagate..."
+          sleep 30
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ matrix.site_url }} || echo "000")
+
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ]; then
+            echo "✅ ${{ matrix.domain }} is up! HTTP Status: $HTTP_STATUS"
+          else
+            echo "⚠️ ${{ matrix.domain }} may have issues. HTTP Status: $HTTP_STATUS"
+            # Don't fail the workflow, just warn
+          fi
+
+  # ===========================================================================
+  # Job 4: Deployment Summary
+  # ===========================================================================
+  summary:
+    name: 📋 Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [deploy, health-check]
+    if: always()
+    permissions: {}
+
+    steps:
+      - name: 📊 Print consolidated deployment report
+        run: |
+          echo "=============================================="
+          echo "  🌐 Multi-Domain Deployment Summary"
+          echo "=============================================="
+          echo "📅 Time     : $(date)"
+          echo "🔖 Commit   : ${{ github.sha }}"
+          echo "👤 Actor    : ${{ github.actor }}"
+          echo "🎯 Target   : ${{ github.event.inputs.target }}"
+          echo "----------------------------------------------"
+          echo "  Deploy job status  : ${{ needs.deploy.result }}"
+          echo "  Health check status: ${{ needs.health-check.result }}"
+          echo "----------------------------------------------"
+          if [ "${{ needs.deploy.result }}" = "success" ]; then
+            echo "✅ All targeted deployments completed successfully!"
+          elif [ "${{ needs.deploy.result }}" = "failure" ]; then
+            echo "❌ One or more deployments failed. Check the Deploy job logs."
+          else
+            echo "⚠️ Deployment result: ${{ needs.deploy.result }}"
+          fi
+          echo "=============================================="
