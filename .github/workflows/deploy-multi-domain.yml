@@ -2,7 +2,7 @@
 # iACC - Multi-Domain Deployment Workflow
 # =============================================================================
 # Manually triggered workflow to deploy to multiple domains simultaneously.
-# Uses a matrix strategy to deploy to all target domains in parallel.
+# Uses separate jobs per domain to avoid GitHub Actions matrix limitations.
 #
 # Target domains:
 #   1. iacc.f2.co.th         (production)
@@ -107,63 +107,17 @@ jobs:
           retention-days: 5
 
   # ===========================================================================
-  # Job 2: Deploy to domains (matrix — runs in parallel)
+  # Job 2a: Deploy to iacc.f2.co.th
   # ===========================================================================
-  deploy:
-    name: 🚀 Deploy to ${{ matrix.domain }}
+  deploy-iacc:
+    name: 🚀 Deploy to iacc.f2.co.th
     runs-on: ubuntu-latest
     needs: build
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'iacc-only'
     permissions: {}
     environment:
-      name: ${{ matrix.environment }}
-      url: ${{ matrix.site_url }}
-
-    # Note: GitHub Actions does not support dynamic secret lookup (secrets[variable]).
-    # All secrets for both domains are exposed as job-level env vars; a selection
-    # step then writes only the active domain's credentials to GITHUB_ENV so that
-    # subsequent steps (including the FTP action) can use them generically.
-    env:
-      # iacc.f2.co.th credentials
-      IACC_FTP_SERVER:    ${{ secrets.FTP_SERVER }}
-      IACC_FTP_USERNAME:  ${{ secrets.FTP_USERNAME }}
-      IACC_FTP_PASSWORD:  ${{ secrets.FTP_PASSWORD }}
-      IACC_FTP_PORT:      ${{ secrets.FTP_PORT }}
-      IACC_DB_USERNAME:   ${{ secrets.DB_USERNAME }}
-      IACC_DB_PASSWORD:   ${{ secrets.DB_PASSWORD }}
-      IACC_DB_NAME:       ${{ secrets.DB_NAME }}
-      IACC_DB_HOST:       ${{ secrets.DB_HOST }}
-      # app.mysamuiisland.com credentials
-      SAMUI_FTP_SERVER:   ${{ secrets.SAMUI_FTP_SERVER }}
-      SAMUI_FTP_USERNAME: ${{ secrets.SAMUI_FTP_USERNAME }}
-      SAMUI_FTP_PASSWORD: ${{ secrets.SAMUI_FTP_PASSWORD }}
-      SAMUI_FTP_PORT:     ${{ secrets.SAMUI_FTP_PORT }}
-      SAMUI_DB_USERNAME:  ${{ secrets.SAMUI_DB_USERNAME }}
-      SAMUI_DB_PASSWORD:  ${{ secrets.SAMUI_DB_PASSWORD }}
-      SAMUI_DB_NAME:      ${{ secrets.SAMUI_DB_NAME }}
-      SAMUI_DB_HOST:      ${{ secrets.SAMUI_DB_HOST }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - domain: iacc.f2.co.th
-            environment: production
-            site_url: https://iacc.f2.co.th
-            deploy_path: .
-            secret_prefix: IACC
-            target_key: iacc-only
-
-          - domain: app.mysamuiisland.com
-            environment: production-samui
-            site_url: https://app.mysamuiisland.com
-            deploy_path: .
-            secret_prefix: SAMUI
-            target_key: samui-only
-
-    # Skip this matrix entry when the user chose a specific domain that isn't this one
-    if: >
-      github.event.inputs.target == 'all' ||
-      github.event.inputs.target == matrix.target_key
+      name: production
+      url: https://iacc.f2.co.th
 
     steps:
       - name: 📥 Download artifact
@@ -172,47 +126,31 @@ jobs:
           name: multi-domain-deploy
           path: deploy/
 
-      - name: 🔑 Select credentials for ${{ matrix.domain }}
-        run: |
-          PREFIX="${{ matrix.secret_prefix }}"
-          # Use bash indirect expansion (${!varname}) to select the right credentials
-          FTP_SERVER_VAR="${PREFIX}_FTP_SERVER";   echo "ACTIVE_FTP_SERVER=${!FTP_SERVER_VAR}"     >> $GITHUB_ENV
-          FTP_USERNAME_VAR="${PREFIX}_FTP_USERNAME"; echo "ACTIVE_FTP_USERNAME=${!FTP_USERNAME_VAR}" >> $GITHUB_ENV
-          FTP_PASSWORD_VAR="${PREFIX}_FTP_PASSWORD"; echo "ACTIVE_FTP_PASSWORD=${!FTP_PASSWORD_VAR}" >> $GITHUB_ENV
-          FTP_PORT_VAR="${PREFIX}_FTP_PORT";       echo "ACTIVE_FTP_PORT=${!FTP_PORT_VAR}"         >> $GITHUB_ENV
-          DB_USERNAME_VAR="${PREFIX}_DB_USERNAME"; echo "ACTIVE_DB_USERNAME=${!DB_USERNAME_VAR}"   >> $GITHUB_ENV
-          DB_PASSWORD_VAR="${PREFIX}_DB_PASSWORD"; echo "ACTIVE_DB_PASSWORD=${!DB_PASSWORD_VAR}"   >> $GITHUB_ENV
-          DB_NAME_VAR="${PREFIX}_DB_NAME";         echo "ACTIVE_DB_NAME=${!DB_NAME_VAR}"           >> $GITHUB_ENV
-          DB_HOST_VAR="${PREFIX}_DB_HOST";         echo "ACTIVE_DB_HOST=${!DB_HOST_VAR}"           >> $GITHUB_ENV
-
-      - name: 🛠️ Generate config for ${{ matrix.domain }}
+      - name: 🛠️ Generate config for iacc.f2.co.th
         run: |
           mkdir -p deploy/inc
-          # PHP-escape a value: escape backslashes then double-quotes
-          php_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
-          DB_USER_ESC=$(php_escape "${ACTIVE_DB_USERNAME}")
-          DB_PASS_ESC=$(php_escape "${ACTIVE_DB_PASSWORD}")
-          DB_NAME_ESC=$(php_escape "${ACTIVE_DB_NAME}")
-          DB_HOST_ESC=$(php_escape "${ACTIVE_DB_HOST}")
-          printf '<?php\n$config["username"] = "%s";\n$config["password"] = "%s";\n$config["dbname"]   = "%s";\n$config["host"]     = "%s";\n' \
-            "${DB_USER_ESC}" "${DB_PASS_ESC}" "${DB_NAME_ESC}" "${DB_HOST_ESC}" \
-            > deploy/inc/sys.configs.php
-          # Use production htaccess
+          cat > deploy/inc/sys.configs.php <<EOL
+          <?php
+          $config["username"] = "${{ secrets.DB_USERNAME }}";
+          $config["password"] = "${{ secrets.DB_PASSWORD }}";
+          $config["dbname"]   = "${{ secrets.DB_NAME }}";
+          $config["host"]     = "${{ secrets.DB_HOST }}";
+          EOL
           if [ -f deploy/.htaccess.cpanel ]; then
             cp deploy/.htaccess.cpanel deploy/.htaccess
           fi
 
-      - name: 📤 Deploy to ${{ matrix.domain }} via FTP
+      - name: 📤 Deploy to iacc.f2.co.th via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         timeout-minutes: 10
         with:
-          server: ${{ env.ACTIVE_FTP_SERVER }}
-          username: ${{ env.ACTIVE_FTP_USERNAME }}
-          password: ${{ env.ACTIVE_FTP_PASSWORD }}
-          port: ${{ env.ACTIVE_FTP_PORT || 21 }}
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || 21 }}
           protocol: ftp
           local-dir: ./deploy/
-          server-dir: ${{ matrix.deploy_path }}/
+          server-dir: ./
           timeout: 60000
           log-level: verbose
           exclude: |
@@ -226,48 +164,121 @@ jobs:
 
       - name: ✅ Deployment notification
         run: |
-          echo "✅ Deployment to ${{ matrix.domain }} completed!"
-          echo "🌐 URL: ${{ matrix.site_url }}"
+          echo "✅ Deployment to iacc.f2.co.th completed!"
+          echo "🌐 URL: https://iacc.f2.co.th"
           echo "📅 Time: $(date)"
           echo "🔖 Commit: ${{ github.sha }}"
 
   # ===========================================================================
-  # Job 3: Health Check (matrix — checks each deployed domain)
+  # Job 2b: Deploy to app.mysamuiisland.com
   # ===========================================================================
-  health-check:
-    name: 🏥 Health Check — ${{ matrix.domain }}
+  deploy-samui:
+    name: 🚀 Deploy to app.mysamuiisland.com
     runs-on: ubuntu-latest
-    needs: deploy
-    if: always()
+    needs: build
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'samui-only'
     permissions: {}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - domain: iacc.f2.co.th
-            site_url: https://iacc.f2.co.th
-            target_key: iacc-only
-
-          - domain: app.mysamuiisland.com
-            site_url: https://app.mysamuiisland.com
-            target_key: samui-only
+    environment:
+      name: production-samui
+      url: https://app.mysamuiisland.com
 
     steps:
-      - name: 🔍 Check ${{ matrix.domain }} availability
-        if: >
-          github.event.inputs.target == 'all' ||
-          github.event.inputs.target == matrix.target_key
+      - name: 📥 Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: multi-domain-deploy
+          path: deploy/
+
+      - name: 🛠️ Generate config for app.mysamuiisland.com
+        run: |
+          mkdir -p deploy/inc
+          cat > deploy/inc/sys.configs.php <<EOL
+          <?php
+          $config["username"] = "${{ secrets.SAMUI_DB_USERNAME }}";
+          $config["password"] = "${{ secrets.SAMUI_DB_PASSWORD }}";
+          $config["dbname"]   = "${{ secrets.SAMUI_DB_NAME }}";
+          $config["host"]     = "${{ secrets.SAMUI_DB_HOST }}";
+          EOL
+          if [ -f deploy/.htaccess.cpanel ]; then
+            cp deploy/.htaccess.cpanel deploy/.htaccess
+          fi
+
+      - name: 📤 Deploy to app.mysamuiisland.com via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        timeout-minutes: 10
+        with:
+          server: ${{ secrets.SAMUI_FTP_SERVER }}
+          username: ${{ secrets.SAMUI_FTP_USERNAME }}
+          password: ${{ secrets.SAMUI_FTP_PASSWORD }}
+          port: ${{ secrets.SAMUI_FTP_PORT || 21 }}
+          protocol: ftp
+          local-dir: ./deploy/
+          server-dir: ./
+          timeout: 60000
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/logs/*.log
+            **/cache/*
+            **/backups/*
+
+      - name: ✅ Deployment notification
+        run: |
+          echo "✅ Deployment to app.mysamuiisland.com completed!"
+          echo "🌐 URL: https://app.mysamuiisland.com"
+          echo "📅 Time: $(date)"
+          echo "🔖 Commit: ${{ github.sha }}"
+
+  # ===========================================================================
+  # Job 3a: Health Check — iacc.f2.co.th
+  # ===========================================================================
+  health-check-iacc:
+    name: 🏥 Health Check — iacc.f2.co.th
+    runs-on: ubuntu-latest
+    needs: deploy-iacc
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'iacc-only'
+    permissions: {}
+
+    steps:
+      - name: 🔍 Check iacc.f2.co.th availability
         run: |
           echo "Waiting for deployment to propagate..."
           sleep 30
 
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ matrix.site_url }} || echo "000")
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://iacc.f2.co.th || echo "000")
 
           if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ]; then
-            echo "✅ ${{ matrix.domain }} is up! HTTP Status: $HTTP_STATUS"
+            echo "✅ iacc.f2.co.th is up! HTTP Status: $HTTP_STATUS"
           else
-            echo "⚠️ ${{ matrix.domain }} may have issues. HTTP Status: $HTTP_STATUS"
+            echo "⚠️ iacc.f2.co.th may have issues. HTTP Status: $HTTP_STATUS"
+            # Don't fail the workflow, just warn
+          fi
+
+  # ===========================================================================
+  # Job 3b: Health Check — app.mysamuiisland.com
+  # ===========================================================================
+  health-check-samui:
+    name: 🏥 Health Check — app.mysamuiisland.com
+    runs-on: ubuntu-latest
+    needs: deploy-samui
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'samui-only'
+    permissions: {}
+
+    steps:
+      - name: 🔍 Check app.mysamuiisland.com availability
+        run: |
+          echo "Waiting for deployment to propagate..."
+          sleep 30
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://app.mysamuiisland.com || echo "000")
+
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ]; then
+            echo "✅ app.mysamuiisland.com is up! HTTP Status: $HTTP_STATUS"
+          else
+            echo "⚠️ app.mysamuiisland.com may have issues. HTTP Status: $HTTP_STATUS"
             # Don't fail the workflow, just warn
           fi
 
@@ -277,7 +288,7 @@ jobs:
   summary:
     name: 📋 Deployment Summary
     runs-on: ubuntu-latest
-    needs: [deploy, health-check]
+    needs: [deploy-iacc, deploy-samui, health-check-iacc, health-check-samui]
     if: always()
     permissions: {}
 
@@ -292,14 +303,16 @@ jobs:
           echo "👤 Actor    : ${{ github.actor }}"
           echo "🎯 Target   : ${{ github.event.inputs.target }}"
           echo "----------------------------------------------"
-          echo "  Deploy job status  : ${{ needs.deploy.result }}"
-          echo "  Health check status: ${{ needs.health-check.result }}"
+          echo "  deploy-iacc status        : ${{ needs.deploy-iacc.result }}"
+          echo "  deploy-samui status       : ${{ needs.deploy-samui.result }}"
+          echo "  health-check-iacc status  : ${{ needs.health-check-iacc.result }}"
+          echo "  health-check-samui status : ${{ needs.health-check-samui.result }}"
           echo "----------------------------------------------"
-          if [ "${{ needs.deploy.result }}" = "success" ]; then
-            echo "✅ All targeted deployments completed successfully!"
-          elif [ "${{ needs.deploy.result }}" = "failure" ]; then
+          if [ "${{ needs.deploy-iacc.result }}" = "failure" ] || [ "${{ needs.deploy-samui.result }}" = "failure" ]; then
             echo "❌ One or more deployments failed. Check the Deploy job logs."
+          elif [ "${{ needs.deploy-iacc.result }}" = "success" ] || [ "${{ needs.deploy-samui.result }}" = "success" ]; then
+            echo "✅ All targeted deployments completed successfully!"
           else
-            echo "⚠️ Deployment result: ${{ needs.deploy.result }}"
+            echo "⚠️ Deployment result: iacc=${{ needs.deploy-iacc.result }} samui=${{ needs.deploy-samui.result }}"
           fi
           echo "=============================================="
