@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.11  
+**Version**: 4.12  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: February 6, 2026  
+**Last Updated**: March 21, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -83,6 +83,23 @@ Replace the commit message with a meaningful description of your changes.
 ---
 
 ## 📋 Changelog
+
+### v4.12 (March 21, 2026)
+- **Fix: Receipt/Voucher PDF Generation Error** 🔧:
+  - Fixed mPDF "Some data has already been output to browser" error
+  - Root cause: `index.php` outputs full HTML page before PDF files are included
+  - Added early intercept in `index.php` for PDF pages (`rep_print`, `vou_print`) before any HTML output
+  - Added output buffering in `rep-print.php` and `vou-print.php` to clean stray output
+  - Set `display_errors=0` in PDF generators (errors still logged to file)
+
+- **Fix: Non-existent `complain` Table JOIN** 🗃️:
+  - Fixed `rep-list.php` and `rep-view.php` referencing non-existent `complain` table
+  - Replaced with proper `iv` (Invoice) table JOIN using `taxrw` for invoice reference
+  - Resolves production fatal error on cPanel (`Table 'complain' doesn't exist`)
+
+- **Receipt PDF Cleanup** 📄:
+  - Removed VAT display from receipt PDF (summary section and header badge)
+  - Cleaner receipt layout: Subtotal → Discount → Overhead → Net Amount → Total
 
 ### v4.11 (February 6, 2026)
 - **Critical Bug Fix: PO Edit Products Disappearing** 🔧:

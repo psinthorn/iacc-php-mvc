@@ -5,6 +5,11 @@ ini_set('log_errors', 1);     // Enable error logging
 ini_set('display_startup_errors', 0);
 ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
 error_reporting(E_ALL);       // Report all errors
+
+// Clean any prior output (from index.php headers) before PDF generation
+if (ob_get_level()) ob_end_clean();
+ob_start();
+
 /**
  * Receipt PDF Generator
  * Professional design matching Invoice template
@@ -357,7 +362,6 @@ $html = '
             <div class="rec-box">
                 <div class="rec-num">REC-'.htmlspecialchars($data['rep_rw']).' <span class="status status-'.strtolower($data['status'] ?? 'confirmed').'">'.htmlspecialchars($status_display).'</span>
                     <span class="source-tag source-'.$source_type.'">'.htmlspecialchars($source_display).'</span>
-                    <span class="vat-mode '.($include_vat ? 'vat-included' : 'vat-excluded').'">'.($include_vat ? 'VAT '.$vat_rate.'%' : 'NO VAT').'</span>
                 </div>
                 <div class="rec-meta">Date: '.htmlspecialchars($data['createdate']).($source_doc_no ? ' &nbsp;|&nbsp; Ref: '.htmlspecialchars($source_doc_no) : '').'</div>
             </div>
@@ -442,13 +446,6 @@ if ($over > 0) {
 $html .= '
                 <tr><td class="lbl">Net Amount</td><td class="val">'.number_format($stotal, 2).'</td></tr>';
 
-// Only show VAT row if include_vat is enabled
-if ($include_vat) {
-    $html .= '<tr><td class="lbl">VAT '.htmlspecialchars($vat_rate).'%</td><td class="val">+'.number_format($vat, 2).'</td></tr>';
-} else {
-    $html .= '<tr><td class="lbl" style="color:#e74c3c;">No VAT</td><td class="val" style="color:#e74c3c;">-</td></tr>';
-}
-
 $html .= '
                 <tr class="grand"><td class="lbl">Total Received</td><td class="val">'.number_format($grandTotal, 2).'</td></tr>
             </table>
@@ -485,6 +482,7 @@ $html .= '
 </table>';
 
 // Generate PDF
+if (ob_get_level()) ob_end_clean();
 include("MPDF/mpdf.php");
 
 $mpdf = new mPDF('th', 'A4', 0, 'Arial', 12, 12, 12, 12, 0, 0);

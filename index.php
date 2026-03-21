@@ -232,6 +232,14 @@ $page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['
 
 // Determine which file to include
 $pageFile = isset($routes[$page]) ? $routes[$page] : null;
+
+// ========== PDF pages must be handled BEFORE any HTML output ==========
+// These pages generate PDF via mPDF and cannot have ANY prior output
+$pdfPages = ['rep_print', 'vou_print'];
+if (in_array($page, $pdfPages) && $pageFile && file_exists($pageFile)) {
+    include_once $pageFile;
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html>

@@ -5,6 +5,11 @@ ini_set('log_errors', 1);     // Enable error logging
 ini_set('display_startup_errors', 0);
 ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
 error_reporting(E_ALL);       // Report all errors
+
+// Clean any prior output (from index.php headers) before PDF generation
+if (ob_get_level()) ob_end_clean();
+ob_start();
+
 /**
  * Voucher PDF Generator
  * Professional design matching Receipt/Invoice template
@@ -300,6 +305,7 @@ $html .= '
 </table>';
 
 // Generate PDF
+if (ob_get_level()) ob_end_clean();
 include("MPDF/mpdf.php");
 
 $mpdf = new mPDF('th', 'A4', 0, 'Arial', 12, 12, 12, 12, 0, 0);
