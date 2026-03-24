@@ -8,9 +8,9 @@
 // But needs a valid invoice token or invoice ID
 
 session_start();
-require_once __DIR__ . '/inc/sys.configs.php';
-require_once __DIR__ . '/inc/class.dbconn.php';
-require_once __DIR__ . '/inc/payment-method-helper.php';
+require_once("inc/sys.configs.php");
+require_once("inc/class.dbconn.php");
+require_once("inc/payment-method-helper.php");
 
 $db = new DbConn($config);
 $conn = $db->conn;
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gateway'])) {
     
     try {
         if ($selectedGateway === 'paypal') {
-            require_once __DIR__ . '/inc/class.paypal.php';
+            require_once("inc/class.paypal.php");
             $paypal = new PayPalService($conn);
             
             $orderData = [
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gateway'])) {
             }
             
         } elseif ($selectedGateway === 'stripe') {
-            require_once __DIR__ . '/inc/class.stripe.php';
+            require_once("inc/class.stripe.php");
             $stripe = new StripeService($conn);
             
             $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') 

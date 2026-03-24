@@ -7,8 +7,8 @@
  */
 
 session_start();
-require_once __DIR__ . '/inc/sys.configs.php';
-require_once __DIR__ . '/inc/class.dbconn.php';
+require_once("inc/sys.configs.php");
+require_once("inc/class.dbconn.php");
 
 $db = new DbConn($config);
 $conn = $db->conn;
@@ -35,7 +35,7 @@ try {
     
     // If we have session_id but no invoice_id, look it up from Stripe
     if ($sessionId && !$invoiceId) {
-        require_once __DIR__ . '/inc/class.stripe.php';
+        require_once("inc/class.stripe.php");
         $stripe = new StripeService($conn);
         $session = $stripe->getCheckoutSession($sessionId);
         $invoiceId = intval($session['metadata']['invoice_id'] ?? 0);
@@ -43,7 +43,7 @@ try {
     
     // If we have PayPal token but no invoice_id, look it up
     if ($paypalOrderId && !$invoiceId) {
-        require_once __DIR__ . '/inc/class.paypal.php';
+        require_once("inc/class.paypal.php");
         $paypal = new PayPalService($conn);
         $order = $paypal->getOrderDetails($paypalOrderId);
         $invoiceId = intval($order['purchase_units'][0]['invoice_id'] ?? 0);
@@ -128,7 +128,7 @@ try {
         $paidAmount = $grandTotal;
         
         if ($gateway === 'stripe' && $sessionId) {
-            require_once __DIR__ . '/inc/class.stripe.php';
+            require_once("inc/class.stripe.php");
             $stripe = new StripeService($conn);
             $session = $stripe->getCheckoutSession($sessionId);
             
@@ -139,7 +139,7 @@ try {
             }
             
         } elseif ($gateway === 'paypal') {
-            require_once __DIR__ . '/inc/class.paypal.php';
+            require_once("inc/class.paypal.php");
             $paypal = new PayPalService($conn);
             
             // For PayPal, we need to capture the payment
@@ -217,6 +217,7 @@ try {
             $paymentMethod = $gateway;
             
             $insertStmt = mysqli_prepare($conn, $insertRecSql);
+            $brandId = $invoice['brand_id'] ?: 0;
             mysqli_stmt_bind_param($insertStmt, "sssssiiisiiiss",
                 $invoice['customer_name'],
                 $invoice['customer_phone'],
@@ -227,7 +228,7 @@ try {
                 $invoice['ven_id'],
                 $newRepNo,
                 $repRw,
-                $invoice['brand_id'] ?: 0,
+                $brandId,
                 $invoice['vat'],
                 $invoice['dis'],
                 $gateway,

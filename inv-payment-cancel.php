@@ -5,8 +5,8 @@
  */
 
 session_start();
-require_once __DIR__ . '/inc/sys.configs.php';
-require_once __DIR__ . '/inc/class.dbconn.php';
+require_once("inc/sys.configs.php");
+require_once("inc/class.dbconn.php");
 
 $db = new DbConn($config);
 $conn = $db->conn;
