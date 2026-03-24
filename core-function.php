@@ -194,7 +194,7 @@ case "type" : {
 		$args['table']="type";
 		
 	
-	$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."',NULL";
+	$args['value']="'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."',NULL";
 	$max_id=$har->insertDbMax($args);	
 	foreach($_POST as $key => $val)
 		{
@@ -309,7 +309,7 @@ case "compl_list2" : {
 case "payment" : {
 	if($_REQUEST['method']=="A"){
 		$args['table']="payment";
-	$args['value']="'','".sql_escape($_REQUEST['payment_name'])."','".sql_escape($_REQUEST['payment_des'])."','".$_SESSION['com_id']."'";
+	$args['value']="NULL,'".sql_escape($_REQUEST['payment_name'])."','".sql_escape($_REQUEST['payment_des'])."','".$_SESSION['com_id']."',NULL";
 	$har->insertDB($args);	
 		}
 	else if($_REQUEST['method']=="E"){
@@ -406,8 +406,7 @@ case "brand" : {
 }break;
 case "pr_list" : {
 	$args['table']="pr";
-	// Debug logging
-	$logFile = '/var/www/html/logs/app.log';
+	// Debug logging (uses $logFile defined at top of core-function.php)
 	file_put_contents($logFile, date('Y-m-d H:i:s') . " PR_LIST: method=" . ($_REQUEST['method'] ?? 'NOT SET') . "\n", FILE_APPEND);
 	
 	if($_REQUEST['method']=="D"){
@@ -667,7 +666,7 @@ case "receipt_list" : {
 		$args['table']="product";
 		$i=0;
 		foreach ($_REQUEST['type'] as $type) {
-			$args['value']="'','0','".$_REQUEST['price'][$i]."','0','".$_REQUEST['ban_id'][$i]."','".$_REQUEST['model'][$i]."','".$type."','".$_REQUEST['quantity'][$i]."','1','','".$_REQUEST['des'][$i]."','".$_REQUEST['a_labour'][$i]."','".$_REQUEST['v_labour'][$i]."','','".date("Y-m-d",strtotime($_REQUEST['warranty'][$i]))."','".$rep_id."'";
+			$args['value']="NULL,'".$_SESSION['com_id']."','0','".floatval($_REQUEST['price'][$i])."','0','".intval($_REQUEST['ban_id'][$i])."','".intval($_REQUEST['model'][$i])."','".intval($type)."','".floatval($_REQUEST['quantity'][$i])."','1','0','".sql_escape($_REQUEST['des'][$i])."','".intval($_REQUEST['a_labour'][$i])."','".floatval($_REQUEST['v_labour'][$i])."','0','".date("Y-m-d",strtotime($_REQUEST['warranty'][$i]))."','".$rep_id."',NULL";
 			$har->insertDB($args);	
 			$i++;
 		}

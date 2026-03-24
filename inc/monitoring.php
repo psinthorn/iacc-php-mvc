@@ -275,9 +275,9 @@ function get_app_metrics($conn) {
         $metrics['activity_24h'][$row['action']] = $row['count'];
     }
     
-    // Revenue this month (if iv table has total)
+    // Revenue this month (paid_amount column in iv table)
     $result = mysqli_query($conn, "
-        SELECT COALESCE(SUM(total), 0) as revenue
+        SELECT COALESCE(SUM(paid_amount), 0) as revenue
         FROM iv
         WHERE MONTH(createdate) = MONTH(CURDATE())
         AND YEAR(createdate) = YEAR(CURDATE())

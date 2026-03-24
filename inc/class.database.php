@@ -37,9 +37,10 @@ class Database {
         if ($db && isset($db->conn)) {
             $this->conn = $db->conn;
         } else {
-            // Fallback: create new connection
+            // Fallback: create new connection with config
+            require_once dirname(__FILE__) . '/sys.configs.php';
             require_once dirname(__FILE__) . '/class.dbconn.php';
-            $db = new dbconn();
+            $db = new DbConn($config);
             $this->conn = $db->conn;
         }
     }
