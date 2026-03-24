@@ -19,10 +19,10 @@ $id = sql_int($_REQUEST['id']);
 $query=mysqli_query($db->conn, "select company_credit.id as id, name_sh, limit_credit, limit_day, valid_start, valid_end from company_credit join company on company_credit.ven_id=company.id where valid_end='0000-00-00' and cus_id='".$id."'");?>
 <table width="100%" class="table"><tr><th><?=$xml->vender?></th><th><?=$xml->limitcredit?></th><th><?=$xml->limitday?></th><th><?=$xml->start?></th><th></th></tr>
 <?php while($data=mysqli_fetch_array($query)){
-echo "<tr><td>".$data[name_sh]."</td>
-<td>".$data[limit_credit]."</td>	
-<td>".$data[limit_day]."</td>	
-<td>".$data[valid_start]."</td>	
+echo "<tr><td>".$data['name_sh']."</td>
+<td>".$data['limit_credit']."</td>	
+<td>".$data['limit_day']."</td>	
+<td>".$data['valid_start']."</td>	
 <td></td></tr>";	
 	
 	}?>
@@ -31,11 +31,11 @@ echo "<tr><td>".$data[name_sh]."</td>
 $query=mysqli_query($db->conn, "select company_credit.id as id, name_sh, limit_credit, limit_day, valid_start, valid_end from company_credit join company on company_credit.cus_id=company.id where valid_end='0000-00-00' and ven_id='".$id."'");?>
 <tr><th><?=$xml->customer?></th><th><?=$xml->limitcredit?></th><th><?=$xml->limitday?></th><th><?=$xml->start?></th><th width="120"><a href="#" onclick="ajaxpagefetcher.load('fetch_state2', 'company-credit.php?ven_id=<?php echo $id;?>', true);"><span class="glyphicon glyphicon-plus"></span> <?=$xml->create?></a></th></tr>
 <?php while($data=mysqli_fetch_array($query)){
-echo "<tr><td>".$data[name_sh]."</td>
-<td>".$data[limit_credit]."</td>	
-<td>".$data[limit_day]."</td>	
-<td>".$data[valid_start]."</td>		
-<td><a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state2', 'company-credit.php?id=".$data[id]."&ven_id=".$id."', true);\"><i class=\"fa fa-pencil-square-o\"></i></a></td></tr>";	
+echo "<tr><td>".$data['name_sh']."</td>
+<td>".$data['limit_credit']."</td>	
+<td>".$data['limit_day']."</td>	
+<td>".$data['valid_start']."</td>		
+<td><a href=\"#\" onclick=\"ajaxpagefetcher.load('fetch_state2', 'company-credit.php?id=".$data['id']."&ven_id=".$id."', true);\"><i class=\"fa fa-pencil-square-o\"></i></a></td></tr>";	
 	
 	}?>
 

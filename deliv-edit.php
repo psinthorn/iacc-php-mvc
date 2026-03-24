@@ -73,7 +73,7 @@ $(function(){
 			echo "<option value='' >Please Select Product</option>";
 			while($fetch_customer=mysqli_fetch_array($querycustomer)){
 				
-			echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name]."</option>";}?></select></div><div id='box'><div id='slotbrand["+indexthis+"]'><select id='ban_id["+indexthis+"]' name='ban_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'><div class='input-group'><input type='number' class='form-control' name='quantity[]' id='quantity[]' required placeholder='<?=$xml->unit?>' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity[]' id='pack_quantity[]' required placeholder='Quantity Per Pack' /><div id='box'><div class='input-group'><input type='text' class='form-control' name='s_n[]' id='s_n[]' required placeholder='<?=$xml->sn?>' /><span class='input-group-addon'><?=$xml->sn?></span></div></div><div id='box' style='width:25%'><div class='input-group'><input type='text' class='form-control' name='warranty[]' id='warranty[]' required placeholder='dd-mm-yyyy' /><span class='input-group-addon'><?=$xml->warranty?></span></div></div><div id='box' style='width:8%;'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div></td></tr>";
+			echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name']."</option>";}?></select></div><div id='box'><div id='slotbrand["+indexthis+"]'><select id='ban_id["+indexthis+"]' name='ban_id["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'><div id='slotmodel["+indexthis+"]'><select id='model["+indexthis+"]' name='model["+indexthis+"]' required class='form-control'><option value='' >Please Select Product First</option></select></div></div><div id='box'><div class='input-group'><input type='number' class='form-control' name='quantity[]' id='quantity[]' required placeholder='<?=$xml->unit?>' value='1' /><span class='input-group-addon'><?=$xml->unit?></span></div></div><input type='hidden' value='1' class='form-control' name='pack_quantity[]' id='pack_quantity[]' required placeholder='Quantity Per Pack' /><div id='box'><div class='input-group'><input type='text' class='form-control' name='s_n[]' id='s_n[]' required placeholder='<?=$xml->sn?>' /><span class='input-group-addon'><?=$xml->sn?></span></div></div><div id='box' style='width:25%'><div class='input-group'><input type='text' class='form-control' name='warranty[]' id='warranty[]' required placeholder='dd-mm-yyyy' /><span class='input-group-addon'><?=$xml->warranty?></span></div></div><div id='box' style='width:8%;'><a href='' style='width:100%;' class='btn btn-danger' onclick='del_tr(this);return false;'>x</a></div></td></tr>";
 		//$("#myTbl").append($("#firstTr").clone());
 		$("#myTbl").append($(NR));
 	});
@@ -124,9 +124,9 @@ $_date = explode("-", date("d-m-Y"));
 
 <?php
 
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[ven_id]."'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data[cus_id]."'"));
-	$limit_day=mysqli_fetch_array(mysqli_query($db->conn, "select limit_day from company_credit where ven_id='".$data[ven_id]."' and cus_id='".$data[cus_id]."'"));
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data['ven_id']."'"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_sh from company where id='".$data['cus_id']."'"));
+	$limit_day=mysqli_fetch_array(mysqli_query($db->conn, "select limit_day from company_credit where ven_id='".$data['ven_id']."' and cus_id='".$data['cus_id']."'"));
 	
 	?>
     <div class="clearfix"></div>
@@ -141,27 +141,27 @@ $_date = explode("-", date("d-m-Y"));
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($fetch_customer[id]==$datadeliver[cus_id]){
-					echo "<option selected value='".$fetch_customer[id]."' >".$fetch_customer[name_en]."</option>";
+					if($fetch_customer['id']==$datadeliver['cus_id']){
+					echo "<option selected value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";
 				}else {
-					echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name_en]."</option>";} }
+					echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";} }
 				
 				?>
 		</select>
 	</div>
        <div id="box">
 		<lable for="name"><?=$xml->deliverydate?></lable>
-		<input class="form-control" name="deliver_date" type="date" value="<?=$datadeliver[deliver_date]?>">
+		<input class="form-control" name="deliver_date" type="date" value="<?=$datadeliver['deliver_date']?>">
 	</div>
 
 	<div id="box"  style="width:100%;" >
-		<lable for="des"><?=$xml->description?></lable><textarea name="des" id="des" class="form-control"  rows="5"><?=$datadeliver[tmp]?></textarea>
+		<lable for="des"><?=$xml->description?></lable><textarea name="des" id="des" class="form-control"  rows="5"><?=$datadeliver['tmp']?></textarea>
 		
 	</div>
   
 <table id="myTbl" class ="table" width="100%" border="0" cellpadding="0" cellspacing="0">
 <?php 
-$qeurytmpitem=mysqli_query($db->conn, "select DATE_FORMAT(warranty,'%d-%m-%Y') as warranty,product.pro_id as pro_id,model,ban_id,s_n,type,quantity,pack_quantity from product join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id where so_id='".$datadeliver[id]."'");
+$qeurytmpitem=mysqli_query($db->conn, "select DATE_FORMAT(warranty,'%d-%m-%Y') as warranty,product.pro_id as pro_id,model,ban_id,s_n,type,quantity,pack_quantity from product join store on product.pro_id=store.pro_id join store_sale on store.id=store_sale.st_id where so_id='".$datadeliver['id']."'");
 
 if(mysqli_num_rows($qeurytmpitem)>0){
 	$i=0;
@@ -175,18 +175,18 @@ while($data_fetitem=mysqli_fetch_array($qeurytmpitem)){?>
 			<?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type') . " order by id desc");
 			echo "<option value='' >-------Please Select Product--------</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($data_fetitem[type]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
+					if($data_fetitem['type']==$fetch_customer['id'])$condition=" selected='selected' ";else $condition="";
 					
-					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[name]."</option>";
+					echo "<option value='".$fetch_customer['id']."' ".$condition." >".$fetch_customer['name']."</option>";
 				}?>
 		</select></div>
      <div id="box"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_fetitem[type]."'" . $companyFilter->andCompanyFilter('brand'));
+<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_fetitem['type']."'" . $companyFilter->andCompanyFilter('brand'));
 echo "<option value='' >-------Please Select Brand--------</option>";
 while($fetch_customer=mysqli_fetch_array($querycustomer)){
 					
-									if($fetch_customer[id]== $data_fetitem[ban_id]){	echo "<option value='".$fetch_customer[id]."' selected >".$fetch_customer[brand_name]."</option>";
-				}else{	echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[brand_name]."</option>";
+									if($fetch_customer['id']== $data_fetitem['ban_id']){	echo "<option value='".$fetch_customer['id']."' selected >".$fetch_customer['brand_name']."</option>";
+				}else{	echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['brand_name']."</option>";
 				}
 				}?>
 		</select></div></div>
@@ -194,14 +194,14 @@ while($fetch_customer=mysqli_fetch_array($querycustomer)){
         
       <div id="box">
       <div id="slotmodel[<?=$i?>]"><select id="model[<?=$i?>]" name="model[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_fetitem[ban_id]."' and type_id='".$data_fetitem[type]."'" . $companyFilter->andCompanyFilter('model'));
+			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_fetitem['ban_id']."' and type_id='".$data_fetitem['type']."'" . $companyFilter->andCompanyFilter('model'));
 			if(mysqli_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
 			else
 			echo "<option value=''>Please Select Model</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($data_fetitem[model]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
+					if($data_fetitem['model']==$fetch_customer['id'])$condition=" selected='selected' ";else $condition="";
 					
-					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[model_name]."</option>";
+					echo "<option value='".$fetch_customer['id']."' ".$condition." >".$fetch_customer['model_name']."</option>";
 				}?>
 		</select></div>
         
@@ -209,10 +209,10 @@ while($fetch_customer=mysqli_fetch_array($querycustomer)){
       
    
         <div id="box"><div class="input-group">
-<input type="number" class="form-control" name="quantity[]" value="<?php echo $data_fetitem[quantity];?>" id="quantity[]" required placeholder="<?=$xml->unit?>" />  <span class="input-group-addon"><?=$xml->unit?></span></div></div>
-   <input type="hidden" class="form-control" name="pack_quantity[]" id="pack_quantity[]"  value="<?php echo $data_fetitem[pack_quantity];?>"  />
-           <div id="box"><div class="input-group"><input type="text" class="form-control" name="s_n[]" id="s_n[]" required placeholder="S/N" value="<?php echo $data_fetitem[s_n];?>" /><span class="input-group-addon"><?=$xml->sn?></span></div></div>
-            <div id="box" style="width:25%;"><div class="input-group"><input type="text" class="form-control" name="warranty[]" value="<?php echo $data_fetitem[warranty];?>" id="warranty[]" required placeholder="dd-mm-yyyy"/><span class="input-group-addon"><?=$xml->warranty?></span></div></div>
+<input type="number" class="form-control" name="quantity[]" value="<?php echo $data_fetitem['quantity'];?>" id="quantity[]" required placeholder="<?=$xml->unit?>" />  <span class="input-group-addon"><?=$xml->unit?></span></div></div>
+   <input type="hidden" class="form-control" name="pack_quantity[]" id="pack_quantity[]"  value="<?php echo $data_fetitem['pack_quantity'];?>"  />
+           <div id="box"><div class="input-group"><input type="text" class="form-control" name="s_n[]" id="s_n[]" required placeholder="S/N" value="<?php echo $data_fetitem['s_n'];?>" /><span class="input-group-addon"><?=$xml->sn?></span></div></div>
+            <div id="box" style="width:25%;"><div class="input-group"><input type="text" class="form-control" name="warranty[]" value="<?php echo $data_fetitem['warranty'];?>" id="warranty[]" required placeholder="dd-mm-yyyy"/><span class="input-group-addon"><?=$xml->warranty?></span></div></div>
                <div id="box" style="width:8%;"><a href='' style="width:100%;" class="btn btn-danger" onclick='del_tr(this);return false;'>x</a></div>
         
    </td>

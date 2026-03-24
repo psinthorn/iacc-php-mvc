@@ -53,11 +53,11 @@ return false;
            
 	<div id="box">
 		<lable for="model_name"><?=$xml->model?></lable>
-		<input id="model_name" name="model_name" class="form-control" required type="text" value="<?php echo $data[model_name];?>">
+		<input id="model_name" name="model_name" class="form-control" required type="text" value="<?php echo $data['model_name'];?>">
 	</div>
     	<div id="box">
 		<lable for="des"><?=$xml->type?></lable>
-	 <input type="text" class="form-control" disabled value="<?=$data[type];?>">
+	 <input type="text" class="form-control" disabled value="<?=$data['type'];?>">
         
         
         </div>
@@ -65,13 +65,13 @@ return false;
     	<div id="box" style="width:50%;">
 		<lable for="des"><?=$xml->brand?></lable>
         <div id="txtHint">
-   <input type="text"  class="form-control" disabled value="<?=$data[brand];?>">
+   <input type="text"  class="form-control" disabled value="<?=$data['brand'];?>">
         
     </div>
 	</div>
     <div id="box" style="width:50%;">
 		<lable for="des"><?=$xml->price?></lable>
-        <input type="text" name="price" class="form-control" placeholder="Price" value="<?=$data[price];?>">
+        <input type="text" name="price" class="form-control" placeholder="Price" value="<?=$data['price'];?>">
       
 	</div>
     
@@ -79,10 +79,10 @@ return false;
     
     <div id="box" style="width:100%">
 		<lable for="des"><?=$xml->description?></lable>
-        <textarea class="form-control" name="des"><?=$data[des]?></textarea>
+        <textarea class="form-control" name="des"><?=$data['des']?></textarea>
         </div>
 	<input type="hidden" name="page" value="mo_list">
-    	<input type="hidden" name="p_id" value="<?=$_REQUEST[p_id]?>">
+    	<input type="hidden" name="p_id" value="<?=$_REQUEST['p_id']?>">
 
     
  <div class="clearfix"></div>   

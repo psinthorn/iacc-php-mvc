@@ -223,7 +223,7 @@ $mpdf->WriteHTML($html);
 
 
 
-$mpdf->Output("DN-".str_pad($id, 7, "0", STR_PAD_LEFT)."-".$customer[name_sh].".pdf","I");
+$mpdf->Output("DN-".str_pad($id, 7, "0", STR_PAD_LEFT)."-".$customer['name_sh'].".pdf","I");
 exit;
 //==============================================================
 //==============================================================

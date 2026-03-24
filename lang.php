@@ -5,7 +5,7 @@ require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 new DbConn($config);
 
-if(($_SESSION['user_id']!="")&&($_POST[chlang]!=$_SESSION[lang])){
+if(($_SESSION['user_id']!="")&&($_POST['chlang']!=$_SESSION['lang'])){
 	
 	// SECURITY FIX: Sanitize user input
 	$chlang = sql_escape($_POST['chlang'] ?? '');
@@ -13,7 +13,7 @@ if(($_SESSION['user_id']!="")&&($_POST[chlang]!=$_SESSION[lang])){
 	$user_email = sql_escape($_SESSION['user_email'] ?? '');
 	
 $query=mysqli_query($db->conn, "update  authorize set lang='".$chlang."' where email='".$user_email."' and id='".$user_id."'");
-$_SESSION[lang]=$_POST[chlang];
+$_SESSION['lang']=$_POST['chlang'];
 	
 	echo "<script>window.location='index.php';</script>";
 

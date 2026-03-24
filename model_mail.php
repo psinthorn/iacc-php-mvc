@@ -34,33 +34,33 @@ $page_param = sql_escape($_REQUEST['page']);
 	 $summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 
-$equip=$data_pro[price]*$data_pro[quantity];
-$labour1=$data_pro[valuelabour]*$data_pro[activelabour];
-$labour=$labour1*$data_pro[quantity];
+$equip=$data_pro['price']*$data_pro['quantity'];
+$labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
+$labour=$labour1*$data_pro['quantity'];
 $total=$equip+$labour;
 	 $summary+=$total;
 
 }
 	 
- $disco=$summary*$fetmail[dis]/100;
+ $disco=$summary*$fetmail['dis']/100;
  $stotal=$summary-$disco;
- 	$overh=$stotal*$fetmail[over]/100;
+ 	$overh=$stotal*$fetmail['over']/100;
 	$stotal=$stotal+$overh;
-	 $vat=$stotal*$fetmail[vat]/100;
+	 $vat=$stotal*$fetmail['vat']/100;
  $total=$stotal+$vat;
 	 
  
  $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
- $subject='QUO-'.$fetmail[tax]."-".$fetmail[name_sh];
+ $subject='QUO-'.$fetmail['tax']."-".$fetmail['name_sh'];
  $page="exp-m.php";
- $message = "Dear ".$fetmail[name_en]."
+ $message = "Dear ".$fetmail['name_en']."
   
 Your quotation is attached.
 Your price for this Quotation is ".number_format($total,2)." Baht.
 If a price is due please confirm quotations
 
 Thank you for your business, we appreciate it very much.
-".$vender[name_en];
+".$vender['name_en'];
  }break;
  case "inv" : {
 		
@@ -69,33 +69,33 @@ Thank you for your business, we appreciate it very much.
   $summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 
-$equip=$data_pro[price]*$data_pro[quantity];
-$labour1=$data_pro[valuelabour]*$data_pro[activelabour];
-$labour=$labour1*$data_pro[quantity];
+$equip=$data_pro['price']*$data_pro['quantity'];
+$labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
+$labour=$labour1*$data_pro['quantity'];
 $total=$equip+$labour;
 	 $summary+=$total;
 
 }
 	 
- $disco=$summary*$fetmail[dis]/100;
+ $disco=$summary*$fetmail['dis']/100;
  $stotal=$summary-$disco;
- 	$overh=$stotal*$fetmail[over]/100;
+ 	$overh=$stotal*$fetmail['over']/100;
 	$stotal=$stotal+$overh;
-	 $vat=$stotal*$fetmail[vat]/100;
+	 $vat=$stotal*$fetmail['vat']/100;
  $total=$stotal+$vat;
 	 
  
  $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
- $subject="INV-".$fetmail[tax2]."-".$fetmail[name_sh];
+ $subject="INV-".$fetmail['tax2']."-".$fetmail['name_sh'];
  $page="inv-m.php";
-  $message = "Dear ".$fetmail[name_en]."
+  $message = "Dear ".$fetmail['name_en']."
   
 Your invoice is attached.
 Your balance for this invoice is ".number_format($total,2)." Baht.
 If a balance is due please remit your payment at the agreed terms.
 
 Thank you for your business, we appreciate it very much.
-".$vender[name_en];
+".$vender['name_en'];
  }break;
   case "tax" : {
 		
@@ -104,34 +104,34 @@ Thank you for your business, we appreciate it very much.
   $summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 
-$equip=$data_pro[price]*$data_pro[quantity];
-$labour1=$data_pro[valuelabour]*$data_pro[activelabour];
-$labour=$labour1*$data_pro[quantity];
+$equip=$data_pro['price']*$data_pro['quantity'];
+$labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
+$labour=$labour1*$data_pro['quantity'];
 $total=$equip+$labour;
 
 	 $summary+=$total;
 
 }
 	 
- $disco=$summary*$fetmail[dis]/100;
+ $disco=$summary*$fetmail['dis']/100;
  $stotal=$summary-$disco;
- 	$overh=$stotal*$fetmail[over]/100;
+ 	$overh=$stotal*$fetmail['over']/100;
 	$stotal=$stotal+$overh;
-	 $vat=$stotal*$fetmail[vat]/100;
+	 $vat=$stotal*$fetmail['vat']/100;
  $total=$stotal+$vat;
 	 
  
  $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
- $subject="Tax-".$fetmail[texiv_rw]."-".$fetmail[name_sh];
+ $subject="Tax-".$fetmail['texiv_rw']."-".$fetmail['name_sh'];
  $page="taxiv-m.php";
-  $message = "Dear ".$fetmail[name_en]."
+  $message = "Dear ".$fetmail['name_en']."
   
 Your invoice is attached.
 Your balance for this invoice is ".number_format($total,2)." Baht.
 If a balance is due please remit your payment at the agreed terms.
 
 Thank you for your business, we appreciate it very much.
-".$vender[name_en];
+".$vender['name_en'];
  }break;
  
  
@@ -153,7 +153,7 @@ Thank you for your business, we appreciate it very much.
         
 
 <div id="box" style="width:100%"> <label for="name">To</label>
-    <input type="text" class="form-control" id="to" name="to"  required placeholder="To" value="<?=$fetmail[email]?>;" >
+    <input type="text" class="form-control" id="to" name="to"  required placeholder="To" value="<?=$fetmail['email']?>;" >
     <input type="hidden" name="id" value="<?=$id?>">
 	</div>
     <div id="box" style="width:100%"> <label for="name">Cc</label>
@@ -173,7 +173,7 @@ Thank you for your business, we appreciate it very much.
  
             </div>			<!-- /modal-body -->
             <div class="modal-footer">
-              <button type="submit" name="mode" value="<?=strtolower($data[method])?>" class="btn btn-warning"><span class="glyphicon glyphicon-send"></span> Send</button> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
+              <button type="submit" name="mode" value="<?=strtolower($data['method'])?>" class="btn btn-warning"><span class="glyphicon glyphicon-send"></span> Send</button> <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Close</button>
            
 
             </div>			<!-- /modal-footer -->

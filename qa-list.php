@@ -415,15 +415,16 @@ $offset_out = $pagination_out['offset'];
 $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax,mailcount, cancel,DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.cus_id=company.id where po_id_new='' and ven_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id desc LIMIT $per_page OFFSET $offset_out");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	 	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data[id]."'");
+	 	$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$data['id']."'"));
+	 	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$data['id']."'");
 	 	$summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
-		if($cklabour[cklabour]==1){	
-		$equip=$data_pro[price]*$data_pro[quantity];
-		$labour1=$data_pro[valuelabour]*$data_pro[activelabour];
-		$labour=$labour1*$data_pro[quantity];
+		if(isset($cklabour['cklabour']) && $cklabour['cklabour']==1){	
+		$equip=$data_pro['price']*$data_pro['quantity'];
+		$labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
+		$labour=$labour1*$data_pro['quantity'];
 		$total=$equip+$labour;}else 
-		{$total=$data_pro[price]*$data_pro[quantity];}
+		{$total=$data_pro['price']*$data_pro['quantity'];}
 	 	$summary+=$total;
 
 }
@@ -488,10 +489,11 @@ $offset_in = $pagination_in['offset'];
 $query=mysqli_query($db->conn, "select po.id as id, po.name as name, po.tax as tax, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,vat,dis,over, DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status from po join pr on po.ref=pr.id join company on pr.ven_id=company.id where po_id_new='' and cus_id='".$_SESSION['com_id']."' and status='1' $search_cond $date_cond order by cancel,po.id desc LIMIT $per_page OFFSET $offset_in");
  while($data=mysqli_fetch_array($query)){
 	 if($data['status']==2)$pg="po_deliv";else $pg="po_edit";
-	  	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$data['id']."'");
+		$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$data['id']."'"));
+	  	$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$data['id']."'");
 		$summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
-		if($cklabour['cklabour']==1){	
+		if(isset($cklabour['cklabour']) && $cklabour['cklabour']==1){	
 		$equip=$data_pro['price']*$data_pro['quantity'];
 		$labour1=$data_pro['valuelabour']*$data_pro['activelabour'];
 		$labour=$labour1*$data_pro['quantity'];

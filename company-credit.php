@@ -25,9 +25,9 @@ else $method="A3";
 	<div id="box">
 		<lable for="cus_id"><?=$xml->customer?></lable>
 		<?php if($method=="A4"){
-		$customername=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$data[cus_id]."'"));?>
-		<input type="text" value="<?php echo $customername[name_en];?>" readonly class="form-control">
-		<input type="text" value="<?php echo $data[cus_id];?>" name ="cus_id">
+		$customername=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$data['cus_id']."'"));?>
+		<input type="text" value="<?php echo $customername['name_en'];?>" readonly class="form-control">
+		<input type="text" value="<?php echo $data['cus_id'];?>" name ="cus_id">
 		<?php }else{
 		
 			?>
@@ -37,14 +37,14 @@ else $method="A3";
 			
 			
 				while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					echo "<option value='".$fetch_customer[id]."' >".$fetch_customer[name_en]."</option>";
+					echo "<option value='".$fetch_customer['id']."' >".$fetch_customer['name_en']."</option>";
 				}?>
 		</select>
 		<?php }?>
 	</div>
 	<div id="box">
 		<lable for="limit_credit"><?=$xml->limitcredit?></lable>
-		<input id="limit_credit" name="limit_credit" class="form-control" required type="number" value="<?php echo $data[limit_credit];?>">
+		<input id="limit_credit" name="limit_credit" class="form-control" required type="number" value="<?php echo $data['limit_credit'];?>">
 	</div>
 	<div id="box">
 		<lable for="limit_day"><?=$xml->limitday?></lable>

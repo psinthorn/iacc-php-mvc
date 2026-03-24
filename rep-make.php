@@ -824,15 +824,15 @@ if($mode=="A"){?>
 				<?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type'));
 			echo "<option value='' >Please Select Product</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($data_pro[type]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
+					if($data_pro['type']==$fetch_customer['id'])$condition=" selected='selected' ";else $condition="";
 					
-					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[name]."</option>";
+					echo "<option value='".$fetch_customer['id']."' ".$condition." >".$fetch_customer['name']."</option>";
 				}?>
    </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro[type]."'" . $companyFilter->andCompanyFilter('brand'));
+<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro['type']."'" . $companyFilter->andCompanyFilter('brand'));
 echo "<option value='' >Please Select Brand</option>";
 while($fetch_customer=mysqli_fetch_array($querycustomer)){	?>
-					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[ban_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
+					<option value='<?php echo $fetch_customer['id'];?>' <?php if($fetch_customer['id']==$data_pro['ban_id']) echo "selected";?> ><?php echo $fetch_customer['brand_name'];?></option>     
 					
 					<?php
 				}?>                
@@ -841,21 +841,21 @@ while($fetch_customer=mysqli_fetch_array($querycustomer)){	?>
   
         
           <div id="box" style="width:18%"><div id="slotmodel[<?=$i?>]"><select id="model[<?=$i?>]" name="model[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_pro[ban_id]."' and type_id='".$data_pro[type]."'" . $companyFilter->andCompanyFilter('model'));
+			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_pro['ban_id']."' and type_id='".$data_pro['type']."'" . $companyFilter->andCompanyFilter('model'));
 			if(mysqli_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
 			else
 			echo "<option value=''>Please Select Model</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($data_pro[model]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
+					if($data_pro['model']==$fetch_customer['id'])$condition=" selected='selected' ";else $condition="";
 					
-					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[model_name]."</option>";
+					echo "<option value='".$fetch_customer['id']."' ".$condition." >".$fetch_customer['model_name']."</option>";
 				}?>
 		</select></div></div>
       
         <div id="box" style="width:14%"><div class="input-group">
 <input type="number" class="form-control" name="quantity[<?=$i?>]" value="1" id="quantity[<?=$i?>]" required placeholder="Quantity" />  <span class="input-group-addon"><?=$xml->unit?></span></div></div>
       <input type="hidden" class="form-control" name="pack_quantity[<?=$i?>]" id="pack_quantity[<?=$i?>]" required value='1' />
- <div id="box2" style="width:15%"><div class="input-group"><input type="text" class="form-control" placeholder="Price" required name="price[<?=$i?>]" id="price[<?=$i?>]"  value="<?php echo $data_pro[price];?>"/><span class="input-group-addon"><?=$xml->baht?></span></div></div>
+ <div id="box2" style="width:15%"><div class="input-group"><input type="text" class="form-control" placeholder="Price" required name="price[<?=$i?>]" id="price[<?=$i?>]"  value="<?php echo $data_pro['price'];?>"/><span class="input-group-addon"><?=$xml->baht?></span></div></div>
   
  <div id="box" style="width:12%">
   <input type="text" name="warranty[<?=$i?>]" id="warranty[<?=$i?>]" value="<?=date("d-m-Y")?>" placeholder="warranty" class="form-control">
@@ -863,7 +863,7 @@ while($fetch_customer=mysqli_fetch_array($querycustomer)){	?>
 
 <div id="box" style="width:5%"><a href='' style="width:100%;" class="btn btn-danger" onclick='del_tr(this);return false;'>x</a></div>
 <div id="box" style="width:100%; ">
-<textarea name="des[<?=$i?>]" id="des[<?=$i?>]" placeholder="<?=$xml->notes?>"  class="form-control"><?=$data_pro[des];?></textarea></div>
+<textarea name="des[<?=$i?>]" id="des[<?=$i?>]" placeholder="<?=$xml->notes?>"  class="form-control"><?=$data_pro['des'];?></textarea></div>
 </td>
   </tr>
 
@@ -880,15 +880,15 @@ while($data_pro=mysqli_fetch_array($query_pro)){?>
 				<?php $querycustomer=mysqli_query($db->conn, "select name,id from type WHERE 1=1" . $companyFilter->andCompanyFilter('type'));
 			echo "<option value='' >Please Select Product</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($data_pro[type]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
+					if($data_pro['type']==$fetch_customer['id'])$condition=" selected='selected' ";else $condition="";
 					
-					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[name]."</option>";
+					echo "<option value='".$fetch_customer['id']."' ".$condition." >".$fetch_customer['name']."</option>";
 				}?>
    </select></div><div id="box"  style="width:18%"><div id="slotbrand[<?=$i?>]"><select required id="ban_id[<?=$i?>]" onchange="checkorder2(this.value,this.id)" name="ban_id[<?=$i?>]" class="form-control">
-<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro[type]."'" . $companyFilter->andCompanyFilter('brand'));
+<?php $querycustomer=mysqli_query($db->conn, "select brand_name,brand.id as id from brand join map_type_to_brand on brand.id=map_type_to_brand.brand_id where type_id='".$data_pro['type']."'" . $companyFilter->andCompanyFilter('brand'));
 echo "<option value='' >Please Select Brand</option>";
 while($fetch_customer=mysqli_fetch_array($querycustomer)){	?>
-					<option value='<?php echo $fetch_customer[id];?>' <?php if($fetch_customer[id]==$data_pro[ban_id]) echo "selected";?> ><?php echo $fetch_customer[brand_name];?></option>     
+					<option value='<?php echo $fetch_customer['id'];?>' <?php if($fetch_customer['id']==$data_pro['ban_id']) echo "selected";?> ><?php echo $fetch_customer['brand_name'];?></option>     
 					
 					<?php
 				}?>                
@@ -897,30 +897,30 @@ while($fetch_customer=mysqli_fetch_array($querycustomer)){	?>
   
         
           <div id="box" style="width:18%"><div id="slotmodel[<?=$i?>]"><select id="model[<?=$i?>]" name="model[<?=$i?>]" required class="form-control">
-			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_pro[ban_id]."' and type_id='".$data_pro[type]."'" . $companyFilter->andCompanyFilter('model'));
+			<?php $querycustomer=mysqli_query($db->conn, "select model_name,id from model where brand_id='".$data_pro['ban_id']."' and type_id='".$data_pro['type']."'" . $companyFilter->andCompanyFilter('model'));
 			if(mysqli_num_rows($querycustomer)==0)echo "<option value=''>Type or Brand no model</option>";
 			else
 			echo "<option value=''>Please Select Model</option>";
 		while($fetch_customer=mysqli_fetch_array($querycustomer)){
-					if($data_pro[model]==$fetch_customer[id])$condition=" selected='selected' ";else $condition="";
+					if($data_pro['model']==$fetch_customer['id'])$condition=" selected='selected' ";else $condition="";
 					
-					echo "<option value='".$fetch_customer[id]."' ".$condition." >".$fetch_customer[model_name]."</option>";
+					echo "<option value='".$fetch_customer['id']."' ".$condition." >".$fetch_customer['model_name']."</option>";
 				}?>
 		</select></div></div>
       
         <div id="box" style="width:14%"><div class="input-group">
-<input type="number" class="form-control" name="quantity[<?=$i?>]" value="<?php echo $data_pro[quantity];?>" id="quantity[<?=$i?>]" required placeholder="Quantity" />  <span class="input-group-addon"><?=$xml->unit?></span></div></div>
+<input type="number" class="form-control" name="quantity[<?=$i?>]" value="<?php echo $data_pro['quantity'];?>" id="quantity[<?=$i?>]" required placeholder="Quantity" />  <span class="input-group-addon"><?=$xml->unit?></span></div></div>
       <input type="hidden" class="form-control" name="pack_quantity[<?=$i?>]" id="pack_quantity[<?=$i?>]" required value="1" />
- <div id="box2" style="width:15%"><div class="input-group"><input type="text" class="form-control" placeholder="Price" required name="price[<?=$i?>]" id="price[<?=$i?>]"  value="<?php echo $data_pro[price];?>"/><span class="input-group-addon"><?=$xml->baht?></span></div></div>
+ <div id="box2" style="width:15%"><div class="input-group"><input type="text" class="form-control" placeholder="Price" required name="price[<?=$i?>]" id="price[<?=$i?>]"  value="<?php echo $data_pro['price'];?>"/><span class="input-group-addon"><?=$xml->baht?></span></div></div>
   
  <div id="box" style="width:12%">
-  <input type="text" name="warranty[<?=$i?>]" id="warranty[<?=$i?>]" value="<?php echo $data_pro[vo_warranty];?>" placeholder="warranty" class="form-control">
+  <input type="text" name="warranty[<?=$i?>]" id="warranty[<?=$i?>]" value="<?php echo $data_pro['vo_warranty'];?>" placeholder="warranty" class="form-control">
  </div>  
 
 <div id="box" style="width:5%"><a href='' style="width:100%;" class="btn btn-danger" onclick='del_tr(this);return false;'>x</a></div>
 
  <div id="box" style="width:100%; ">
-<textarea name="des[<?=$i?>]" id="des[<?=$i?>]" placeholder="<?=$xml->notes?>"  class="form-control"><?=$data_pro[des];?></textarea></div>
+<textarea name="des[<?=$i?>]" id="des[<?=$i?>]" placeholder="<?=$xml->notes?>"  class="form-control"><?=$data_pro['des'];?></textarea></div>
 </td>
   </tr>
 
