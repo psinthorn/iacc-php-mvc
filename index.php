@@ -208,6 +208,7 @@ $routes = [
     'ai_documentation'       => 'ai-documentation.php',
     'debug_session'          => 'debug-session.php',
     'debug_invoice'          => 'debug-invoice.php',
+    'debug_php'              => 'debug-php.php',
     'docker_test'            => 'docker-test.php',
     'test_containers'        => 'test-containers.php',
     'api_lang_debug'         => 'api-lang-debug.php',

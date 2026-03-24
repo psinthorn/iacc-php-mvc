@@ -98,6 +98,7 @@ function get_dev_tools_header($title, $subtitle, $icon = 'fa-wrench', $color = '
             <a href="index.php?page=test_crud" class="nav-btn"><i class="fa fa-database"></i> CRUD</a>
             <a href="index.php?page=debug_session" class="nav-btn"><i class="fa fa-key"></i> Session</a>
             <a href="index.php?page=debug_invoice" class="nav-btn"><i class="fa fa-file-text-o"></i> Invoice</a>
+            <a href="index.php?page=debug_php" class="nav-btn"><i class="fa fa-bug"></i> PHP Debug</a>
             <a href="index.php?page=test_rbac" class="nav-btn"><i class="fa fa-shield"></i> RBAC</a>
             <a href="index.php?page=dev_roadmap" class="nav-btn"><i class="fa fa-road"></i> Roadmap</a>
             <a href="index.php?page=docker_test" class="nav-btn"><i class="fa fa-cloud"></i> Docker</a>

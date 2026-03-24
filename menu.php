@@ -348,6 +348,9 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=debug_php"><i class="fa fa-bug"></i> <?=$xml->debugphp ?? 'PHP Debug & Logs'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=test_rbac"><i class="fa fa-shield"></i> <?=$xml->testrbac ?? 'RBAC Test'?></a>
                             </li>
                             <?php if ($docker_debug_enabled): ?>
