@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 4.12  
+**Version**: 4.13  
 **Status**: Production Ready (SaaS Ready)  
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 24, 2026  
 **Project Size**: 175 MB  
 **Design Philosophy**: Mobile-First Responsive
 
@@ -76,13 +76,38 @@ Replace the commit message with a meaningful description of your changes.
 
 ### 📋 Next Steps
 
-1. **cPanel Production Deployment** - Code is production-ready
+1. **cPanel Production Deployment** - Code is production-ready, PHP 8 compatible ✅
 2. **Load Testing** - Performance validation before go-live
 3. **Add timestamps to remaining tables** - `created_at`, `updated_at` coverage
 
 ---
 
 ## 📋 Changelog
+
+### v4.13 (March 24, 2026)
+- **Fix: PHP 8 Compatibility for cPanel Deployment** 🔧:
+  - Replaced deprecated `each()` with `foreach()` in `keeplog()` (inc/class.hard.php)
+  - Replaced deprecated `each()` with `foreach()` in type handlers (core-function.php)
+  - `each()` was removed in PHP 8.0, causing fatal errors on cPanel hosts running PHP 8.x
+
+- **Fix: Hardcoded Docker Log Paths** 📁:
+  - Changed `/var/www/html/logs/app.log` to `__DIR__`-relative paths in core-function.php
+  - Changed `/var/www/html/error.log` to `__DIR__`-relative paths in inc/error-handler.php
+  - Changed hardcoded log path in `insertDbMax()` (inc/class.hard.php)
+  - Logs now write to `<project_root>/logs/` on any hosting environment
+
+- **Fix: Auto-create Logs Directory** 📂:
+  - Added `mkdir()` fallback in core-function.php and class.hard.php
+  - Logs directory is created automatically if missing on first request
+
+- **Fix: Uninitialized Variable** ⚠️:
+  - Initialized `$query_string` in `keeplog()` to prevent PHP notices
+
+- **New: cPanel Diagnostic Tool** 🩺:
+  - Added `diagnose.php` for troubleshooting cPanel deployments
+  - Checks: PHP version, extensions, DB connection, table structure, directory permissions
+  - Displays error log contents, deprecated function scan, session status
+  - ⚠️ Must be deleted after debugging (contains sensitive info)
 
 ### v4.12 (March 21, 2026)
 - **Fix: Receipt/Voucher PDF Generation Error** 🔧:
