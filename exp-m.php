@@ -16,8 +16,8 @@ if(mysqli_num_rows($query)=="1"){
 	$data=mysqli_fetch_array($query);
 	$ct=$data['mailcount']+1;
 	mysqli_query($db->conn, "update pr set mailcount='".$ct."' where id='".$data['ref']."' and ven_id='".$_SESSION['com_id']."'");
-	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company join company_addr on company.id=company_addr.com_id where company.id='".$data['ven_id']."' and valid_end='0000-00-00'"));
-	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company join company_addr on company.id=company_addr.com_id where company.id='".$data['cus_id']."' and valid_end='0000-00-00'"));
+	$vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email,logo,term from company left join company_addr on company.id=company_addr.com_id and company_addr.deleted_at IS NULL where company.id='".$data['ven_id']."' order by (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC limit 1"));
+	$customer=mysqli_fetch_array(mysqli_query($db->conn, "select name_en,name_sh,adr_tax,city_tax,district_tax,province_tax,tax,zip_tax,fax,phone,email from company left join company_addr on company.id=company_addr.com_id and company_addr.deleted_at IS NULL where company.id='".$data['cus_id']."' order by (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC limit 1"));
 	
 	
 	if($data['brandven']==0){$logo=$vender['logo'];}else{
@@ -68,7 +68,7 @@ $html = '
 <div style="width:100%; border-top: solid thin #CCC; border-bottom: solid thin #CCC; font-weight:bold;">
 <div style="width:4%; float:left;">No.</div>
 <div style="width:15%; float:left;">Model</div>';
-$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$post_id."'"));
+$cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product left join type on product.type=type.id where po_id='".$post_id."'"));
 if($cklabour['cklabour']==1){
 $html .= '
 <div style="width:22%;float:left;">Product Name</div>
@@ -89,7 +89,7 @@ $html .= '
 ';
 
 $html .= '<div class="clearfix" style="height:10px;"></div>';
-$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$post_id."'");$summary=0;
+$que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$post_id."'");$summary=0;
 $cot=1;
 	while($data_pro=mysqli_fetch_array($que_pro)){
 	
@@ -215,15 +215,15 @@ $mail->CharSet = "utf-8";
    
     try {
 		$mail->IsHTML(true);
-	$to= explode(";",$_POST['to']);
+	$to= explode(";",($_POST['to'] ?? ''));
 		
 			foreach ($to as &$value) {
 	if($value!="") $mail->AddAddress($value,"");
 	
 }
-$mail->AddAddress($vender['email'], $vender['contact']);
+$mail->AddAddress(($vender['email'] ?? ''), ($vender['name_en'] ?? ''));
 	
-	 $to= explode(";",$_POST['cc']);
+	 $to= explode(";",($_POST['cc'] ?? ''));
 		
 			foreach ($to as &$value) {
 	if($value!="")  $mail->AddCC($value,"");
@@ -231,10 +231,10 @@ $mail->AddAddress($vender['email'], $vender['contact']);
   
 	
 }
-	    $mail->SetFrom($vender['email'],$vender['contact']);
-       $mail->Subject = $_POST['subject'];
+	    $mail->SetFrom(($vender['email'] ?? ''),($vender['name_en'] ?? ''));
+       $mail->Subject = ($_POST['subject'] ?? '');
      
-	 $message = nl2br($_POST['bodymail']);
+	 $message = nl2br(($_POST['bodymail'] ?? ''));
       $mail->MsgHTML($message);
 
 $mail->AddAttachment("file/QUO-".$data['tax']."-".$customer['name_sh'].".pdf", "QUO-".$data['tax']."-".$customer['name_sh'].".pdf",'base64', $type = 'application/pdf'); 

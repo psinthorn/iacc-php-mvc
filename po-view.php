@@ -662,7 +662,7 @@ if(mysqli_num_rows($query)=="1"){
         </div>
         
         <?php 
-        $cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product join type on product.type=type.id where po_id='".$id."'"));
+        $cklabour=mysqli_fetch_array(mysqli_query($db->conn, "select max(activelabour) as cklabour from product left join type on product.type=type.id where po_id='".$id."'"));
         $hasLabour = ($cklabour['cklabour']==1);
         ?>
         
@@ -683,7 +683,7 @@ if(mysqli_num_rows($query)=="1"){
             </thead>
             <tbody>
             <?php 
-            $que_pro=mysqli_query($db->conn, "select type.name as name, product.price as price, product.des as product_des, discount, model.model_name as model, quantity, pack_quantity, activelabour, valuelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+            $que_pro=mysqli_query($db->conn, "select type.name as name, product.price as price, product.des as product_des, discount, model.model_name as model, quantity, pack_quantity, activelabour, valuelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$id."'");
             $summary=0;
             
             while($data_pro=mysqli_fetch_array($que_pro)){

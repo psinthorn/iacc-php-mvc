@@ -49,7 +49,7 @@ $allModelsJson = json_encode($allModels, JSON_HEX_APOS | JSON_HEX_QUOT);
 
 // Build query - using pr.ven_id for vendor filter
 $venIdCondition = ($com_id > 0) ? "and (pr.cus_id='".$com_id."' or pr.ven_id='".$com_id."')" : "";
-$sql = "select po.id as id,ref,over,bandven,des, po.name as name,vat,adr_tax,city_tax,district_tax,province_tax,zip_tax as zip_des,DATE_FORMAT(po.date,'%d-%m-%Y') as datepo, pr.cus_id,dis,pr.ven_id from po join pr on po.ref=pr.id join company_addr on pr.cus_id=company_addr.com_id where po.id='".$id."' and pr.status='1' ".$venIdCondition." and po_id_new=''";
+$sql = "select po.id as id,ref,over,bandven,des, po.name as name,vat,adr_tax,city_tax,district_tax,province_tax,zip_tax as zip_des,DATE_FORMAT(po.date,'%d-%m-%Y') as datepo, pr.cus_id,dis,pr.ven_id from po join pr on po.ref=pr.id left join company_addr on pr.cus_id=company_addr.com_id and company_addr.deleted_at IS NULL where po.id='".$id."' and pr.status='1' ".$venIdCondition." and po_id_new='' order by (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC limit 1";
 $query = mysqli_query($db->conn, $sql);
 $numRows = $query ? mysqli_num_rows($query) : 0;
 

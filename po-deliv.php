@@ -476,7 +476,7 @@ if($hasData){
     
     <!-- Products Table -->
     <?php 
-    $que_pro=mysqli_query($db->conn, "select type.name as name,product.des as des,product.price as price,pro_id,discount,model.model_name as model,model.des as model_des,quantity,pack_quantity,type from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."' AND product.deleted_at IS NULL");
+    $que_pro=mysqli_query($db->conn, "select type.name as name,product.des as des,product.price as price,pro_id,discount,model.model_name as model,model.des as model_des,quantity,pack_quantity,type from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$id."' AND product.deleted_at IS NULL");
     $total_items = 0;
     $products = [];
     while($row = mysqli_fetch_array($que_pro)){

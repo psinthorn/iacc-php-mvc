@@ -30,7 +30,7 @@ $page_param = sql_escape($_REQUEST['page']);
 	case "exp" : {
 		
  $fetmail=mysqli_fetch_array(mysqli_query($db->conn, "select email,po.tax as tax,vat,dis,over,name_sh,name_en from pr join po on pr.id=po.ref join company on pr.cus_id=company.id where po.id='".$id."' and status>'0' and ven_id='".$com_id."' and po_id_new=''"));
-  $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+  $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$id."'");
 	 $summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 
@@ -65,7 +65,7 @@ Thank you for your business, we appreciate it very much.
  case "inv" : {
 		
  $fetmail=mysqli_fetch_array(mysqli_query($db->conn, "select email,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$id."' and status>'2' and  ven_id='".$com_id."' and po_id_new=''"));
-  $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+  $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$id."'");
   $summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 
@@ -100,7 +100,7 @@ Thank you for your business, we appreciate it very much.
   case "tax" : {
 		
  $fetmail=mysqli_fetch_array(mysqli_query($db->conn, "select email,texiv_rw,name_en,vat,dis,over,name_sh, taxrw as tax2 from pr join po on pr.id=po.ref  join iv on po.id=iv.tex join company on pr.cus_id=company.id where po.id='".$id."' and status>'2' and  ven_id='".$com_id."' and po_id_new=''"));
- $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product join type on product.type=type.id join model on product.model=model.id where po_id='".$id."'");
+ $que_pro=mysqli_query($db->conn, "select product.des as des,type.name as name,product.price as price,discount,model.model_name as model,quantity,pack_quantity,valuelabour,activelabour from product left join type on product.type=type.id left join model on product.model=model.id where po_id='".$id."'");
   $summary=$total=0;
 	 while($data_pro=mysqli_fetch_array($que_pro)){
 

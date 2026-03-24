@@ -617,12 +617,12 @@ case "po_list" : {
 	} else {
 		$args['value']="po_ref='".$po_ref."'";
 	}
-	$args['condition']="po_id_new='' and ref='".$_REQUEST['ref']."'";
+	$args['condition']="po_id_new='' and ref='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);			
 	
 	$args['table']="pr";
 	$args['value']="status='2'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
+	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);	
 		}
 		
@@ -808,12 +808,12 @@ if (( ($_FILES["file"]["type"] == "application/pdf")
   }
 	$args['table']="po";
 	$args['value']="pic='". $namefile.".".$type."'";
-	$args['condition']="po_id_new='' and ref='".$_REQUEST['ref']."'";
+	$args['condition']="po_id_new='' and ref='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);			
 	
 	$args['table']="pr";
 	$args['value']="status='2'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
+	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);	
 		}
 		
@@ -931,7 +931,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 	$har->updateDb($args4);
 	$args3['table']="deliver";	 
 	$args3['value']="deliver_date='".date("Y-m-d",strtotime($_REQUEST['deliver_date']))."'";	
-	$args3['condition']="id='".$_REQUEST['deliv_id']."'";
+	$args3['condition']="id='".sql_int($_REQUEST['deliv_id'])."'";
 	$har->updateDb($args3);
 	 
 	 $query_proid=mysqli_query($db->conn, "select pro_id from product where so_id='".$fetoutid['out_id']."'");
