@@ -423,9 +423,11 @@ class HardClass {
 	// =====================================================
 	
 	function keeplog($data){
-		while(list($key, $val) = each($data))
-		{
-			$query_string .=$key."|".$val.":";
+		$query_string = '';
+		if (is_array($data)) {
+			foreach ($data as $key => $val) {
+				$query_string .= $key."|".$val.": ";
+			}
 		}
 		$syslog['table']="keep_log";
 		$syslog['value']="'".htmlspecialchars($query_string)."'";
@@ -450,7 +452,9 @@ class HardClass {
 		$result = $conn->query($sql);
 		if (!$result) {
 			error_log("insertDbMax ERROR: " . $conn->error . " | SQL: " . $sql);
-			file_put_contents('/var/www/html/logs/app.log', date('Y-m-d H:i:s') . " insertDbMax ERROR: " . $conn->error . " | SQL: " . substr($sql, 0, 500) . "\n", FILE_APPEND);
+			$_logDir = dirname(__DIR__) . '/logs';
+			if (!is_dir($_logDir)) { @mkdir($_logDir, 0755, true); }
+			file_put_contents($_logDir . '/app.log', date('Y-m-d H:i:s') . " insertDbMax ERROR: " . $conn->error . " | SQL: " . substr($sql, 0, 500) . "\n", FILE_APPEND);
 			return false;
 		}
 		// Return the auto-generated ID

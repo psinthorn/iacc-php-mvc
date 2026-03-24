@@ -1,7 +1,9 @@
 <?php session_start();
 
 // Debug: Log all incoming requests to core-function.php
-$logFile = '/var/www/html/logs/app.log';
+$logDir = __DIR__ . '/logs';
+if (!is_dir($logDir)) { @mkdir($logDir, 0755, true); }
+$logFile = $logDir . '/app.log';
 file_put_contents($logFile, date('Y-m-d H:i:s') . " CORE-FUNCTION: page=" . ($_REQUEST['page'] ?? 'NOT SET') . ", method=" . ($_REQUEST['method'] ?? 'NOT SET') . "\n", FILE_APPEND);
 
 require_once("inc/sys.configs.php");
@@ -194,7 +196,7 @@ case "type" : {
 	
 	$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."',NULL";
 	$max_id=$har->insertDbMax($args);	
-	while(list($key, $val) = each($_POST))
+	foreach($_POST as $key => $val)
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id")||($key=="csrf_token"))){
 			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES(NULL,'".$company_id."','".sql_int($max_id)."','".sql_int($key)."')");
@@ -209,7 +211,7 @@ case "type" : {
 	else if($_REQUEST['method']=="E"){
 		
 		mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE type_id='".sql_int($_POST['id'])."'");
-		while(list($key, $val) = each($_POST))
+		foreach($_POST as $key => $val)
 		{
 			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
 			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES('','".$company_id."','".sql_int($_POST['id'])."','".sql_int($key)."')");

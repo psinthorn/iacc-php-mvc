@@ -10,7 +10,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
 // Custom error handler for better debugging
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
     // Log errors to file instead of displaying
-    $log_file = '/var/www/html/error.log';
+    $log_file = dirname(__DIR__) . '/logs/error.log';
     $log_message = date('Y-m-d H:i:s') . " - ";
     $log_message .= "[$errno] $errstr in $errfile on line $errline\n";
     
