@@ -823,7 +823,7 @@ case "deliv_list" : {
 	$args['table']="store";
 	$args2['table']="store_sale";
 	$args3['table']="deliver";
-	$ctsn=count($_REQUEST['sn']);
+	$ctsn=count($_REQUEST['sn'] ?? []);
 $flag=0;
 	for($i=0;$i<$ctsn;$i++){
 		for($j=$i;$j<$ctsn;$j++){
@@ -991,7 +991,7 @@ $maxno=mysqli_fetch_array(mysqli_query($db->conn, "select max(s.no) as maxno fro
 		
 	$args['table']="pr";
 	$args['value']="status='4'";
-	$args['condition']="id='".$_REQUEST['ref']."'";
+	$args['condition']="id='".sql_int($_REQUEST['ref'])."'";
 	$har->updateDb($args);
 	
 	exit("<script>window.location = 'index.php?page=compl_list'</script>");

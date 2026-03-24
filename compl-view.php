@@ -28,13 +28,13 @@ if($hasData) {
     
     // Get products and calculate totals
     $que_pro = mysqli_query($db->conn, "SELECT type.name as name, product.price as price, discount, 
-        model.model_name as model, quantity, pack_quantity, activelabour, valuelabour 
-        FROM product JOIN type ON product.type=type.id JOIN model ON product.model=model.id 
+        COALESCE(model.model_name,'') as model, quantity, pack_quantity, activelabour, valuelabour 
+        FROM product LEFT JOIN type ON product.type=type.id LEFT JOIN model ON product.model=model.id 
         WHERE po_id='".$id."'");
     
     $products = [];
     $summary = 0;
-    while($data_pro = mysqli_fetch_array($que_pro)) {
+    while($que_pro && $data_pro = mysqli_fetch_array($que_pro)) {
         if($hasLabour) {
             $equip = $data_pro['price'] * $data_pro['quantity'];
             $labour1 = $data_pro['valuelabour'] * $data_pro['activelabour'];
@@ -652,8 +652,8 @@ function paymentcheck() {
                 <?php if(count($products) > 0): ?>
                     <?php foreach($products as $prod): ?>
                     <tr>
-                        <td><?=htmlspecialchars($prod['model'])?></td>
-                        <td><?=htmlspecialchars($prod['name'])?></td>
+                        <td><?=htmlspecialchars($prod['model'] ?? '')?></td>
+                        <td><?=htmlspecialchars($prod['name'] ?? '')?></td>
                         <td class="text-center"><?=intval($prod['quantity'])?></td>
                         <td class="text-right"><?=number_format($prod['price'], 2)?></td>
                         <?php if($hasLabour): ?>

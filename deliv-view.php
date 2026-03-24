@@ -16,7 +16,7 @@ if($modep=="ad"){
     $query=mysqli_query($db->conn, "SELECT po.name as name, po.id as id, po.tax as tax, ven_id, cus_id, des, DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, DATE_FORMAT(deliver.deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, status FROM pr JOIN po ON pr.id=po.ref JOIN deliver ON po.id=deliver.po_id WHERE deliver.id='".$id."' AND status='3' AND (cus_id='".$com_id."' OR ven_id='".$com_id."') AND po_id_new=''");
 }
 
-$hasData = mysqli_num_rows($query) == 1;
+$hasData = ($query && mysqli_num_rows($query) == 1);
 if($hasData){
     $data = mysqli_fetch_array($query);
     $vender = mysqli_fetch_array(mysqli_query($db->conn, "SELECT name_sh, name_en FROM company WHERE id='".$data['ven_id']."'"));
@@ -389,9 +389,9 @@ if($hasData){
     <!-- Products Table -->
     <?php 
     if($modep=="ad"){
-        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.des as product_des, product.price as price, discount, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id JOIN type ON product.type=type.id JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE so_id='".$data['id']."'");
+        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.des as product_des, product.price as price, discount, COALESCE(model.model_name,'') as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id LEFT JOIN type ON product.type=type.id LEFT JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE so_id='".$data['id']."'");
     } else {
-        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.des as product_des, product.price as price, discount, model.model_name as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id JOIN type ON product.type=type.id JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE po_id='".$data['id']."'");
+        $que_pro=mysqli_query($db->conn, "SELECT type.name as name, product.des as product_des, product.price as price, discount, COALESCE(model.model_name,'') as model, s_n, DATE_FORMAT(store_sale.warranty,'%d-%m-%Y') as warranty FROM product JOIN store ON product.pro_id=store.pro_id LEFT JOIN type ON product.type=type.id LEFT JOIN model ON product.model=model.id JOIN store_sale ON store.id=store_sale.st_id WHERE po_id='".$data['id']."'");
     }
     ?>
     
@@ -414,15 +414,15 @@ if($hasData){
             <tbody>
             <?php 
             $row_num = 0;
-            while($data_pro = mysqli_fetch_array($que_pro)):
+            while($que_pro && $data_pro = mysqli_fetch_array($que_pro)):
                 $row_num++;
             ?>
                 <tr>
                     <td style="text-align:center; color:#6b7280;"><?=$row_num?></td>
-                    <td><?=htmlspecialchars($data_pro['name'])?></td>
+                    <td><?=htmlspecialchars($data_pro['name'] ?? '')?></td>
                     <td style="color:#6b7280; font-size:13px;"><?=htmlspecialchars($data_pro['product_des'] ?? '-')?></td>
-                    <td><span class="product-model"><?=htmlspecialchars($data_pro['model'])?></span></td>
-                    <td><?=htmlspecialchars($data_pro['s_n'])?></td>
+                    <td><span class="product-model"><?=htmlspecialchars($data_pro['model'] ?? '')?></span></td>
+                    <td><?=htmlspecialchars($data_pro['s_n'] ?? '')?></td>
                     <td><?=htmlspecialchars($data_pro['warranty'] ?? '-')?></td>
                 </tr>
             <?php endwhile; ?>
