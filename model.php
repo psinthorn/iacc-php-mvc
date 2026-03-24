@@ -22,15 +22,16 @@ $brands = db_fetch_all(
     [$type_id, $companyId]
 );
 
-$tmp = '<select name="brand" class="form-control">';
-if (empty($brands)) {
-    $tmp .= '<option value="">No brand on this Type</option>';           
-} else {
+// Return only <option> elements (not full <select>), because the AJAX caller
+// replaces innerHTML of the existing <select id="brand"> in mo-list.php
+$tmp = '<option value="">-- Select Brand --</option>';
+if (!empty($brands)) {
     foreach ($brands as $data) {
         $tmp .= '<option value="'.e($data['id']).'">'.e($data['brand_name']).'</option>';           
     }
+} else {
+    $tmp .= '<option value="">No brand for this Type</option>';
 }
-$tmp .= '</select>';
 echo $tmp;
 
 ?>
