@@ -287,7 +287,7 @@ case "compl_list2" : {
 	if($_REQUEST['method']=="C"){
 	$args['table']="pr";
 	$args['value']="status='5'";
-	$args['condition']="id='".$_REQUEST['id']."'";
+	$args['condition']="id='".sql_int($_REQUEST['id'])."'";
 	$har->updateDb($args);
 	
 	 $argsiv['table']="iv";

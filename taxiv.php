@@ -130,7 +130,7 @@ if ($data['bandven'] == 0) {
 $cklabour = mysqli_fetch_array(mysqli_query($db->conn, "
     SELECT MAX(activelabour) as cklabour 
     FROM product 
-    JOIN type ON product.type = type.id 
+    LEFT JOIN type ON product.type = type.id 
     WHERE po_id = '{$id_safe}'
 "));
 $hasLabour = ($cklabour['cklabour'] == 1);
@@ -142,8 +142,8 @@ $que_pro = mysqli_query($db->conn, "
         valuelabour, activelabour, discount, model.model_name as model,
         quantity, pack_quantity 
     FROM product 
-    JOIN type ON product.type = type.id 
-    JOIN model ON product.model = model.id 
+    LEFT JOIN type ON product.type = type.id 
+    LEFT JOIN model ON product.model = model.id 
     WHERE po_id = '{$id_safe}'
 ");
 
