@@ -6,6 +6,7 @@ require_once("inc/security.php");
 require_once("inc/class.database.php"); // New prepared statement helper
 require_once("inc/class.company_filter.php");
 $users=new DbConn($config);
+$db = $users; // Alias needed by Database::getInstance()
 // Security already checked in index.php
 
 // Company filter for multi-tenant data isolation

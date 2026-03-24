@@ -5,6 +5,7 @@ require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.database.php"); // New prepared statement helper
 $users=new DbConn($config);
+$db = $users; // Alias needed by Database::getInstance()
 // Security already checked in index.php
 $addr_id = sql_int($_REQUEST['id']);
 

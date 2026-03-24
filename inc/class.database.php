@@ -33,13 +33,17 @@ class Database {
      * Constructor - uses existing dbconn connection
      */
     private function __construct() {
-        global $db;
+        global $db, $config;
         if ($db && isset($db->conn)) {
             $this->conn = $db->conn;
         } else {
             // Fallback: create new connection with config
             require_once dirname(__FILE__) . '/sys.configs.php';
             require_once dirname(__FILE__) . '/class.dbconn.php';
+            if (!isset($config)) {
+                // sys.configs.php was already loaded in global scope, re-read
+                include dirname(__FILE__) . '/sys.configs.php';
+            }
             $db = new DbConn($config);
             $this->conn = $db->conn;
         }
