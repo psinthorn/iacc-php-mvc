@@ -130,109 +130,31 @@ if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'company_search_api') {
     exit;
 }
 
-// Page routing configuration - maps page parameter to file
-$routes = [
-    // Dashboard
-    'dashboard'     => 'dashboard.php',
-    
-    // Master Data
-    'company'       => 'company-list.php',
-    'user'          => 'user-list.php',      // Super Admin only
-    'category'      => 'category-list.php',
-    'type'          => 'type-list.php',
-    'brand'         => 'brand-list.php',
-    
-    // Purchase Requisition
-    'pr_list'       => 'pr-list.php',
-    'pr_create'     => 'pr-create.php',
-    'pr_make'       => 'pr-make.php',
-    
-    // Purchase Order
-    'po_make'       => 'po-make.php',
-    'po_list'       => 'po-list.php',
-    'po_edit'       => 'po-edit.php',
-    'po_view'       => 'po-view.php',
-    'po_deliv'      => 'po-deliv.php',
-    
-    // Voucher
-    'voucher_list'  => 'vou-list.php',
-    'voc_make'      => 'voc-make.php',
-    'voc_view'      => 'voc-view.php',
-    'vou_print'     => 'vou-print.php',
-    
-    // Delivery
-    'deliv_list'    => 'deliv-list.php',
-    'deliv_view'    => 'deliv-view.php',
-    'deliv_make'    => 'deliv-make.php',
-    'deliv_edit'    => 'deliv-edit.php',
-    
-    // Complaint / QA
-    'compl_list'    => 'compl-list.php',
-    'compl_list2'   => 'compl-list2.php',
-    'compl_view'    => 'compl-view.php',
-    'qa_list'       => 'qa-list.php',
-    
-    // Payment & Reports
-    'payment'           => 'payment-list.php',
-    'invoice_payments'  => 'invoice-payments.php',
-    'billing'           => 'billing.php',
-    'billing_make'      => 'billing-make.php',
-    'mo_list'           => 'mo-list.php',
-    'report'            => 'report.php',
-    'receipt_list'      => 'rep-list.php',
-    'rep_make'          => 'rep-make.php',
-    'rep_view'          => 'rep-view.php',
-    'rep_print'         => 'rep-print.php',
-    
-    // Admin Tools
-    'audit_log'             => 'audit-log.php',
-    'monitoring'            => 'admin-monitoring.php',
-    'containers'            => 'admin-containers.php',
-    'payment_method_list'   => 'payment-method-list.php',
-    'payment_method'        => 'payment-method.php',
-    
-    // Payment Gateway
-    'payment_gateway_config' => 'payment-gateway-config.php',
-    'payment_gateway_test'   => 'payment-gateway-test.php',
-    'payment_webhook'        => 'payment-webhook.php',
-    
-    // Developer Tools (Admin Only)
-    'test_crud'              => 'tests/test-crud.php',
-    'test_crud_ai'           => 'tests/test-crud-ai.php',
-    'test_rbac'              => 'tests/test-rbac.php',
-    'ai_settings'            => 'ai-settings.php',
-    'ai_chat_history'        => 'ai-chat-history.php',
-    'ai_schema_browser'      => 'ai-schema-browser.php',
-    'ai_action_log'          => 'ai-action-log.php',
-    'ai_schema_refresh'      => 'ai-schema-refresh.php',
-    'ai_documentation'       => 'ai-documentation.php',
-    'debug_session'          => 'tests/debug-session.php',
-    'debug_invoice'          => 'tests/debug-invoice.php',
-    'debug_php'              => 'tests/debug-php.php',
-    'docker_test'            => 'tests/docker-test.php',
-    'test_containers'        => 'tests/test-containers.php',
-    'api_lang_debug'         => 'api-lang-debug.php',
-    'dev_roadmap'            => 'dev-roadmap.php',
-    
-    // AI Chat API
-    'ai_chat'                => 'ai/chat-handler.php',
-    
-    // Invoice Payment
-    'inv_checkout'           => 'inv-checkout.php',
-    'inv_payment_success'    => 'inv-payment-success.php',
-    'inv_payment_cancel'     => 'inv-payment-cancel.php',
-    
-    // User Account
-    'profile'                => 'profile.php',
-    'settings'               => 'settings.php',
-    'help'                   => 'help.php',
-];
+// Page routing configuration — loaded from external config
+$routes = require __DIR__ . '/app/Config/routes.php';
 
 // Get requested page (sanitized)
 $page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : 'dashboard';
 
-// Determine which file to include
-$pageFile = isset($routes[$page]) ? $routes[$page] : null;
+// Determine route type: MVC (array) or legacy (string filename)
+$route = isset($routes[$page]) ? $routes[$page] : null;
+
+// ========== MVC Controller Dispatch (before any HTML output) ==========
+// Routes defined as arrays dispatch to a controller method and may redirect
+if (is_array($route)) {
+    $controllerName = 'App\\Controllers\\' . $route[0];
+    $methodName = $route[1];
+    
+    // For POST actions that redirect (store, delete), dispatch before HTML
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' || in_array($methodName, ['store', 'delete'])) {
+        $controller = new $controllerName();
+        $controller->$methodName();
+        exit; // Controller handles redirect/response
+    }
+}
+
+// Determine legacy file path (for non-MVC routes)
+$pageFile = is_string($route) ? $route : null;
 
 // ========== PDF pages must be handled BEFORE any HTML output ==========
 // These pages generate PDF via mPDF and cannot have ANY prior output
@@ -259,10 +181,18 @@ if (in_array($page, $pdfPages) && $pageFile && file_exists($pageFile)) {
             <div class="row">
                 <?php 
                 // Debug routing
-                file_put_contents('logs/app.log', date('Y-m-d H:i:s') . " DEBUG index.php: page=$page, pageFile=$pageFile, exists=" . (file_exists($pageFile) ? 'yes' : 'no') . "\n", FILE_APPEND);
+                $debugRoute = is_array($route) ? ('MVC:' . $route[0] . '::' . $route[1]) : ($pageFile ?? 'null');
+                file_put_contents('logs/app.log', date('Y-m-d H:i:s') . " DEBUG index.php: page=$page, route=$debugRoute\n", FILE_APPEND);
                 
-                // Include the page file if route exists
-                if ($pageFile && file_exists($pageFile)) {
+                // ========== MVC Controller Rendering (GET requests) ==========
+                if (is_array($route)) {
+                    $controllerName = 'App\\Controllers\\' . $route[0];
+                    $methodName = $route[1];
+                    $controller = new $controllerName();
+                    $controller->$methodName();
+                }
+                // ========== Legacy File Include ==========
+                elseif ($pageFile && file_exists($pageFile)) {
                     include_once $pageFile;
                 } else {
                     // 404 - Page not found
