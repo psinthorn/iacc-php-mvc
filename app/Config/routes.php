@@ -103,18 +103,31 @@ return [
     'billing_make'  => ['BillingController', 'make'],
     'billing_store' => ['BillingController', 'store'],
 
-    // ========== Legacy Routes (file-based) ==========
+    // ========== Phase 4 MVC Routes ==========
     
     // Dashboard
-    'dashboard'     => 'dashboard.php',
-    'user'          => 'user-list.php',
+    'dashboard'         => ['DashboardController', 'index'],
+    'dashboard_store'   => ['DashboardController', 'store'],
     
-    // Reports & Invoice Payments (still legacy)
-    'invoice_payments'  => 'invoice-payments.php',
-    'report'            => 'report.php',
+    // User Management
+    'user'              => ['UserController', 'index'],
+    'user_store'        => ['UserController', 'store'],
+    
+    // Reports & Invoice Payments
+    'invoice_payments'  => ['ReportController', 'invoicePayments'],
+    'report'            => ['ReportController', 'summary'],
+    
+    // Audit Log
+    'audit_log'         => ['AuditLogController', 'index'],
+    
+    // User Account
+    'profile'           => ['UserAccountController', 'profile'],
+    'settings'          => ['UserAccountController', 'settings'],
+    'account_store'     => ['UserAccountController', 'store'],
+
+    // ========== Legacy Routes (file-based) ==========
     
     // Admin Tools
-    'audit_log'             => 'audit-log.php',
     'monitoring'            => 'admin-monitoring.php',
     'containers'            => 'admin-containers.php',
     // Payment Gateway
@@ -149,7 +162,5 @@ return [
     'inv_payment_cancel'     => 'inv-payment-cancel.php',
     
     // User Account
-    'profile'                => 'profile.php',
-    'settings'               => 'settings.php',
     'help'                   => 'help.php',
 ];
