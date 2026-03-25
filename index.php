@@ -155,15 +155,8 @@ if (is_array($route)) {
 }
 
 // Determine legacy file path (for non-MVC routes)
+// Note: As of Phase 6, all routes are MVC. This is kept for safety only.
 $pageFile = is_string($route) ? $route : null;
-
-// ========== PDF pages must be handled BEFORE any HTML output ==========
-// These pages generate PDF via mPDF and cannot have ANY prior output
-$pdfPages = ['rep_print', 'vou_print'];
-if (in_array($page, $pdfPages) && $pageFile && file_exists($pageFile)) {
-    include_once $pageFile;
-    exit;
-}
 ?>
 <!DOCTYPE html>
 <html>

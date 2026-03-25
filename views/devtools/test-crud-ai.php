@@ -609,7 +609,7 @@ If you cannot understand the request, set understood to false and explain why in
         <div class="ollama-status" id="ollamaStatus">
             <div class="status-dot" id="statusDot"></div>
             <span id="statusText">Checking AI connection...</span>
-            <a href="ai-settings.php" style="margin-left: auto; font-size: 12px;"><i class="fa fa-cog"></i> Settings</a>
+            <a href="index.php?page=ai_settings" style="margin-left: auto; font-size: 12px;"><i class="fa fa-cog"></i> Settings</a>
         </div>
         
         <!-- Tab Navigation -->

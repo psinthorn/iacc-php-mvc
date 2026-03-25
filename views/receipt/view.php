@@ -12,7 +12,7 @@
         <a href="index.php?page=receipt_list" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> Back</a>
         <?php if($receipt): ?>
             <a href="index.php?page=rep_make&id=<?=$id?>" class="btn btn-warning btn-sm"><i class="fa fa-pencil"></i> Edit</a>
-            <a href="rep-print.php?id=<?=$id?>" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-print"></i> Print</a>
+            <a href="index.php?page=rep_print&id=<?=$id?>" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-print"></i> Print</a>
         <?php endif; ?>
     </div>
 </div>

@@ -54,7 +54,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
                 <td>
                     <a href="index.php?page=rep_view&id=<?=$row['id']?>" class="btn btn-xs btn-info"><i class="fa fa-eye"></i></a>
                     <a href="index.php?page=rep_make&id=<?=$row['id']?>" class="btn btn-xs btn-warning"><i class="fa fa-pencil"></i></a>
-                    <a href="rep-print.php?id=<?=$row['id']?>" class="btn btn-xs btn-default" target="_blank"><i class="fa fa-print"></i></a>
+                    <a href="index.php?page=rep_print&id=<?=$row['id']?>" class="btn btn-xs btn-default" target="_blank"><i class="fa fa-print"></i></a>
                 </td>
             </tr>
         <?php endforeach; endif; ?>
