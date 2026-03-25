@@ -9,12 +9,12 @@ use App\Models\User;
  */
 class UserController extends BaseController
 {
-    private User $user;
+    private User $userModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->user = new User();
+        $this->userModel = new User();
     }
 
     public function index(): void
@@ -27,8 +27,8 @@ class UserController extends BaseController
         $message     = '';
         $messageType = '';
 
-        $users     = $this->user->getUsers($search, $roleFilter, $companyFilter);
-        $companies = $this->user->getCompanies();
+        $users     = $this->userModel->getUsers($search, $roleFilter, $companyFilter);
+        $companies = $this->userModel->getCompanies();
 
         // Group by role
         $usersByRole = [
@@ -61,33 +61,33 @@ class UserController extends BaseController
 
                 if ($level == 0 && empty($companyId)) break;
                 if (empty($email) || empty($password) || !filter_var($email, FILTER_VALIDATE_EMAIL)) break;
-                if ($this->user->emailExists($email)) break;
-                $this->user->createUser($email, $password, $level, $companyId);
+                if ($this->userModel->emailExists($email)) break;
+                $this->userModel->createUser($email, $password, $level, $companyId);
                 break;
 
             case 'update_level':
                 $userId = $this->inputInt('user_id', 0);
                 if ($userId === $currentUserId) break;
-                $this->user->updateLevel($userId, $this->inputInt('level', 0));
+                $this->userModel->updateLevel($userId, $this->inputInt('level', 0));
                 break;
 
             case 'update_company':
                 $companyId = $this->inputInt('company_id', 0) ?: null;
-                $this->user->updateCompany($this->inputInt('user_id', 0), $companyId);
+                $this->userModel->updateCompany($this->inputInt('user_id', 0), $companyId);
                 break;
 
             case 'reset_password':
                 $pw = $this->input('new_password', '');
-                if (strlen($pw) >= 6) $this->user->resetPassword($this->inputInt('user_id', 0), $pw);
+                if (strlen($pw) >= 6) $this->userModel->resetPassword($this->inputInt('user_id', 0), $pw);
                 break;
 
             case 'unlock':
-                $this->user->unlockUser($this->inputInt('user_id', 0));
+                $this->userModel->unlockUser($this->inputInt('user_id', 0));
                 break;
 
             case 'delete':
                 $userId = $this->inputInt('user_id', 0);
-                if ($userId !== $currentUserId) $this->user->deleteUser($userId);
+                if ($userId !== $currentUserId) $this->userModel->deleteUser($userId);
                 break;
         }
 
