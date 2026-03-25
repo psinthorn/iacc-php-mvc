@@ -44,13 +44,17 @@ return [
     'payment_method_delete' => ['PaymentMethodController', 'delete'],
     'payment_method_toggle' => ['PaymentMethodController', 'toggle'],
 
+    // Company
+    'company'          => ['CompanyController', 'index'],
+    'company_form'     => ['CompanyController', 'form'],
+    'company_store'    => ['CompanyController', 'store'],
+    'company_delete'   => ['CompanyController', 'delete'],
+    'company_credits'  => ['CompanyController', 'credits'],
+
     // ========== Legacy Routes (file-based) ==========
     
     // Dashboard
     'dashboard'     => 'dashboard.php',
-    
-    // Master Data
-    'company'       => 'company-list.php',
     'user'          => 'user-list.php',
     
     // Purchase Requisition
