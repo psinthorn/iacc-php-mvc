@@ -200,21 +200,14 @@ $html .= '
 
 //==============================================================
 //==============================================================
-include("MPDF/mpdf.php");
-
-
-$mpdf= new mPdf('th', 'A4', '0');
+$mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4']);
 $mpdf->WriteHTML($html);
 
 
 
 $mpdf->Output("file/INV-".$data['tax2']."-".$customer['name_sh'].".pdf","F");
 
-require_once('PHPMailer/class.phpmailer.php');
-
-
-
-$mail = new PHPMailer(true); 
+$mail = new \PHPMailer\PHPMailer\PHPMailer(true); 
 $mail->Debugoutput = 'html';
 
 $mail->CharSet = "utf-8";
@@ -250,9 +243,9 @@ $mail->AddAttachment("file/INV-".$data['tax2']."-".$customer['name_sh'].".pdf", 
       $mail->Send();
     
 	exit("<script>alert('Message Sent OK');window.location = 'index.php?page=compl_list'</script>");
-    } catch (phpmailerException $e) {
+    } catch (\PHPMailer\PHPMailer\Exception $e) {
       echo $e->errorMessage(); //Pretty error messages from PHPMailer
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       echo $e->getMessage(); //Boring error messages from anything else!
     }
 	

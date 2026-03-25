@@ -45,9 +45,7 @@ Child: '.$booking['child'].'<br>
 //==============================================================
 //==============================================================
 
-include("MPDF/mpdf.php");
-
-$mpdf=new mPDF(); 
+$mpdf = new \Mpdf\Mpdf(); 
 
 $mpdf->WriteHTML($html);
 $mpdf->Output();

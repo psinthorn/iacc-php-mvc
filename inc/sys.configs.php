@@ -1,4 +1,10 @@
 <?PHP
+// Load Composer autoloader
+$composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";
+if (file_exists($composerAutoload)) {
+    require_once($composerAutoload);
+}
+
 // Load error handler first to suppress deprecated PHP warnings
 require_once(dirname(__FILE__) . "/error-handler.php");
 

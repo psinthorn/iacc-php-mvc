@@ -3,8 +3,8 @@
 ## Environment
 - **Type**: Docker Compose
 - **OS**: macOS
-- **PHP Version**: 7.4 (PHP-FPM)
-- **MySQL Version**: 5.7
+- **PHP Version**: 8.2 (PHP-FPM)
+- **MySQL Version**: 8.0
 - **Nginx**: Alpine
 
 ## Services & URLs
@@ -81,7 +81,7 @@ docker logs iacc_nginx --tail 50
 docker logs iacc_mysql --tail 50
 
 # Run E2E tests
-curl -s "http://localhost/test-e2e-crud.php"
+curl -s "http://localhost/tests/test-e2e-crud.php"
 
 # Enter PHP container shell
 docker exec -it iacc_php bash
@@ -112,7 +112,7 @@ docker inspect --format='{{.State.Health.Status}}' iacc_php
 | `core-function.php` | Main CRUD handler for all forms |
 | `inc/class.hard.php` | Database abstraction layer |
 | `inc/class.db.php` | Database connection |
-| `test-e2e-crud.php` | E2E test suite (42 tests) |
+| `tests/test-e2e-crud.php` | E2E test suite (42 tests) |
 | `docker-compose.yml` | Development environment |
 | `docker-compose.prod.yml` | Production environment |
 | `docker/nginx/default.conf` | Nginx configuration |
