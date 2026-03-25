@@ -60,7 +60,7 @@ class Dashboard
     public function getFailedLogins(int $hours = 24): int
     {
         $sql = "SELECT COUNT(*) as count FROM login_attempts 
-                WHERE success = 0 AND attempt_time > DATE_SUB(NOW(), INTERVAL $hours HOUR)";
+                WHERE successful = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL $hours HOUR)";
         $result = @mysqli_query($this->db->conn, $sql);
         if (!$result) {
             return 0; // Table/column may not exist

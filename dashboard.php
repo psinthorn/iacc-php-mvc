@@ -102,7 +102,7 @@ if ($is_admin) {
     
     // Recent login attempts (failed)
     $sql_failed = "SELECT COUNT(*) as count FROM login_attempts 
-                   WHERE success = 0 AND attempt_time > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+                   WHERE successful = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)";
     $result_failed = mysqli_query($db->conn, $sql_failed);
     $failed_logins_24h = mysqli_fetch_assoc($result_failed)['count'] ?? 0;
     
