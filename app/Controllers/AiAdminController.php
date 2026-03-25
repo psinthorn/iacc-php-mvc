@@ -68,6 +68,7 @@ class AiAdminController extends BaseController
                 $this->json(['success' => true, 'messages' => $stmt->fetchAll()]);
 
             case 'delete_session':
+                $this->verifyCsrf();
                 $sessionId = $_POST['session_id'] ?? '';
                 $sql = "DELETE FROM ai_chat_history WHERE session_id = ? AND company_id = ?";
                 $stmt = $this->pdo->prepare($sql);
@@ -286,6 +287,7 @@ class AiAdminController extends BaseController
                 $this->json(['success' => true, 'changed' => $changed, 'refreshed' => $refreshed, 'auto_refresh' => $autoRefresh]);
 
             case 'set_auto_refresh':
+                $this->verifyCsrf();
                 $enabled = ($_POST['enabled'] ?? '0') === '1';
                 $this->setAutoRefreshSetting($enabled);
                 $this->json(['success' => true, 'enabled' => $enabled]);

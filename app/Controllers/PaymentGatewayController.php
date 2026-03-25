@@ -36,6 +36,7 @@ class PaymentGatewayController extends BaseController
 
         // Handle POST: save_config or test_connection
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->verifyCsrf();
             $action = $_POST['action'] ?? '';
 
             if ($action === 'save_config') {

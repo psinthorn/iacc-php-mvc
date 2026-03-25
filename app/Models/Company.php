@@ -171,8 +171,8 @@ class Company extends BaseModel
                     '" . \sql_escape($fields['phone'] ?? '') . "',
                     '" . \sql_escape($fields['fax'] ?? '') . "',
                     '" . \sql_escape($fields['tax'] ?? '') . "',
-                    '" . ($fields['customer'] ?? '0') . "',
-                    '" . ($fields['vender'] ?? '0') . "',
+                    '" . intval($fields['customer'] ?? 0) . "',
+                    '" . intval($fields['vender'] ?? 0) . "',
                     '" . \sql_escape($logo) . "',
                     '" . \sql_escape($fields['term'] ?? '') . "',
                     '$comId'
@@ -202,8 +202,8 @@ class Company extends BaseModel
                     phone='" . \sql_escape($fields['phone'] ?? '') . "',
                     fax='" . \sql_escape($fields['fax'] ?? '') . "',
                     tax='" . \sql_escape($fields['tax'] ?? '') . "',
-                    customer='" . ($fields['customer'] ?? '0') . "',
-                    vender='" . ($fields['vender'] ?? '0') . "'
+                    customer='" . intval($fields['customer'] ?? 0) . "',
+                    vender='" . intval($fields['vender'] ?? 0) . "'
                     $logoSql,
                     term='" . \sql_escape($fields['term'] ?? '') . "'
                 WHERE id='" . \sql_int($id) . "'";

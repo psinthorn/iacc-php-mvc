@@ -13,6 +13,16 @@ ini_set('log_errors', 1);
 header('Content-Type: text/html; charset=utf-8');
 mb_internal_encoding('UTF-8');
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
+// Secure session cookie settings
+ini_set('session.cookie_httponly', '1');
+ini_set('session.use_strict_mode', '1');
+
 session_start();
 
 // Load core files

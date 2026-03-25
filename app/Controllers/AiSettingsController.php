@@ -32,6 +32,7 @@ class AiSettingsController extends BaseController
 
         // Handle form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_settings') {
+            $this->verifyCsrf();
             $settings = [
                 'provider' => $_POST['provider'] ?? 'openai',
                 'ollama_enabled' => isset($_POST['ollama_enabled']),

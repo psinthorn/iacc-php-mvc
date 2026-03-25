@@ -115,8 +115,8 @@ class Billing extends BaseModel
 
             foreach ($invoices as $inv_id) {
                 $inv_id = \sql_int($inv_id);
-                $amount = $this->calculateInvoiceAmount($inv_id);
-                mysqli_query($this->conn, "INSERT INTO billing_items (bil_id, inv_id, amount) VALUES ('$bilId', '$inv_id', '$amount')");
+                $amount = floatval($this->calculateInvoiceAmount($inv_id));
+                mysqli_query($this->conn, "INSERT INTO billing_items (bil_id, inv_id, amount) VALUES ('" . intval($bilId) . "', '$inv_id', '$amount')");
             }
         }
     }
