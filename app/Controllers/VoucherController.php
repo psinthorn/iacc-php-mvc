@@ -83,4 +83,10 @@ class VoucherController extends BaseController
         }
         $this->redirect('index.php?page=voucher_list');
     }
+
+    public function print(): void
+    {
+        include __DIR__ . '/../../views/voucher/print.php';
+        exit;
+    }
 }

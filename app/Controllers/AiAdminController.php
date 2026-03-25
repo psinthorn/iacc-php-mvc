@@ -345,4 +345,11 @@ class AiAdminController extends BaseController
         $value = $enabled ? '1' : '0';
         $this->pdo->prepare($sql)->execute([$value, $value]);
     }
+
+    // ==================== Documentation ====================
+
+    public function documentation(): void
+    {
+        $this->render('ai/documentation');
+    }
 }

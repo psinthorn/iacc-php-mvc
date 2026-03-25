@@ -90,4 +90,14 @@ class ReceiptController extends BaseController
         }
         $this->redirect('index.php?page=receipt_list');
     }
+
+    /**
+     * Print receipt as PDF via mPDF
+     * Standalone output — bypasses layout
+     */
+    public function print(): void
+    {
+        include __DIR__ . '/../../views/receipt/print.php';
+        exit;
+    }
 }

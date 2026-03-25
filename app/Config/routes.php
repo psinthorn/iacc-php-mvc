@@ -82,7 +82,7 @@ return [
     'voc_make'      => ['VoucherController', 'make'],
     'voc_view'      => ['VoucherController', 'view'],
     'voucher_store' => ['VoucherController', 'store'],
-    'vou_print'     => 'vou-print.php',
+    'vou_print'     => ['VoucherController', 'print'],
 
     // Delivery (Phase 3E)
     'deliv_list'    => ['DeliveryController', 'index'],
@@ -96,7 +96,7 @@ return [
     'rep_make'      => ['ReceiptController', 'make'],
     'rep_view'      => ['ReceiptController', 'view'],
     'receipt_store' => ['ReceiptController', 'store'],
-    'rep_print'     => 'rep-print.php',
+    'rep_print'     => ['ReceiptController', 'print'],
 
     // Billing (Phase 3E)
     'billing'       => ['BillingController', 'index'],
@@ -125,11 +125,9 @@ return [
     'settings'          => ['UserAccountController', 'settings'],
     'account_store'     => ['UserAccountController', 'store'],
 
-    // ========== Legacy Routes (file-based) ==========
-    
-    // Admin Tools
-    'monitoring'            => 'admin-monitoring.php',
-    'containers'            => 'admin-containers.php',
+    // ========== Phase 6: Admin & Dev Tools (MVC) ==========
+    'monitoring'            => ['DevToolsController', 'monitoring'],
+    'containers'            => ['DevToolsController', 'containers'],
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
     'payment_gateway_test'   => ['PaymentGatewayController', 'test'],
@@ -150,17 +148,17 @@ return [
     'ai_settings'            => ['AiSettingsController', 'index'],
     'ai_chat'                => ['AiChatController', 'index'],
 
-    // Developer Tools (Admin Only - legacy)
-    'test_crud'              => 'tests/test-crud.php',
-    'test_crud_ai'           => 'tests/test-crud-ai.php',
-    'test_rbac'              => 'tests/test-rbac.php',
-    'ai_documentation'       => 'ai-documentation.php',
-    'debug_session'          => 'tests/debug-session.php',
-    'debug_php'              => 'tests/debug-php.php',
-    'test_containers'        => 'tests/test-containers.php',
-    'api_lang_debug'         => 'api-lang-debug.php',
-    'dev_roadmap'            => 'dev-roadmap.php',
+    // Developer Tools (Admin Only)
+    'test_crud'              => ['DevToolsController', 'testCrud'],
+    'test_crud_ai'           => ['DevToolsController', 'testCrudAi'],
+    'test_rbac'              => ['DevToolsController', 'testRbac'],
+    'ai_documentation'       => ['AiAdminController', 'documentation'],
+    'debug_session'          => ['DevToolsController', 'debugSession'],
+    'debug_php'              => ['DevToolsController', 'debugPhp'],
+    'test_containers'        => ['DevToolsController', 'testContainers'],
+    'api_lang_debug'         => ['DevToolsController', 'langDebug'],
+    'dev_roadmap'            => ['DevToolsController', 'roadmap'],
     
     // User Account
-    'help'                   => 'help.php',
+    'help'                   => ['HelpController', 'index'],
 ];
