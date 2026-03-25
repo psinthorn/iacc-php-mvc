@@ -188,67 +188,8 @@ case "company" : {
 	exit;
 	
 }break;		
-case "type" : {
-	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
-	if($_REQUEST['method']=="A"){
-		$args['table']="type";
-		
-	
-	$args['value']="'".$company_id."','".sql_escape($_REQUEST['type_name'])."','".sql_escape($_REQUEST['des'])."','".sql_int($_REQUEST['cat_id'])."',NULL";
-	$max_id=$har->insertDbMax($args);	
-	foreach($_POST as $key => $val)
-		{
-			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id")||($key=="csrf_token"))){
-			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES(NULL,'".$company_id."','".sql_int($max_id)."','".sql_int($key)."')");
-		}}
-		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "DELETE FROM type WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
-			mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE type_id='".sql_int($_REQUEST['id'])."'");
-			
-			
-		
-			}
-	else if($_REQUEST['method']=="E"){
-		
-		mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE type_id='".sql_int($_POST['id'])."'");
-		foreach($_POST as $key => $val)
-		{
-			if(!(($key=="type_name")||($key=="cat_id")||($key=="des")||($key=="method")||($key=="page")||($key=="id"))){
-			mysqli_query($db->conn, "INSERT INTO map_type_to_brand VALUES('','".$company_id."','".sql_int($_POST['id'])."','".sql_int($key)."')");
-		}
-		}	
-		
-	$args['table']="type";
-
-	
-	$args['value']="name='".sql_escape($_REQUEST['type_name'])."',cat_id='".sql_int($_REQUEST['cat_id'])."',des='".sql_escape($_REQUEST['des'])."'";
-	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
-	$har->updateDb($args);	
-		}
-	header("Location: index.php?page=type");
-	exit;
-}break;	
-case "category" : {
-	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
-	if($_REQUEST['method']=="A"){
-		$args['table']="category";
-		$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['cat_name'])."','".sql_escape($_REQUEST['des'])."',NULL";
-		$har->insertDB($args);
-		// Debug: Log the insert
-		error_log("Category INSERT: table=".$args['table'].", value=".$args['value'].", company_id=".$company_id);
-		}else if($_REQUEST['method']=="D"){
-			mysqli_query($users->conn, "DELETE FROM category WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
-		
-			}
-	else if($_REQUEST['method']=="E"){
-	$args['table']="category";
-	$args['value']="cat_name='".sql_escape($_REQUEST['cat_name'])."',des='".sql_escape($_REQUEST['des'])."'";
-	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
-	$har->updateDb($args);	
-		}
-	header("Location: index.php?page=category");
-	exit;
-}break;
+// case "type" — MIGRATED to App\Controllers\TypeController (Phase 2C)	
+// case "category" — MIGRATED to App\Controllers\CategoryController (Phase 2B)
 
 
 case "compl_list" : {
@@ -323,87 +264,9 @@ case "payment" : {
 
 	
 		
-case "mo_list" : {
-		$args['table']="model";
-	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
+// case "mo_list" — MIGRATED to App\Controllers\ModelController (Phase 2C)
 
-	if($_REQUEST['method']=="A"){
-		$args['value']="NULL,'".$company_id."','".sql_int($_REQUEST['type'])."','".sql_int($_REQUEST['brand'])."','".sql_escape($_REQUEST['model_name'])."','".sql_escape($_REQUEST['des'])."','".sql_escape($_REQUEST['price'])."',NULL";
-	$har->insertDB($args);	
-		}
-	if($_REQUEST['method']=="E"){
-	$args['value']="model_name='".sql_escape($_REQUEST['model_name'])."',des='".sql_escape($_REQUEST['des'])."',price='".sql_escape($_REQUEST['price'])."'";
-		$args['condition']="id='".sql_int($_REQUEST['p_id'])."' " . $companyFilter->andCompanyFilter();
-
-	$har->updateDb($args);	
-	
-	
-		}	
-		
-		
-			// SECURITY FIX: Add company filter to product check
-			if($_REQUEST['method']=="D"){
-				$model_id = sql_int($_REQUEST['p_id']);
-				// Check if any products are using this model
-				$product_check = mysqli_query($users->conn, "SELECT p.* FROM product p JOIN model m ON p.model = m.id WHERE p.model='" . $model_id . "'" . $companyFilter->andCompanyFilter('m'));
-				if(mysqli_num_rows($product_check) == 0){
-					mysqli_query($users->conn, "DELETE FROM model WHERE id='" . $model_id . "' " . $companyFilter->andCompanyFilter());
-					$_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Model deleted successfully.'];
-				} else {
-					$product_count = mysqli_num_rows($product_check);
-					$_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Cannot delete this model. It is being used by ' . $product_count . ' product(s). Please delete or reassign those products first.'];
-				}
-			}
-	
-	// Build redirect URL with filter parameters
-	$redirect_params = ['page' => 'mo_list'];
-	if (!empty($_REQUEST['type_id'])) $redirect_params['type_id'] = intval($_REQUEST['type_id']);
-	if (!empty($_REQUEST['brand_id'])) $redirect_params['brand_id'] = intval($_REQUEST['brand_id']);
-	if (!empty($_REQUEST['search'])) $redirect_params['search'] = $_REQUEST['search'];
-	header("Location: index.php?" . http_build_query($redirect_params));
-	exit;
-}break;
-
-case "brand" : {
-	$args['table']="brand";
-	$company_id = isset($_SESSION['com_id']) ? intval($_SESSION['com_id']) : 0;
-	
-	if($_REQUEST['method']=="A"){
-		if (($_FILES["logo"] != "") && 
-		(($_FILES["logo"]["type"] == "image/jpg")|| 
-		($_FILES["logo"]["type"] == "image/jpeg") ||
-		($_FILES["logo"]["type"] == "image/JPG") || 
-		($_FILES["logo"]["type"] == "image/pjpeg"))) {
-		$filepath = "logo".md5(rand().$_REQUEST['type_name']).".jpg";
-		copy($_FILES["logo"]["tmp_name"], "upload/".$filepath);
-		$tmpupdate=",'".$filepath."'";
-	}else{$tmpupdate=",''";}
-	
-	$args['value']="NULL,'".$company_id."','".sql_escape($_REQUEST['brand_name'])."','".sql_escape($_REQUEST['des'])."'".$tmpupdate.",'".sql_int($_REQUEST['ven_id'])."',NULL";
-	$har->insertDB($args);	
-		}else if($_REQUEST['method']=="D"){
-			mysqli_query($db->conn, "DELETE FROM brand WHERE id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter());
-			mysqli_query($db->conn, "DELETE FROM map_type_to_brand WHERE brand_id='".sql_int($_REQUEST['id'])."'");
-			}
-	else if($_REQUEST['method']=="E"){
-			if (($_FILES["logo"] != "") && 
-		(($_FILES["logo"]["type"] == "image/jpg")|| 
-		($_FILES["logo"]["type"] == "image/jpeg") ||
-		($_FILES["logo"]["type"] == "image/JPG") || 
-		($_FILES["logo"]["type"] == "image/pjpeg"))) {
-		$filepath = "logo".md5(rand().$_REQUEST['type_name']).".jpg";
-		copy($_FILES["logo"]["tmp_name"], "upload/".$filepath);
-		$tmpupdate=",logo='".$filepath."'";
-	}else{$tmpupdate="";}
-		
-	$args['value']="brand_name='".sql_escape($_REQUEST['brand_name'])."',des='".sql_escape($_REQUEST['des'])."'".$tmpupdate.",ven_id='".sql_int($_REQUEST['ven_id'])."'";
-	
-	$args['condition']="id='".sql_int($_REQUEST['id'])."' " . $companyFilter->andCompanyFilter();
-	$har->updateDb($args);	
-		}
-	header("Location: index.php?page=brand");
-	exit;
-}break;
+// case "brand" — MIGRATED to App\Controllers\BrandController (Phase 2C)
 case "pr_list" : {
 	$args['table']="pr";
 	// Debug logging (uses $logFile defined at top of core-function.php)
