@@ -51,52 +51,67 @@ return [
     'company_delete'   => ['CompanyController', 'delete'],
     'company_credits'  => ['CompanyController', 'credits'],
 
+    // ========== Invoice / QA (Phase 3A) ==========
+    'compl_list'    => ['InvoiceController', 'index'],
+    'compl_view'    => ['InvoiceController', 'view'],
+    'compl_list2'   => ['InvoiceController', 'taxList'],
+    'qa_list'       => ['InvoiceController', 'quotations'],
+    'invoice_store' => ['InvoiceController', 'store'],
+
+    // Purchase Requisition (Phase 3B)
+    'pr_list'       => ['PurchaseRequestController', 'index'],
+    'pr_create'     => ['PurchaseRequestController', 'create'],
+    'pr_make'       => ['PurchaseRequestController', 'create'],
+    'pr_view'       => ['PurchaseRequestController', 'view'],
+    'pr_store'      => ['PurchaseRequestController', 'store'],
+
+    // Payment (Phase 3C)
+    'payment'       => ['PaymentController', 'index'],
+    'payment_store' => ['PaymentController', 'store'],
+
+    // Purchase Order (Phase 3D)
+    'po_list'       => ['PurchaseOrderController', 'index'],
+    'po_make'       => ['PurchaseOrderController', 'make'],
+    'po_edit'       => ['PurchaseOrderController', 'edit'],
+    'po_view'       => ['PurchaseOrderController', 'view'],
+    'po_deliv'      => ['PurchaseOrderController', 'delivery'],
+    'po_store'      => ['PurchaseOrderController', 'store'],
+
+    // Voucher (Phase 3E)
+    'voucher_list'  => ['VoucherController', 'index'],
+    'voc_make'      => ['VoucherController', 'make'],
+    'voc_view'      => ['VoucherController', 'view'],
+    'voucher_store' => ['VoucherController', 'store'],
+    'vou_print'     => 'vou-print.php',
+
+    // Delivery (Phase 3E)
+    'deliv_list'    => ['DeliveryController', 'index'],
+    'deliv_make'    => ['DeliveryController', 'make'],
+    'deliv_edit'    => ['DeliveryController', 'edit'],
+    'deliv_view'    => ['DeliveryController', 'view'],
+    'deliv_store'   => ['DeliveryController', 'store'],
+
+    // Receipt (Phase 3E)
+    'receipt_list'  => ['ReceiptController', 'index'],
+    'rep_make'      => ['ReceiptController', 'make'],
+    'rep_view'      => ['ReceiptController', 'view'],
+    'receipt_store' => ['ReceiptController', 'store'],
+    'rep_print'     => 'rep-print.php',
+
+    // Billing (Phase 3E)
+    'billing'       => ['BillingController', 'index'],
+    'billing_make'  => ['BillingController', 'make'],
+    'billing_store' => ['BillingController', 'store'],
+
     // ========== Legacy Routes (file-based) ==========
     
     // Dashboard
     'dashboard'     => 'dashboard.php',
     'user'          => 'user-list.php',
     
-    // Purchase Requisition
-    'pr_list'       => 'pr-list.php',
-    'pr_create'     => 'pr-create.php',
-    'pr_make'       => 'pr-make.php',
-    
-    // Purchase Order
-    'po_make'       => 'po-make.php',
-    'po_list'       => 'po-list.php',
-    'po_edit'       => 'po-edit.php',
-    'po_view'       => 'po-view.php',
-    'po_deliv'      => 'po-deliv.php',
-    
-    // Voucher
-    'voucher_list'  => 'vou-list.php',
-    'voc_make'      => 'voc-make.php',
-    'voc_view'      => 'voc-view.php',
-    'vou_print'     => 'vou-print.php',
-    
-    // Delivery
-    'deliv_list'    => 'deliv-list.php',
-    'deliv_view'    => 'deliv-view.php',
-    'deliv_make'    => 'deliv-make.php',
-    'deliv_edit'    => 'deliv-edit.php',
-    
-    // Complaint / QA
-    'compl_list'    => 'compl-list.php',
-    'compl_list2'   => 'compl-list2.php',
-    'compl_view'    => 'compl-view.php',
-    'qa_list'       => 'qa-list.php',
-    
-    // Payment & Reports
-    'payment'           => 'payment-list.php',
+    // Reports & Invoice Payments (still legacy)
     'invoice_payments'  => 'invoice-payments.php',
-    'billing'           => 'billing.php',
-    'billing_make'      => 'billing-make.php',
     'report'            => 'report.php',
-    'receipt_list'      => 'rep-list.php',
-    'rep_make'          => 'rep-make.php',
-    'rep_view'          => 'rep-view.php',
-    'rep_print'         => 'rep-print.php',
     
     // Admin Tools
     'audit_log'             => 'audit-log.php',
