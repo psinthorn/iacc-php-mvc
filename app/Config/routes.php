@@ -130,36 +130,36 @@ return [
     // Admin Tools
     'monitoring'            => 'admin-monitoring.php',
     'containers'            => 'admin-containers.php',
-    // Payment Gateway
-    'payment_gateway_config' => 'payment-gateway-config.php',
-    'payment_gateway_test'   => 'payment-gateway-test.php',
-    'payment_webhook'        => 'payment-webhook.php',
-    
-    // Developer Tools (Admin Only)
+    // ========== Phase 5A: Payment Gateway (MVC) ==========
+    'payment_gateway_config' => ['PaymentGatewayController', 'index'],
+    'payment_gateway_test'   => ['PaymentGatewayController', 'test'],
+    'payment_webhook'        => ['PaymentGatewayController', 'webhook'],
+
+    // ========== Phase 5B: Invoice Payment Flow (MVC) ==========
+    'inv_checkout'           => ['InvoicePaymentController', 'checkout'],
+    'inv_payment_success'    => ['InvoicePaymentController', 'success'],
+    'inv_payment_cancel'     => ['InvoicePaymentController', 'cancel'],
+
+    // ========== Phase 5C: AI Admin Panel (MVC) ==========
+    'ai_chat_history'        => ['AiAdminController', 'chatHistory'],
+    'ai_schema_browser'      => ['AiAdminController', 'schemaBrowser'],
+    'ai_action_log'          => ['AiAdminController', 'actionLog'],
+    'ai_schema_refresh'      => ['AiAdminController', 'schemaRefresh'],
+
+    // ========== Phase 5D: AI Core (MVC) ==========
+    'ai_settings'            => ['AiSettingsController', 'index'],
+    'ai_chat'                => ['AiChatController', 'index'],
+
+    // Developer Tools (Admin Only - legacy)
     'test_crud'              => 'tests/test-crud.php',
     'test_crud_ai'           => 'tests/test-crud-ai.php',
     'test_rbac'              => 'tests/test-rbac.php',
-    'ai_settings'            => 'ai-settings.php',
-    'ai_chat_history'        => 'ai-chat-history.php',
-    'ai_schema_browser'      => 'ai-schema-browser.php',
-    'ai_action_log'          => 'ai-action-log.php',
-    'ai_schema_refresh'      => 'ai-schema-refresh.php',
     'ai_documentation'       => 'ai-documentation.php',
     'debug_session'          => 'tests/debug-session.php',
-    'debug_invoice'          => 'tests/debug-invoice.php',
     'debug_php'              => 'tests/debug-php.php',
-    'docker_test'            => 'tests/docker-test.php',
     'test_containers'        => 'tests/test-containers.php',
     'api_lang_debug'         => 'api-lang-debug.php',
     'dev_roadmap'            => 'dev-roadmap.php',
-    
-    // AI Chat API
-    'ai_chat'                => 'ai/chat-handler.php',
-    
-    // Invoice Payment
-    'inv_checkout'           => 'inv-checkout.php',
-    'inv_payment_success'    => 'inv-payment-success.php',
-    'inv_payment_cancel'     => 'inv-payment-cancel.php',
     
     // User Account
     'help'                   => 'help.php',
