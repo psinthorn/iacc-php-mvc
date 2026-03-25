@@ -28,7 +28,7 @@ class Category extends BaseModel
         // Search condition
         $searchCond = '';
         if (!empty($search)) {
-            $escaped = sql_escape($search);
+            $escaped = \sql_escape($search);
             $searchCond = " AND (c.cat_name LIKE '%$escaped%' OR c.des LIKE '%$escaped%')";
         }
 

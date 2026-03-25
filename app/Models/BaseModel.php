@@ -67,7 +67,7 @@ class BaseModel
             ? $this->companyFilter->andCompanyFilter() 
             : '';
         
-        $sql = "SELECT * FROM `{$this->table}` WHERE `{$this->primaryKey}` = '" . sql_int($id) . "' $filter";
+        $sql = "SELECT * FROM `{$this->table}` WHERE `{$this->primaryKey}` = '" . \sql_int($id) . "' $filter";
         $result = mysqli_query($this->conn, $sql);
         
         if ($result && mysqli_num_rows($result) > 0) {
@@ -128,7 +128,7 @@ class BaseModel
         // Search condition
         $searchCond = '';
         if (!empty($search) && !empty($searchCols)) {
-            $escaped = sql_escape($search);
+            $escaped = \sql_escape($search);
             $parts = [];
             foreach ($searchCols as $col) {
                 $parts[] = "$col LIKE '%$escaped%'";

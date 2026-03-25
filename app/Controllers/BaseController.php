@@ -167,7 +167,7 @@ class BaseController
      */
     protected function inputInt(string $key, int $default = 0): int
     {
-        return sql_int($_REQUEST[$key] ?? $default);
+        return \sql_int($_REQUEST[$key] ?? $default);
     }
 
     /**
@@ -175,7 +175,7 @@ class BaseController
      */
     protected function inputStr(string $key, string $default = ''): string
     {
-        return sql_escape($_REQUEST[$key] ?? $default);
+        return \sql_escape($_REQUEST[$key] ?? $default);
     }
 
     /**

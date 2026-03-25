@@ -13,10 +13,36 @@
 
 return [
     // ========== MVC Routes (migrated) ==========
-    'category'      => ['CategoryController', 'index'],
-    'category_form' => ['CategoryController', 'form'],
-    'category_store'=> ['CategoryController', 'store'],
+    
+    // Category
+    'category'        => ['CategoryController', 'index'],
+    'category_form'   => ['CategoryController', 'form'],
+    'category_store'  => ['CategoryController', 'store'],
     'category_delete' => ['CategoryController', 'delete'],
+    
+    // Brand
+    'brand'           => ['BrandController', 'index'],
+    'brand_form'      => ['BrandController', 'form'],
+    'brand_store'     => ['BrandController', 'store'],
+    'brand_delete'    => ['BrandController', 'delete'],
+    
+    // Type
+    'type'            => ['TypeController', 'index'],
+    'type_store'      => ['TypeController', 'store'],
+    'type_delete'     => ['TypeController', 'delete'],
+    
+    // Model
+    'mo_list'         => ['ModelController', 'index'],
+    'mo_list_store'   => ['ModelController', 'store'],
+    'mo_list_delete'  => ['ModelController', 'delete'],
+    'mo_list_brands'  => ['ModelController', 'getBrands'],
+    
+    // Payment Method
+    'payment_method_list'   => ['PaymentMethodController', 'index'],
+    'payment_method'        => ['PaymentMethodController', 'form'],
+    'payment_method_store'  => ['PaymentMethodController', 'store'],
+    'payment_method_delete' => ['PaymentMethodController', 'delete'],
+    'payment_method_toggle' => ['PaymentMethodController', 'toggle'],
 
     // ========== Legacy Routes (file-based) ==========
     
@@ -26,8 +52,6 @@ return [
     // Master Data
     'company'       => 'company-list.php',
     'user'          => 'user-list.php',
-    'type'          => 'type-list.php',
-    'brand'         => 'brand-list.php',
     
     // Purchase Requisition
     'pr_list'       => 'pr-list.php',
@@ -64,7 +88,6 @@ return [
     'invoice_payments'  => 'invoice-payments.php',
     'billing'           => 'billing.php',
     'billing_make'      => 'billing-make.php',
-    'mo_list'           => 'mo-list.php',
     'report'            => 'report.php',
     'receipt_list'      => 'rep-list.php',
     'rep_make'          => 'rep-make.php',
@@ -75,9 +98,6 @@ return [
     'audit_log'             => 'audit-log.php',
     'monitoring'            => 'admin-monitoring.php',
     'containers'            => 'admin-containers.php',
-    'payment_method_list'   => 'payment-method-list.php',
-    'payment_method'        => 'payment-method.php',
-    
     // Payment Gateway
     'payment_gateway_config' => 'payment-gateway-config.php',
     'payment_gateway_test'   => 'payment-gateway-test.php',

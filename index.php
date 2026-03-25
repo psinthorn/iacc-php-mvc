@@ -145,8 +145,9 @@ if (is_array($route)) {
     $controllerName = 'App\\Controllers\\' . $route[0];
     $methodName = $route[1];
     
-    // For POST actions that redirect (store, delete), dispatch before HTML
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' || in_array($methodName, ['store', 'delete'])) {
+    // Dispatch before HTML for: POST actions, store/delete methods, AJAX endpoints, and GET actions that redirect
+    $earlyDispatchMethods = ['store', 'delete', 'getBrands', 'toggle'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' || in_array($methodName, $earlyDispatchMethods)) {
         $controller = new $controllerName();
         $controller->$methodName();
         exit; // Controller handles redirect/response
