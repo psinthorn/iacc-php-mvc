@@ -37,7 +37,7 @@ class PurchaseRequest extends BaseModel
             $where = "cus_id='$comId'";
         }
         $statusCond = $this->getStatusCondition($filters['status'] ?? '');
-        $sql = "SELECT pr.id, pr.name, name_en, DATE_FORMAT(pr.createdate,'%d-%m-%Y') as createdate, status, cancel
+        $sql = "SELECT pr.id, pr.name, name_en, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate, status, cancel
             FROM pr $join WHERE cancel='0' AND $where $statusCond {$conds['search']} {$conds['date']}
             ORDER BY pr.id DESC LIMIT $offset, $limit";
         return $this->fetchAll($sql);
@@ -58,8 +58,8 @@ class PurchaseRequest extends BaseModel
             $search = " AND (pr.name LIKE '%$s%' OR company.name_en LIKE '%$s%')";
         }
         $date = '';
-        if (!empty($f['date_from'])) $date .= " AND pr.createdate >= '" . \sql_escape($f['date_from']) . "'";
-        if (!empty($f['date_to'])) $date .= " AND pr.createdate <= '" . \sql_escape($f['date_to']) . "'";
+        if (!empty($f['date_from'])) $date .= " AND pr.date >= '" . \sql_escape($f['date_from']) . "'";
+        if (!empty($f['date_to'])) $date .= " AND pr.date <= '" . \sql_escape($f['date_to']) . "'";
         return ['search' => $search, 'date' => $date];
     }
 
