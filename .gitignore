@@ -90,3 +90,6 @@ products/
 !docker/**
 *.sql
 *.sql.gz
+
+# But DO track migration SQL files
+!database/migrations/*.sql

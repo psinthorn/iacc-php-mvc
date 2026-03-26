@@ -325,6 +325,31 @@ include_once 'inc/top-navbar.php';
                         </ul>
                     </li>
                     
+                    <!-- Booking API (level >= 5) -->
+                    <li>
+                        <a href="#"><i class="fa fa-plug"></i> <?=$xml->bookingapi ?? 'Booking API'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=api_dashboard"><i class="fa fa-dashboard"></i> <?=$xml->apidashboard ?? 'API Dashboard'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=api_keys"><i class="fa fa-key"></i> <?=$xml->apikeys ?? 'API Keys'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=api_bookings"><i class="fa fa-calendar"></i> <?=$xml->apibookings ?? 'Bookings'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=api_usage_logs"><i class="fa fa-bar-chart"></i> <?=$xml->apiusagelogs ?? 'Usage Logs'?></a>
+                            </li>
+                            <?php if (intval($_SESSION['user_level'] ?? 0) >= 9): ?>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=api_subscriptions"><i class="fa fa-users"></i> <?=$xml->apisubscriptions ?? 'Subscriptions'?></a>
+                            </li>
+                            <?php endif; ?>
+                        </ul>
+                    </li>
+                    
                     <!-- Developer Tools (Developer role only) -->
                     <?php 
                         $docker_debug_enabled = function_exists('is_docker_tools_enabled') ? is_docker_tools_enabled() : true;
