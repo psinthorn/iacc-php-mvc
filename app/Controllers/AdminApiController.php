@@ -364,6 +364,97 @@ class AdminApiController extends BaseController
     }
 
     /**
+     * Update order status (approve/reject/cancel from admin panel)
+     */
+    public function updateOrderStatus(): void
+    {
+        $this->requireLevel(0);
+        $this->verifyCsrf();
+        $companyId = $this->getCompanyId();
+
+        $id = $this->inputInt('id');
+        $action = $this->inputStr('action');
+        $adminNotes = $this->inputStr('admin_notes');
+
+        $order = $this->orderModel->findForCompany($id, $companyId);
+        if (!$order) {
+            $this->redirect('api_orders');
+            return;
+        }
+
+        $allowedTransitions = [
+            'pending'    => ['approve', 'reject', 'cancel'],
+            'processing' => ['cancel'],
+            'completed'  => ['cancel'],
+            'failed'     => ['retry', 'cancel'],
+        ];
+
+        $currentStatus = $order['status'];
+        $allowed = $allowedTransitions[$currentStatus] ?? [];
+
+        if (!in_array($action, $allowed)) {
+            $this->redirect('api_order_detail', ['id' => $id, 'error' => 'invalid_action']);
+            return;
+        }
+
+        switch ($action) {
+            case 'approve':
+                // Process the order through ChannelService
+                require_once __DIR__ . '/../Services/ChannelService.php';
+                $service = new \App\Services\ChannelService();
+                // Build auth data for the service
+                $subscription = $this->subscriptionModel->getByCompanyId($companyId);
+                $authData = ['company_id' => $companyId, 'plan' => $subscription['plan'] ?? 'trial'];
+                $result = $service->processOrder($id, $order, $authData);
+                if ($result['success'] && !empty($adminNotes)) {
+                    $existingNotes = $order['notes'] ? $order['notes'] . "\n" : '';
+                    $this->orderModel->updateFields($id, [
+                        'notes' => $existingNotes . '[Admin] ' . $adminNotes,
+                    ]);
+                }
+                break;
+
+            case 'reject':
+                $extra = ['error_message' => 'Rejected by admin' . ($adminNotes ? ": $adminNotes" : '')];
+                if (!empty($adminNotes)) {
+                    $existingNotes = $order['notes'] ? $order['notes'] . "\n" : '';
+                    $extra['notes'] = $existingNotes . '[Admin] ' . $adminNotes;
+                }
+                $this->orderModel->updateStatus($id, 'failed', $extra);
+                break;
+
+            case 'cancel':
+                $extra = [];
+                if (!empty($adminNotes)) {
+                    $existingNotes = $order['notes'] ? $order['notes'] . "\n" : '';
+                    $extra['notes'] = $existingNotes . '[Admin] ' . $adminNotes;
+                }
+                $this->orderModel->updateStatus($id, 'cancelled', $extra);
+                break;
+
+            case 'retry':
+                // Re-process a failed order
+                require_once __DIR__ . '/../Services/ChannelService.php';
+                $service = new \App\Services\ChannelService();
+                $subscription = $this->subscriptionModel->getByCompanyId($companyId);
+                $authData = ['company_id' => $companyId, 'plan' => $subscription['plan'] ?? 'trial'];
+                // Reset status to pending first
+                $this->orderModel->updateStatus($id, 'pending', ['error_message' => '']);
+                $order['status'] = 'pending'; // update local copy
+                $result = $service->processOrder($id, $order, $authData);
+                if ($result['success'] && !empty($adminNotes)) {
+                    $existingNotes = $order['notes'] ? $order['notes'] . "\n" : '';
+                    $this->orderModel->updateFields($id, [
+                        'notes' => $existingNotes . '[Admin Retry] ' . $adminNotes,
+                    ]);
+                }
+                break;
+        }
+
+        $this->redirect('api_order_detail', ['id' => $id]);
+    }
+
+    /**
      * Order detail page
      */
     public function orderDetail(): void

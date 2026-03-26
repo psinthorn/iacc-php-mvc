@@ -98,13 +98,14 @@ echo "\n";
 // =============================
 echo "--- 0. Cleanup Previous Test Data ---\n";
 $r = api_request('GET', '/webhooks');
-if ($r['code'] === 200 && !empty($r['body']['data'])) {
-    foreach ($r['body']['data'] as $oldHook) {
+$existingHooks = $r['body']['data']['webhooks'] ?? $r['body']['data'] ?? [];
+if ($r['code'] === 200 && !empty($existingHooks) && is_array($existingHooks)) {
+    foreach ($existingHooks as $oldHook) {
         if (isset($oldHook['id'])) {
             api_request('DELETE', '/webhooks/' . $oldHook['id']);
         }
     }
-    echo "  Cleaned up " . count($r['body']['data']) . " leftover webhook(s)\n";
+    echo "  Cleaned up " . count($existingHooks) . " leftover webhook(s)\n";
 } else {
     echo "  No leftover webhooks\n";
 }
