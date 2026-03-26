@@ -293,7 +293,7 @@ class Webhook extends BaseModel
     public function countForCompany(int $companyId): int
     {
         $cid = \sql_int($companyId);
-        $sql = "SELECT COUNT(*) as cnt FROM `{$this->table}` WHERE `company_id` = '$cid'";
+        $sql = "SELECT COUNT(*) as cnt FROM `{$this->table}` WHERE `company_id` = '$cid' AND `is_active` = 1";
         $result = mysqli_query($this->conn, $sql);
         return $result ? intval(mysqli_fetch_assoc($result)['cnt']) : 0;
     }

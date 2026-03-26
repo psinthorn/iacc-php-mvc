@@ -459,6 +459,7 @@ class ChannelApiController
     /**
      * Check rate limiting — requests per minute based on plan
      * trial=30, starter=60, professional=120, enterprise=300
+     * Test keys (key_name contains "Test") get 10x limit for E2E testing
      */
     private function checkRateLimit(): void
     {
@@ -472,6 +473,12 @@ class ChannelApiController
         $plan = $this->authData['plan'] ?? 'trial';
         $limit = $planLimits[$plan] ?? 30;
         $keyId = intval($this->authData['id']);
+
+        // Test/E2E keys get 10x rate limit to allow repeated test runs
+        $keyName = $this->authData['key_name'] ?? '';
+        if (stripos($keyName, 'test') !== false) {
+            $limit *= 10;
+        }
 
         $recentCount = $this->usageLog->countRecentRequests($keyId, 60);
         if ($recentCount >= $limit) {
@@ -515,7 +522,7 @@ class ChannelApiController
         // Limit webhooks per company
         $count = $this->webhookModel->countForCompany($companyId);
         if ($count >= 5) {
-            $this->jsonError('Maximum 5 webhooks per company', 429, 'WEBHOOK_LIMIT');
+            $this->jsonError('Maximum 5 webhooks per company', 409, 'WEBHOOK_LIMIT');
             return;
         }
 

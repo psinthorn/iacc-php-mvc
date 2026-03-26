@@ -60,13 +60,18 @@ echo "====================================\n";
 echo "Phase 3 API E2E Test Suite\n";
 echo "====================================\n\n";
 
-// Helper: wait if rate-limited
-function api_with_retry($method, $url, $data = null, $extraHeaders = [], $retries = 2) {
+// Helper: wait if rate-limited (respects Retry-After header)
+function api_with_retry($method, $url, $data = null, $extraHeaders = [], $retries = 3) {
     for ($i = 0; $i <= $retries; $i++) {
         $r = api_request_raw($method, $url, $data, $extraHeaders);
         if ($r['code'] !== 429 || $i === $retries) return $r;
-        echo "  (rate limited, waiting 10s...)\n";
-        sleep(10);
+        // Read Retry-After header from response, default to 15s
+        $wait = 15;
+        if (preg_match('/Retry-After:\s*(\d+)/i', $r['raw'] ?? '', $m)) {
+            $wait = min(intval($m[1]), 60);
+        }
+        echo "  (rate limited, waiting {$wait}s before retry " . ($i + 1) . "/" . $retries . "...)\n";
+        sleep($wait);
     }
     return $r;
 }
@@ -75,6 +80,35 @@ function api_with_retry($method, $url, $data = null, $extraHeaders = [], $retrie
 function api_request($method, $url, $data = null, $extraHeaders = []) {
     return api_with_retry($method, $url, $data, $extraHeaders);
 }
+
+// Pre-flight: ensure we are not already rate-limited before starting tests
+echo "Pre-flight rate limit check...\n";
+$preflight = api_request_raw('GET', '/subscription');
+if ($preflight['code'] === 429) {
+    echo "  ⏳ Rate limited from previous run. Waiting 60s for window reset...\n";
+    sleep(60);
+    echo "  ✓ Ready\n";
+} else {
+    echo "  ✓ OK (HTTP {$preflight['code']})\n";
+}
+echo "\n";
+
+// =============================
+// 0. CLEANUP LEFTOVER WEBHOOKS FROM PREVIOUS RUNS
+// =============================
+echo "--- 0. Cleanup Previous Test Data ---\n";
+$r = api_request('GET', '/webhooks');
+if ($r['code'] === 200 && !empty($r['body']['data'])) {
+    foreach ($r['body']['data'] as $oldHook) {
+        if (isset($oldHook['id'])) {
+            api_request('DELETE', '/webhooks/' . $oldHook['id']);
+        }
+    }
+    echo "  Cleaned up " . count($r['body']['data']) . " leftover webhook(s)\n";
+} else {
+    echo "  No leftover webhooks\n";
+}
+echo "\n";
 
 // =============================
 // 1. WEBHOOK CRUD
@@ -115,7 +149,7 @@ test('Webhook Reject HTTP URL', $r['code'] === 422 || $r['code'] === 400,
     "HTTP {$r['code']}, error=" . ($r['body']['error']['code'] ?? 'N/A'));
 
 // Register with invalid events should fail
-usleep(200000); // Brief pause to avoid rate limit
+sleep(1); // Pause between rapid POST calls to avoid rate limit
 $r = api_request('POST', '/webhooks', [
     'url' => 'https://example.com/webhook-invalid',
     'events' => ['invalid.event'],
