@@ -83,8 +83,75 @@ return [
     'pricing_enterprise_feature_8' => '14-day free trial',
     
     // Pricing Section
-    'pricing_title' => 'Simple Pricing',
-    'pricing_subtitle' => 'Choose the plan that fits your business needs',
+    'pricing_title' => 'Simple, Transparent Pricing',
+    'pricing_subtitle' => 'Choose your accounting plan, then add Booking API for automated reservations',
+    
+    // Pricing Tabs
+    'pricing_tab_accounting' => 'Accounting Plans',
+    'pricing_tab_api' => 'Booking API Add-on',
+    'pricing_addon_note' => 'Booking API is a separate add-on module. Pick your accounting plan above, then add API capabilities below.',
+    'pricing_yearly' => '/year',
+    'pricing_save' => 'Save 20%',
+    
+    // API Trial Plan
+    'pricing_api_trial' => 'Trial',
+    'pricing_api_trial_price' => 'Free',
+    'pricing_api_trial_duration' => '14 days',
+    'pricing_api_trial_feature_1' => '50 bookings/month',
+    'pricing_api_trial_feature_2' => '1 API key',
+    'pricing_api_trial_feature_3' => 'Website channel only',
+    'pricing_api_trial_feature_4' => 'Ollama AI only',
+    'pricing_api_trial_feature_5' => 'Community support',
+    
+    // API Starter Plan
+    'pricing_api_starter' => 'Starter',
+    'pricing_api_starter_feature_1' => '500 bookings/month',
+    'pricing_api_starter_feature_2' => '3 API keys',
+    'pricing_api_starter_feature_3' => 'Website + Email channels',
+    'pricing_api_starter_feature_4' => 'Ollama + 1 cloud AI',
+    'pricing_api_starter_feature_5' => 'Email support',
+    
+    // API Professional Plan
+    'pricing_api_professional' => 'Professional',
+    'pricing_api_pro_feature_1' => '5,000 bookings/month',
+    'pricing_api_pro_feature_2' => '10 API keys',
+    'pricing_api_pro_feature_3' => 'All channels',
+    'pricing_api_pro_feature_4' => 'All AI providers',
+    'pricing_api_pro_feature_5' => 'Priority support',
+    
+    // API Enterprise Plan
+    'pricing_api_enterprise' => 'Enterprise',
+    'pricing_api_ent_feature_1' => 'Unlimited bookings',
+    'pricing_api_ent_feature_2' => 'Unlimited API keys',
+    'pricing_api_ent_feature_3' => 'All channels + Priority',
+    'pricing_api_ent_feature_4' => 'All AI + custom models',
+    'pricing_api_ent_feature_5' => 'Dedicated support',
+    
+    // API Comparison Table
+    'pricing_compare_title' => 'Compare Booking API Plans',
+    'pricing_compare_feature' => 'Feature',
+    'pricing_compare_price' => 'Price',
+    'pricing_compare_duration' => 'Duration',
+    'pricing_compare_bookings' => 'Bookings/month',
+    'pricing_compare_api_keys' => 'API Keys',
+    'pricing_compare_channels' => 'Channels',
+    'pricing_compare_ai' => 'AI Parsing',
+    'pricing_compare_support' => 'Support',
+    'pricing_monthly_yearly' => 'Monthly/Yearly',
+    'pricing_custom' => 'Custom',
+    'pricing_unlimited' => 'Unlimited',
+    'pricing_website_only' => 'Website only',
+    'pricing_web_email' => 'Website + Email',
+    'pricing_all_channels' => 'All channels',
+    'pricing_all_priority' => 'All + Priority',
+    'pricing_ollama_only' => 'Ollama only',
+    'pricing_ollama_1cloud' => 'Ollama + 1 cloud',
+    'pricing_all_ai' => 'All AI providers',
+    'pricing_all_ai_custom' => 'All + custom',
+    'pricing_community' => 'Community',
+    'pricing_email_support' => 'Email',
+    'pricing_priority_support' => 'Priority',
+    'pricing_dedicated_support' => 'Dedicated',
     
     'pricing_free' => 'Free',
     'pricing_pro' => 'Pro',

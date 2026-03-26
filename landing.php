@@ -624,11 +624,74 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             background: linear-gradient(135deg, #f5f7fa 0%, #e8ecef 100%);
         }
         
+        /* Pricing Tabs */
+        .pricing-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .pricing-tab {
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pricing-tab:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+        
+        .pricing-tab:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .pricing-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .pricing-tab:hover:not(.active) {
+            background: rgba(142, 68, 173, 0.08);
+        }
+        
+        .pricing-tab i {
+            font-size: 1.1rem;
+        }
+        
+        .pricing-panel {
+            display: none;
+        }
+        
+        .pricing-panel.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .pricing-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 30px;
-            margin-top: 50px;
+        }
+        
+        .pricing-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
         }
         
         .pricing-card {
@@ -640,11 +703,20 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             position: relative;
         }
         
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
         .pricing-card.featured {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             transform: scale(1.05);
             box-shadow: 0 30px 60px rgba(142, 68, 173, 0.3);
+        }
+        
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-5px);
         }
         
         .pricing-card.featured .pricing-price,
@@ -667,6 +739,21 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
+        }
+        
+        .pricing-card .plan-duration {
+            display: inline-block;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .pricing-card.featured .plan-duration {
+            background: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.9);
         }
         
         .pricing-card h3 {
@@ -704,6 +791,93 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
         
         .pricing-card.featured .pricing-features li i {
             color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Addon Note */
+        .pricing-addon-note {
+            text-align: center;
+            margin-top: 30px;
+            padding: 16px 24px;
+            background: rgba(142, 68, 173, 0.06);
+            border-radius: 12px;
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .pricing-addon-note i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        
+        /* Comparison Table */
+        .pricing-compare {
+            margin-top: 60px;
+        }
+        
+        .pricing-compare h3 {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+        
+        .compare-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        
+        .compare-table thead th {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 16px 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+        
+        .compare-table thead th:first-child {
+            text-align: left;
+            padding-left: 24px;
+        }
+        
+        .compare-table tbody td {
+            padding: 14px 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+        
+        .compare-table tbody td:first-child {
+            text-align: left;
+            padding-left: 24px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .compare-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .compare-table tbody tr:hover {
+            background: rgba(142, 68, 173, 0.03);
+        }
+        
+        .compare-table .plan-highlight {
+            background: rgba(142, 68, 173, 0.06);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .compare-table thead th.plan-highlight {
+            background: var(--warning);
         }
         
         /* ============ CTA SECTION ============ */
@@ -860,8 +1034,23 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 margin: 0 auto;
             }
             
+            .pricing-grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
             .pricing-card.featured {
                 transform: none;
+            }
+            
+            .compare-table {
+                font-size: 0.85rem;
+            }
+            
+            .compare-table thead th,
+            .compare-table tbody td {
+                padding: 10px 8px;
             }
             
             .footer-container {
@@ -907,6 +1096,35 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             
             .integration-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .pricing-grid-4 {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            
+            .pricing-tabs {
+                flex-direction: column;
+                max-width: 300px;
+                margin: 30px auto 30px;
+            }
+            
+            .pricing-tab:first-child {
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .pricing-tab:last-child {
+                border-radius: 0 0 12px 12px;
+            }
+            
+            .compare-table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .compare-table {
+                min-width: 600px;
             }
             
             .steps {
@@ -1195,51 +1413,206 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 <p class="section-subtitle"><?= __('pricing_subtitle') ?></p>
             </div>
             
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3><?= __('pricing_free') ?></h3>
-                    <div class="pricing-price">฿0<span><?= __('pricing_month') ?></span></div>
-                    <ul class="pricing-features">
-                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_1') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_4') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_2') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_3') ?></li>
-                        <li style="opacity:0.5;"><i class="fa fa-times" style="color:var(--danger);"></i> <?= __('pricing_free_feature_5') ?></li>
-                    </ul>
-                    <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('nav_get_started') ?></a>
+            <!-- Pricing Tabs -->
+            <div class="pricing-tabs">
+                <button class="pricing-tab active" onclick="switchPricingTab('accounting')" id="tab-accounting">
+                    <i class="fa fa-briefcase"></i> <?= __('pricing_tab_accounting') ?>
+                </button>
+                <button class="pricing-tab" onclick="switchPricingTab('api')" id="tab-api">
+                    <i class="fa fa-plug"></i> <?= __('pricing_tab_api') ?>
+                    <span class="badge-new">NEW</span>
+                </button>
+            </div>
+            
+            <!-- Panel 1: Accounting Plans -->
+            <div class="pricing-panel active" id="panel-accounting">
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h3><?= __('pricing_free') ?></h3>
+                        <div class="pricing-price">฿0<span><?= __('pricing_month') ?></span></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_free_feature_3') ?></li>
+                            <li style="opacity:0.5;"><i class="fa fa-times" style="color:var(--danger);"></i> <?= __('pricing_free_feature_5') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('nav_get_started') ?></a>
+                    </div>
+                    
+                    <div class="pricing-card featured">
+                        <span class="pricing-badge"><?= __('pricing_popular') ?></span>
+                        <h3><?= __('pricing_pro') ?></h3>
+                        <div class="pricing-price">฿990<span><?= __('pricing_month') ?></span></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_5') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_6') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_7') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_3') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-white" style="width: 100%;"><?= __('hero_cta_start') ?></a>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <h3><?= __('pricing_enterprise') ?></h3>
+                        <div class="pricing-price"><?= __('pricing_contact') ?></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_3') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_6') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_7') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_8') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_5') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('pricing_contact') ?></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel 2: Booking API Plans -->
+            <div class="pricing-panel" id="panel-api">
+                <div class="pricing-grid-4">
+                    <!-- Trial -->
+                    <div class="pricing-card">
+                        <span class="plan-duration"><?= __('pricing_api_trial_duration') ?></span>
+                        <h3><?= __('pricing_api_trial') ?></h3>
+                        <div class="pricing-price"><?= __('pricing_api_trial_price') ?></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_trial_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_trial_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_trial_feature_3') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_trial_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_trial_feature_5') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('nav_get_started') ?></a>
+                    </div>
+                    
+                    <!-- Starter -->
+                    <div class="pricing-card">
+                        <span class="plan-duration"><?= __('pricing_monthly_yearly') ?></span>
+                        <h3><?= __('pricing_api_starter') ?></h3>
+                        <div class="pricing-price">฿990<span><?= __('pricing_month') ?></span></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_starter_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_starter_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_starter_feature_3') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_starter_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_starter_feature_5') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('hero_cta_start') ?></a>
+                    </div>
+                    
+                    <!-- Professional (Featured) -->
+                    <div class="pricing-card featured">
+                        <span class="pricing-badge"><?= __('pricing_popular') ?></span>
+                        <span class="plan-duration"><?= __('pricing_monthly_yearly') ?></span>
+                        <h3><?= __('pricing_api_professional') ?></h3>
+                        <div class="pricing-price">฿2,990<span><?= __('pricing_month') ?></span></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_pro_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_pro_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_pro_feature_3') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_pro_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_pro_feature_5') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-white" style="width: 100%;"><?= __('hero_cta_start') ?></a>
+                    </div>
+                    
+                    <!-- Enterprise -->
+                    <div class="pricing-card">
+                        <span class="plan-duration"><?= __('pricing_custom') ?></span>
+                        <h3><?= __('pricing_api_enterprise') ?></h3>
+                        <div class="pricing-price"><?= __('pricing_contact') ?></div>
+                        <ul class="pricing-features">
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_ent_feature_1') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_ent_feature_2') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_ent_feature_3') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_ent_feature_4') ?></li>
+                            <li><i class="fa fa-check"></i> <?= __('pricing_api_ent_feature_5') ?></li>
+                        </ul>
+                        <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('pricing_contact') ?></a>
+                    </div>
                 </div>
                 
-                <div class="pricing-card featured">
-                    <span class="pricing-badge"><?= __('pricing_popular') ?></span>
-                    <h3><?= __('pricing_pro') ?></h3>
-                    <div class="pricing-price">฿990<span><?= __('pricing_month') ?></span></div>
-                    <ul class="pricing-features">
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_1') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_4') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_2') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_5') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_6') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_7') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_pro_feature_3') ?></li>
-                    </ul>
-                    <a href="login.php" class="btn btn-white" style="width: 100%;"><?= __('hero_cta_start') ?></a>
+                <!-- Comparison Table -->
+                <div class="pricing-compare">
+                    <h3><?= __('pricing_compare_title') ?></h3>
+                    <div class="compare-table-wrapper">
+                        <table class="compare-table">
+                            <thead>
+                                <tr>
+                                    <th><?= __('pricing_compare_feature') ?></th>
+                                    <th><?= __('pricing_api_trial') ?></th>
+                                    <th><?= __('pricing_api_starter') ?></th>
+                                    <th class="plan-highlight"><?= __('pricing_api_professional') ?></th>
+                                    <th><?= __('pricing_api_enterprise') ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><?= __('pricing_compare_price') ?></td>
+                                    <td><?= __('pricing_api_trial_price') ?></td>
+                                    <td>฿990<?= __('pricing_month') ?></td>
+                                    <td class="plan-highlight">฿2,990<?= __('pricing_month') ?></td>
+                                    <td><?= __('pricing_custom') ?></td>
+                                </tr>
+                                <tr>
+                                    <td><?= __('pricing_compare_duration') ?></td>
+                                    <td><?= __('pricing_api_trial_duration') ?></td>
+                                    <td><?= __('pricing_monthly_yearly') ?></td>
+                                    <td class="plan-highlight"><?= __('pricing_monthly_yearly') ?></td>
+                                    <td><?= __('pricing_custom') ?></td>
+                                </tr>
+                                <tr>
+                                    <td><?= __('pricing_compare_bookings') ?></td>
+                                    <td>50</td>
+                                    <td>500</td>
+                                    <td class="plan-highlight">5,000</td>
+                                    <td><?= __('pricing_unlimited') ?></td>
+                                </tr>
+                                <tr>
+                                    <td><?= __('pricing_compare_api_keys') ?></td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                    <td class="plan-highlight">10</td>
+                                    <td><?= __('pricing_unlimited') ?></td>
+                                </tr>
+                                <tr>
+                                    <td><?= __('pricing_compare_channels') ?></td>
+                                    <td><?= __('pricing_website_only') ?></td>
+                                    <td><?= __('pricing_web_email') ?></td>
+                                    <td class="plan-highlight"><?= __('pricing_all_channels') ?></td>
+                                    <td><?= __('pricing_all_priority') ?></td>
+                                </tr>
+                                <tr>
+                                    <td><?= __('pricing_compare_ai') ?></td>
+                                    <td><?= __('pricing_ollama_only') ?></td>
+                                    <td><?= __('pricing_ollama_1cloud') ?></td>
+                                    <td class="plan-highlight"><?= __('pricing_all_ai') ?></td>
+                                    <td><?= __('pricing_all_ai_custom') ?></td>
+                                </tr>
+                                <tr>
+                                    <td><?= __('pricing_compare_support') ?></td>
+                                    <td><?= __('pricing_community') ?></td>
+                                    <td><?= __('pricing_email_support') ?></td>
+                                    <td class="plan-highlight"><?= __('pricing_priority_support') ?></td>
+                                    <td><?= __('pricing_dedicated_support') ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                
-                <div class="pricing-card">
-                    <h3><?= __('pricing_enterprise') ?></h3>
-                    <div class="pricing-price"><?= __('pricing_contact') ?></div>
-                    <ul class="pricing-features">
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_1') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_2') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_3') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_4') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_6') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_7') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_8') ?></li>
-                        <li><i class="fa fa-check"></i> <?= __('pricing_enterprise_feature_5') ?></li>
-                    </ul>
-                    <a href="login.php" class="btn btn-outline" style="width: 100%;"><?= __('pricing_contact') ?></a>
-                </div>
+            </div>
+            
+            <!-- Addon Note -->
+            <div class="pricing-addon-note">
+                <i class="fa fa-info-circle"></i>
+                <?= __('pricing_addon_note') ?>
             </div>
         </div>
     </section>
@@ -1329,6 +1702,17 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 }
             });
         });
+        
+        // Pricing tab switcher
+        function switchPricingTab(tab) {
+            // Toggle tab active state
+            document.getElementById('tab-accounting').classList.toggle('active', tab === 'accounting');
+            document.getElementById('tab-api').classList.toggle('active', tab === 'api');
+            
+            // Toggle panel visibility
+            document.getElementById('panel-accounting').classList.toggle('active', tab === 'accounting');
+            document.getElementById('panel-api').classList.toggle('active', tab === 'api');
+        }
     </script>
 </body>
 </html>

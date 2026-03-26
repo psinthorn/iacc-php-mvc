@@ -83,8 +83,75 @@ return [
     'pricing_enterprise_feature_8' => 'ทดลองใช้ฟรี 14 วัน',
     
     // Pricing Section
-    'pricing_title' => 'ราคาที่เรียบง่าย',
-    'pricing_subtitle' => 'เลือกแผนที่เหมาะกับความต้องการทางธุรกิจของคุณ',
+    'pricing_title' => 'ราคาโปร่งใสและเรียบง่าย',
+    'pricing_subtitle' => 'เลือกแผนบัญชีของคุณ แล้วเพิ่ม Booking API สำหรับการจองอัตโนมัติ',
+    
+    // Pricing Tabs
+    'pricing_tab_accounting' => 'แผนบัญชี',
+    'pricing_tab_api' => 'Booking API เสริม',
+    'pricing_addon_note' => 'Booking API เป็นโมดูลเสริมแยกต่างหาก เลือกแผนบัญชีด้านบน แล้วเพิ่มความสามารถ API ด้านล่าง',
+    'pricing_yearly' => '/ปี',
+    'pricing_save' => 'ประหยัด 20%',
+    
+    // API Trial Plan
+    'pricing_api_trial' => 'ทดลองใช้',
+    'pricing_api_trial_price' => 'ฟรี',
+    'pricing_api_trial_duration' => '14 วัน',
+    'pricing_api_trial_feature_1' => '50 การจอง/เดือน',
+    'pricing_api_trial_feature_2' => '1 API key',
+    'pricing_api_trial_feature_3' => 'ช่องทางเว็บไซต์เท่านั้น',
+    'pricing_api_trial_feature_4' => 'Ollama AI เท่านั้น',
+    'pricing_api_trial_feature_5' => 'สนับสนุนจากชุมชน',
+    
+    // API Starter Plan
+    'pricing_api_starter' => 'สตาร์ทเตอร์',
+    'pricing_api_starter_feature_1' => '500 การจอง/เดือน',
+    'pricing_api_starter_feature_2' => '3 API keys',
+    'pricing_api_starter_feature_3' => 'ช่องทางเว็บไซต์ + อีเมล',
+    'pricing_api_starter_feature_4' => 'Ollama + 1 คลาวด์ AI',
+    'pricing_api_starter_feature_5' => 'สนับสนุนทางอีเมล',
+    
+    // API Professional Plan
+    'pricing_api_professional' => 'โปรเฟสชันแนล',
+    'pricing_api_pro_feature_1' => '5,000 การจอง/เดือน',
+    'pricing_api_pro_feature_2' => '10 API keys',
+    'pricing_api_pro_feature_3' => 'ทุกช่องทาง',
+    'pricing_api_pro_feature_4' => 'AI ทุกเจ้า',
+    'pricing_api_pro_feature_5' => 'สนับสนุนลำดับความสำคัญ',
+    
+    // API Enterprise Plan
+    'pricing_api_enterprise' => 'องค์กร',
+    'pricing_api_ent_feature_1' => 'การจองไม่จำกัด',
+    'pricing_api_ent_feature_2' => 'API keys ไม่จำกัด',
+    'pricing_api_ent_feature_3' => 'ทุกช่องทาง + ลำดับความสำคัญ',
+    'pricing_api_ent_feature_4' => 'AI ทุกเจ้า + โมเดลกำหนดเอง',
+    'pricing_api_ent_feature_5' => 'สนับสนุนเฉพาะ',
+    
+    // API Comparison Table
+    'pricing_compare_title' => 'เปรียบเทียบแผน Booking API',
+    'pricing_compare_feature' => 'คุณสมบัติ',
+    'pricing_compare_price' => 'ราคา',
+    'pricing_compare_duration' => 'ระยะเวลา',
+    'pricing_compare_bookings' => 'การจอง/เดือน',
+    'pricing_compare_api_keys' => 'API Keys',
+    'pricing_compare_channels' => 'ช่องทาง',
+    'pricing_compare_ai' => 'AI Parsing',
+    'pricing_compare_support' => 'สนับสนุน',
+    'pricing_monthly_yearly' => 'รายเดือน/รายปี',
+    'pricing_custom' => 'กำหนดเอง',
+    'pricing_unlimited' => 'ไม่จำกัด',
+    'pricing_website_only' => 'เว็บไซต์เท่านั้น',
+    'pricing_web_email' => 'เว็บไซต์ + อีเมล',
+    'pricing_all_channels' => 'ทุกช่องทาง',
+    'pricing_all_priority' => 'ทั้งหมด + ลำดับความสำคัญ',
+    'pricing_ollama_only' => 'Ollama เท่านั้น',
+    'pricing_ollama_1cloud' => 'Ollama + 1 คลาวด์',
+    'pricing_all_ai' => 'AI ทุกเจ้า',
+    'pricing_all_ai_custom' => 'ทั้งหมด + กำหนดเอง',
+    'pricing_community' => 'ชุมชน',
+    'pricing_email_support' => 'อีเมล',
+    'pricing_priority_support' => 'ลำดับความสำคัญ',
+    'pricing_dedicated_support' => 'เฉพาะ',
     
     'pricing_free' => 'ฟรี',
     'pricing_pro' => 'โปร',
