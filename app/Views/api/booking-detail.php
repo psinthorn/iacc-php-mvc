@@ -1,0 +1,167 @@
+<?php
+/**
+ * Booking Detail View
+ * 
+ * Variables from AdminApiController::bookingDetail():
+ *   $booking
+ */
+$statusColors = ['pending' => 'warning', 'processing' => 'info', 'completed' => 'success', 'failed' => 'danger', 'cancelled' => 'secondary'];
+$color = $statusColors[$booking['status']] ?? 'secondary';
+?>
+<link rel="stylesheet" href="css/master-data.css">
+
+<div class="master-data-container">
+
+<div class="master-data-header">
+    <h2><i class="fa fa-calendar-check-o"></i> Booking #<?= $booking['id'] ?></h2>
+    <div>
+        <a href="index.php?page=api_bookings" class="btn btn-sm btn-outline-primary"><i class="fa fa-arrow-left"></i> Back to Bookings</a>
+    </div>
+</div>
+
+<!-- Status Banner -->
+<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <span class="badge badge-<?= $color ?>" style="font-size:1.1rem; padding:6px 15px;">
+            <?= ucfirst($booking['status']) ?>
+        </span>
+        <span style="margin-left:10px; color:#666;">
+            Channel: <span class="badge badge-info"><?= htmlspecialchars($booking['channel']) ?></span>
+        </span>
+    </div>
+    <div style="text-align:right; color:#666; font-size:0.9rem;">
+        <div>Created: <?= date('M d, Y H:i:s', strtotime($booking['created_at'])) ?></div>
+        <?php if ($booking['processed_at']): ?>
+        <div>Processed: <?= date('M d, Y H:i:s', strtotime($booking['processed_at'])) ?></div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+<!-- Guest Information -->
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h4 style="margin-bottom:15px;"><i class="fa fa-user"></i> Guest Information</h4>
+    <table class="table" style="margin:0;">
+        <tr><td style="width:120px; color:#666;"><strong>Name</strong></td><td><?= htmlspecialchars($booking['guest_name']) ?></td></tr>
+        <tr><td style="color:#666;"><strong>Email</strong></td><td><?= htmlspecialchars($booking['guest_email'] ?: '-') ?></td></tr>
+        <tr><td style="color:#666;"><strong>Phone</strong></td><td><?= htmlspecialchars($booking['guest_phone'] ?: '-') ?></td></tr>
+        <tr><td style="color:#666;"><strong>Guests</strong></td><td><?= intval($booking['guests']) ?></td></tr>
+    </table>
+</div>
+
+<!-- Booking Details -->
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h4 style="margin-bottom:15px;"><i class="fa fa-info-circle"></i> Booking Details</h4>
+    <table class="table" style="margin:0;">
+        <tr><td style="width:120px; color:#666;"><strong>Room Type</strong></td><td><?= htmlspecialchars($booking['room_type'] ?: '-') ?></td></tr>
+        <tr><td style="color:#666;"><strong>Check-in</strong></td><td><?= $booking['check_in'] ?: '-' ?></td></tr>
+        <tr><td style="color:#666;"><strong>Check-out</strong></td><td><?= $booking['check_out'] ?: '-' ?></td></tr>
+        <tr>
+            <td style="color:#666;"><strong>Amount</strong></td>
+            <td><strong style="font-size:1.1rem;">฿<?= number_format(floatval($booking['total_amount']), 2) ?></strong> <?= $booking['currency'] ?></td>
+        </tr>
+    </table>
+</div>
+
+</div>
+
+<!-- Linked Records -->
+<?php if ($booking['linked_pr_id'] || $booking['linked_po_id'] || $booking['linked_company_id']): ?>
+<div style="background:white; border-radius:12px; padding:20px; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h4 style="margin-bottom:15px;"><i class="fa fa-link"></i> Linked Records</h4>
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+        <?php if ($booking['linked_company_id']): ?>
+        <div style="background:#f8f9fa; border-radius:8px; padding:15px; flex:1; min-width:200px;">
+            <div style="color:#666; font-size:0.85rem;">Customer</div>
+            <div style="font-size:1.2rem; font-weight:bold;">
+                <i class="fa fa-building"></i> 
+                <a href="index.php?page=company&method=V&id=<?= $booking['linked_company_id'] ?>">
+                    #<?= $booking['linked_company_id'] ?>
+                </a>
+            </div>
+        </div>
+        <?php endif; ?>
+        <?php if ($booking['linked_pr_id']): ?>
+        <div style="background:#f8f9fa; border-radius:8px; padding:15px; flex:1; min-width:200px;">
+            <div style="color:#666; font-size:0.85rem;">Purchase Requisition</div>
+            <div style="font-size:1.2rem; font-weight:bold;">
+                <i class="fa fa-file-text"></i> 
+                <a href="index.php?page=pr_make&id=<?= $booking['linked_pr_id'] ?>">
+                    PR #<?= $booking['linked_pr_id'] ?>
+                </a>
+            </div>
+        </div>
+        <?php endif; ?>
+        <?php if ($booking['linked_po_id']): ?>
+        <div style="background:#f8f9fa; border-radius:8px; padding:15px; flex:1; min-width:200px;">
+            <div style="color:#666; font-size:0.85rem;">Purchase Order / Quotation</div>
+            <div style="font-size:1.2rem; font-weight:bold;">
+                <i class="fa fa-file-text-o"></i> 
+                <a href="index.php?page=po_view&id=<?= $booking['linked_po_id'] ?>">
+                    PO #<?= $booking['linked_po_id'] ?>
+                </a>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Notes & Error -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+    <?php if ($booking['notes']): ?>
+    <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <h4 style="margin-bottom:10px;"><i class="fa fa-sticky-note"></i> Notes</h4>
+        <p style="color:#555; white-space:pre-line;"><?= htmlspecialchars($booking['notes']) ?></p>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($booking['error_message']): ?>
+    <div style="background:#fff5f5; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:1px solid #fed7d7;">
+        <h4 style="margin-bottom:10px; color:#e53e3e;"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+        <pre style="background:#fff; padding:10px; border-radius:6px; font-size:0.85rem; color:#c53030; overflow-x:auto;"><?= htmlspecialchars($booking['error_message']) ?></pre>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Raw Data -->
+<?php if ($booking['raw_data']): ?>
+<div style="background:white; border-radius:12px; padding:20px; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h4 style="margin-bottom:10px;"><i class="fa fa-code"></i> Raw Request Data</h4>
+    <pre style="background:#f8f9fa; padding:15px; border-radius:8px; font-size:0.85rem; overflow-x:auto; max-height:300px;"><code><?= htmlspecialchars(json_encode(json_decode($booking['raw_data']), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></code></pre>
+</div>
+<?php endif; ?>
+
+<!-- Processing Timeline -->
+<div style="background:white; border-radius:12px; padding:20px; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h4 style="margin-bottom:15px;"><i class="fa fa-clock-o"></i> Timeline</h4>
+    <div style="position:relative; padding-left:30px;">
+        <?php
+        $events = [];
+        $events[] = ['time' => $booking['created_at'], 'label' => 'Booking Created', 'icon' => 'plus-circle', 'color' => '#3498db'];
+        
+        if ($booking['status'] === 'completed' && $booking['processed_at']) {
+            $events[] = ['time' => $booking['processed_at'], 'label' => 'Processing Completed', 'icon' => 'check-circle', 'color' => '#27ae60'];
+        } elseif ($booking['status'] === 'failed' && $booking['processed_at']) {
+            $events[] = ['time' => $booking['processed_at'], 'label' => 'Processing Failed', 'icon' => 'times-circle', 'color' => '#e74c3c'];
+        } elseif ($booking['status'] === 'cancelled') {
+            $events[] = ['time' => $booking['updated_at'], 'label' => 'Booking Cancelled', 'icon' => 'ban', 'color' => '#95a5a6'];
+        }
+
+        foreach ($events as $i => $evt):
+        ?>
+        <div style="position:relative; padding-bottom:<?= $i < count($events) - 1 ? '25px' : '0' ?>; border-left:<?= $i < count($events) - 1 ? '2px solid #e9ecef' : 'none' ?>; margin-left:6px; padding-left:20px;">
+            <div style="position:absolute; left:-8px; top:2px;">
+                <i class="fa fa-<?= $evt['icon'] ?>" style="color:<?= $evt['color'] ?>; font-size:1.1rem; background:white; padding:2px;"></i>
+            </div>
+            <div>
+                <strong><?= $evt['label'] ?></strong>
+                <div style="color:#999; font-size:0.85rem;"><?= date('M d, Y H:i:s', strtotime($evt['time'])) ?></div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+</div>

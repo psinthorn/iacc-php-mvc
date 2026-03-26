@@ -123,10 +123,10 @@
             <tbody>
                 <?php
                 $planRef = [
-                    'trial' => ['limit' => 10, 'keys' => 1, 'channels' => 'website', 'ai' => '-'],
-                    'starter' => ['limit' => 100, 'keys' => 2, 'channels' => 'website, email', 'ai' => '-'],
-                    'professional' => ['limit' => 500, 'keys' => 5, 'channels' => 'website, email, line, facebook', 'ai' => 'openai, anthropic'],
-                    'enterprise' => ['limit' => 0, 'keys' => 10, 'channels' => 'All', 'ai' => 'All']
+                    'trial' => ['limit' => 50, 'keys' => 1, 'channels' => 'website', 'ai' => 'ollama'],
+                    'starter' => ['limit' => 500, 'keys' => 3, 'channels' => 'website, email', 'ai' => 'ollama, openai'],
+                    'professional' => ['limit' => 5000, 'keys' => 10, 'channels' => 'website, email, line, facebook, manual', 'ai' => 'ollama, openai, claude, gemini'],
+                    'enterprise' => ['limit' => 0, 'keys' => 999, 'channels' => 'All', 'ai' => 'All']
                 ];
                 foreach ($planRef as $name => $info):
                 ?>

@@ -5,6 +5,7 @@ use App\Models\ApiKey;
 use App\Models\ApiUsageLog;
 use App\Models\Booking;
 use App\Models\Subscription;
+use App\Models\Webhook;
 use App\Services\BookingService;
 
 /**
@@ -27,6 +28,7 @@ class BookingApiController
     private Booking $bookingModel;
     private Subscription $subscriptionModel;
     private ApiUsageLog $usageLog;
+    private Webhook $webhookModel;
     private ?array $authData = null;
     private float $startTime;
 
@@ -38,6 +40,7 @@ class BookingApiController
         $this->bookingModel = new Booking();
         $this->subscriptionModel = new Subscription();
         $this->usageLog = new ApiUsageLog();
+        $this->webhookModel = new Webhook();
         $this->startTime = microtime(true);
     }
 
@@ -83,6 +86,19 @@ class BookingApiController
                     $this->getSubscription();
                     break;
 
+                // Webhook endpoints
+                case $method === 'POST' && $path === 'webhooks':
+                    $this->registerWebhook();
+                    break;
+
+                case $method === 'GET' && $path === 'webhooks':
+                    $this->listWebhooks();
+                    break;
+
+                case $method === 'DELETE' && $path === 'webhooks' && $resourceId:
+                    $this->deleteWebhook($resourceId);
+                    break;
+
                 default:
                     $this->jsonError('Not Found', 404, 'ENDPOINT_NOT_FOUND');
             }
@@ -102,6 +118,17 @@ class BookingApiController
     {
         $input = $this->getJsonInput();
         $companyId = intval($this->authData['company_id']);
+
+        // Idempotency check
+        $idempotencyKey = $_SERVER['HTTP_X_IDEMPOTENCY_KEY'] ?? null;
+        if ($idempotencyKey) {
+            $existing = $this->bookingModel->findByIdempotencyKey($companyId, $idempotencyKey);
+            if ($existing) {
+                $this->logRequest('POST /api/v1/bookings', $existing['channel'], 200, $input);
+                $this->jsonSuccess($this->formatBookingResponse($existing), 200, 'Duplicate request — returning existing booking');
+                return;
+            }
+        }
 
         // Validate required fields
         $errors = $this->validateBookingInput($input);
@@ -147,6 +174,7 @@ class BookingApiController
             'currency'    => $input['currency'] ?? 'THB',
             'notes'       => $input['notes'] ?? null,
             'raw_data'    => json_encode($input),
+            'idempotency_key' => $idempotencyKey,
         ];
 
         $bookingId = $this->bookingModel->createBooking($bookingData);
@@ -161,9 +189,11 @@ class BookingApiController
 
         if ($result['success']) {
             $this->logRequest('POST /api/v1/bookings', $channel, 201, $input, $result['data']);
+            $this->fireWebhook('booking.completed', $result['data']);
             $this->jsonSuccess($result['data'], 201, 'Booking created and processed successfully');
         } else {
             $this->logRequest('POST /api/v1/bookings', $channel, 500, $input, ['error' => $result['error']]);
+            $this->fireWebhook('booking.failed', ['booking_id' => $bookingId, 'error' => $result['error']]);
             // Booking was created but processing failed — return booking ID for retry
             $this->jsonSuccess([
                 'booking_id' => $bookingId,
@@ -240,6 +270,7 @@ class BookingApiController
         $this->bookingModel->updateStatus($id, 'cancelled');
         
         $this->logRequest("DELETE /api/v1/bookings/$id", $booking['channel'], 200);
+        $this->fireWebhook('booking.cancelled', ['booking_id' => $id, 'guest_name' => $booking['guest_name']]);
         $this->jsonSuccess(['booking_id' => $id, 'status' => 'cancelled'], 200, 'Booking cancelled');
     }
 
@@ -303,23 +334,14 @@ class BookingApiController
             return;
         }
 
-        // Build UPDATE query
-        $setParts = [];
-        foreach ($updates as $col => $val) {
-            if ($val === null) {
-                $setParts[] = "`$col` = NULL";
-            } else {
-                $escaped = \sql_escape($val);
-                $setParts[] = "`$col` = '$escaped'";
-            }
-        }
-        $setStr = implode(', ', $setParts);
-        $sql = "UPDATE `booking_requests` SET $setStr, `updated_at` = NOW() WHERE `id` = " . \sql_int($id);
-        mysqli_query($this->conn, $sql);
+        // Update via model (safe prepared statements)
+        $updates['updated_at'] = date('Y-m-d H:i:s');
+        $this->bookingModel->updateFields($id, $updates);
 
         // Return updated booking
         $updated = $this->bookingModel->findForCompany($id, $companyId);
         $this->logRequest("PUT /api/v1/bookings/$id", $updated['channel'], 200);
+        $this->fireWebhook('booking.updated', $this->formatBookingResponse($updated));
         $this->jsonSuccess(['booking' => $this->formatBookingResponse($updated)], 200, 'Booking updated');
     }
 
@@ -344,7 +366,7 @@ class BookingApiController
         // Reset to pending and re-process
         $this->bookingModel->updateStatus($id, 'pending');
 
-        $service = new BookingService($this->conn);
+        $service = new BookingService();
         $result = $service->processBooking($id, $booking, $this->authData);
 
         // Re-fetch after processing
@@ -352,6 +374,8 @@ class BookingApiController
         $statusCode = ($updated['status'] === 'completed') ? 200 : 207;
 
         $this->logRequest("POST /api/v1/bookings/$id/retry", $booking['channel'], $statusCode);
+        $eventName = ($updated['status'] === 'completed') ? 'booking.completed' : 'booking.failed';
+        $this->fireWebhook($eventName, $this->formatBookingResponse($updated));
         $this->jsonSuccess([
             'booking'          => $this->formatBookingResponse($updated),
             'processing_result' => $result,
@@ -466,6 +490,107 @@ class BookingApiController
     }
 
     // =========================================================
+    // Webhook Endpoints
+    // =========================================================
+
+    /**
+     * POST /api/v1/webhooks — Register a new webhook
+     */
+    private function registerWebhook(): void
+    {
+        $input = $this->getJsonInput();
+        $companyId = intval($this->authData['company_id']);
+
+        if (empty($input['url']) || !filter_var($input['url'], FILTER_VALIDATE_URL)) {
+            $this->jsonError('A valid HTTPS URL is required', 422, 'VALIDATION_ERROR');
+            return;
+        }
+
+        // Must be HTTPS in production
+        if (strpos($input['url'], 'https://') !== 0 && strpos($input['url'], 'http://localhost') !== 0 && strpos($input['url'], 'http://127.0.0.1') !== 0) {
+            $this->jsonError('Webhook URL must use HTTPS', 422, 'VALIDATION_ERROR');
+            return;
+        }
+
+        // Limit webhooks per company
+        $count = $this->webhookModel->countForCompany($companyId);
+        if ($count >= 5) {
+            $this->jsonError('Maximum 5 webhooks per company', 429, 'WEBHOOK_LIMIT');
+            return;
+        }
+
+        $validEvents = ['booking.created', 'booking.completed', 'booking.failed', 'booking.cancelled', 'booking.updated'];
+        $events = $input['events'] ?? $validEvents;
+        if (!is_array($events)) {
+            $this->jsonError('events must be an array', 422, 'VALIDATION_ERROR');
+            return;
+        }
+        $events = array_intersect($events, $validEvents);
+        if (empty($events)) {
+            $this->jsonError('At least one valid event is required: ' . implode(', ', $validEvents), 422, 'VALIDATION_ERROR');
+            return;
+        }
+
+        $result = $this->webhookModel->createWebhook($companyId, $input['url'], $events);
+        if (!$result) {
+            $this->jsonError('Failed to create webhook', 500, 'CREATE_FAILED');
+            return;
+        }
+
+        $this->logRequest('POST /api/v1/webhooks', '', 201);
+        $this->jsonSuccess([
+            'webhook_id' => $result['id'],
+            'url'        => $result['url'],
+            'secret'     => $result['secret'],
+            'events'     => $result['events'],
+            'note'       => 'Save the secret — it will not be shown again. Use it to verify webhook signatures (HMAC-SHA256).',
+        ], 201, 'Webhook registered');
+    }
+
+    /**
+     * GET /api/v1/webhooks — List all webhooks
+     */
+    private function listWebhooks(): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $webhooks = $this->webhookModel->getByCompanyId($companyId);
+
+        $formatted = array_map(function ($w) {
+            return [
+                'id'            => intval($w['id']),
+                'url'           => $w['url'],
+                'events'        => explode(',', $w['events']),
+                'is_active'     => (bool)$w['is_active'],
+                'failure_count' => intval($w['failure_count']),
+                'last_triggered' => $w['last_triggered'],
+                'last_status'   => $w['last_status'] ? intval($w['last_status']) : null,
+                'created_at'    => $w['created_at'],
+            ];
+        }, $webhooks);
+
+        $this->logRequest('GET /api/v1/webhooks', '', 200);
+        $this->jsonSuccess(['webhooks' => $formatted, 'total' => count($formatted)]);
+    }
+
+    /**
+     * DELETE /api/v1/webhooks/:id — Delete a webhook
+     */
+    private function deleteWebhook(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $webhook = $this->webhookModel->findForCompany($id, $companyId);
+
+        if (!$webhook) {
+            $this->jsonError('Webhook not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        $this->webhookModel->deleteWebhook($id);
+        $this->logRequest("DELETE /api/v1/webhooks/$id", '', 200);
+        $this->jsonSuccess(['webhook_id' => $id], 200, 'Webhook deleted');
+    }
+
+    // =========================================================
     // Helpers
     // =========================================================
 
@@ -526,25 +651,45 @@ class BookingApiController
 
     private function formatBookingResponse(array $booking): array
     {
-        return [
-            'id'           => intval($booking['id']),
-            'status'       => $booking['status'],
-            'channel'      => $booking['channel'],
-            'guest_name'   => $booking['guest_name'],
-            'guest_email'  => $booking['guest_email'],
-            'guest_phone'  => $booking['guest_phone'],
-            'check_in'     => $booking['check_in'],
-            'check_out'    => $booking['check_out'],
-            'room_type'    => $booking['room_type'],
-            'guests'       => intval($booking['guests']),
-            'total_amount' => floatval($booking['total_amount'] ?? 0),
-            'currency'     => $booking['currency'],
-            'notes'        => $booking['notes'],
-            'linked_pr_id' => $booking['linked_pr_id'] ? intval($booking['linked_pr_id']) : null,
-            'linked_po_id' => $booking['linked_po_id'] ? intval($booking['linked_po_id']) : null,
-            'created_at'   => $booking['created_at'],
-            'processed_at' => $booking['processed_at'],
+        $formatted = [
+            'id'              => intval($booking['id']),
+            'booking_id'      => intval($booking['id']),
+            'status'          => $booking['status'],
+            'channel'         => $booking['channel'],
+            'guest_name'      => $booking['guest_name'],
+            'guest_email'     => $booking['guest_email'],
+            'guest_phone'     => $booking['guest_phone'],
+            'check_in'        => $booking['check_in'],
+            'check_out'       => $booking['check_out'],
+            'room_type'       => $booking['room_type'],
+            'guests'          => intval($booking['guests']),
+            'total_amount'    => floatval($booking['total_amount'] ?? 0),
+            'currency'        => $booking['currency'],
+            'notes'           => $booking['notes'],
+            'linked_pr_id'    => $booking['linked_pr_id'] ? intval($booking['linked_pr_id']) : null,
+            'linked_po_id'    => $booking['linked_po_id'] ? intval($booking['linked_po_id']) : null,
+            'created_at'      => $booking['created_at'],
+            'processed_at'    => $booking['processed_at'],
         ];
+        if (!empty($booking['idempotency_key'])) {
+            $formatted['idempotency_key'] = $booking['idempotency_key'];
+        }
+        return $formatted;
+    }
+
+    /**
+     * Fire webhooks for a booking event (non-blocking best-effort)
+     */
+    private function fireWebhook(string $event, array $payload): void
+    {
+        if (!$this->authData) return;
+        $companyId = intval($this->authData['company_id']);
+        try {
+            $this->webhookModel->fireEvent($companyId, $event, $payload);
+        } catch (\Exception $e) {
+            // Webhook delivery is best-effort — never fail the API response
+            error_log("Webhook fire failed for event $event: " . $e->getMessage());
+        }
     }
 
     private function logRequest(string $endpoint, string $channel, int $statusCode, ?array $request = null, ?array $response = null): void

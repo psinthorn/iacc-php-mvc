@@ -36,6 +36,32 @@ class Booking extends BaseModel
     }
 
     /**
+     * Find booking by idempotency key (for duplicate prevention)
+     */
+    public function findByIdempotencyKey(int $companyId, string $key): ?array
+    {
+        $cid = \sql_int($companyId);
+        $k = \sql_escape($key);
+        $sql = "SELECT * FROM `{$this->table}` 
+                WHERE `company_id` = '$cid' AND `idempotency_key` = '$k'
+                AND `created_at` >= DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+        $result = mysqli_query($this->conn, $sql);
+        if ($result && mysqli_num_rows($result) > 0) {
+            return mysqli_fetch_assoc($result);
+        }
+        return null;
+    }
+
+    /**
+     * Update booking fields (for API PUT endpoint)
+     */
+    public function updateFields(int $id, array $data): bool
+    {
+        $where = ['id' => $id];
+        return $this->hard->updateSafe($this->table, $data, $where);
+    }
+
+    /**
      * Update booking status and linked records
      */
     public function updateStatus(int $id, string $status, array $extra = []): bool

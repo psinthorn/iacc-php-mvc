@@ -176,7 +176,14 @@ return [
     'api_key_create'         => ['AdminApiController', 'createKey'],
     'api_key_revoke'         => ['AdminApiController', 'revokeKey'],
     'api_bookings'           => ['AdminApiController', 'bookings'],
+    'api_booking_detail'     => ['AdminApiController', 'bookingDetail'],
     'api_usage_logs'         => ['AdminApiController', 'usageLogs'],
+    'api_webhooks'           => ['AdminApiController', 'webhooks'],
+    'api_webhook_create'     => ['AdminApiController', 'createWebhook'],
+    'api_webhook_toggle'     => ['AdminApiController', 'toggleWebhook'],
+    'api_webhook_delete'     => ['AdminApiController', 'deleteAdminWebhook'],
+    'api_key_rotate'         => ['AdminApiController', 'rotateKey'],
+    'api_docs'               => ['AdminApiController', 'docs'],
 
     // ========== Pre-Auth Routes (no login required, standalone HTML) ==========
     'authorize'              => ['AuthController', 'authenticate', 'public'],
