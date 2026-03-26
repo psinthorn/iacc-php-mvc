@@ -34,7 +34,7 @@ mb_internal_encoding('UTF-8');
 // CORS headers — allow any origin for API access
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-Key, X-API-Secret');
 header('Access-Control-Max-Age: 86400');
 
@@ -83,6 +83,7 @@ if (empty($pathParts) || $pathParts[0] !== 'v1') {
 
 $resource   = $pathParts[1] ?? '';
 $resourceId = isset($pathParts[2]) ? intval($pathParts[2]) : null;
+$subAction  = $pathParts[3] ?? null;
 $method     = $_SERVER['REQUEST_METHOD'];
 
 if (empty($resource)) {
@@ -90,14 +91,16 @@ if (empty($resource)) {
     echo json_encode([
         'success' => true,
         'data' => [
-            'name'    => 'iACC Booking API',
+            'name'    => 'iACC Sales Channel API',
             'version' => 'v1',
             'endpoints' => [
-                'POST /api.php/v1/bookings'        => 'Create a booking',
-                'GET /api.php/v1/bookings'          => 'List bookings',
-                'GET /api.php/v1/bookings/{id}'     => 'Get booking by ID',
-                'DELETE /api.php/v1/bookings/{id}'   => 'Cancel a booking',
-                'GET /api.php/v1/subscription'       => 'Subscription info & usage',
+                'POST /api.php/v1/bookings'              => 'Create a booking',
+                'GET /api.php/v1/bookings'               => 'List bookings',
+                'GET /api.php/v1/bookings/{id}'           => 'Get booking by ID',
+                'PUT /api.php/v1/bookings/{id}'           => 'Update a booking',
+                'DELETE /api.php/v1/bookings/{id}'        => 'Cancel a booking',
+                'POST /api.php/v1/bookings/{id}/retry'    => 'Retry failed booking',
+                'GET /api.php/v1/subscription'            => 'Subscription info & usage',
             ],
         ],
     ]);
@@ -116,4 +119,4 @@ require_once __DIR__ . '/app/Services/BookingService.php';
 require_once __DIR__ . '/app/Controllers/BookingApiController.php';
 
 $controller = new \App\Controllers\BookingApiController();
-$controller->handleRequest($method, $resource, $resourceId);
+$controller->handleRequest($method, $resource, $resourceId, $subAction);
