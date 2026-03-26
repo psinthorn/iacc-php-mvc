@@ -73,6 +73,7 @@ php-error.log
 # Generated files
 .env.production.local
 database.sqlite
+version.json
 
 # Keep but ignore content of these directories
 upload/*

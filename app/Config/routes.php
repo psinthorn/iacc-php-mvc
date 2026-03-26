@@ -161,4 +161,7 @@ return [
     
     // User Account
     'help'                   => ['HelpController', 'index'],
+
+    // ========== System / DevOps ==========
+    'health'                 => ['HealthController', 'index'],
 ];

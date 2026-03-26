@@ -69,6 +69,15 @@ EXCLUDES=(
     "logs/*.log"
     "cache/*"
     "backups/*"
+    "tests"
+    "legacy"
+    ".github"
+    "scripts"
+    "deploy*.sh"
+    "backup.sh"
+    "DEPLOYMENT_FILE_INDEX.sh"
+    "*.sql"
+    "*.sql.gz"
 )
 
 # Build rsync exclude pattern
@@ -122,16 +131,23 @@ touch "$DEPLOY_DIR/backups/.gitkeep"
 
 echo -e "${GREEN}  ✓${NC} Directories created"
 
-# Create version file
-echo -e "${YELLOW}[5/6]${NC} Creating version info..."
-cat > "$DEPLOY_DIR/version.txt" << EOF
-iACC Accounting Management System
-Version: $VERSION
-Build Date: $(date '+%Y-%m-%d %H:%M:%S')
-Build From: $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-Branch: $(git branch --show-current 2>/dev/null || echo "unknown")
+# Create version.json
+echo -e "${YELLOW}[5/6]${NC} Creating version.json..."
+COMMIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+COMMIT_SHORT=$(git rev-parse --short=7 HEAD 2>/dev/null || echo "unknown")
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+cat > "$DEPLOY_DIR/version.json" << EOF
+{
+  "version": "5.0-mvc",
+  "commit": "${COMMIT_SHA}",
+  "commit_short": "${COMMIT_SHORT}",
+  "branch": "${BRANCH}",
+  "build_date": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+  "build_number": "${VERSION}",
+  "deployed_by": "cpanel-deploy"
+}
 EOF
-echo -e "${GREEN}  ✓${NC} Version info created"
+echo -e "${GREEN}  ✓${NC} version.json created"
 
 # Create ZIP package
 echo -e "${YELLOW}[6/6]${NC} Creating deployment package..."

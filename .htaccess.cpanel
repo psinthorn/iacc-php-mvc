@@ -159,6 +159,9 @@ AddDefaultCharset UTF-8
     RewriteRule ^migrations/(.*)$ - [F,L]
     RewriteRule ^docker/(.*)$ - [F,L]
     RewriteRule ^docs/(.*)$ - [F,L]
+    RewriteRule ^tests/(.*)$ - [F,L]
+    RewriteRule ^legacy/(.*)$ - [F,L]
+    RewriteRule ^app/(.*)$ - [F,L]
 </IfModule>
 
 # =============================================
