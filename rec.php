@@ -62,7 +62,7 @@ if($modep == "ad") {
 // Modern Clean Template matching inv.php style
 $html = '
 <style>
-    body { font-family: Arial, sans-serif; font-size: 11px; color: #333; }
+    body { font-family: garuda, Arial, sans-serif; font-size: 11px; color: #333; }
     
     /* Header */
     .header { text-align: center; margin-bottom: 10px; }
