@@ -251,8 +251,6 @@ echo "</div>";
 echo "<h2>9. Critical Files</h2>";
 echo "<div class='box'>";
 $criticalFiles = [
-    'core-function.php',
-    'company.php',
     'index.php',
     'inc/sys.configs.php',
     'inc/class.dbconn.php',
@@ -270,9 +268,9 @@ foreach ($criticalFiles as $f) {
 echo "</div>";
 
 // ======= 10. Quick Simulation =======
-echo "<h2>10. Quick Company Form Simulation</h2>";
+echo "<h2>10. Quick MVC Simulation</h2>";
 echo "<div class='box'>";
-echo "Simulating require chain for core-function.php...<br>";
+echo "Simulating require chain for MVC controllers...<br>";
 try {
     // Test loading config
     $testConfig = [];

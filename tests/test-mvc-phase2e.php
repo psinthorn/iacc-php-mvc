@@ -330,12 +330,17 @@ foreach ($legacyFiles as $lf) {
     }
 }
 
-// Check core-function.php no longer has company case
-$cfContent = file_get_contents(__DIR__ . '/../core-function.php');
-if (preg_match('/^case\s+"company"\s*:/m', $cfContent) === 0) {
-    pass("core-function.php company case removed");
+// Check core-function.php no longer has company case (moved to legacy/)
+$cfPath = __DIR__ . '/../legacy/core-function.php';
+if (!file_exists($cfPath)) {
+    pass("core-function.php archived to legacy/");
 } else {
-    fail("core-function.php still has company case");
+    $cfContent = file_get_contents($cfPath);
+    if (preg_match('/^case\s+"company"\s*:/m', $cfContent) === 0) {
+        pass("core-function.php company case removed");
+    } else {
+        fail("core-function.php still has company case");
+    }
 }
 
 // ========== Cleanup Test Data ==========

@@ -169,7 +169,7 @@ include_once 'inc/top-navbar.php';
                         </li>
                         <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
                         </li>
-                        <li><a href="remoteuser.php"><i class="fa fa-home fa-fw"></i> Home</a>
+                        <li><a href="index.php?page=remote&clear=1"><i class="fa fa-home fa-fw"></i> Home</a>
                         </li>
                         <li class="divider"></li>
                         <li><a href="authorize.php"><i class="fa fa-sign-out fa-fw"></i> Logout</a>

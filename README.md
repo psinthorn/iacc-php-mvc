@@ -78,16 +78,16 @@ Browser → index.php → routes.php → Controller → Model → View
                                    (auth, DB, CSRF)
 ```
 
-### Active Root PHP Files (24)
+### Active Root PHP Files (22)
 
 | Category | Files |
 |----------|-------|
 | **Core** | `index.php`, `login.php`, `authorize.php`, `menu.php`, `css.php`, `script.php` |
-| **Includes** | `core-function.php`, `lang.php`, `makeoptionindex.php`, `master-data-guide.php` |
+| **Includes** | `lang.php`, `makeoptionindex.php`, `master-data-guide.php` |
 | **Print/PDF** | `inv.php`, `exp.php`, `taxiv.php`, `rec.php`, `sptinv.php` |
 | **Email** | `model_mail.php`, `exp-m.php`, `inv-m.php`, `taxiv-m.php` |
 | **Export** | `report-export.php`, `invoice-payments-export.php` |
-| **Auth** | `forgot-password.php`, `reset-password.php`, `remoteuser.php` |
+| **Auth** | `forgot-password.php`, `reset-password.php` |
 
 ---
 
