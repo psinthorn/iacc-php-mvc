@@ -35,10 +35,20 @@ require_once __DIR__ . '/../../inc/pagination.php';
         <div class="stat-value"><?= intval($stats['pending'] ?? 0) ?></div>
         <div class="stat-label">Pending</div>
     </div>
+    <div class="stat-card danger">
+        <i class="fa fa-times stat-icon"></i>
+        <div class="stat-value"><?= intval($stats['failed'] ?? 0) ?></div>
+        <div class="stat-label">Failed</div>
+    </div>
     <div class="stat-card info">
         <i class="fa fa-bar-chart stat-icon"></i>
         <div class="stat-value"><?= intval($stats['this_month'] ?? 0) ?></div>
         <div class="stat-label">This Month</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,#2c3e50,#34495e); color:white;">
+        <i class="fa fa-money stat-icon" style="color:rgba(255,255,255,0.3);"></i>
+        <div class="stat-value">฿<?= number_format(floatval($stats['total_revenue'] ?? 0), 0) ?></div>
+        <div class="stat-label">Revenue</div>
     </div>
 </div>
 
@@ -96,7 +106,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
                     <th>PO</th>
                     <th>Status</th>
                     <th>Created</th>
-                    <th></th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -128,9 +138,38 @@ require_once __DIR__ . '/../../inc/pagination.php';
                     </td>
                     <td><?= date('M d, H:i', strtotime($b['created_at'])) ?></td>
                     <td>
-                        <a href="index.php?page=api_order_detail&id=<?= $b['id'] ?>" class="btn btn-xs btn-outline-primary" title="View Details">
-                            <i class="fa fa-eye"></i>
-                        </a>
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <a href="index.php?page=api_order_detail&id=<?= $b['id'] ?>" class="btn btn-xs btn-outline-primary" title="View Details">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                            <?php if ($b['status'] === 'pending'): ?>
+                            <form method="post" action="index.php?page=api_order_update_status" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <input type="hidden" name="id" value="<?= $b['id'] ?>">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn btn-xs btn-success" title="Approve & Process" onclick="return confirm('Approve order #<?= $b['id'] ?>?')">
+                                    <i class="fa fa-check"></i>
+                                </button>
+                            </form>
+                            <form method="post" action="index.php?page=api_order_update_status" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <input type="hidden" name="id" value="<?= $b['id'] ?>">
+                                <input type="hidden" name="action" value="cancel">
+                                <button type="submit" class="btn btn-xs btn-outline-secondary" title="Cancel" onclick="return confirm('Cancel order #<?= $b['id'] ?>?')">
+                                    <i class="fa fa-ban"></i>
+                                </button>
+                            </form>
+                            <?php elseif ($b['status'] === 'failed'): ?>
+                            <form method="post" action="index.php?page=api_order_update_status" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                                <input type="hidden" name="id" value="<?= $b['id'] ?>">
+                                <input type="hidden" name="action" value="retry">
+                                <button type="submit" class="btn btn-xs btn-warning" title="Retry" onclick="return confirm('Retry order #<?= $b['id'] ?>?')">
+                                    <i class="fa fa-refresh"></i>
+                                </button>
+                            </form>
+                            <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>

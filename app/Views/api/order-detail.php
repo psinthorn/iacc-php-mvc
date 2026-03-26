@@ -20,7 +20,7 @@ $color = $statusColors[$order['status']] ?? 'secondary';
 </div>
 
 <!-- Status Banner -->
-<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center;">
+<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
     <div>
         <span class="badge badge-<?= $color ?>" style="font-size:1.1rem; padding:6px 15px;">
             <?= ucfirst($order['status']) ?>
@@ -36,6 +36,65 @@ $color = $statusColors[$order['status']] ?? 'secondary';
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Action Panel -->
+<?php
+$allowedActions = [];
+switch ($order['status']) {
+    case 'pending':    $allowedActions = ['approve' => ['Approve & Process', 'success', 'check'], 'reject' => ['Reject', 'danger', 'times'], 'cancel' => ['Cancel', 'secondary', 'ban']]; break;
+    case 'processing': $allowedActions = ['cancel' => ['Cancel', 'secondary', 'ban']]; break;
+    case 'completed':  $allowedActions = ['cancel' => ['Cancel', 'secondary', 'ban']]; break;
+    case 'failed':     $allowedActions = ['retry' => ['Retry Processing', 'warning', 'refresh'], 'cancel' => ['Cancel', 'secondary', 'ban']]; break;
+}
+if (!empty($allowedActions)):
+?>
+<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h4 style="margin-bottom:15px;"><i class="fa fa-cogs"></i> Order Actions</h4>
+    
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'invalid_action'): ?>
+    <div class="alert alert-danger" style="margin-bottom:15px;">
+        <i class="fa fa-exclamation-triangle"></i> That action is not allowed for the current order status.
+    </div>
+    <?php endif; ?>
+
+    <form method="post" action="index.php?page=api_order_update_status" id="orderActionForm">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="id" value="<?= $order['id'] ?>">
+        <input type="hidden" name="action" id="orderAction" value="">
+        
+        <div style="margin-bottom:15px;">
+            <label style="color:#666; font-size:0.9rem; display:block; margin-bottom:5px;">Admin Notes (optional)</label>
+            <textarea name="admin_notes" class="form-control" rows="2" placeholder="Add a note about this action..." style="resize:vertical;"></textarea>
+        </div>
+        
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <?php foreach ($allowedActions as $action => [$label, $btnColor, $icon]): ?>
+            <button type="button" 
+                    class="btn btn-<?= $btnColor ?>" 
+                    onclick="confirmAction('<?= $action ?>', '<?= $label ?>')"
+                    style="min-width:120px;">
+                <i class="fa fa-<?= $icon ?>"></i> <?= $label ?>
+            </button>
+            <?php endforeach; ?>
+        </div>
+    </form>
+</div>
+
+<script>
+function confirmAction(action, label) {
+    var messages = {
+        'approve': 'This will process the order and create PR/PO records. Continue?',
+        'reject': 'This will mark the order as failed (rejected). Continue?',
+        'cancel': 'This will cancel the order. Continue?',
+        'retry': 'This will retry processing the failed order. Continue?'
+    };
+    if (confirm(messages[action] || ('Are you sure you want to ' + label + '?'))) {
+        document.getElementById('orderAction').value = action;
+        document.getElementById('orderActionForm').submit();
+    }
+}
+</script>
+<?php endif; ?>
 
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
 

@@ -177,6 +177,7 @@ return [
     'api_key_revoke'         => ['AdminApiController', 'revokeKey'],
     'api_orders'           => ['AdminApiController', 'orders'],
     'api_order_detail'     => ['AdminApiController', 'orderDetail'],
+    'api_order_update_status' => ['AdminApiController', 'updateOrderStatus'],
     'api_usage_logs'         => ['AdminApiController', 'usageLogs'],
     'api_webhooks'           => ['AdminApiController', 'webhooks'],
     'api_webhook_create'     => ['AdminApiController', 'createWebhook'],
