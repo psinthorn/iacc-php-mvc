@@ -2,11 +2,14 @@
 /**
  * iACC Landing Page
  * Modern public-facing landing page with multi-language support
+ * Accessed via / (included from index.php) or directly via /landing.php
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Check if already logged in
-if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+// If accessed directly (/landing.php) and already logged in, go to dashboard
+if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id']) && !isset($isAuthenticated)) {
     header('Location: index.php?page=dashboard');
     exit;
 }

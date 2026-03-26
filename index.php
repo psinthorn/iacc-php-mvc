@@ -43,7 +43,13 @@ require_once("inc/security.php");
 
 // Initialize database and check authentication
 $db = new DbConn($config);
-$db->checkSecurity();
+$isAuthenticated = $db->checkSecurity();
+
+// Not logged in → show landing page (no redirect, clean / URL)
+if (!$isAuthenticated) {
+    include __DIR__ . '/landing.php';
+    exit;
+}
 
 // ========== Handle Company Switching (Admin/Super Admin only) ==========
 // This must happen before any HTML output so we can redirect

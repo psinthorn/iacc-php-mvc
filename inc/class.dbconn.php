@@ -86,9 +86,8 @@ class DbConn {
 			return true;
 		}
 		
-		// Not authenticated - redirect to landing page for first-time visitors
-		header('Location: landing.php');
-		exit;
+		// Not authenticated
+		return false;
 	}
 	
 	/**
