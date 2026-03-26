@@ -96,6 +96,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
                     <th>PO</th>
                     <th>Status</th>
                     <th>Created</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -126,6 +127,11 @@ require_once __DIR__ . '/../../inc/pagination.php';
                         <span class="badge badge-<?= $colors[$b['status']] ?? 'secondary' ?>"><?= $b['status'] ?></span>
                     </td>
                     <td><?= date('M d, H:i', strtotime($b['created_at'])) ?></td>
+                    <td>
+                        <a href="index.php?page=api_booking_detail&id=<?= $b['id'] ?>" class="btn btn-xs btn-outline-primary" title="View Details">
+                            <i class="fa fa-eye"></i>
+                        </a>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

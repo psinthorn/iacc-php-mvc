@@ -12,8 +12,13 @@
  *   POST   /api.php/v1/bookings          Create a booking
  *   GET    /api.php/v1/bookings           List bookings
  *   GET    /api.php/v1/bookings/{id}      Get booking by ID
+ *   PUT    /api.php/v1/bookings/{id}      Update a booking
  *   DELETE /api.php/v1/bookings/{id}      Cancel booking
+ *   POST   /api.php/v1/bookings/{id}/retry  Retry failed booking
  *   GET    /api.php/v1/subscription       Subscription info & usage
+ *   POST   /api.php/v1/webhooks           Register a webhook
+ *   GET    /api.php/v1/webhooks            List webhooks
+ *   DELETE /api.php/v1/webhooks/{id}       Delete a webhook
  * 
  * Example:
  *   curl -X POST http://localhost/api.php/v1/bookings \
@@ -35,7 +40,7 @@ mb_internal_encoding('UTF-8');
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-API-Key, X-API-Secret');
+header('Access-Control-Allow-Headers: Content-Type, X-API-Key, X-API-Secret, X-Idempotency-Key');
 header('Access-Control-Max-Age: 86400');
 
 // Security headers
@@ -101,7 +106,17 @@ if (empty($resource)) {
                 'DELETE /api.php/v1/bookings/{id}'        => 'Cancel a booking',
                 'POST /api.php/v1/bookings/{id}/retry'    => 'Retry failed booking',
                 'GET /api.php/v1/subscription'            => 'Subscription info & usage',
+                'POST /api.php/v1/webhooks'              => 'Register a webhook',
+                'GET /api.php/v1/webhooks'               => 'List webhooks',
+                'DELETE /api.php/v1/webhooks/{id}'        => 'Delete a webhook',
             ],
+            'features' => [
+                'rate_limiting'  => 'Per-minute limits by plan (X-RateLimit headers)',
+                'idempotency'   => 'Send X-Idempotency-Key header to prevent duplicates',
+                'webhooks'      => 'Real-time notifications on booking status changes',
+                'key_rotation'  => 'Rotate API keys with grace period via admin panel',
+            ],
+            'docs' => '/index.php?page=api_docs',
         ],
     ]);
     exit;
@@ -115,6 +130,7 @@ require_once __DIR__ . '/app/Models/ApiKey.php';
 require_once __DIR__ . '/app/Models/ApiUsageLog.php';
 require_once __DIR__ . '/app/Models/Booking.php';
 require_once __DIR__ . '/app/Models/Subscription.php';
+require_once __DIR__ . '/app/Models/Webhook.php';
 require_once __DIR__ . '/app/Services/BookingService.php';
 require_once __DIR__ . '/app/Controllers/BookingApiController.php';
 

@@ -27,6 +27,22 @@
 
 <?php else: ?>
 
+<?php if (isset($_SESSION['rotated_key'])): ?>
+<div class="alert alert-success" style="border-radius:8px; position:relative;">
+    <button type="button" class="close" data-dismiss="alert" style="position:absolute; right:10px; top:8px;">&times;</button>
+    <h5 style="margin-top:0;"><i class="fa fa-refresh"></i> Key Rotated Successfully</h5>
+    <p style="margin-bottom:8px;">Save your new credentials now — the secret will not be shown again.</p>
+    <div style="background:#f0fff0; padding:12px; border-radius:6px; font-family:monospace; font-size:0.85rem;">
+        <strong>New API Key:</strong> <code id="rotated-key"><?= htmlspecialchars($_SESSION['rotated_key']['api_key']) ?></code>
+        <button class="btn btn-xs btn-link" onclick="copyToClipboard('rotated-key')" title="Copy"><i class="fa fa-copy"></i></button><br>
+        <strong>New Secret:</strong> <code id="rotated-secret"><?= htmlspecialchars($_SESSION['rotated_key']['api_secret']) ?></code>
+        <button class="btn btn-xs btn-link" onclick="copyToClipboard('rotated-secret')" title="Copy"><i class="fa fa-copy"></i></button>
+    </div>
+    <p style="margin-top:8px; margin-bottom:0; font-size:0.85rem; color:#666;"><i class="fa fa-clock-o"></i> Old credentials will remain valid for <strong><?= $_SESSION['rotated_key']['grace_hours'] ?? 24 ?> hours</strong> (grace period).</p>
+</div>
+<?php unset($_SESSION['rotated_key']); ?>
+<?php endif; ?>
+
 <!-- Subscription Summary -->
 <div class="stats-row">
     <div class="stat-card primary">
@@ -112,6 +128,13 @@ if ($activeCount < $subscription['keys_limit']):
                     <td><?= date('M d, Y', strtotime($key['created_at'])) ?></td>
                     <td>
                         <?php if ($key['is_active']): ?>
+                        <form method="post" action="index.php?page=api_key_rotate" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                            <input type="hidden" name="id" value="<?= $key['id'] ?>">
+                            <button type="submit" class="btn btn-xs btn-warning" onclick="return confirm('Rotate this key? New credentials will be generated. Old ones remain valid for 24 hours.')" title="Generate new key/secret">
+                                <i class="fa fa-refresh"></i> Rotate
+                            </button>
+                        </form>
                         <form method="post" action="index.php?page=api_key_revoke" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                             <input type="hidden" name="id" value="<?= $key['id'] ?>">

@@ -188,7 +188,7 @@ class Subscription extends BaseModel
         $pagination = paginate($total, $perPage, $page);
 
         // Fetch
-        $sql = "SELECT s.*, c.name_en, c.name_th, c.email,
+        $sql = "SELECT s.*, c.name_en as company_name, c.name_th, c.email,
                 (SELECT COUNT(*) FROM api_keys k WHERE k.subscription_id = s.id AND k.is_active = 1) as active_keys,
                 (SELECT COUNT(*) FROM booking_requests b WHERE b.company_id = s.company_id AND b.created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')) as monthly_bookings
                 FROM `{$this->table}` s 

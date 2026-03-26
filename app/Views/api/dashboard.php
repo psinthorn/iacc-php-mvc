@@ -15,7 +15,9 @@
     <div>
         <a href="index.php?page=api_keys" class="btn btn-sm btn-outline-primary"><i class="fa fa-key"></i> API Keys</a>
         <a href="index.php?page=api_bookings" class="btn btn-sm btn-outline-primary"><i class="fa fa-calendar"></i> Bookings</a>
+        <a href="index.php?page=api_webhooks" class="btn btn-sm btn-outline-primary"><i class="fa fa-bell"></i> Webhooks</a>
         <a href="index.php?page=api_usage_logs" class="btn btn-sm btn-outline-primary"><i class="fa fa-bar-chart"></i> Usage Logs</a>
+        <a href="index.php?page=api_docs" class="btn btn-sm btn-outline-primary"><i class="fa fa-book"></i> API Docs</a>
     </div>
 </div>
 
@@ -59,6 +61,11 @@
         <i class="fa fa-calendar-check-o stat-icon"></i>
         <div class="stat-value"><?= intval($stats['completed'] ?? 0) ?></div>
         <div class="stat-label">Completed Bookings</div>
+    </div>
+    <div class="stat-card" style="border-left:4px solid #8e44ad;">
+        <i class="fa fa-bell stat-icon" style="color:#8e44ad;"></i>
+        <div class="stat-value"><?= intval($webhookCount ?? 0) ?></div>
+        <div class="stat-label"><a href="index.php?page=api_webhooks" style="color:inherit;">Webhooks</a></div>
     </div>
 </div>
 
@@ -123,6 +130,7 @@
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Created</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -141,6 +149,7 @@
                         <span class="badge badge-<?= $color ?>"><?= $b['status'] ?></span>
                     </td>
                     <td><?= date('M d, H:i', strtotime($b['created_at'])) ?></td>
+                    <td><a href="index.php?page=api_booking_detail&id=<?= $b['id'] ?>" class="btn btn-xs btn-outline-primary"><i class="fa fa-eye"></i></a></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

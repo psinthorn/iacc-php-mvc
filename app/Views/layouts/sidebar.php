@@ -339,7 +339,13 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=api_bookings"><i class="fa fa-calendar"></i> <?=$xml->apibookings ?? 'Bookings'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=api_webhooks"><i class="fa fa-bell"></i> <?=$xml->apiwebhooks ?? 'Webhooks'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=api_usage_logs"><i class="fa fa-bar-chart"></i> <?=$xml->apiusagelogs ?? 'Usage Logs'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=api_docs"><i class="fa fa-book"></i> <?=$xml->apidocs ?? 'API Docs'?></a>
                             </li>
                             <?php if (intval($_SESSION['user_level'] ?? 0) >= 2): ?>
                             <li class="divider"></li>

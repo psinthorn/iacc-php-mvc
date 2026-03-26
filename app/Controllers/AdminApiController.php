@@ -5,6 +5,7 @@ use App\Models\ApiKey;
 use App\Models\ApiUsageLog;
 use App\Models\Booking;
 use App\Models\Subscription;
+use App\Models\Webhook;
 
 /**
  * AdminApiController — Admin panel for managing Booking API
@@ -25,6 +26,7 @@ class AdminApiController extends BaseController
     private ApiKey $apiKeyModel;
     private Booking $bookingModel;
     private ApiUsageLog $usageLogModel;
+    private Webhook $webhookModel;
 
     public function __construct()
     {
@@ -33,6 +35,7 @@ class AdminApiController extends BaseController
         $this->apiKeyModel = new ApiKey();
         $this->bookingModel = new Booking();
         $this->usageLogModel = new ApiUsageLog();
+        $this->webhookModel = new Webhook();
     }
 
     /**
@@ -251,6 +254,7 @@ class AdminApiController extends BaseController
         $recentBookings = $this->bookingModel->getRecent($companyId, 10);
         $dailyUsage = $this->usageLogModel->getDailySummary($companyId, 7);
         $usage = $subscription ? $this->subscriptionModel->getMonthlyUsage($companyId) : 0;
+        $webhookCount = $this->webhookModel->countForCompany($companyId);
 
         $this->render('api/dashboard', [
             'subscription'   => $subscription,
@@ -258,7 +262,136 @@ class AdminApiController extends BaseController
             'recentBookings' => $recentBookings,
             'dailyUsage'     => $dailyUsage,
             'monthlyUsage'   => $usage,
+            'webhookCount'   => $webhookCount,
             'title'          => 'Booking API Dashboard',
+        ]);
+    }
+
+    /**
+     * Webhook management page
+     */
+    public function webhooks(): void
+    {
+        $this->requireLevel(0);
+        $companyId = $this->getCompanyId();
+
+        $webhooks = $this->webhookModel->getByCompanyId($companyId);
+        $subscription = $this->subscriptionModel->getByCompanyId($companyId);
+
+        $this->render('api/webhooks', [
+            'webhooks'     => $webhooks,
+            'subscription' => $subscription,
+            'title'        => 'Webhook Management',
+        ]);
+    }
+
+    /**
+     * Create a webhook (form submission)
+     */
+    public function createWebhook(): void
+    {
+        $this->requireLevel(0);
+        $this->verifyCsrf();
+        $companyId = $this->getCompanyId();
+
+        $url = $this->inputStr('webhook_url');
+        $events = $_POST['events'] ?? [];
+        
+        if (!empty($url) && is_array($events) && !empty($events)) {
+            $this->webhookModel->createWebhook($companyId, $url, $events);
+        }
+
+        $this->redirect('api_webhooks');
+    }
+
+    /**
+     * Toggle webhook active/inactive
+     */
+    public function toggleWebhook(): void
+    {
+        $this->requireLevel(0);
+        $this->verifyCsrf();
+
+        $id = $this->inputInt('webhook_id');
+        if ($id > 0) {
+            $companyId = $this->getCompanyId();
+            $webhook = $this->webhookModel->findForCompany($id, $companyId);
+            if ($webhook) {
+                $this->webhookModel->toggleActive($id);
+            }
+        }
+
+        $this->redirect('api_webhooks');
+    }
+
+    /**
+     * Delete a webhook
+     */
+    public function deleteAdminWebhook(): void
+    {
+        $this->requireLevel(0);
+        $this->verifyCsrf();
+
+        $id = $this->inputInt('webhook_id');
+        if ($id > 0) {
+            $companyId = $this->getCompanyId();
+            $webhook = $this->webhookModel->findForCompany($id, $companyId);
+            if ($webhook) {
+                $this->webhookModel->deleteWebhook($id);
+            }
+        }
+
+        $this->redirect('api_webhooks');
+    }
+
+    /**
+     * Rotate an API key (generates new credentials with grace period)
+     */
+    public function rotateKey(): void
+    {
+        $this->requireLevel(0);
+        $this->verifyCsrf();
+
+        $id = $this->inputInt('id');
+        if ($id > 0) {
+            $result = $this->apiKeyModel->rotateKey($id, 24);
+            if ($result) {
+                $_SESSION['rotated_key'] = $result;
+            }
+        }
+
+        $this->redirect('api_keys');
+    }
+
+    /**
+     * Booking detail page
+     */
+    public function bookingDetail(): void
+    {
+        $this->requireLevel(0);
+        $companyId = $this->getCompanyId();
+        $id = $this->inputInt('id');
+
+        $booking = $this->bookingModel->findForCompany($id, $companyId);
+        if (!$booking) {
+            $this->redirect('api_bookings');
+            return;
+        }
+
+        $this->render('api/booking-detail', [
+            'booking' => $booking,
+            'title'   => 'Booking #' . $id,
+        ]);
+    }
+
+    /**
+     * API Documentation page (public-facing)
+     */
+    public function docs(): void
+    {
+        $this->requireLevel(0);
+        $this->render('api/docs', [
+            'title' => 'API Documentation',
         ]);
     }
 
