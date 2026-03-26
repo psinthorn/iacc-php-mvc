@@ -155,32 +155,37 @@ jobs:
           fi
 
       - name: 🛠️ Generate production config
+        env:
+          PROD_DB_HOST: ${{ secrets.DB_HOST }}
+          PROD_DB_USER: ${{ secrets.DB_USERNAME }}
+          PROD_DB_PASS: ${{ secrets.DB_PASSWORD }}
+          PROD_DB_NAME: ${{ secrets.DB_NAME }}
         run: |
-          cat > deploy/inc/sys.configs.php << 'PHPEOF'
-          <?PHP
-          $composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";
-          if (file_exists($composerAutoload)) { require_once($composerAutoload); }
-          require_once(dirname(__FILE__) . "/error-handler.php");
-          ini_set('session.cookie_httponly', 1);
-          ini_set('session.use_strict_mode', 1);
-          ini_set('session.cookie_samesite', 'Lax');
-          ini_set('session.cookie_secure', 1);
-          if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-              ini_set('session.cookie_secure', 1);
-          }
-          $appEnv = 'production';
-          PHPEOF
+          {
+            echo '<?PHP'
+            echo '$composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";'
+            echo 'if (file_exists($composerAutoload)) { require_once($composerAutoload); }'
+            echo 'require_once(dirname(__FILE__) . "/error-handler.php");'
+            echo "ini_set('session.cookie_httponly', 1);"
+            echo "ini_set('session.use_strict_mode', 1);"
+            echo "ini_set('session.cookie_samesite', 'Lax');"
+            echo "ini_set('session.cookie_secure', 1);"
+            echo 'if (!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off") {'
+            echo '    ini_set("session.cookie_secure", 1);'
+            echo '}'
+            echo '$appEnv = "production";'
+            echo "\$config[\"hostname\"] = \"${PROD_DB_HOST}\";"
+            echo "\$config[\"username\"] = \"${PROD_DB_USER}\";"
+            echo "\$config[\"password\"] = \"${PROD_DB_PASS}\";"
+            echo "\$config[\"dbname\"]   = \"${PROD_DB_NAME}\";"
+            echo 'date_default_timezone_set("Asia/Bangkok");'
+            echo '$config["docker_tools"] = "off";'
+            echo '$config["container_manager"] = "off";'
+            echo "define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');"
+          } > deploy/inc/sys.configs.php
 
-          cat >> deploy/inc/sys.configs.php << EOF
-          \$config["hostname"] = "${{ secrets.DB_HOST }}";
-          \$config["username"] = "${{ secrets.DB_USERNAME }}";
-          \$config["password"] = "${{ secrets.DB_PASSWORD }}";
-          \$config["dbname"]   = "${{ secrets.DB_NAME }}";
-          date_default_timezone_set("Asia/Bangkok");
-          \$config["docker_tools"] = "off";
-          \$config["container_manager"] = "off";
-          define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');
-          EOF
+          echo "✅ Production config generated"
+          head -5 deploy/inc/sys.configs.php
 
       - name: 📤 Upload artifact
         uses: actions/upload-artifact@v4

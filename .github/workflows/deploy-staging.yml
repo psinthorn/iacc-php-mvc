@@ -14,7 +14,7 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 env:
-  DEPLOY_PATH: dev.iacc.f2.co.th  # cPanel folder for staging subdomain
+  DEPLOY_PATH: .  # FTP user root = staging subdomain folder
 
 jobs:
   # =========================================================================
@@ -117,37 +117,42 @@ jobs:
           path: deploy/
           
       - name: 🔧 Prepare staging config
+        env:
+          STAGING_DB_HOST: ${{ secrets.DB_HOST_STAGING }}
+          STAGING_DB_USER: ${{ secrets.DB_USERNAME_STAGING }}
+          STAGING_DB_PASS: ${{ secrets.DB_PASSWORD_STAGING }}
+          STAGING_DB_NAME: ${{ secrets.DB_NAME_STAGING }}
         run: |
-          # Use cPanel htaccess for staging (same security rules as production)
+          # Use cPanel htaccess for staging
           if [ -f deploy/.htaccess.cpanel ]; then
             cp deploy/.htaccess.cpanel deploy/.htaccess
           fi
 
-          # Generate staging sys.configs.php from secrets
-          cat > deploy/inc/sys.configs.php << 'PHPEOF'
-          <?PHP
-          $composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";
-          if (file_exists($composerAutoload)) { require_once($composerAutoload); }
-          require_once(dirname(__FILE__) . "/error-handler.php");
-          ini_set('session.cookie_httponly', 1);
-          ini_set('session.use_strict_mode', 1);
-          ini_set('session.cookie_samesite', 'Lax');
-          if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-              ini_set('session.cookie_secure', 1);
-          }
-          $appEnv = 'staging';
-          PHPEOF
+          # Generate staging sys.configs.php
+          {
+            echo '<?PHP'
+            echo '$composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";'
+            echo 'if (file_exists($composerAutoload)) { require_once($composerAutoload); }'
+            echo 'require_once(dirname(__FILE__) . "/error-handler.php");'
+            echo "ini_set('session.cookie_httponly', 1);"
+            echo "ini_set('session.use_strict_mode', 1);"
+            echo "ini_set('session.cookie_samesite', 'Lax');"
+            echo 'if (!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off") {'
+            echo '    ini_set("session.cookie_secure", 1);'
+            echo '}'
+            echo '$appEnv = "staging";'
+            echo "\$config[\"hostname\"] = \"${STAGING_DB_HOST}\";"
+            echo "\$config[\"username\"] = \"${STAGING_DB_USER}\";"
+            echo "\$config[\"password\"] = \"${STAGING_DB_PASS}\";"
+            echo "\$config[\"dbname\"]   = \"${STAGING_DB_NAME}\";"
+            echo 'date_default_timezone_set("Asia/Bangkok");'
+            echo '$config["docker_tools"] = "off";'
+            echo '$config["container_manager"] = "off";'
+            echo "define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');"
+          } > deploy/inc/sys.configs.php
 
-          cat >> deploy/inc/sys.configs.php << EOF
-          \$config["hostname"] = "${{ secrets.DB_HOST_STAGING }}";
-          \$config["username"] = "${{ secrets.DB_USERNAME_STAGING }}";
-          \$config["password"] = "${{ secrets.DB_PASSWORD_STAGING }}";
-          \$config["dbname"]   = "${{ secrets.DB_NAME_STAGING }}";
-          date_default_timezone_set("Asia/Bangkok");
-          \$config["docker_tools"] = "off";
-          \$config["container_manager"] = "off";
-          define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');
-          EOF
+          echo "✅ Staging config generated"
+          head -5 deploy/inc/sys.configs.php
           
       - name: 📤 Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
