@@ -114,4 +114,27 @@ class ApiUsageLog extends BaseModel
         }
         return $rows;
     }
+
+    /**
+     * Count requests in the last N seconds for rate limiting
+     * 
+     * @param int $apiKeyId  The API key to check
+     * @param int $seconds   Time window (e.g. 60 for per-minute)
+     * @return int Number of requests in that window
+     */
+    public function countRecentRequests(int $apiKeyId, int $seconds = 60): int
+    {
+        $kid = \sql_int($apiKeyId);
+        $sql = "SELECT COUNT(*) as cnt 
+                FROM `{$this->table}` 
+                WHERE `api_key_id` = '$kid' 
+                AND `created_at` >= DATE_SUB(NOW(), INTERVAL $seconds SECOND)";
+        
+        $result = mysqli_query($this->conn, $sql);
+        if ($result) {
+            $row = mysqli_fetch_assoc($result);
+            return intval($row['cnt']);
+        }
+        return 0;
+    }
 }

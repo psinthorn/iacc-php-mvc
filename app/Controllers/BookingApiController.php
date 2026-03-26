@@ -44,14 +44,21 @@ class BookingApiController
     /**
      * Main router — called from api.php
      */
-    public function handleRequest(string $method, string $path, ?int $resourceId = null): void
+    public function handleRequest(string $method, string $path, ?int $resourceId = null, ?string $subAction = null): void
     {
         try {
             // Authenticate
             $this->authData = $this->authenticate();
 
+            // Rate limiting — check requests per minute
+            $this->checkRateLimit();
+
             // Route to handler
             switch (true) {
+                case $method === 'POST' && $path === 'bookings' && $resourceId && $subAction === 'retry':
+                    $this->retryBooking($resourceId);
+                    break;
+
                 case $method === 'POST' && $path === 'bookings':
                     $this->createBooking();
                     break;
@@ -62,6 +69,10 @@ class BookingApiController
 
                 case $method === 'GET' && $path === 'bookings':
                     $this->listBookings();
+                    break;
+
+                case $method === 'PUT' && $path === 'bookings' && $resourceId:
+                    $this->updateBooking($resourceId);
                     break;
 
                 case $method === 'DELETE' && $path === 'bookings' && $resourceId:
@@ -233,6 +244,121 @@ class BookingApiController
     }
 
     /**
+     * PUT /api/v1/bookings/:id — Update a booking
+     * Only pending or processing bookings can be updated.
+     */
+    private function updateBooking(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $booking = $this->bookingModel->findForCompany($id, $companyId);
+
+        if (!$booking) {
+            $this->jsonError('Booking not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        if (!in_array($booking['status'], ['pending', 'processing'])) {
+            $this->jsonError('Only pending or processing bookings can be updated', 409, 'INVALID_STATUS');
+            return;
+        }
+
+        $input = $this->getJsonInput();
+
+        // Validate any provided fields
+        $errors = [];
+        if (!empty($input['guest_email']) && !filter_var($input['guest_email'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'guest_email is not a valid email address';
+        }
+        if (!empty($input['check_in']) && !$this->isValidDate($input['check_in'])) {
+            $errors[] = 'check_in must be a valid date (YYYY-MM-DD)';
+        }
+        if (!empty($input['check_out']) && !$this->isValidDate($input['check_out'])) {
+            $errors[] = 'check_out must be a valid date (YYYY-MM-DD)';
+        }
+        $checkIn = $input['check_in'] ?? $booking['check_in'];
+        $checkOut = $input['check_out'] ?? $booking['check_out'];
+        if ($checkIn && $checkOut && strtotime($checkOut) <= strtotime($checkIn)) {
+            $errors[] = 'check_out must be after check_in';
+        }
+        if (isset($input['total_amount']) && (!is_numeric($input['total_amount']) || $input['total_amount'] < 0)) {
+            $errors[] = 'total_amount must be a positive number';
+        }
+        if (!empty($errors)) {
+            $this->jsonError('Validation failed', 422, 'VALIDATION_ERROR', $errors);
+            return;
+        }
+
+        // Allowlisted fields for update
+        $allowedFields = ['guest_name', 'guest_email', 'guest_phone', 'check_in', 'check_out',
+                          'room_type', 'guests', 'total_amount', 'currency', 'notes'];
+        $updates = [];
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $input)) {
+                $updates[$field] = $input[$field];
+            }
+        }
+
+        if (empty($updates)) {
+            $this->jsonError('No valid fields to update', 400, 'NO_CHANGES');
+            return;
+        }
+
+        // Build UPDATE query
+        $setParts = [];
+        foreach ($updates as $col => $val) {
+            if ($val === null) {
+                $setParts[] = "`$col` = NULL";
+            } else {
+                $escaped = \sql_escape($val);
+                $setParts[] = "`$col` = '$escaped'";
+            }
+        }
+        $setStr = implode(', ', $setParts);
+        $sql = "UPDATE `booking_requests` SET $setStr, `updated_at` = NOW() WHERE `id` = " . \sql_int($id);
+        mysqli_query($this->conn, $sql);
+
+        // Return updated booking
+        $updated = $this->bookingModel->findForCompany($id, $companyId);
+        $this->logRequest("PUT /api/v1/bookings/$id", $updated['channel'], 200);
+        $this->jsonSuccess(['booking' => $this->formatBookingResponse($updated)], 200, 'Booking updated');
+    }
+
+    /**
+     * POST /api/v1/bookings/:id/retry — Retry processing a failed booking
+     */
+    private function retryBooking(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $booking = $this->bookingModel->findForCompany($id, $companyId);
+
+        if (!$booking) {
+            $this->jsonError('Booking not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        if ($booking['status'] !== 'failed') {
+            $this->jsonError('Only failed bookings can be retried', 409, 'INVALID_STATUS');
+            return;
+        }
+
+        // Reset to pending and re-process
+        $this->bookingModel->updateStatus($id, 'pending');
+
+        $service = new BookingService($this->conn);
+        $result = $service->processBooking($id, $booking, $this->authData);
+
+        // Re-fetch after processing
+        $updated = $this->bookingModel->findForCompany($id, $companyId);
+        $statusCode = ($updated['status'] === 'completed') ? 200 : 207;
+
+        $this->logRequest("POST /api/v1/bookings/$id/retry", $booking['channel'], $statusCode);
+        $this->jsonSuccess([
+            'booking'          => $this->formatBookingResponse($updated),
+            'processing_result' => $result,
+        ], $statusCode, $updated['status'] === 'completed' ? 'Booking retried successfully' : 'Booking retry attempted');
+    }
+
+    /**
      * GET /api/v1/subscription — Get subscription info & usage stats
      */
     private function getSubscription(): void
@@ -283,20 +409,60 @@ class BookingApiController
             exit;
         }
 
-        // Check subscription is active
+        // Check subscription is active and enabled
         if ($authData['sub_status'] !== 'active' || !$authData['enabled']) {
+            $this->logRequest($_SERVER['REQUEST_METHOD'] . ' ' . ($_SERVER['REQUEST_URI'] ?? ''), '', 403);
             $this->jsonError('API subscription is not active', 403, 'SUBSCRIPTION_INACTIVE');
             exit;
         }
 
-        // Check subscription expiry
-        $sub = $this->subscriptionModel->getByCompanyId(intval($authData['company_id']));
-        if (!$this->subscriptionModel->isActive($sub)) {
+        // Check subscription expiry (trial_end or expires_at from JOIN)
+        $now = date('Y-m-d');
+        if (!empty($authData['trial_end']) && $now > $authData['trial_end']) {
+            $this->logRequest($_SERVER['REQUEST_METHOD'] . ' ' . ($_SERVER['REQUEST_URI'] ?? ''), '', 403);
+            $this->jsonError('API trial has expired', 403, 'SUBSCRIPTION_EXPIRED');
+            exit;
+        }
+        if (!empty($authData['expires_at']) && $now > substr($authData['expires_at'], 0, 10)) {
+            $this->logRequest($_SERVER['REQUEST_METHOD'] . ' ' . ($_SERVER['REQUEST_URI'] ?? ''), '', 403);
             $this->jsonError('API subscription has expired', 403, 'SUBSCRIPTION_EXPIRED');
             exit;
         }
 
         return $authData;
+    }
+
+    /**
+     * Check rate limiting — requests per minute based on plan
+     * trial=30, starter=60, professional=120, enterprise=300
+     */
+    private function checkRateLimit(): void
+    {
+        $planLimits = [
+            'trial'        => 30,
+            'starter'      => 60,
+            'professional' => 120,
+            'enterprise'   => 300,
+        ];
+
+        $plan = $this->authData['plan'] ?? 'trial';
+        $limit = $planLimits[$plan] ?? 30;
+        $keyId = intval($this->authData['id']);
+
+        $recentCount = $this->usageLog->countRecentRequests($keyId, 60);
+        if ($recentCount >= $limit) {
+            $retryAfter = 60;
+            header("Retry-After: $retryAfter");
+            header("X-RateLimit-Limit: $limit");
+            header("X-RateLimit-Remaining: 0");
+            $this->logRequest($_SERVER['REQUEST_METHOD'] . ' ' . ($_SERVER['REQUEST_URI'] ?? ''), '', 429);
+            $this->jsonError("Rate limit exceeded. Maximum $limit requests per minute for $plan plan.", 429, 'RATE_LIMIT_EXCEEDED');
+            exit;
+        }
+
+        // Set rate limit headers on all responses
+        header("X-RateLimit-Limit: $limit");
+        header("X-RateLimit-Remaining: " . max(0, $limit - $recentCount - 1));
     }
 
     // =========================================================
@@ -383,13 +549,11 @@ class BookingApiController
 
     private function logRequest(string $endpoint, string $channel, int $statusCode, ?array $request = null, ?array $response = null): void
     {
-        if (!$this->authData) return;
-
         $elapsed = intval((microtime(true) - $this->startTime) * 1000);
 
         $this->usageLog->logRequest([
-            'company_id'    => intval($this->authData['company_id']),
-            'api_key_id'    => intval($this->authData['id']),
+            'company_id'    => $this->authData ? intval($this->authData['company_id']) : null,
+            'api_key_id'    => $this->authData ? intval($this->authData['id']) : null,
             'endpoint'      => $endpoint,
             'channel'       => $channel ?: 'website',
             'status_code'   => $statusCode,
