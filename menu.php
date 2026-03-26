@@ -341,7 +341,7 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=api_usage_logs"><i class="fa fa-bar-chart"></i> <?=$xml->apiusagelogs ?? 'Usage Logs'?></a>
                             </li>
-                            <?php if (intval($_SESSION['user_level'] ?? 0) >= 9): ?>
+                            <?php if (intval($_SESSION['user_level'] ?? 0) >= 2): ?>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=api_subscriptions"><i class="fa fa-users"></i> <?=$xml->apisubscriptions ?? 'Subscriptions'?></a>

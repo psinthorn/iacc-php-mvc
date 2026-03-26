@@ -9,12 +9,12 @@ use App\Models\Subscription;
 /**
  * AdminApiController — Admin panel for managing Booking API
  * 
- * Super Admin (level >= 9):
+ * Admin (level >= 2):
  *   - View all subscriptions
  *   - Enable/disable subscriptions
  *   - Change plans
  * 
- * Company Admin (level >= 5):
+ * Any logged-in user (level >= 0):
  *   - View own subscription
  *   - Manage own API keys
  *   - View own bookings & usage logs
@@ -40,7 +40,7 @@ class AdminApiController extends BaseController
      */
     public function subscriptions(): void
     {
-        $this->requireLevel(9);
+        $this->requireLevel(2);
 
         $search = $this->inputStr('search');
         $page = $this->inputInt('p', 1);
@@ -60,7 +60,7 @@ class AdminApiController extends BaseController
      */
     public function toggleSubscription(): void
     {
-        $this->requireLevel(9);
+        $this->requireLevel(2);
         $this->verifyCsrf();
 
         $id = $this->inputInt('subscription_id');
@@ -76,7 +76,7 @@ class AdminApiController extends BaseController
      */
     public function changePlan(): void
     {
-        $this->requireLevel(9);
+        $this->requireLevel(2);
         $this->verifyCsrf();
 
         $id = $this->inputInt('subscription_id');
@@ -94,7 +94,7 @@ class AdminApiController extends BaseController
      */
     public function keys(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $companyId = $this->getCompanyId();
 
         // Get or create subscription
@@ -117,7 +117,7 @@ class AdminApiController extends BaseController
      */
     public function activateTrial(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $this->verifyCsrf();
         $companyId = $this->getCompanyId();
 
@@ -143,7 +143,7 @@ class AdminApiController extends BaseController
      */
     public function createKey(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $this->verifyCsrf();
         $companyId = $this->getCompanyId();
 
@@ -172,7 +172,7 @@ class AdminApiController extends BaseController
      */
     public function revokeKey(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $this->verifyCsrf();
 
         $id = $this->inputInt('id');
@@ -188,7 +188,7 @@ class AdminApiController extends BaseController
      */
     public function bookings(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $companyId = $this->getCompanyId();
 
         $filters = [
@@ -220,7 +220,7 @@ class AdminApiController extends BaseController
      */
     public function usageLogs(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $companyId = $this->getCompanyId();
 
         $page = $this->inputInt('p', 1);
@@ -243,7 +243,7 @@ class AdminApiController extends BaseController
      */
     public function dashboard(): void
     {
-        $this->requireLevel(5);
+        $this->requireLevel(0);
         $companyId = $this->getCompanyId();
 
         $subscription = $this->subscriptionModel->getByCompanyId($companyId);
