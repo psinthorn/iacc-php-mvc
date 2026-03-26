@@ -42,6 +42,46 @@ return [
     'feature_6_title' => 'รองรับ 2 ภาษา',
     'feature_6_desc' => 'รองรับภาษาไทยและอังกฤษเต็มรูปแบบสำหรับธุรกิจระหว่างประเทศ',
     
+    'feature_7_title' => 'Booking API',
+    'feature_7_desc' => 'รับการจองจากเว็บไซต์ LINE Facebook หรืออีเมล — ซิงค์เข้าระบบอัตโนมัติ',
+    
+    // Integration Section
+    'nav_integrations' => 'การเชื่อมต่อ',
+    'integration_title' => 'เชื่อมต่อทุกช่องทางการจอง',
+    'integration_subtitle' => 'รับการจองจากเว็บไซต์ โซเชียลมีเดีย อีเมล และแอปข้อความ — ทั้งหมดเข้าสู่ระบบบัญชีอัตโนมัติ',
+    
+    'integration_channel_1_title' => 'ทุกเว็บไซต์',
+    'integration_channel_1_desc' => 'REST API ใช้งานได้กับ WordPress, Shopify, เว็บไซต์กำหนดเอง — ทุกแพลตฟอร์มที่ส่ง HTTP ได้',
+    
+    'integration_channel_2_title' => 'LINE Official',
+    'integration_channel_2_desc' => 'ลูกค้าจองผ่านแชท LINE ระบบ AI แปลงข้อความเป็นออเดอร์อัตโนมัติ',
+    
+    'integration_channel_3_title' => 'Facebook & Instagram',
+    'integration_channel_3_desc' => 'เชื่อมต่อ Messenger และ Instagram DM คำขอจองกลายเป็นใบแจ้งหนี้ทันที',
+    
+    'integration_channel_4_title' => 'อีเมล',
+    'integration_channel_4_desc' => 'ส่งต่ออีเมลการจองไปยัง API inbox ระบบ AI ดึงข้อมูลลูกค้า วันที่ และรายการ',
+    
+    'integration_channel_5_title' => 'AI อัจฉริยะ',
+    'integration_channel_5_desc' => 'AI ในตัวอ่านข้อความภาษาไทยและอังกฤษ แปลงเป็นข้อมูลการจองที่มีโครงสร้าง',
+    
+    'integration_channel_6_title' => 'กรอกข้อมูลเอง',
+    'integration_channel_6_desc' => 'ฟอร์มจองด่วนสำหรับ walk-in โทรศัพท์ หรือช่องทางอื่น — กรอกไม่กี่วินาที',
+    
+    'integration_how_title' => 'ทำงานอย่างไร',
+    'integration_step_1' => 'ลูกค้าจองผ่านเว็บไซต์ LINE Facebook หรืออีเมล',
+    'integration_step_2' => 'API รับข้อมูลการจอง (AI แปลงถ้าเป็นข้อความ)',
+    'integration_step_3' => 'ระบบสร้างลูกค้า ใบเสนอราคา และใบแจ้งหนี้อัตโนมัติ',
+    'integration_step_4' => 'จัดการทุกอย่างจากแดชบอร์ด iACC ของคุณ',
+    
+    // API Pricing (inside pricing cards)
+    'pricing_free_feature_5' => 'ไม่มี API',
+    'pricing_pro_feature_6' => 'Booking API (500/เดือน)',
+    'pricing_pro_feature_7' => 'ช่องทางเว็บไซต์ + อีเมล',
+    'pricing_enterprise_feature_6' => 'API ไม่จำกัด',
+    'pricing_enterprise_feature_7' => 'ทุกช่องทาง + AI',
+    'pricing_enterprise_feature_8' => 'ทดลองใช้ฟรี 14 วัน',
+    
     // Pricing Section
     'pricing_title' => 'ราคาที่เรียบง่าย',
     'pricing_subtitle' => 'เลือกแผนที่เหมาะกับความต้องการทางธุรกิจของคุณ',

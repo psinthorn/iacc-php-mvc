@@ -42,6 +42,46 @@ return [
     'feature_6_title' => 'Bilingual Support',
     'feature_6_desc' => 'Full English and Thai language support for international businesses.',
     
+    'feature_7_title' => 'Booking API',
+    'feature_7_desc' => 'Receive bookings from any website, LINE, Facebook, or email — automatically synced to your account.',
+    
+    // Integration Section
+    'nav_integrations' => 'Integrations',
+    'integration_title' => 'Connect Any Booking Channel',
+    'integration_subtitle' => 'Receive bookings from your website, social media, email, and messaging apps — all automated into your accounting system.',
+    
+    'integration_channel_1_title' => 'Any Website',
+    'integration_channel_1_desc' => 'REST API works with WordPress, Shopify, custom sites — any platform that can send HTTP requests.',
+    
+    'integration_channel_2_title' => 'LINE Official',
+    'integration_channel_2_desc' => 'Customers book via LINE chat. AI parses messages and creates orders automatically.',
+    
+    'integration_channel_3_title' => 'Facebook & Instagram',
+    'integration_channel_3_desc' => 'Connect Messenger and Instagram DMs. Booking requests become invoices instantly.',
+    
+    'integration_channel_4_title' => 'Email',
+    'integration_channel_4_desc' => 'Forward booking emails to your API inbox. AI extracts customer details, dates, and items.',
+    
+    'integration_channel_5_title' => 'AI-Powered Parsing',
+    'integration_channel_5_desc' => 'Built-in AI reads unstructured messages in Thai & English and converts them to structured bookings.',
+    
+    'integration_channel_6_title' => 'Manual Entry',
+    'integration_channel_6_desc' => 'Quick booking form for walk-ins, phone calls, or any source — takes seconds to fill in.',
+    
+    'integration_how_title' => 'How It Works',
+    'integration_step_1' => 'Customer books via website, LINE, Facebook, or email',
+    'integration_step_2' => 'Our API receives the booking data (AI parses if unstructured)',
+    'integration_step_3' => 'System auto-creates customer, quotation, and invoice',
+    'integration_step_4' => 'You manage everything from your iACC dashboard',
+    
+    // API Pricing (inside pricing cards)
+    'pricing_free_feature_5' => 'No API access',
+    'pricing_pro_feature_6' => 'Booking API (500/month)',
+    'pricing_pro_feature_7' => 'Website + Email channels',
+    'pricing_enterprise_feature_6' => 'Unlimited API bookings',
+    'pricing_enterprise_feature_7' => 'All channels + AI parsing',
+    'pricing_enterprise_feature_8' => '14-day free trial',
+    
     // Pricing Section
     'pricing_title' => 'Simple Pricing',
     'pricing_subtitle' => 'Choose the plan that fits your business needs',
