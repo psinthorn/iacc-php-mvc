@@ -195,7 +195,7 @@ return [
     'footer_press' => 'Press',
     'footer_help' => 'Help Center',
     'footer_contact' => 'Contact Us',
-    'footer_status' => 'Status',
+    'footer_privacy' => 'Privacy Policy',
     'footer_terms' => 'Terms of Service',
     'footer_copyright' => '© 2026 iACC. All rights reserved.',
     

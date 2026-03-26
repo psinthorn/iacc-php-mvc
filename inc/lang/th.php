@@ -195,7 +195,7 @@ return [
     'footer_press' => 'ข่าวสาร',
     'footer_help' => 'ศูนย์ช่วยเหลือ',
     'footer_contact' => 'ติดต่อเรา',
-    'footer_status' => 'สถานะ',
+    'footer_privacy' => 'นโยบายความเป็นส่วนตัว',
     'footer_terms' => 'ข้อกำหนดการใช้งาน',
     'footer_copyright' => '© 2026 iACC. สงวนลิขสิทธิ์',
     

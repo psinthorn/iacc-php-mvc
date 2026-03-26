@@ -1665,7 +1665,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 <ul>
                     <li><a href="login.php"><?= __('footer_help') ?></a></li>
                     <li><a href="contact.php?lang=<?= $lang ?>"><?= __('footer_contact') ?></a></li>
-                    <li><a href="privacy.php?lang=<?= $lang ?>"><?= __('footer_status') ?></a></li>
+                    <li><a href="privacy.php?lang=<?= $lang ?>"><?= __('footer_privacy') ?></a></li>
                     <li><a href="terms.php?lang=<?= $lang ?>"><?= __('footer_terms') ?></a></li>
                 </ul>
             </div>
