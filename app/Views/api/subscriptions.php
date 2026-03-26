@@ -47,7 +47,7 @@
                         ?>
                         <span class="badge badge-<?= $planColors[$sub['plan']] ?? 'secondary' ?>"><?= ucfirst($sub['plan']) ?></span>
                     </td>
-                    <td><?= intval($sub['bookings_limit']) == 0 ? 'Unlimited' : number_format($sub['bookings_limit']) ?></td>
+                    <td><?= intval($sub['orders_limit']) == 0 ? 'Unlimited' : number_format($sub['orders_limit']) ?></td>
                     <td>
                         <?php if ($sub['status'] === 'active'): ?>
                             <span class="badge badge-success">Active</span>

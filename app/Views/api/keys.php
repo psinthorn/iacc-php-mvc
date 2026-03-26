@@ -21,7 +21,7 @@
 <div style="text-align:center; padding:60px 20px;">
     <i class="fa fa-lock" style="font-size:3rem; color:#999; margin-bottom:15px;"></i>
     <h4>No Active Subscription</h4>
-    <p style="color:#666;">Activate your Booking API trial to get started.</p>
+    <p style="color:#666;">Activate your Sales Channel API trial to get started.</p>
     <a href="index.php?page=api_dashboard" class="btn btn-primary">Go to Dashboard</a>
 </div>
 
@@ -155,8 +155,8 @@ if ($activeCount < $subscription['keys_limit']):
 <!-- Quick Start Guide -->
 <div style="background:white; border-radius:12px; padding:20px; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
     <h4 style="margin-bottom:15px;"><i class="fa fa-code"></i> Quick Start</h4>
-    <p style="color:#666; font-size:0.9rem;">Send a POST request to create a booking:</p>
-    <pre style="background:#2d2d2d; color:#f8f8f2; padding:15px; border-radius:8px; overflow-x:auto; font-size:0.85rem;"><code>curl -X POST <?= (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') ?>/api.php/v1/bookings \
+    <p style="color:#666; font-size:0.9rem;">Send a POST request to create an order:</p>
+    <pre style="background:#2d2d2d; color:#f8f8f2; padding:15px; border-radius:8px; overflow-x:auto; font-size:0.85rem;"><code>curl -X POST <?= (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') ?>/api.php/v1/orders \
   -H "Content-Type: application/json" \
   -H "X-API-Key: YOUR_API_KEY" \
   -H "X-API-Secret: YOUR_API_SECRET" \

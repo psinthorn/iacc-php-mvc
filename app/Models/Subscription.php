@@ -15,28 +15,28 @@ class Subscription extends BaseModel
     /** Plan configuration defaults */
     const PLANS = [
         'trial' => [
-            'bookings_limit' => 50,
+            'orders_limit' => 50,
             'keys_limit'     => 1,
             'channels'       => 'website',
             'ai_providers'   => 'ollama',
             'duration_days'  => 14,
         ],
         'starter' => [
-            'bookings_limit' => 500,
+            'orders_limit' => 500,
             'keys_limit'     => 3,
             'channels'       => 'website,email',
             'ai_providers'   => 'ollama,openai',
             'duration_days'  => 30,
         ],
         'professional' => [
-            'bookings_limit' => 5000,
+            'orders_limit' => 5000,
             'keys_limit'     => 10,
             'channels'       => 'website,email,line,facebook,manual',
             'ai_providers'   => 'ollama,openai,claude,gemini',
             'duration_days'  => 30,
         ],
         'enterprise' => [
-            'bookings_limit' => 999999,
+            'orders_limit' => 999999,
             'keys_limit'     => 999,
             'channels'       => 'website,email,line,facebook,manual',
             'ai_providers'   => 'ollama,openai,claude,gemini',
@@ -71,7 +71,7 @@ class Subscription extends BaseModel
             'company_id'     => $companyId,
             'plan'           => 'trial',
             'status'         => 'active',
-            'bookings_limit' => $plan['bookings_limit'],
+            'orders_limit' => $plan['orders_limit'],
             'keys_limit'     => $plan['keys_limit'],
             'channels'       => $plan['channels'],
             'ai_providers'   => $plan['ai_providers'],
@@ -99,7 +99,7 @@ class Subscription extends BaseModel
         $data = [
             'plan'           => $plan,
             'status'         => 'active',
-            'bookings_limit' => $config['bookings_limit'],
+            'orders_limit' => $config['orders_limit'],
             'keys_limit'     => $config['keys_limit'],
             'channels'       => $config['channels'],
             'ai_providers'   => $config['ai_providers'],
@@ -134,13 +134,13 @@ class Subscription extends BaseModel
     }
 
     /**
-     * Get bookings used this month for a company
+     * Get orders used this month for a company
      */
     public function getMonthlyUsage(int $companyId): int
     {
         $id = \sql_int($companyId);
         $monthStart = date('Y-m-01');
-        $sql = "SELECT COUNT(*) as cnt FROM `booking_requests` 
+        $sql = "SELECT COUNT(*) as cnt FROM `channel_orders` 
                 WHERE `company_id` = '$id' 
                 AND `created_at` >= '$monthStart'
                 AND `status` != 'failed'";
@@ -154,7 +154,7 @@ class Subscription extends BaseModel
     public function hasQuota(int $companyId, array $subscription): bool
     {
         $used = $this->getMonthlyUsage($companyId);
-        return $used < $subscription['bookings_limit'];
+        return $used < $subscription['orders_limit'];
     }
 
     /**
@@ -190,7 +190,7 @@ class Subscription extends BaseModel
         // Fetch
         $sql = "SELECT s.*, c.name_en as company_name, c.name_th, c.email,
                 (SELECT COUNT(*) FROM api_keys k WHERE k.subscription_id = s.id AND k.is_active = 1) as active_keys,
-                (SELECT COUNT(*) FROM booking_requests b WHERE b.company_id = s.company_id AND b.created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')) as monthly_bookings
+                (SELECT COUNT(*) FROM channel_orders b WHERE b.company_id = s.company_id AND b.created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')) as monthly_orders
                 FROM `{$this->table}` s 
                 JOIN `company` c ON s.company_id = c.id 
                 WHERE 1=1 $searchCond

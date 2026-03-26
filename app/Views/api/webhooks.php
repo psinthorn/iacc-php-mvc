@@ -5,7 +5,7 @@
  * Variables from AdminApiController::webhooks():
  *   $webhooks, $subscription
  */
-$validEvents = ['booking.created', 'booking.completed', 'booking.failed', 'booking.cancelled', 'booking.updated'];
+$validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cancelled', 'order.updated'];
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 
@@ -58,7 +58,7 @@ $validEvents = ['booking.created', 'booking.completed', 'booking.failed', 'booki
     
     <?php if (empty($webhooks)): ?>
         <p style="color:#999; text-align:center; padding:30px;">
-            No webhooks registered. Create one above to receive real-time booking notifications.
+            No webhooks registered. Create one above to receive real-time order notifications.
         </p>
     <?php else: ?>
     <div class="table-responsive">

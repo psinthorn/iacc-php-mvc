@@ -1,13 +1,13 @@
 <?php
 namespace App\Services;
 
-use App\Models\Booking;
+use App\Models\ChannelOrder;
 use App\Models\Subscription;
 
 /**
- * BookingService — Business Logic for Booking API
+ * ChannelService — Business Logic for Sales Channel API
  * 
- * Receives a validated booking request and auto-creates:
+ * Receives a validated channel order and auto-creates:
  *   1. Customer company (if not exists) 
  *   2. Purchase Requisition (PR)
  *   3. Purchase Order (PO / Quotation)
@@ -16,11 +16,11 @@ use App\Models\Subscription;
  * All records are created under the API subscription owner's company.
  * This is 100% isolated — it does NOT modify any existing controllers or models.
  */
-class BookingService
+class ChannelService
 {
     private \mysqli $conn;
     private \HardClass $hard;
-    private Booking $bookingModel;
+    private ChannelOrder $orderModel;
     private Subscription $subscriptionModel;
 
     public function __construct()
@@ -29,50 +29,50 @@ class BookingService
         $this->conn = $db->conn;
         $this->hard = new \HardClass();
         $this->hard->setConnection($this->conn);
-        $this->bookingModel = new Booking();
+        $this->orderModel = new ChannelOrder();
         $this->subscriptionModel = new Subscription();
     }
 
     /**
-     * Process a booking request end-to-end
+     * Process a channel order end-to-end
      * 
-     * @param int   $bookingId  The booking_requests.id
-     * @param array $booking    The booking_requests row
+     * @param int   $orderId  The channel_orders.id
+     * @param array $order    The channel_orders row
      * @param array $authData   API key + subscription data from authentication
      * @return array ['success' => bool, 'data' => [...], 'error' => '...']
      */
-    public function processBooking(int $bookingId, array $booking, array $authData): array
+    public function processOrder(int $orderId, array $order, array $authData): array
     {
         // Mark as processing
-        $this->bookingModel->updateStatus($bookingId, 'processing');
+        $this->orderModel->updateStatus($orderId, 'processing');
 
         try {
             $ownerCompanyId = intval($authData['company_id']);
 
             // Step 1: Find or create the customer company
             $customerId = $this->findOrCreateCustomer(
-                $booking['guest_name'],
-                $booking['guest_email'] ?? '',
-                $booking['guest_phone'] ?? '',
+                $order['guest_name'],
+                $order['guest_email'] ?? '',
+                $order['guest_phone'] ?? '',
                 $ownerCompanyId
             );
 
             // Step 2: Create PR (Purchase Requisition)
-            $prId = $this->createPR($booking, $ownerCompanyId, $customerId);
+            $prId = $this->createPR($order, $ownerCompanyId, $customerId);
 
             // Step 3: Create PO (Quotation)
-            $poId = $this->createPO($booking, $prId, $ownerCompanyId);
+            $poId = $this->createPO($order, $prId, $ownerCompanyId);
 
             // Step 4: Create product line items
-            $this->createProducts($booking, $poId, $ownerCompanyId);
+            $this->createProducts($order, $poId, $ownerCompanyId);
 
-            // Step 5: Link booking to created records
-            $this->bookingModel->linkRecords($bookingId, $customerId, $prId, $poId);
+            // Step 5: Link order to created records
+            $this->orderModel->linkRecords($orderId, $customerId, $prId, $poId);
 
             return [
                 'success' => true,
                 'data' => [
-                    'booking_id'  => $bookingId,
+                    'order_id'  => $orderId,
                     'customer_id' => $customerId,
                     'pr_id'       => $prId,
                     'po_id'       => $poId,
@@ -81,7 +81,7 @@ class BookingService
             ];
         } catch (\Exception $e) {
             // Mark as failed
-            $this->bookingModel->updateStatus($bookingId, 'failed', [
+            $this->orderModel->updateStatus($orderId, 'failed', [
                 'error_message' => $e->getMessage(),
             ]);
 
@@ -145,24 +145,24 @@ class BookingService
     /**
      * Create Purchase Requisition
      */
-    private function createPR(array $booking, int $ownerCompanyId, int $customerId): int
+    private function createPR(array $order, int $ownerCompanyId, int $customerId): int
     {
-        $checkIn = $booking['check_in'] ?? date('Y-m-d');
-        $roomType = $booking['room_type'] ?? 'Booking';
-        $guestName = $booking['guest_name'];
+        $checkIn = $order['check_in'] ?? date('Y-m-d');
+        $roomType = $order['room_type'] ?? 'Order';
+        $guestName = $order['guest_name'];
 
-        $prName = "API Booking: $guestName - $roomType";
+        $prName = "Channel Order: $guestName - $roomType";
         if (strlen($prName) > 255) {
             $prName = substr($prName, 0, 255);
         }
 
-        $notes = $booking['notes'] ?? '';
-        $description = "Booking via API ({$booking['channel']})\n";
+        $notes = $order['notes'] ?? '';
+        $description = "Order via Sales Channel API ({$order['channel']})\n";
         $description .= "Guest: $guestName\n";
-        if (!empty($booking['check_in'])) $description .= "Check-in: {$booking['check_in']}\n";
-        if (!empty($booking['check_out'])) $description .= "Check-out: {$booking['check_out']}\n";
-        if (!empty($booking['room_type'])) $description .= "Room: {$booking['room_type']}\n";
-        if (!empty($booking['guests'])) $description .= "Guests: {$booking['guests']}\n";
+        if (!empty($order['check_in'])) $description .= "Check-in: {$order['check_in']}\n";
+        if (!empty($order['check_out'])) $description .= "Check-out: {$order['check_out']}\n";
+        if (!empty($order['room_type'])) $description .= "Room: {$order['room_type']}\n";
+        if (!empty($order['guests'])) $description .= "Guests: {$order['guests']}\n";
         if (!empty($notes)) $description .= "Notes: $notes\n";
 
         $data = [
@@ -190,12 +190,12 @@ class BookingService
     /**
      * Create Purchase Order (Quotation)
      */
-    private function createPO(array $booking, int $prId, int $ownerCompanyId): int
+    private function createPO(array $order, int $prId, int $ownerCompanyId): int
     {
-        $checkIn = $booking['check_in'] ?? date('Y-m-d');
-        $checkOut = $booking['check_out'] ?? date('Y-m-d', strtotime('+1 day'));
-        $guestName = $booking['guest_name'];
-        $roomType = $booking['room_type'] ?? 'Booking';
+        $checkIn = $order['check_in'] ?? date('Y-m-d');
+        $checkOut = $order['check_out'] ?? date('Y-m-d', strtotime('+1 day'));
+        $guestName = $order['guest_name'];
+        $roomType = $order['room_type'] ?? 'Order';
 
         $poName = "API: $guestName - $roomType";
         if (strlen($poName) > 255) {
@@ -230,26 +230,26 @@ class BookingService
     /**
      * Create product line items for the PO
      */
-    private function createProducts(array $booking, int $poId, int $ownerCompanyId): void
+    private function createProducts(array $order, int $poId, int $ownerCompanyId): void
     {
-        $roomType = $booking['room_type'] ?? 'Booking Item';
-        $amount = floatval($booking['total_amount'] ?? 0);
+        $roomType = $order['room_type'] ?? 'Order Item';
+        $amount = floatval($order['total_amount'] ?? 0);
         $nights = 1;
 
         // Calculate nights from check-in/check-out
-        if (!empty($booking['check_in']) && !empty($booking['check_out'])) {
-            $in = new \DateTime($booking['check_in']);
-            $out = new \DateTime($booking['check_out']);
+        if (!empty($order['check_in']) && !empty($order['check_out'])) {
+            $in = new \DateTime($order['check_in']);
+            $out = new \DateTime($order['check_out']);
             $diff = $in->diff($out)->days;
             $nights = max(1, $diff);
         }
 
         $pricePerNight = $nights > 0 ? ($amount / $nights) : $amount;
-        $guests = intval($booking['guests'] ?? 1);
+        $guests = intval($order['guests'] ?? 1);
 
         $description = "$roomType";
-        if (!empty($booking['check_in']) && !empty($booking['check_out'])) {
-            $description .= " ({$booking['check_in']} to {$booking['check_out']})";
+        if (!empty($order['check_in']) && !empty($order['check_out'])) {
+            $description .= " ({$order['check_in']} to {$order['check_out']})";
         }
         if ($guests > 1) {
             $description .= " - $guests guests";

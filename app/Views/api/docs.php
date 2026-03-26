@@ -51,7 +51,7 @@
 </div>
 
 <p style="color:#666; font-size:1.05rem; line-height:1.6;">
-    The iACC Sales Channel API allows you to receive bookings from any channel — websites, LINE, Facebook, email — 
+    The iACC Sales Channel API allows you to receive orders from any channel — websites, LINE, Facebook, email — 
     and automatically sync them to your iACC account as Purchase Requisitions and Purchase Orders.
 </p>
 
@@ -60,7 +60,7 @@
     <div class="feature-card">
         <i class="fa fa-bolt"></i>
         <h5>Auto-Processing</h5>
-        <small>Bookings auto-create Customer, PR & PO</small>
+        <small>Orders auto-create Customer, PR & PO</small>
     </div>
     <div class="feature-card">
         <i class="fa fa-bell"></i>
@@ -87,12 +87,12 @@
         <a href="#errors">2. Error Handling</a>
         <a href="#rate-limits">3. Rate Limits</a>
         <a href="#idempotency">4. Idempotency</a>
-        <a href="#create-booking">5. Create Booking</a>
-        <a href="#list-bookings">6. List Bookings</a>
-        <a href="#get-booking">7. Get Booking</a>
-        <a href="#update-booking">8. Update Booking</a>
-        <a href="#cancel-booking">9. Cancel Booking</a>
-        <a href="#retry-booking">10. Retry Booking</a>
+        <a href="#create-order">5. Create Order</a>
+        <a href="#list-orders">6. List Orders</a>
+        <a href="#get-order">7. Get Order</a>
+        <a href="#update-order">8. Update Order</a>
+        <a href="#cancel-order">9. Cancel Order</a>
+        <a href="#retry-order">10. Retry Order</a>
         <a href="#subscription">11. Subscription Info</a>
         <a href="#webhooks">12. Webhooks</a>
     </div>
@@ -134,7 +134,7 @@ X-API-Secret: your_api_secret_here
         <tr><td>409</td><td><code>INVALID_STATUS</code></td><td>Operation not allowed in current status</td></tr>
         <tr><td>422</td><td><code>VALIDATION_ERROR</code></td><td>Input validation failed (see details)</td></tr>
         <tr><td>429</td><td><code>RATE_LIMIT_EXCEEDED</code></td><td>Too many requests — check Retry-After header</td></tr>
-        <tr><td>429</td><td><code>QUOTA_EXCEEDED</code></td><td>Monthly booking quota exceeded</td></tr>
+        <tr><td>429</td><td><code>QUOTA_EXCEEDED</code></td><td>Monthly order quota exceeded</td></tr>
     </tbody>
 </table>
 
@@ -147,7 +147,7 @@ X-RateLimit-Remaining: 27     <span class="comment"># Requests remaining in curr
 Retry-After: 60                <span class="comment"># Seconds to wait (only on 429 response)</span>
 </div>
 <table class="param-table">
-    <thead><tr><th>Plan</th><th>Requests/min</th><th>Bookings/mo</th><th>API Keys</th></tr></thead>
+    <thead><tr><th>Plan</th><th>Requests/min</th><th>Orders/mo</th><th>API Keys</th></tr></thead>
     <tbody>
         <tr><td>Trial</td><td>30</td><td>50</td><td>1</td></tr>
         <tr><td>Starter</td><td>60</td><td>500</td><td>3</td></tr>
@@ -158,10 +158,10 @@ Retry-After: 60                <span class="comment"># Seconds to wait (only on 
 
 <!-- Idempotency -->
 <h2 id="idempotency"><i class="fa fa-copy"></i> 4. Idempotency</h2>
-<p>Prevent duplicate bookings by sending a unique <code>X-Idempotency-Key</code> header with POST requests. 
-   If the same key is sent again within 24 hours, the original booking is returned instead of creating a duplicate.</p>
+<p>Prevent duplicate orders by sending a unique <code>X-Idempotency-Key</code> header with POST requests. 
+   If the same key is sent again within 24 hours, the original order is returned instead of creating a duplicate.</p>
 <div class="code-block">
-curl -X POST http://localhost/api.php/v1/bookings \
+curl -X POST http://localhost/api.php/v1/orders \
   -H <span class="string">"X-API-Key: your_key"</span> \
   -H <span class="string">"X-API-Secret: your_secret"</span> \
   -H <span class="string">"X-Idempotency-Key: unique-request-id-123"</span> \
@@ -169,15 +169,15 @@ curl -X POST http://localhost/api.php/v1/bookings \
   -d <span class="string">'{"guest_name": "John Doe", ...}'</span>
 </div>
 
-<!-- Create Booking -->
-<h2 id="create-booking">5. Endpoints</h2>
+<!-- Create Order -->
+<h2 id="create-order">5. Endpoints</h2>
 
 <div class="endpoint post">
     <h3 style="margin-top:0;">
         <span class="method-badge method-post">POST</span>
-        <span class="api-path">/api.php/v1/bookings</span>
+        <span class="api-path">/api.php/v1/orders</span>
     </h3>
-    <p>Create a new booking. Auto-creates Customer → PR → PO → Products in iACC.</p>
+    <p>Create a new order. Auto-creates Customer → PR → PO → Products in iACC.</p>
     
     <h5>Request Body</h5>
     <table class="param-table">
@@ -199,7 +199,7 @@ curl -X POST http://localhost/api.php/v1/bookings \
 
     <h5>Example</h5>
     <div class="code-block">
-curl -X POST http://localhost/api.php/v1/bookings \
+curl -X POST http://localhost/api.php/v1/orders \
   -H <span class="string">"X-API-Key: iACC_abc123..."</span> \
   -H <span class="string">"X-API-Secret: def456..."</span> \
   -H <span class="string">"Content-Type: application/json"</span> \
@@ -218,9 +218,9 @@ curl -X POST http://localhost/api.php/v1/bookings \
     <div class="code-block">
 {
   <span class="key">"success"</span>: true,
-  <span class="key">"message"</span>: <span class="string">"Booking created and processed successfully"</span>,
+  <span class="key">"message"</span>: <span class="string">"Order created and processed successfully"</span>,
   <span class="key">"data"</span>: {
-    <span class="key">"booking_id"</span>: 1,
+    <span class="key">"order_id"</span>: 1,
     <span class="key">"customer_id"</span>: 176,
     <span class="key">"pr_id"</span>: 1110,
     <span class="key">"po_id"</span>: 2024,
@@ -230,13 +230,13 @@ curl -X POST http://localhost/api.php/v1/bookings \
     </div>
 </div>
 
-<!-- List Bookings -->
-<div class="endpoint" id="list-bookings">
+<!-- List Orders -->
+<div class="endpoint" id="list-orders">
     <h3 style="margin-top:0;">
         <span class="method-badge method-get">GET</span>
-        <span class="api-path">/api.php/v1/bookings</span>
+        <span class="api-path">/api.php/v1/orders</span>
     </h3>
-    <p>List bookings with filters and pagination.</p>
+    <p>List orders with filters and pagination.</p>
     
     <h5>Query Parameters</h5>
     <table class="param-table">
@@ -244,8 +244,8 @@ curl -X POST http://localhost/api.php/v1/bookings \
         <tbody>
             <tr><td><code>status</code></td><td>string</td><td>Filter: pending, processing, completed, failed, cancelled</td></tr>
             <tr><td><code>channel</code></td><td>string</td><td>Filter: website, email, line, facebook, manual</td></tr>
-            <tr><td><code>date_from</code></td><td>date</td><td>Filter bookings created on or after (YYYY-MM-DD)</td></tr>
-            <tr><td><code>date_to</code></td><td>date</td><td>Filter bookings created on or before (YYYY-MM-DD)</td></tr>
+            <tr><td><code>date_from</code></td><td>date</td><td>Filter orders created on or after (YYYY-MM-DD)</td></tr>
+            <tr><td><code>date_to</code></td><td>date</td><td>Filter orders created on or before (YYYY-MM-DD)</td></tr>
             <tr><td><code>search</code></td><td>string</td><td>Search in guest name, email, phone</td></tr>
             <tr><td><code>page</code></td><td>integer</td><td>Page number (default: 1)</td></tr>
             <tr><td><code>per_page</code></td><td>integer</td><td>Results per page (default: 15, max: 100)</td></tr>
@@ -253,43 +253,43 @@ curl -X POST http://localhost/api.php/v1/bookings \
     </table>
 </div>
 
-<!-- Get Booking -->
-<div class="endpoint" id="get-booking">
+<!-- Get Order -->
+<div class="endpoint" id="get-order">
     <h3 style="margin-top:0;">
         <span class="method-badge method-get">GET</span>
-        <span class="api-path">/api.php/v1/bookings/{id}</span>
+        <span class="api-path">/api.php/v1/orders/{id}</span>
     </h3>
-    <p>Get a single booking by ID. Only returns bookings owned by your company.</p>
+    <p>Get a single order by ID. Only returns orders owned by your company.</p>
 </div>
 
-<!-- Update Booking -->
-<div class="endpoint put" id="update-booking">
+<!-- Update Order -->
+<div class="endpoint put" id="update-order">
     <h3 style="margin-top:0;">
         <span class="method-badge method-put">PUT</span>
-        <span class="api-path">/api.php/v1/bookings/{id}</span>
+        <span class="api-path">/api.php/v1/orders/{id}</span>
     </h3>
-    <p>Update a booking. Only <code>pending</code> or <code>processing</code> bookings can be updated.</p>
+    <p>Update an order. Only <code>pending</code> or <code>processing</code> orders can be updated.</p>
     
     <h5>Updatable Fields</h5>
     <p><code>guest_name</code>, <code>guest_email</code>, <code>guest_phone</code>, <code>check_in</code>, <code>check_out</code>, <code>room_type</code>, <code>guests</code>, <code>total_amount</code>, <code>currency</code>, <code>notes</code></p>
 </div>
 
 <!-- Cancel -->
-<div class="endpoint delete" id="cancel-booking">
+<div class="endpoint delete" id="cancel-order">
     <h3 style="margin-top:0;">
         <span class="method-badge method-delete">DELETE</span>
-        <span class="api-path">/api.php/v1/bookings/{id}</span>
+        <span class="api-path">/api.php/v1/orders/{id}</span>
     </h3>
-    <p>Cancel a booking. Cannot cancel already-cancelled bookings.</p>
+    <p>Cancel an order. Cannot cancel already-cancelled orders.</p>
 </div>
 
 <!-- Retry -->
-<div class="endpoint post" id="retry-booking">
+<div class="endpoint post" id="retry-order">
     <h3 style="margin-top:0;">
         <span class="method-badge method-post">POST</span>
-        <span class="api-path">/api.php/v1/bookings/{id}/retry</span>
+        <span class="api-path">/api.php/v1/orders/{id}/retry</span>
     </h3>
-    <p>Retry processing a <code>failed</code> booking. Resets status to pending and re-runs the full processing pipeline.</p>
+    <p>Retry processing a <code>failed</code> order. Resets status to pending and re-runs the full processing pipeline.</p>
 </div>
 
 <!-- Subscription -->
@@ -298,7 +298,7 @@ curl -X POST http://localhost/api.php/v1/bookings \
         <span class="method-badge method-get">GET</span>
         <span class="api-path">/api.php/v1/subscription</span>
     </h3>
-    <p>Get your subscription info, quota usage, and booking statistics.</p>
+    <p>Get your subscription info, quota usage, and order statistics.</p>
     <h5>Response (200)</h5>
     <div class="code-block">
 {
@@ -306,9 +306,9 @@ curl -X POST http://localhost/api.php/v1/bookings \
   <span class="key">"data"</span>: {
     <span class="key">"plan"</span>: <span class="string">"trial"</span>,
     <span class="key">"status"</span>: <span class="string">"active"</span>,
-    <span class="key">"bookings_limit"</span>: 50,
-    <span class="key">"bookings_used"</span>: 3,
-    <span class="key">"bookings_remaining"</span>: 47,
+    <span class="key">"orders_limit"</span>: 50,
+    <span class="key">"orders_used"</span>: 3,
+    <span class="key">"orders_remaining"</span>: 47,
     <span class="key">"channels"</span>: [<span class="string">"website"</span>],
     <span class="key">"trial_end"</span>: <span class="string">"2026-04-10"</span>
   }
@@ -318,16 +318,16 @@ curl -X POST http://localhost/api.php/v1/bookings \
 
 <!-- Webhooks -->
 <h2 id="webhooks"><i class="fa fa-bell"></i> 12. Webhooks</h2>
-<p>Webhooks send real-time HTTP POST notifications to your server when booking events occur.</p>
+<p>Webhooks send real-time HTTP POST notifications to your server when order events occur.</p>
 
 <h4>Events</h4>
 <table class="param-table">
     <thead><tr><th>Event</th><th>Triggered When</th></tr></thead>
     <tbody>
-        <tr><td><code>booking.completed</code></td><td>Booking successfully processed (PR + PO created)</td></tr>
-        <tr><td><code>booking.failed</code></td><td>Booking processing failed</td></tr>
-        <tr><td><code>booking.cancelled</code></td><td>Booking cancelled via DELETE endpoint</td></tr>
-        <tr><td><code>booking.updated</code></td><td>Booking fields updated via PUT endpoint</td></tr>
+        <tr><td><code>order.completed</code></td><td>Order successfully processed (PR + PO created)</td></tr>
+        <tr><td><code>order.failed</code></td><td>Order processing failed</td></tr>
+        <tr><td><code>order.cancelled</code></td><td>Order cancelled via DELETE endpoint</td></tr>
+        <tr><td><code>order.updated</code></td><td>Order fields updated via PUT endpoint</td></tr>
     </tbody>
 </table>
 
@@ -344,7 +344,7 @@ curl -X POST http://localhost/api.php/v1/webhooks \
   -H <span class="string">"Content-Type: application/json"</span> \
   -d '{
     <span class="key">"url"</span>: <span class="string">"https://example.com/webhook"</span>,
-    <span class="key">"events"</span>: [<span class="string">"booking.completed"</span>, <span class="string">"booking.cancelled"</span>]
+    <span class="key">"events"</span>: [<span class="string">"order.completed"</span>, <span class="string">"order.cancelled"</span>]
   }'
     </div>
     <p><strong>Note:</strong> The response includes a <code>secret</code> — save it! Use it to verify webhook signatures (HMAC-SHA256).</p>
@@ -371,17 +371,17 @@ curl -X POST http://localhost/api.php/v1/webhooks \
 <div class="code-block">
 <span class="comment"># Headers</span>
 Content-Type: application/json
-X-Webhook-Event: booking.completed
+X-Webhook-Event: order.completed
 X-Webhook-Signature: sha256=abc123...
 X-Webhook-Id: 1
 User-Agent: iACC-Webhook/1.0
 
 <span class="comment"># Body</span>
 {
-  <span class="key">"event"</span>: <span class="string">"booking.completed"</span>,
+  <span class="key">"event"</span>: <span class="string">"order.completed"</span>,
   <span class="key">"timestamp"</span>: <span class="string">"2026-03-27T10:30:00+07:00"</span>,
   <span class="key">"data"</span>: {
-    <span class="key">"booking_id"</span>: 1,
+    <span class="key">"order_id"</span>: 1,
     <span class="key">"customer_id"</span>: 176,
     <span class="key">"pr_id"</span>: 1110,
     <span class="key">"po_id"</span>: 2024,

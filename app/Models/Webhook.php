@@ -7,7 +7,7 @@ namespace App\Models;
  * Manages api_webhooks table.
  * Handles registration, delivery, and failure tracking for webhook endpoints.
  * 
- * Events: booking.created, booking.completed, booking.failed, booking.cancelled, booking.updated
+ * Events: order.created, order.completed, order.failed, order.cancelled, order.updated
  */
 class Webhook extends BaseModel
 {
@@ -26,7 +26,7 @@ class Webhook extends BaseModel
     public function createWebhook(int $companyId, string $url, array $events = []): ?array
     {
         if (empty($events)) {
-            $events = ['booking.created', 'booking.completed', 'booking.failed', 'booking.cancelled'];
+            $events = ['order.created', 'order.completed', 'order.failed', 'order.cancelled'];
         }
 
         $secret = bin2hex(random_bytes(32));
@@ -136,7 +136,7 @@ class Webhook extends BaseModel
      * Fire webhook for an event — delivers to all active webhooks for the company
      * 
      * @param int    $companyId  Company that owns the webhooks
-     * @param string $event      Event name (e.g. booking.created)
+     * @param string $event      Event name (e.g. order.created)
      * @param array  $payload    Data to send
      * @return array Results of all deliveries
      */

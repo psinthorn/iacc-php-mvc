@@ -1,9 +1,9 @@
 <?php
 /**
- * API Bookings List View
+ * Channel Orders List View
  * 
- * Variables from AdminApiController::bookings():
- *   $bookings, $total, $pagination, $filters, $stats, $subscription
+ * Variables from AdminApiController::orders():
+ *   $orders, $total, $pagination, $filters, $stats, $subscription
  */
 require_once __DIR__ . '/../../inc/pagination.php';
 ?>
@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
 <div class="master-data-container">
 
 <div class="master-data-header">
-    <h2><i class="fa fa-calendar"></i> API Bookings</h2>
+    <h2><i class="fa fa-calendar"></i> Channel Orders</h2>
     <div>
         <a href="index.php?page=api_dashboard" class="btn btn-sm btn-outline-primary"><i class="fa fa-arrow-left"></i> Dashboard</a>
     </div>
@@ -23,7 +23,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
     <div class="stat-card primary">
         <i class="fa fa-calendar stat-icon"></i>
         <div class="stat-value"><?= intval($stats['total'] ?? 0) ?></div>
-        <div class="stat-label">Total Bookings</div>
+        <div class="stat-label">Total Orders</div>
     </div>
     <div class="stat-card success">
         <i class="fa fa-check stat-icon"></i>
@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
 <!-- Filters -->
 <div class="action-toolbar">
     <form method="get" action="" style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; width:100%;">
-        <input type="hidden" name="page" value="api_bookings">
+        <input type="hidden" name="page" value="api_orders">
         <div>
             <input type="text" name="search" class="form-control" placeholder="Search guest..." value="<?= htmlspecialchars($filters['search']) ?>" style="min-width:200px;">
         </div>
@@ -72,14 +72,14 @@ require_once __DIR__ . '/../../inc/pagination.php';
             <input type="date" name="date_to" class="form-control" value="<?= htmlspecialchars($filters['date_to']) ?>" placeholder="To">
         </div>
         <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Filter</button>
-        <a href="index.php?page=api_bookings" class="btn btn-outline-secondary">Clear</a>
+        <a href="index.php?page=api_orders" class="btn btn-outline-secondary">Clear</a>
     </form>
 </div>
 
-<!-- Bookings Table -->
+<!-- Orders Table -->
 <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-    <?php if (empty($bookings)): ?>
-        <p style="color:#999; text-align:center; padding:30px;">No bookings found.</p>
+    <?php if (empty($orders)): ?>
+        <p style="color:#999; text-align:center; padding:30px;">No orders found.</p>
     <?php else: ?>
     <div class="table-responsive">
         <table class="table table-hover" style="margin:0;">
@@ -100,7 +100,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($bookings as $b): ?>
+                <?php foreach ($orders as $b): ?>
                 <tr>
                     <td>#<?= $b['id'] ?></td>
                     <td><strong><?= htmlspecialchars($b['guest_name']) ?></strong></td>
@@ -128,7 +128,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
                     </td>
                     <td><?= date('M d, H:i', strtotime($b['created_at'])) ?></td>
                     <td>
-                        <a href="index.php?page=api_booking_detail&id=<?= $b['id'] ?>" class="btn btn-xs btn-outline-primary" title="View Details">
+                        <a href="index.php?page=api_order_detail&id=<?= $b['id'] ?>" class="btn btn-xs btn-outline-primary" title="View Details">
                             <i class="fa fa-eye"></i>
                         </a>
                     </td>
@@ -141,7 +141,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
     <!-- Pagination -->
     <?php if ($total > 15): ?>
     <div style="margin-top:15px;">
-        <?php render_pagination($pagination, 'index.php?page=api_bookings&' . http_build_query(array_filter($filters))); ?>
+        <?php render_pagination($pagination, 'index.php?page=api_orders&' . http_build_query(array_filter($filters))); ?>
     </div>
     <?php endif; ?>
     <?php endif; ?>

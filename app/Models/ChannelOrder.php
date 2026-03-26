@@ -2,26 +2,26 @@
 namespace App\Models;
 
 /**
- * Booking Model
+ * ChannelOrder Model
  * 
- * Manages booking_requests table.
- * Handles CRUD for bookings received via API.
+ * Manages channel_orders table.
+ * Handles CRUD for orders received via Sales Channel API.
  */
-class Booking extends BaseModel
+class ChannelOrder extends BaseModel
 {
-    protected string $table = 'booking_requests';
+    protected string $table = 'channel_orders';
     protected bool $useCompanyFilter = false;
 
     /**
-     * Create a new booking request
+     * Create a new order
      */
-    public function createBooking(array $data): int
+    public function createOrder(array $data): int
     {
         return $this->hard->insertSafe($this->table, $data);
     }
 
     /**
-     * Get booking by ID with ownership check
+     * Get order by ID with ownership check
      */
     public function findForCompany(int $id, int $companyId): ?array
     {
@@ -36,7 +36,7 @@ class Booking extends BaseModel
     }
 
     /**
-     * Find booking by idempotency key (for duplicate prevention)
+     * Find order by idempotency key (for duplicate prevention)
      */
     public function findByIdempotencyKey(int $companyId, string $key): ?array
     {
@@ -53,7 +53,7 @@ class Booking extends BaseModel
     }
 
     /**
-     * Update booking fields (for API PUT endpoint)
+     * Update order fields (for API PUT endpoint)
      */
     public function updateFields(int $id, array $data): bool
     {
@@ -62,7 +62,7 @@ class Booking extends BaseModel
     }
 
     /**
-     * Update booking status and linked records
+     * Update order status and linked records
      */
     public function updateStatus(int $id, string $status, array $extra = []): bool
     {
@@ -75,9 +75,9 @@ class Booking extends BaseModel
     }
 
     /**
-     * Link booking to created iACC records
+     * Link order to created iACC records
      */
-    public function linkRecords(int $bookingId, int $companyId, int $prId, int $poId): bool
+    public function linkRecords(int $orderId, int $companyId, int $prId, int $poId): bool
     {
         $data = [
             'linked_company_id' => $companyId,
@@ -86,12 +86,12 @@ class Booking extends BaseModel
             'status'            => 'completed',
             'processed_at'      => date('Y-m-d H:i:s'),
         ];
-        $where = ['id' => $bookingId];
+        $where = ['id' => $orderId];
         return $this->hard->updateSafe($this->table, $data, $where);
     }
 
     /**
-     * Get paginated bookings for a company
+     * Get paginated orders for a company
      */
     public function getForCompany(int $companyId, array $filters = [], int $page = 1, int $perPage = 15): array
     {
@@ -159,7 +159,7 @@ class Booking extends BaseModel
     }
 
     /**
-     * Get recent bookings for dashboard widget
+     * Get recent orders for dashboard widget
      */
     public function getRecent(int $companyId, int $limit = 5): array
     {
@@ -179,7 +179,7 @@ class Booking extends BaseModel
     }
 
     /**
-     * Get booking statistics for a company
+     * Get order statistics for a company
      */
     public function getStats(int $companyId): array
     {

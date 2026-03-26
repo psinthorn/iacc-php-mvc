@@ -166,7 +166,7 @@ return [
     // ========== System / DevOps ==========
     'health'                 => ['HealthController', 'index'],
 
-    // ========== Phase 7: Booking API Admin (MVC) ==========
+    // ========== Phase 7: Sales Channel API Admin (MVC) ==========
     'api_dashboard'          => ['AdminApiController', 'dashboard'],
     'api_subscriptions'      => ['AdminApiController', 'subscriptions'],
     'api_subscription_toggle'=> ['AdminApiController', 'toggleSubscription'],
@@ -175,8 +175,8 @@ return [
     'api_activate_trial'     => ['AdminApiController', 'activateTrial'],
     'api_key_create'         => ['AdminApiController', 'createKey'],
     'api_key_revoke'         => ['AdminApiController', 'revokeKey'],
-    'api_bookings'           => ['AdminApiController', 'bookings'],
-    'api_booking_detail'     => ['AdminApiController', 'bookingDetail'],
+    'api_orders'           => ['AdminApiController', 'orders'],
+    'api_order_detail'     => ['AdminApiController', 'orderDetail'],
     'api_usage_logs'         => ['AdminApiController', 'usageLogs'],
     'api_webhooks'           => ['AdminApiController', 'webhooks'],
     'api_webhook_create'     => ['AdminApiController', 'createWebhook'],
