@@ -91,8 +91,8 @@ $date_to = $filters['date_to'] ?? '';
         <td>
             <a class="action-btn primary" href="index.php?page=<?=$pg?>&id=<?=$d['id']?>&action=m" title="Edit"><i class="fa fa-pencil"></i></a>
             <a class="action-btn success" href="index.php?page=po_view&id=<?=$d['id']?>" title="Confirm"><i class="fa fa-check"></i></a>
-            <a class="action-btn default" href="exp.php?id=<?=$d['id']?>" target="blank" title="View"><i class="fa fa-search"></i></a>
-            <span class="mail-btn-wrapper"><a class="action-btn default" data-toggle="modal" href="model_mail.php?page=exp&id=<?=$d['id']?>" data-target=".bs-example-modal-lg"><i class="fa fa-envelope"></i></a><span class="<?=$badgeClass?>"><?=$mailcount?></span></span>
+            <a class="action-btn default" href="index.php?page=pdf_quotation&id=<?=$d['id']?>" target="blank" title="View"><i class="fa fa-search"></i></a>
+            <span class="mail-btn-wrapper"><a class="action-btn default" data-toggle="modal" href="index.php?page=ajax_mail&type=exp&id=<?=$d['id']?>" data-target=".bs-example-modal-lg"><i class="fa fa-envelope"></i></a><span class="<?=$badgeClass?>"><?=$mailcount?></span></span>
             <?php if(!$isCancelled): ?><a class="action-btn danger" onClick="return Conf(this)" href="index.php?page=po_store&method=D&id=<?=$d['id']?>&<?=csrf_field()?>"><i class="fa fa-trash"></i></a><?php endif; ?>
         </td>
     </tr>
@@ -123,7 +123,7 @@ $date_to = $filters['date_to'] ?? '';
         <td><span class="status-badge <?=$isCancelled?'cancelled':'active'?>"><?=$xml->$var?></span></td>
         <td>
             <a class="action-btn success" href="index.php?page=po_view&id=<?=$d['id']?>" title="Confirm"><i class="fa fa-check"></i></a>
-            <a class="action-btn default" href="exp.php?id=<?=$d['id']?>" target="blank" title="View"><i class="fa fa-search"></i></a>
+            <a class="action-btn default" href="index.php?page=pdf_quotation&id=<?=$d['id']?>" target="blank" title="View"><i class="fa fa-search"></i></a>
             <?php if(!$isCancelled): ?><a class="action-btn danger" onClick="return Conf(this)" href="index.php?page=po_store&method=D&id=<?=$d['id']?>&<?=csrf_field()?>"><i class="fa fa-trash"></i></a><?php endif; ?>
         </td>
     </tr>

@@ -47,7 +47,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
                 <td><?=e($row['deliver_date'])?></td>
                 <td>
                     <a href="index.php?page=deliv_view&id=<?=$row['id']?>" class="btn btn-xs btn-info"><i class="fa fa-eye"></i></a>
-                    <a href="rec.php?id=<?=$row['id']?>" class="btn btn-xs btn-default" target="_blank"><i class="fa fa-print"></i></a>
+                    <a href="index.php?page=pdf_receipt&id=<?=$row['id']?>" class="btn btn-xs btn-default" target="_blank"><i class="fa fa-print"></i></a>
                 </td>
             </tr>
             <?php endforeach;

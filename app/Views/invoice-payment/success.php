@@ -69,7 +69,7 @@
                     <?php if ($receiptId): ?>
                     <a href="index.php?page=rep_print&id=<?= $receiptId ?>" target="_blank" class="btn btn-primary"><i class="fa fa-print"></i> Print Receipt</a>
                     <?php endif; ?>
-                    <a href="inv.php?id=<?= $invoiceId ?>" target="_blank" class="btn btn-secondary"><i class="fa fa-file-text-o"></i> View Invoice</a>
+                    <a href="index.php?page=pdf_invoice&id=<?= $invoiceId ?>" target="_blank" class="btn btn-secondary"><i class="fa fa-file-text-o"></i> View Invoice</a>
                 </div>
             <?php else: ?>
                 <h1>Payment Error</h1>

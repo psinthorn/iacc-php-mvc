@@ -9,7 +9,7 @@ $users=new DbConn($config);
 
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
-$page_param = sql_escape($_REQUEST['page']);
+$page_param = sql_escape($_REQUEST['type']);
 
 ?>	
 	<!DOCTYPE html>
@@ -52,7 +52,7 @@ $total=$equip+$labour;
  
  $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
  $subject='QUO-'.$fetmail['tax']."-".$fetmail['name_sh'];
- $page="exp-m.php";
+ $page="index.php?page=pdf_quotation_mail";
  $message = "Dear ".$fetmail['name_en']."
   
 Your quotation is attached.
@@ -87,7 +87,7 @@ $total=$equip+$labour;
  
  $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
  $subject="INV-".$fetmail['tax2']."-".$fetmail['name_sh'];
- $page="inv-m.php";
+ $page="index.php?page=pdf_invoice_mail";
   $message = "Dear ".$fetmail['name_en']."
   
 Your invoice is attached.
@@ -123,7 +123,7 @@ $total=$equip+$labour;
  
  $vender=mysqli_fetch_array(mysqli_query($db->conn, "select name_en from company where id='".$com_id."'"));
  $subject="Tax-".$fetmail['texiv_rw']."-".$fetmail['name_sh'];
- $page="taxiv-m.php";
+ $page="index.php?page=pdf_tax_invoice_mail";
   $message = "Dear ".$fetmail['name_en']."
   
 Your invoice is attached.

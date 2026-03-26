@@ -1,20 +1,11 @@
 <?php
-// Error reporting settings
-ini_set('display_errors', 1); // Show errors in browser for debug
-ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 1);
-ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
-error_reporting(E_ALL);       // Report all errors
 /**
  * Reset Password Page
  * Allows user to set new password using reset token
+ * Dispatched via index.php — session and $db already initialized
  */
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
+global $db;
 
-$db = new DbConn($config);
 $message = '';
 $messageType = '';
 $validToken = false;
@@ -116,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
                         <p class="text-center">
                             <a href="login.php">Back to Login</a>
                             <?php if (!$validToken && $messageType !== 'success'): ?>
-                                | <a href="forgot-password.php">Request New Link</a>
+                                | <a href="index.php?page=forgot_password">Request New Link</a>
                             <?php endif; ?>
                         </p>
                     </div>

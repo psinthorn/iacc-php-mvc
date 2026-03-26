@@ -65,7 +65,7 @@ function sortLink2($col, $label, $curSort, $curDir, $base) {
 <div class="page-header-rep">
     <h2><i class="fa fa-bar-chart-o"></i> <?=$xml->report ?? 'Report'?></h2>
     <div class="header-actions">
-        <a href="report-export.php?period=<?=$period?>&sort=<?=$sortBy?>&dir=<?=$sortDir?>" class="btn-export"><i class="fa fa-file-excel-o"></i> Excel</a>
+        <a href="index.php?page=export_report&period=<?=$period?>&sort=<?=$sortBy?>&dir=<?=$sortDir?>" class="btn-export"><i class="fa fa-file-excel-o"></i> Excel</a>
         <button onclick="window.print();" class="btn-export"><i class="fa fa-print"></i> Print</button>
     </div>
 </div>

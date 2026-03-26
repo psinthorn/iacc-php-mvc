@@ -69,7 +69,7 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
 <div class="page-header-pay">
     <h2><i class="fa fa-credit-card"></i> <?=$xml->invoice ?? 'Invoice'?> <?=$xml->payment ?? 'Payments'?> <?=$xml->tracking ?? 'Tracking'?></h2>
     <div class="header-actions">
-        <a href="invoice-payments-export.php?status=<?=urlencode($status)?>&search=<?=urlencode($search)?>" class="btn-export"><i class="fa fa-file-excel-o"></i> Export Excel</a>
+        <a href="index.php?page=export_invoice_payments&status=<?=urlencode($status)?>&search=<?=urlencode($search)?>" class="btn-export"><i class="fa fa-file-excel-o"></i> Export Excel</a>
         <button onclick="window.print();" class="btn-export"><i class="fa fa-print"></i> Print</button>
     </div>
 </div>
@@ -138,7 +138,7 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
                     </td>
                     <td class="text-center">
                         <a href="?page=compl_view&id=<?=$row['invoice_id']?>" class="btn-action btn-action-view" title="View"><i class="fa fa-eye"></i></a>
-                        <a href="inv.php?id=<?=$row['invoice_id']?>" target="_blank" class="btn-action btn-action-pdf" title="PDF"><i class="fa fa-file-text-o"></i></a>
+                        <a href="index.php?page=pdf_invoice&id=<?=$row['invoice_id']?>" target="_blank" class="btn-action btn-action-pdf" title="PDF"><i class="fa fa-file-text-o"></i></a>
                     </td>
                 </tr>
 <?php endforeach; else: ?>

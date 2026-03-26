@@ -1,20 +1,11 @@
 <?php
-// Error reporting settings
-ini_set('display_errors', 1); // Show errors in browser for debug
-ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 1);
-ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
-error_reporting(E_ALL);       // Report all errors
 /**
  * Forgot Password Page
  * Sends password reset email to user
+ * Dispatched via index.php — session and $db already initialized
  */
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
+global $db;
 
-$db = new DbConn($config);
 $message = '';
 $messageType = '';
 
@@ -40,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Build reset URL
                 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
                 $host = $_SERVER['HTTP_HOST'];
-                $resetUrl = "{$protocol}://{$host}/reset-password.php?token={$token}";
+                $resetUrl = "{$protocol}://{$host}/index.php?page=reset_password&token={$token}";
                 
                 // In production, send email here
                 // For now, we'll display the link (remove in production!)
