@@ -58,7 +58,7 @@ class AiSettingsController extends BaseController
         $settings = \AIProvider::getSettings();
 
         // Render standalone view (includes own HTML/head/body)
-        $viewFile = __DIR__ . '/../../views/ai/settings.php';
+        $viewFile = __DIR__ . '/../Views/ai/settings.php';
         include $viewFile;
         exit;
     }

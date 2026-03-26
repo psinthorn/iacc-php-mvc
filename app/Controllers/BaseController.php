@@ -67,7 +67,7 @@ class BaseController
     /**
      * Render a view file with data, wrapped in the app layout
      * 
-     * @param string $view   View path relative to views/ (e.g., 'category/list')
+     * @param string $view   View path relative to app/Views/ (e.g., 'category/list')
      * @param array  $data   Variables to extract into the view scope
      * @param string $layout Layout name (default: null = no layout, rendered inline by index.php)
      */
@@ -82,7 +82,7 @@ class BaseController
         extract($data);
 
         // Build view file path
-        $viewFile = __DIR__ . '/../../views/' . $view . '.php';
+        $viewFile = __DIR__ . '/../Views/' . $view . '.php';
 
         if (!file_exists($viewFile)) {
             throw new \RuntimeException("View not found: $view ($viewFile)");
@@ -94,7 +94,7 @@ class BaseController
             include $viewFile;
             $content = ob_get_clean();
 
-            $layoutFile = __DIR__ . '/../../views/layouts/' . $layout . '.php';
+            $layoutFile = __DIR__ . '/../Views/layouts/' . $layout . '.php';
             if (!file_exists($layoutFile)) {
                 throw new \RuntimeException("Layout not found: $layout");
             }

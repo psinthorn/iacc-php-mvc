@@ -97,7 +97,7 @@ class ReceiptController extends BaseController
      */
     public function print(): void
     {
-        include __DIR__ . '/../../views/receipt/print.php';
+        include __DIR__ . '/../Views/receipt/print.php';
         exit;
     }
 }

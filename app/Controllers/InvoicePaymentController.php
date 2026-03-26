@@ -88,7 +88,7 @@ class InvoicePaymentController extends BaseController
         }
 
         // Render standalone checkout page
-        include __DIR__ . '/../../views/invoice-payment/checkout.php';
+        include __DIR__ . '/../Views/invoice-payment/checkout.php';
         exit; // standalone page — don't render admin layout
     }
 
@@ -186,7 +186,7 @@ class InvoicePaymentController extends BaseController
 
         $invoiceData = $invoiceId ? $this->model->getInvoiceBasicDisplay($invoiceId) : null;
 
-        include __DIR__ . '/../../views/invoice-payment/success.php';
+        include __DIR__ . '/../Views/invoice-payment/success.php';
         exit;
     }
 
@@ -218,7 +218,7 @@ class InvoicePaymentController extends BaseController
             $icon = 'fa-clock-o';
         }
 
-        include __DIR__ . '/../../views/invoice-payment/cancel.php';
+        include __DIR__ . '/../Views/invoice-payment/cancel.php';
         exit;
     }
 }
