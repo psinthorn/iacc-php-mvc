@@ -75,7 +75,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
             </thead>
             <tbody>
                 <?php foreach ($logs as $log):
-                    // Extract HTTP method from endpoint string (e.g. "POST /api/v1/bookings")
+                    // Extract HTTP method from endpoint string (e.g. "POST /api/v1/orders")
                     $parts = explode(' ', $log['endpoint'], 2);
                     $httpMethod = $parts[0] ?? 'GET';
                     $endpointPath = $parts[1] ?? $log['endpoint'];

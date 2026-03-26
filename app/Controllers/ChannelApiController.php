@@ -3,29 +3,29 @@ namespace App\Controllers;
 
 use App\Models\ApiKey;
 use App\Models\ApiUsageLog;
-use App\Models\Booking;
+use App\Models\ChannelOrder;
 use App\Models\Subscription;
 use App\Models\Webhook;
-use App\Services\BookingService;
+use App\Services\ChannelService;
 
 /**
- * BookingApiController — REST API endpoint for booking requests
+ * ChannelApiController — REST API endpoint for channel orders
  * 
  * Called from api.php (not index.php).
  * All responses are JSON. No session/cookie auth — uses API key + secret.
  * 
  * Endpoints:
- *   POST   /api/v1/bookings          — Create a new booking
- *   GET    /api/v1/bookings/:id      — Get booking status
- *   GET    /api/v1/bookings          — List bookings
- *   DELETE /api/v1/bookings/:id      — Cancel a booking
+ *   POST   /api/v1/orders          — Create a new order
+ *   GET    /api/v1/orders/:id      — Get order status
+ *   GET    /api/v1/orders          — List orders
+ *   DELETE /api/v1/orders/:id      — Cancel an order
  *   GET    /api/v1/subscription      — Get subscription info & usage
  */
-class BookingApiController
+class ChannelApiController
 {
     private \mysqli $conn;
     private ApiKey $apiKeyModel;
-    private Booking $bookingModel;
+    private ChannelOrder $orderModel;
     private Subscription $subscriptionModel;
     private ApiUsageLog $usageLog;
     private Webhook $webhookModel;
@@ -37,7 +37,7 @@ class BookingApiController
         global $db;
         $this->conn = $db->conn;
         $this->apiKeyModel = new ApiKey();
-        $this->bookingModel = new Booking();
+        $this->orderModel = new ChannelOrder();
         $this->subscriptionModel = new Subscription();
         $this->usageLog = new ApiUsageLog();
         $this->webhookModel = new Webhook();
@@ -58,28 +58,28 @@ class BookingApiController
 
             // Route to handler
             switch (true) {
-                case $method === 'POST' && $path === 'bookings' && $resourceId && $subAction === 'retry':
-                    $this->retryBooking($resourceId);
+                case $method === 'POST' && $path === 'orders' && $resourceId && $subAction === 'retry':
+                    $this->retryOrder($resourceId);
                     break;
 
-                case $method === 'POST' && $path === 'bookings':
-                    $this->createBooking();
+                case $method === 'POST' && $path === 'orders':
+                    $this->createOrder();
                     break;
 
-                case $method === 'GET' && $path === 'bookings' && $resourceId:
-                    $this->getBooking($resourceId);
+                case $method === 'GET' && $path === 'orders' && $resourceId:
+                    $this->getOrder($resourceId);
                     break;
 
-                case $method === 'GET' && $path === 'bookings':
-                    $this->listBookings();
+                case $method === 'GET' && $path === 'orders':
+                    $this->listOrders();
                     break;
 
-                case $method === 'PUT' && $path === 'bookings' && $resourceId:
-                    $this->updateBooking($resourceId);
+                case $method === 'PUT' && $path === 'orders' && $resourceId:
+                    $this->updateOrder($resourceId);
                     break;
 
-                case $method === 'DELETE' && $path === 'bookings' && $resourceId:
-                    $this->cancelBooking($resourceId);
+                case $method === 'DELETE' && $path === 'orders' && $resourceId:
+                    $this->cancelOrder($resourceId);
                     break;
 
                 case $method === 'GET' && $path === 'subscription':
@@ -112,9 +112,9 @@ class BookingApiController
     // =========================================================
 
     /**
-     * POST /api/v1/bookings — Create a new booking
+     * POST /api/v1/orders — Create a new order
      */
-    private function createBooking(): void
+    private function createOrder(): void
     {
         $input = $this->getJsonInput();
         $companyId = intval($this->authData['company_id']);
@@ -122,16 +122,16 @@ class BookingApiController
         // Idempotency check
         $idempotencyKey = $_SERVER['HTTP_X_IDEMPOTENCY_KEY'] ?? null;
         if ($idempotencyKey) {
-            $existing = $this->bookingModel->findByIdempotencyKey($companyId, $idempotencyKey);
+            $existing = $this->orderModel->findByIdempotencyKey($companyId, $idempotencyKey);
             if ($existing) {
-                $this->logRequest('POST /api/v1/bookings', $existing['channel'], 200, $input);
-                $this->jsonSuccess($this->formatBookingResponse($existing), 200, 'Duplicate request — returning existing booking');
+                $this->logRequest('POST /api/v1/orders', $existing['channel'], 200, $input);
+                $this->jsonSuccess($this->formatOrderResponse($existing), 200, 'Duplicate request — returning existing order');
                 return;
             }
         }
 
         // Validate required fields
-        $errors = $this->validateBookingInput($input);
+        $errors = $this->validateOrderInput($input);
         if (!empty($errors)) {
             $this->jsonError('Validation failed', 422, 'VALIDATION_ERROR', $errors);
             return;
@@ -141,7 +141,7 @@ class BookingApiController
         $subscription = $this->subscriptionModel->getByCompanyId($companyId);
         if (!$this->subscriptionModel->hasQuota($companyId, $subscription)) {
             $this->jsonError(
-                'Monthly booking quota exceeded. Current limit: ' . $subscription['bookings_limit'],
+                'Monthly order quota exceeded. Current limit: ' . $subscription['orders_limit'],
                 429, 'QUOTA_EXCEEDED'
             );
             return;
@@ -157,8 +157,8 @@ class BookingApiController
             return;
         }
 
-        // Create booking record
-        $bookingData = [
+        // Create order record
+        $orderData = [
             'company_id'  => $companyId,
             'api_key_id'  => intval($this->authData['id']),
             'channel'     => $channel,
@@ -177,53 +177,53 @@ class BookingApiController
             'idempotency_key' => $idempotencyKey,
         ];
 
-        $bookingId = $this->bookingModel->createBooking($bookingData);
-        if (!$bookingId) {
-            $this->jsonError('Failed to create booking', 500, 'CREATE_FAILED');
+        $orderId = $this->orderModel->createOrder($orderData);
+        if (!$orderId) {
+            $this->jsonError('Failed to create order', 500, 'CREATE_FAILED');
             return;
         }
 
-        // Process booking (create Company → PR → PO → Products)
-        $service = new BookingService();
-        $result = $service->processBooking($bookingId, $bookingData, $this->authData);
+        // Process order (create Company → PR → PO → Products)
+        $service = new ChannelService();
+        $result = $service->processOrder($orderId, $orderData, $this->authData);
 
         if ($result['success']) {
-            $this->logRequest('POST /api/v1/bookings', $channel, 201, $input, $result['data']);
-            $this->fireWebhook('booking.completed', $result['data']);
-            $this->jsonSuccess($result['data'], 201, 'Booking created and processed successfully');
+            $this->logRequest('POST /api/v1/orders', $channel, 201, $input, $result['data']);
+            $this->fireWebhook('order.completed', $result['data']);
+            $this->jsonSuccess($result['data'], 201, 'Order created and processed successfully');
         } else {
-            $this->logRequest('POST /api/v1/bookings', $channel, 500, $input, ['error' => $result['error']]);
-            $this->fireWebhook('booking.failed', ['booking_id' => $bookingId, 'error' => $result['error']]);
-            // Booking was created but processing failed — return booking ID for retry
+            $this->logRequest('POST /api/v1/orders', $channel, 500, $input, ['error' => $result['error']]);
+            $this->fireWebhook('order.failed', ['order_id' => $orderId, 'error' => $result['error']]);
+            // Order was created but processing failed — return order ID for retry
             $this->jsonSuccess([
-                'booking_id' => $bookingId,
+                'order_id' => $orderId,
                 'status'     => 'failed',
                 'error'      => $result['error'],
-            ], 202, 'Booking created but processing failed. You can retry later.');
+            ], 202, 'Order created but processing failed. You can retry later.');
         }
     }
 
     /**
-     * GET /api/v1/bookings/:id — Get booking status
+     * GET /api/v1/orders/:id — Get order status
      */
-    private function getBooking(int $id): void
+    private function getOrder(int $id): void
     {
         $companyId = intval($this->authData['company_id']);
-        $booking = $this->bookingModel->findForCompany($id, $companyId);
+        $order = $this->orderModel->findForCompany($id, $companyId);
 
-        if (!$booking) {
-            $this->jsonError('Booking not found', 404, 'NOT_FOUND');
+        if (!$order) {
+            $this->jsonError('Order not found', 404, 'NOT_FOUND');
             return;
         }
 
-        $this->logRequest("GET /api/v1/bookings/$id", $booking['channel'], 200);
-        $this->jsonSuccess($this->formatBookingResponse($booking));
+        $this->logRequest("GET /api/v1/orders/$id", $order['channel'], 200);
+        $this->jsonSuccess($this->formatOrderResponse($order));
     }
 
     /**
-     * GET /api/v1/bookings — List bookings with filters
+     * GET /api/v1/orders — List orders with filters
      */
-    private function listBookings(): void
+    private function listOrders(): void
     {
         $companyId = intval($this->authData['company_id']);
         
@@ -237,11 +237,11 @@ class BookingApiController
         $page = max(1, intval($_GET['page'] ?? 1));
         $perPage = min(100, max(1, intval($_GET['per_page'] ?? 15)));
 
-        $result = $this->bookingModel->getForCompany($companyId, $filters, $page, $perPage);
+        $result = $this->orderModel->getForCompany($companyId, $filters, $page, $perPage);
 
-        $this->logRequest('GET /api/v1/bookings', '', 200);
+        $this->logRequest('GET /api/v1/orders', '', 200);
         $this->jsonSuccess([
-            'bookings'   => array_map([$this, 'formatBookingResponse'], $result['items']),
+            'orders'   => array_map([$this, 'formatOrderResponse'], $result['items']),
             'total'      => $result['total'],
             'page'       => $page,
             'per_page'   => $perPage,
@@ -250,46 +250,46 @@ class BookingApiController
     }
 
     /**
-     * DELETE /api/v1/bookings/:id — Cancel a booking
+     * DELETE /api/v1/orders/:id — Cancel an order
      */
-    private function cancelBooking(int $id): void
+    private function cancelOrder(int $id): void
     {
         $companyId = intval($this->authData['company_id']);
-        $booking = $this->bookingModel->findForCompany($id, $companyId);
+        $order = $this->orderModel->findForCompany($id, $companyId);
 
-        if (!$booking) {
-            $this->jsonError('Booking not found', 404, 'NOT_FOUND');
+        if (!$order) {
+            $this->jsonError('Order not found', 404, 'NOT_FOUND');
             return;
         }
 
-        if ($booking['status'] === 'cancelled') {
-            $this->jsonError('Booking is already cancelled', 409, 'ALREADY_CANCELLED');
+        if ($order['status'] === 'cancelled') {
+            $this->jsonError('Order is already cancelled', 409, 'ALREADY_CANCELLED');
             return;
         }
 
-        $this->bookingModel->updateStatus($id, 'cancelled');
+        $this->orderModel->updateStatus($id, 'cancelled');
         
-        $this->logRequest("DELETE /api/v1/bookings/$id", $booking['channel'], 200);
-        $this->fireWebhook('booking.cancelled', ['booking_id' => $id, 'guest_name' => $booking['guest_name']]);
-        $this->jsonSuccess(['booking_id' => $id, 'status' => 'cancelled'], 200, 'Booking cancelled');
+        $this->logRequest("DELETE /api/v1/orders/$id", $order['channel'], 200);
+        $this->fireWebhook('order.cancelled', ['order_id' => $id, 'guest_name' => $order['guest_name']]);
+        $this->jsonSuccess(['order_id' => $id, 'status' => 'cancelled'], 200, 'Order cancelled');
     }
 
     /**
-     * PUT /api/v1/bookings/:id — Update a booking
-     * Only pending or processing bookings can be updated.
+     * PUT /api/v1/orders/:id — Update an order
+     * Only pending or processing orders can be updated.
      */
-    private function updateBooking(int $id): void
+    private function updateOrder(int $id): void
     {
         $companyId = intval($this->authData['company_id']);
-        $booking = $this->bookingModel->findForCompany($id, $companyId);
+        $order = $this->orderModel->findForCompany($id, $companyId);
 
-        if (!$booking) {
-            $this->jsonError('Booking not found', 404, 'NOT_FOUND');
+        if (!$order) {
+            $this->jsonError('Order not found', 404, 'NOT_FOUND');
             return;
         }
 
-        if (!in_array($booking['status'], ['pending', 'processing'])) {
-            $this->jsonError('Only pending or processing bookings can be updated', 409, 'INVALID_STATUS');
+        if (!in_array($order['status'], ['pending', 'processing'])) {
+            $this->jsonError('Only pending or processing orders can be updated', 409, 'INVALID_STATUS');
             return;
         }
 
@@ -306,8 +306,8 @@ class BookingApiController
         if (!empty($input['check_out']) && !$this->isValidDate($input['check_out'])) {
             $errors[] = 'check_out must be a valid date (YYYY-MM-DD)';
         }
-        $checkIn = $input['check_in'] ?? $booking['check_in'];
-        $checkOut = $input['check_out'] ?? $booking['check_out'];
+        $checkIn = $input['check_in'] ?? $order['check_in'];
+        $checkOut = $input['check_out'] ?? $order['check_out'];
         if ($checkIn && $checkOut && strtotime($checkOut) <= strtotime($checkIn)) {
             $errors[] = 'check_out must be after check_in';
         }
@@ -336,50 +336,50 @@ class BookingApiController
 
         // Update via model (safe prepared statements)
         $updates['updated_at'] = date('Y-m-d H:i:s');
-        $this->bookingModel->updateFields($id, $updates);
+        $this->orderModel->updateFields($id, $updates);
 
-        // Return updated booking
-        $updated = $this->bookingModel->findForCompany($id, $companyId);
-        $this->logRequest("PUT /api/v1/bookings/$id", $updated['channel'], 200);
-        $this->fireWebhook('booking.updated', $this->formatBookingResponse($updated));
-        $this->jsonSuccess(['booking' => $this->formatBookingResponse($updated)], 200, 'Booking updated');
+        // Return updated order
+        $updated = $this->orderModel->findForCompany($id, $companyId);
+        $this->logRequest("PUT /api/v1/orders/$id", $updated['channel'], 200);
+        $this->fireWebhook('order.updated', $this->formatOrderResponse($updated));
+        $this->jsonSuccess(['order' => $this->formatOrderResponse($updated)], 200, 'Order updated');
     }
 
     /**
-     * POST /api/v1/bookings/:id/retry — Retry processing a failed booking
+     * POST /api/v1/orders/:id/retry — Retry processing a failed order
      */
-    private function retryBooking(int $id): void
+    private function retryOrder(int $id): void
     {
         $companyId = intval($this->authData['company_id']);
-        $booking = $this->bookingModel->findForCompany($id, $companyId);
+        $order = $this->orderModel->findForCompany($id, $companyId);
 
-        if (!$booking) {
-            $this->jsonError('Booking not found', 404, 'NOT_FOUND');
+        if (!$order) {
+            $this->jsonError('Order not found', 404, 'NOT_FOUND');
             return;
         }
 
-        if ($booking['status'] !== 'failed') {
-            $this->jsonError('Only failed bookings can be retried', 409, 'INVALID_STATUS');
+        if ($order['status'] !== 'failed') {
+            $this->jsonError('Only failed orders can be retried', 409, 'INVALID_STATUS');
             return;
         }
 
         // Reset to pending and re-process
-        $this->bookingModel->updateStatus($id, 'pending');
+        $this->orderModel->updateStatus($id, 'pending');
 
-        $service = new BookingService();
-        $result = $service->processBooking($id, $booking, $this->authData);
+        $service = new ChannelService();
+        $result = $service->processOrder($id, $order, $this->authData);
 
         // Re-fetch after processing
-        $updated = $this->bookingModel->findForCompany($id, $companyId);
+        $updated = $this->orderModel->findForCompany($id, $companyId);
         $statusCode = ($updated['status'] === 'completed') ? 200 : 207;
 
-        $this->logRequest("POST /api/v1/bookings/$id/retry", $booking['channel'], $statusCode);
-        $eventName = ($updated['status'] === 'completed') ? 'booking.completed' : 'booking.failed';
-        $this->fireWebhook($eventName, $this->formatBookingResponse($updated));
+        $this->logRequest("POST /api/v1/orders/$id/retry", $order['channel'], $statusCode);
+        $eventName = ($updated['status'] === 'completed') ? 'order.completed' : 'order.failed';
+        $this->fireWebhook($eventName, $this->formatOrderResponse($updated));
         $this->jsonSuccess([
-            'booking'          => $this->formatBookingResponse($updated),
+            'order'          => $this->formatOrderResponse($updated),
             'processing_result' => $result,
-        ], $statusCode, $updated['status'] === 'completed' ? 'Booking retried successfully' : 'Booking retry attempted');
+        ], $statusCode, $updated['status'] === 'completed' ? 'Order retried successfully' : 'Order retry attempted');
     }
 
     /**
@@ -390,15 +390,15 @@ class BookingApiController
         $companyId = intval($this->authData['company_id']);
         $subscription = $this->subscriptionModel->getByCompanyId($companyId);
         $usage = $this->subscriptionModel->getMonthlyUsage($companyId);
-        $stats = $this->bookingModel->getStats($companyId);
+        $stats = $this->orderModel->getStats($companyId);
 
         $this->logRequest('GET /api/v1/subscription', '', 200);
         $this->jsonSuccess([
             'plan'            => $subscription['plan'],
             'status'          => $subscription['status'],
-            'bookings_limit'  => intval($subscription['bookings_limit']),
-            'bookings_used'   => $usage,
-            'bookings_remaining' => max(0, intval($subscription['bookings_limit']) - $usage),
+            'orders_limit'  => intval($subscription['orders_limit']),
+            'orders_used'   => $usage,
+            'orders_remaining' => max(0, intval($subscription['orders_limit']) - $usage),
             'channels'        => explode(',', $subscription['channels']),
             'ai_providers'    => explode(',', $subscription['ai_providers']),
             'keys_limit'      => intval($subscription['keys_limit']),
@@ -519,7 +519,7 @@ class BookingApiController
             return;
         }
 
-        $validEvents = ['booking.created', 'booking.completed', 'booking.failed', 'booking.cancelled', 'booking.updated'];
+        $validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cancelled', 'order.updated'];
         $events = $input['events'] ?? $validEvents;
         if (!is_array($events)) {
             $this->jsonError('events must be an array', 422, 'VALIDATION_ERROR');
@@ -605,7 +605,7 @@ class BookingApiController
         return $data;
     }
 
-    private function validateBookingInput(array $input): array
+    private function validateOrderInput(array $input): array
     {
         $errors = [];
 
@@ -649,36 +649,36 @@ class BookingApiController
         return $d && $d->format('Y-m-d') === $date;
     }
 
-    private function formatBookingResponse(array $booking): array
+    private function formatOrderResponse(array $order): array
     {
         $formatted = [
-            'id'              => intval($booking['id']),
-            'booking_id'      => intval($booking['id']),
-            'status'          => $booking['status'],
-            'channel'         => $booking['channel'],
-            'guest_name'      => $booking['guest_name'],
-            'guest_email'     => $booking['guest_email'],
-            'guest_phone'     => $booking['guest_phone'],
-            'check_in'        => $booking['check_in'],
-            'check_out'       => $booking['check_out'],
-            'room_type'       => $booking['room_type'],
-            'guests'          => intval($booking['guests']),
-            'total_amount'    => floatval($booking['total_amount'] ?? 0),
-            'currency'        => $booking['currency'],
-            'notes'           => $booking['notes'],
-            'linked_pr_id'    => $booking['linked_pr_id'] ? intval($booking['linked_pr_id']) : null,
-            'linked_po_id'    => $booking['linked_po_id'] ? intval($booking['linked_po_id']) : null,
-            'created_at'      => $booking['created_at'],
-            'processed_at'    => $booking['processed_at'],
+            'id'              => intval($order['id']),
+            'order_id'      => intval($order['id']),
+            'status'          => $order['status'],
+            'channel'         => $order['channel'],
+            'guest_name'      => $order['guest_name'],
+            'guest_email'     => $order['guest_email'],
+            'guest_phone'     => $order['guest_phone'],
+            'check_in'        => $order['check_in'],
+            'check_out'       => $order['check_out'],
+            'room_type'       => $order['room_type'],
+            'guests'          => intval($order['guests']),
+            'total_amount'    => floatval($order['total_amount'] ?? 0),
+            'currency'        => $order['currency'],
+            'notes'           => $order['notes'],
+            'linked_pr_id'    => $order['linked_pr_id'] ? intval($order['linked_pr_id']) : null,
+            'linked_po_id'    => $order['linked_po_id'] ? intval($order['linked_po_id']) : null,
+            'created_at'      => $order['created_at'],
+            'processed_at'    => $order['processed_at'],
         ];
-        if (!empty($booking['idempotency_key'])) {
-            $formatted['idempotency_key'] = $booking['idempotency_key'];
+        if (!empty($order['idempotency_key'])) {
+            $formatted['idempotency_key'] = $order['idempotency_key'];
         }
         return $formatted;
     }
 
     /**
-     * Fire webhooks for a booking event (non-blocking best-effort)
+     * Fire webhooks for an order event (non-blocking best-effort)
      */
     private function fireWebhook(string $event, array $payload): void
     {

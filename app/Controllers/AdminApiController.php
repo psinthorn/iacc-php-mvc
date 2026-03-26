@@ -3,12 +3,12 @@ namespace App\Controllers;
 
 use App\Models\ApiKey;
 use App\Models\ApiUsageLog;
-use App\Models\Booking;
+use App\Models\ChannelOrder;
 use App\Models\Subscription;
 use App\Models\Webhook;
 
 /**
- * AdminApiController — Admin panel for managing Booking API
+ * AdminApiController — Admin panel for managing Sales Channel API
  * 
  * Admin (level >= 2):
  *   - View all subscriptions
@@ -18,13 +18,13 @@ use App\Models\Webhook;
  * Any logged-in user (level >= 0):
  *   - View own subscription
  *   - Manage own API keys
- *   - View own bookings & usage logs
+ *   - View own orders & usage logs
  */
 class AdminApiController extends BaseController
 {
     private Subscription $subscriptionModel;
     private ApiKey $apiKeyModel;
-    private Booking $bookingModel;
+    private ChannelOrder $orderModel;
     private ApiUsageLog $usageLogModel;
     private Webhook $webhookModel;
 
@@ -33,7 +33,7 @@ class AdminApiController extends BaseController
         parent::__construct();
         $this->subscriptionModel = new Subscription();
         $this->apiKeyModel = new ApiKey();
-        $this->bookingModel = new Booking();
+        $this->orderModel = new ChannelOrder();
         $this->usageLogModel = new ApiUsageLog();
         $this->webhookModel = new Webhook();
     }
@@ -187,9 +187,9 @@ class AdminApiController extends BaseController
     }
 
     /**
-     * Bookings list page
+     * Orders list page
      */
-    public function bookings(): void
+    public function orders(): void
     {
         $this->requireLevel(0);
         $companyId = $this->getCompanyId();
@@ -203,18 +203,18 @@ class AdminApiController extends BaseController
         ];
         $page = $this->inputInt('p', 1);
 
-        $result = $this->bookingModel->getForCompany($companyId, $filters, $page);
-        $stats = $this->bookingModel->getStats($companyId);
+        $result = $this->orderModel->getForCompany($companyId, $filters, $page);
+        $stats = $this->orderModel->getStats($companyId);
         $subscription = $this->subscriptionModel->getByCompanyId($companyId);
 
-        $this->render('api/bookings', [
-            'bookings'     => $result['items'],
+        $this->render('api/orders', [
+            'orders'     => $result['items'],
             'total'        => $result['total'],
             'pagination'   => $result['pagination'],
             'filters'      => $filters,
             'stats'        => $stats,
             'subscription' => $subscription,
-            'title'        => 'API Bookings',
+            'title'        => 'Channel Orders',
         ]);
     }
 
@@ -250,8 +250,8 @@ class AdminApiController extends BaseController
         $companyId = $this->getCompanyId();
 
         $subscription = $this->subscriptionModel->getByCompanyId($companyId);
-        $stats = $this->bookingModel->getStats($companyId);
-        $recentBookings = $this->bookingModel->getRecent($companyId, 10);
+        $stats = $this->orderModel->getStats($companyId);
+        $recentOrders = $this->orderModel->getRecent($companyId, 10);
         $dailyUsage = $this->usageLogModel->getDailySummary($companyId, 7);
         $usage = $subscription ? $this->subscriptionModel->getMonthlyUsage($companyId) : 0;
         $webhookCount = $this->webhookModel->countForCompany($companyId);
@@ -259,11 +259,11 @@ class AdminApiController extends BaseController
         $this->render('api/dashboard', [
             'subscription'   => $subscription,
             'stats'          => $stats,
-            'recentBookings' => $recentBookings,
+            'recentOrders' => $recentOrders,
             'dailyUsage'     => $dailyUsage,
             'monthlyUsage'   => $usage,
             'webhookCount'   => $webhookCount,
-            'title'          => 'Booking API Dashboard',
+            'title'          => 'Sales Channel Dashboard',
         ]);
     }
 
@@ -364,23 +364,23 @@ class AdminApiController extends BaseController
     }
 
     /**
-     * Booking detail page
+     * Order detail page
      */
-    public function bookingDetail(): void
+    public function orderDetail(): void
     {
         $this->requireLevel(0);
         $companyId = $this->getCompanyId();
         $id = $this->inputInt('id');
 
-        $booking = $this->bookingModel->findForCompany($id, $companyId);
-        if (!$booking) {
-            $this->redirect('api_bookings');
+        $order = $this->orderModel->findForCompany($id, $companyId);
+        if (!$order) {
+            $this->redirect('api_orders');
             return;
         }
 
-        $this->render('api/booking-detail', [
-            'booking' => $booking,
-            'title'   => 'Booking #' . $id,
+        $this->render('api/order-detail', [
+            'order' => $order,
+            'title'   => 'Order #' . $id,
         ]);
     }
 

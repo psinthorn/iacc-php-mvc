@@ -1,6 +1,6 @@
 <?php
 /**
- * iACC Booking API Entry Point
+ * iACC Sales Channel API Entry Point
  * 
  * Separate from index.php — handles REST API requests only.
  * No session, no cookies, no HTML — just JSON.
@@ -9,19 +9,19 @@
  * Auth:   X-API-Key + X-API-Secret headers
  * 
  * Endpoints:
- *   POST   /api.php/v1/bookings          Create a booking
- *   GET    /api.php/v1/bookings           List bookings
- *   GET    /api.php/v1/bookings/{id}      Get booking by ID
- *   PUT    /api.php/v1/bookings/{id}      Update a booking
- *   DELETE /api.php/v1/bookings/{id}      Cancel booking
- *   POST   /api.php/v1/bookings/{id}/retry  Retry failed booking
+ *   POST   /api.php/v1/orders          Create an order
+ *   GET    /api.php/v1/orders           List orders
+ *   GET    /api.php/v1/orders/{id}      Get order by ID
+ *   PUT    /api.php/v1/orders/{id}      Update an order
+ *   DELETE /api.php/v1/orders/{id}      Cancel order
+ *   POST   /api.php/v1/orders/{id}/retry  Retry failed order
  *   GET    /api.php/v1/subscription       Subscription info & usage
  *   POST   /api.php/v1/webhooks           Register a webhook
  *   GET    /api.php/v1/webhooks            List webhooks
  *   DELETE /api.php/v1/webhooks/{id}       Delete a webhook
  * 
  * Example:
- *   curl -X POST http://localhost/api.php/v1/bookings \
+ *   curl -X POST http://localhost/api.php/v1/orders \
  *     -H "Content-Type: application/json" \
  *     -H "X-API-Key: iACC_abc123..." \
  *     -H "X-API-Secret: def456..." \
@@ -99,12 +99,12 @@ if (empty($resource)) {
             'name'    => 'iACC Sales Channel API',
             'version' => 'v1',
             'endpoints' => [
-                'POST /api.php/v1/bookings'              => 'Create a booking',
-                'GET /api.php/v1/bookings'               => 'List bookings',
-                'GET /api.php/v1/bookings/{id}'           => 'Get booking by ID',
-                'PUT /api.php/v1/bookings/{id}'           => 'Update a booking',
-                'DELETE /api.php/v1/bookings/{id}'        => 'Cancel a booking',
-                'POST /api.php/v1/bookings/{id}/retry'    => 'Retry failed booking',
+                'POST /api.php/v1/orders'              => 'Create an order',
+                'GET /api.php/v1/orders'               => 'List orders',
+                'GET /api.php/v1/orders/{id}'           => 'Get order by ID',
+                'PUT /api.php/v1/orders/{id}'           => 'Update an order',
+                'DELETE /api.php/v1/orders/{id}'        => 'Cancel an order',
+                'POST /api.php/v1/orders/{id}/retry'    => 'Retry failed order',
                 'GET /api.php/v1/subscription'            => 'Subscription info & usage',
                 'POST /api.php/v1/webhooks'              => 'Register a webhook',
                 'GET /api.php/v1/webhooks'               => 'List webhooks',
@@ -113,7 +113,7 @@ if (empty($resource)) {
             'features' => [
                 'rate_limiting'  => 'Per-minute limits by plan (X-RateLimit headers)',
                 'idempotency'   => 'Send X-Idempotency-Key header to prevent duplicates',
-                'webhooks'      => 'Real-time notifications on booking status changes',
+                'webhooks'      => 'Real-time notifications on order status changes',
                 'key_rotation'  => 'Rotate API keys with grace period via admin panel',
             ],
             'docs' => '/index.php?page=api_docs',
@@ -123,16 +123,16 @@ if (empty($resource)) {
 }
 
 // ============================================================
-// Load and dispatch to BookingApiController
+// Load and dispatch to ChannelApiController
 // ============================================================
 require_once __DIR__ . '/app/Models/BaseModel.php';
 require_once __DIR__ . '/app/Models/ApiKey.php';
 require_once __DIR__ . '/app/Models/ApiUsageLog.php';
-require_once __DIR__ . '/app/Models/Booking.php';
+require_once __DIR__ . '/app/Models/ChannelOrder.php';
 require_once __DIR__ . '/app/Models/Subscription.php';
 require_once __DIR__ . '/app/Models/Webhook.php';
-require_once __DIR__ . '/app/Services/BookingService.php';
-require_once __DIR__ . '/app/Controllers/BookingApiController.php';
+require_once __DIR__ . '/app/Services/ChannelService.php';
+require_once __DIR__ . '/app/Controllers/ChannelApiController.php';
 
-$controller = new \App\Controllers\BookingApiController();
+$controller = new \App\Controllers\ChannelApiController();
 $controller->handleRequest($method, $resource, $resourceId, $subAction);

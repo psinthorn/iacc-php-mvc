@@ -325,9 +325,9 @@ include_once 'inc/top-navbar.php';
                         </ul>
                     </li>
                     
-                    <!-- Booking API (level >= 5) -->
+                    <!-- Sales Channel (level >= 5) -->
                     <li>
-                        <a href="#"><i class="fa fa-plug"></i> <?=$xml->bookingapi ?? 'Booking API'?><span class="fa arrow"></span></a>
+                        <a href="#"><i class="fa fa-plug"></i> <?=$xml->saleschannel ?? 'Sales Channel'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
                             <li>
                                 <a href="index.php?page=api_dashboard"><i class="fa fa-dashboard"></i> <?=$xml->apidashboard ?? 'API Dashboard'?></a>
@@ -336,7 +336,7 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=api_keys"><i class="fa fa-key"></i> <?=$xml->apikeys ?? 'API Keys'?></a>
                             </li>
                             <li>
-                                <a href="index.php?page=api_bookings"><i class="fa fa-calendar"></i> <?=$xml->apibookings ?? 'Bookings'?></a>
+                                <a href="index.php?page=api_orders"><i class="fa fa-calendar"></i> <?=$xml->apiorders ?? 'Orders'?></a>
                             </li>
                             <li>
                                 <a href="index.php?page=api_webhooks"><i class="fa fa-bell"></i> <?=$xml->apiwebhooks ?? 'Webhooks'?></a>

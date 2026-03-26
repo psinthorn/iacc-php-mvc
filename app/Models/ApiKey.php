@@ -68,7 +68,7 @@ class ApiKey extends BaseModel
         $secret = \sql_escape($apiSecret);
 
         // Try current credentials
-        $sql = "SELECT k.*, s.plan, s.status as sub_status, s.bookings_limit, s.keys_limit,
+        $sql = "SELECT k.*, s.plan, s.status as sub_status, s.orders_limit, s.keys_limit,
                        s.channels, s.ai_providers, s.trial_end, s.expires_at, s.enabled,
                        c.name_en as company_name
                 FROM `{$this->table}` k
@@ -86,7 +86,7 @@ class ApiKey extends BaseModel
         }
 
         // Try previous credentials (key rotation grace period)
-        $sql = "SELECT k.*, s.plan, s.status as sub_status, s.bookings_limit, s.keys_limit,
+        $sql = "SELECT k.*, s.plan, s.status as sub_status, s.orders_limit, s.keys_limit,
                        s.channels, s.ai_providers, s.trial_end, s.expires_at, s.enabled,
                        c.name_en as company_name
                 FROM `{$this->table}` k
