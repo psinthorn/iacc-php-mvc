@@ -31,19 +31,33 @@ jobs:
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
-          extensions: mysqli, mbstring, xml, gd, curl
+          php-version: '8.2'
+          extensions: mysqli, mbstring, xml, gd, curl, pdo, pdo_mysql
           
-      - name: ✅ PHP Syntax Check
+      - name: ✅ PHP Syntax Check — Core Files
         timeout-minutes: 2
         run: |
-          echo "Checking main PHP files..."
+          echo "Checking core files..."
           php -l index.php
           php -l core-function.php
           php -l login.php
+          php -l authorize.php
+          php -l menu.php
           php -l inc/class.dbconn.php
           php -l inc/security.php
-          echo "✅ Syntax check passed"
+          echo "✅ Core syntax check passed"
+
+      - name: ✅ PHP Syntax Check — MVC Layer
+        timeout-minutes: 3
+        run: |
+          echo "Checking Controllers..."
+          find app/Controllers -name "*.php" | xargs -I {} php -l {}
+          echo "Checking Models..."
+          find app/Models -name "*.php" | xargs -I {} php -l {}
+          echo "Checking Views..."
+          find views -name "*.php" | xargs -I {} php -l {}
+          php -l app/Config/routes.php
+          echo "✅ MVC syntax check passed"
           
       - name: 📦 Create deployment artifact
         run: |
@@ -62,14 +76,19 @@ jobs:
             --exclude='*.backup' \
             --exclude='build' \
             --exclude='node_modules' \
+            --exclude='legacy' \
+            --exclude='tests' \
+            --exclude='backups' \
             --exclude='TODAY_WORK_SUMMARY*.txt' \
             --exclude='phpstan.neon' \
-            --exclude='deploy-cpanel.sh' \
+            --exclude='deploy*.sh' \
+            --exclude='DEPLOYMENT_FILE_INDEX.sh' \
+            --exclude='backup.sh' \
             --exclude='inc/sys.configs.php' \
             --exclude='inc/docker-settings.json' \
             --exclude='logs/*.log' \
             --exclude='cache/*' \
-            --exclude='backups/*' \
+            --exclude='.htaccess' \
             ./ deploy/
             
       - name: 📤 Upload artifact
@@ -99,33 +118,50 @@ jobs:
           
       - name: 🔧 Prepare staging config
         run: |
-          # Always copy staging config if present
-          if [ -f deploy/inc/sys.configs.staging.php ]; then
-            cp deploy/inc/sys.configs.staging.php deploy/inc/sys.configs.php
-          fi
-          # Fallback: copy cpanel config if present
-          if [ -f deploy/inc/sys.configs.cpanel.php ]; then
-            cp deploy/inc/sys.configs.cpanel.php deploy/inc/sys.configs.php
-          fi
-          # Use production htaccess (security settings same for staging)
+          # Use cPanel htaccess for staging (same security rules as production)
           if [ -f deploy/.htaccess.cpanel ]; then
             cp deploy/.htaccess.cpanel deploy/.htaccess
           fi
+
+          # Generate staging sys.configs.php from secrets
+          cat > deploy/inc/sys.configs.php << 'PHPEOF'
+          <?PHP
+          $composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";
+          if (file_exists($composerAutoload)) { require_once($composerAutoload); }
+          require_once(dirname(__FILE__) . "/error-handler.php");
+          ini_set('session.cookie_httponly', 1);
+          ini_set('session.use_strict_mode', 1);
+          ini_set('session.cookie_samesite', 'Lax');
+          if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+              ini_set('session.cookie_secure', 1);
+          }
+          $appEnv = 'staging';
+          PHPEOF
+
+          cat >> deploy/inc/sys.configs.php << EOF
+          \$config["hostname"] = "${{ secrets.DB_HOST_STAGING }}";
+          \$config["username"] = "${{ secrets.DB_USERNAME_STAGING }}";
+          \$config["password"] = "${{ secrets.DB_PASSWORD_STAGING }}";
+          \$config["dbname"]   = "${{ secrets.DB_NAME_STAGING }}";
+          date_default_timezone_set("Asia/Bangkok");
+          \$config["docker_tools"] = "off";
+          \$config["container_manager"] = "off";
+          define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');
+          EOF
           
       - name: 📤 Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        timeout-minutes: 10
+        timeout-minutes: 30
         with:
-          # server: ${{ secrets.FTP_SERVER }}
-          server: ftp.f2.co.th
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME_STAGING }}
           password: ${{ secrets.FTP_PASSWORD_STAGING }}
-          # port: ${{ secrets.FTP_PORT || 21 }}
-          protocol: ftp
+          protocol: ftps
           local-dir: ./deploy/
           server-dir: ${{ env.DEPLOY_PATH }}/
-          timeout: 60000
+          timeout: 300000
           log-level: verbose
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**

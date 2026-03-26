@@ -209,16 +209,17 @@ jobs:
 
       - name: 📤 Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        timeout-minutes: 10
+        timeout-minutes: 30
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          protocol: ftps
           local-dir: ./deploy/
           server-dir: ${{ env.DEPLOY_PATH }}/
-          timeout: 60000
+          timeout: 300000
           log-level: verbose
+          dangerous-clean-slate: false
           exclude: |
             **/.git*/**
             **/node_modules/**
