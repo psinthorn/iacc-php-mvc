@@ -10,7 +10,7 @@
     <h2><i class="fa fa-truck"></i> Delivery Note #<?=e($id)?></h2>
     <div>
         <a href="index.php?page=deliv_list" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> Back</a>
-        <a href="rec.php?id=<?=$id?>" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-print"></i> Print</a>
+        <a href="index.php?page=pdf_receipt&id=<?=$id?>" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-print"></i> Print</a>
     </div>
 </div>
 

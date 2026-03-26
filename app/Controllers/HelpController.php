@@ -7,4 +7,11 @@ class HelpController extends BaseController
     {
         $this->render('help/index');
     }
+
+    /** Master Data Guide - standalone documentation page */
+    public function masterDataGuide(): void
+    {
+        include __DIR__ . '/../Views/help/master-data-guide.php';
+        exit;
+    }
 }

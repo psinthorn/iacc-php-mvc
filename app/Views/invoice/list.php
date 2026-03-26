@@ -119,11 +119,11 @@ $date_to = $filters['date_to'] ?? '';
         <td class="hidden-xs"><span class="status-badge <?=$sc?>"><?=$xml->$statusiv?></span></td>
         <td>
             <?php if($row['status']!="5"): ?><a href="index.php?page=compl_view&id=<?=e($row['id'])?>" class="btn-action btn-action-view" title="View"><i class="fa fa-eye"></i></a><?php endif; ?>
-            <a href="inv.php?id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
+            <a href="index.php?page=pdf_invoice&id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
             <?php if(($row['payment_status'] ?? 'pending')!=='paid'): ?>
             <a href="index.php?page=inv_checkout&id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-pay"><i class="fa fa-credit-card"></i></a>
             <?php else: ?><span class="btn-action btn-action-pay" style="cursor:default;"><i class="fa fa-check"></i></span><?php endif; ?>
-            <a data-toggle="modal" href="model_mail.php?page=inv&id=<?=e($row['id'])?>" data-target=".bs-example-modal-lg" class="btn-action btn-action-email"><i class="fa fa-envelope"></i></a>
+            <a data-toggle="modal" href="index.php?page=ajax_mail&type=inv&id=<?=e($row['id'])?>" data-target=".bs-example-modal-lg" class="btn-action btn-action-email"><i class="fa fa-envelope"></i></a>
         </td>
     </tr>
     <?php endforeach; endif; ?>
@@ -151,7 +151,7 @@ $date_to = $filters['date_to'] ?? '';
         <td class="hidden-xs"><span class="status-badge <?=$sc?>"><?=$xml->$var?></span></td>
         <td>
             <?php if($row['status']!="5"): ?><a href="index.php?page=compl_view&id=<?=e($row['id'])?>" class="btn-action btn-action-view"><i class="fa fa-eye"></i></a><?php endif; ?>
-            <a href="inv.php?id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
+            <a href="index.php?page=pdf_invoice&id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
             <?php if(($row['payment_status'] ?? 'pending')!=='paid'): ?>
             <a href="index.php?page=inv_checkout&id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-pay"><i class="fa fa-credit-card"></i></a>
             <?php else: ?><span class="btn-action btn-action-pay" style="cursor:default;"><i class="fa fa-check"></i></span><?php endif; ?>

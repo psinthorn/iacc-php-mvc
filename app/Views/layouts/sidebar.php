@@ -158,7 +158,7 @@ include_once 'inc/top-navbar.php';
                     </ul>
                 </li>-->
                 <!-- /.dropdown -->
-                  <li><form action="lang.php" method="post"><button name="chlang" value="0" class="btn btn-default <?php $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0; if($current_lang == 0) echo "active";?>"><img src="images/us.jpg"> English</button>&nbsp;<button name="chlang" value="1" class="btn btn-default <?php if($current_lang == 1) echo "active";?>"><img src="images/th.jpg">  ภาษาไทย</button></form></li>
+                  <li><form action="index.php?page=lang_switch" method="post"><button name="chlang" value="0" class="btn btn-default <?php $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0; if($current_lang == 0) echo "active";?>"><img src="images/us.jpg"> English</button>&nbsp;<button name="chlang" value="1" class="btn btn-default <?php if($current_lang == 1) echo "active";?>"><img src="images/th.jpg">  ภาษาไทย</button></form></li>
               
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -172,7 +172,7 @@ include_once 'inc/top-navbar.php';
                         <li><a href="index.php?page=remote&clear=1"><i class="fa fa-home fa-fw"></i> Home</a>
                         </li>
                         <li class="divider"></li>
-                        <li><a href="authorize.php"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        <li><a href="index.php?page=authorize&logout=1"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
                         </li>
                     </ul>
                     <!-- /.dropdown-user -->

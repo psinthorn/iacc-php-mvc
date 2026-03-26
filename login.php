@@ -521,7 +521,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
             </div>
             <?php endif; ?>
             
-            <form action="authorize.php" method="post" id="loginForm">
+            <form action="index.php?page=authorize" method="post" id="loginForm">
                 <?= csrf_field() ?>
                 
                 <div class="form-group">
@@ -559,7 +559,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
                         <input type="checkbox" name="remember" value="1">
                         <span>Remember me</span>
                     </label>
-                    <a href="forgot-password.php" class="forgot-link">Forgot password?</a>
+                    <a href="index.php?page=forgot_password" class="forgot-link">Forgot password?</a>
                 </div>
                 
                 <button type="submit" class="btn btn-primary" id="submitBtn">

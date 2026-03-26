@@ -115,7 +115,7 @@ function paymentcheck() {
                     <div><span style="color:#059669; font-weight:500;"><?=$pay['date']?></span> <span style="color:#6b7280; font-size:13px;"><?=$pay['value']?></span></div>
                     <div style="display:flex; align-items:center; gap:16px;">
                         <span style="font-weight:600; color:#059669;"><?=number_format($pay['volumn'], 2)?></span>
-                        <a href="sptinv.php?id=<?=$pay['id']?>" target="_blank" style="color:#8b5cf6; font-size:13px;"><i class="fa fa-print"></i></a>
+                        <a href="index.php?page=pdf_split_invoice&id=<?=$pay['id']?>" target="_blank" style="color:#8b5cf6; font-size:13px;"><i class="fa fa-print"></i></a>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -148,7 +148,7 @@ function paymentcheck() {
 <?php endif; ?>
 
 <div class="action-buttons">
-    <a href="inv.php?id=<?=$id?>" target="_blank" class="btn-print-inv"><i class="fa fa-print"></i> <?=$xml->printinvoice ?? 'Print Invoice'?></a>
+    <a href="index.php?page=pdf_invoice&id=<?=$id?>" target="_blank" class="btn-print-inv"><i class="fa fa-print"></i> <?=$xml->printinvoice ?? 'Print Invoice'?></a>
     <?php if($accu != 0): ?>
     <form action="index.php?page=invoice_store" method="post" style="display:inline;">
         <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="id" value="<?=$refpo['ref'] ?? ''?>">

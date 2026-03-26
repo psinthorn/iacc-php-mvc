@@ -52,7 +52,7 @@
             <div class="action-buttons">
                 <?php if ($invoiceId): ?>
                 <a href="index.php?page=inv_checkout&id=<?= $invoiceId ?>" class="btn btn-primary"><i class="fa fa-credit-card"></i> Try Again</a>
-                <a href="inv.php?id=<?= $invoiceId ?>" target="_blank" class="btn btn-secondary"><i class="fa fa-file-text-o"></i> View Invoice</a>
+                <a href="index.php?page=pdf_invoice&id=<?= $invoiceId ?>" target="_blank" class="btn btn-secondary"><i class="fa fa-file-text-o"></i> View Invoice</a>
                 <?php else: ?>
                 <a href="index.php?page=dashboard" class="btn btn-primary"><i class="fa fa-home"></i> Go to Dashboard</a>
                 <?php endif; ?>

@@ -41,14 +41,42 @@ require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 
-// Initialize database and check authentication
+// Initialize database
 $db = new DbConn($config);
+
+// Page routing configuration — loaded from external config
+$routes = require __DIR__ . '/app/Config/routes.php';
+
+// Get requested page (sanitized)
+$page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : '';
+
+// Determine route type: MVC (array) or legacy (string filename)
+$route = isset($routes[$page]) ? $routes[$page] : null;
+$routeType = (is_array($route) && isset($route[2])) ? $route[2] : 'normal';
+
+// ========== Pre-Auth Routes (public pages, auth handlers) ==========
+// Dispatched BEFORE authentication check — no login required
+if ($routeType === 'public') {
+    $controllerName = 'App\\Controllers\\' . $route[0];
+    $controller = new $controllerName();
+    $controller->{$route[1]}();
+    exit;
+}
+
+// Check authentication
 $isAuthenticated = $db->checkSecurity();
 
 // Not logged in → show landing page (no redirect, clean / URL)
 if (!$isAuthenticated) {
     include __DIR__ . '/landing.php';
     exit;
+}
+
+// Default page if none specified
+if ($page === '') {
+    $page = 'dashboard';
+    $route = $routes[$page] ?? null;
+    $routeType = (is_array($route) && isset($route[2])) ? $route[2] : 'normal';
 }
 
 // ========== Handle Company Switching (Admin/Super Admin only) ==========
@@ -157,14 +185,14 @@ if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'company_search_api') {
     exit;
 }
 
-// Page routing configuration — loaded from external config
-$routes = require __DIR__ . '/app/Config/routes.php';
-
-// Get requested page (sanitized)
-$page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : 'dashboard';
-
-// Determine route type: MVC (array) or legacy (string filename)
-$route = isset($routes[$page]) ? $routes[$page] : null;
+// ========== Standalone Routes (auth required, no admin HTML shell) ==========
+// Dispatched AFTER auth but BEFORE the HTML layout (PDF, exports, AJAX)
+if ($routeType === 'standalone') {
+    $controllerName = 'App\\Controllers\\' . $route[0];
+    $controller = new $controllerName();
+    $controller->{$route[1]}();
+    exit;
+}
 
 // ========== MVC Controller Dispatch (before any HTML output) ==========
 // Routes defined as arrays dispatch to a controller method and may redirect
@@ -189,14 +217,14 @@ $pageFile = is_string($route) ? $route : null;
 <html>
 
 <head>
-    <?php include_once "css.php";?>
+    <?php include_once __DIR__ . '/app/Views/layouts/head.php';?>
     <script src="js/tooltip.js"></script>
 </head>
 
 <body class="has-top-nav">
 
     <div id="wrapper">
-		<?php include_once "menu.php";?>
+		<?php include_once __DIR__ . '/app/Views/layouts/sidebar.php';?>
 
         <div id="page-wrapper">
             <div class="row">
@@ -248,7 +276,7 @@ $pageFile = is_string($route) ? $route : null;
 </div>
 
     <!-- /#wrapper -->
-		<?php include_once "script.php";?>
+		<?php include_once __DIR__ . '/app/Views/layouts/scripts.php';?>
   
 </body>
 
