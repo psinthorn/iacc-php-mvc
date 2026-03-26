@@ -86,7 +86,7 @@ class VoucherController extends BaseController
 
     public function print(): void
     {
-        include __DIR__ . '/../../views/voucher/print.php';
+        include __DIR__ . '/../Views/voucher/print.php';
         exit;
     }
 }
