@@ -184,9 +184,11 @@ $pageFile = is_string($route) ? $route : null;
         <div id="page-wrapper">
             <div class="row">
                 <?php 
-                // Debug routing
-                $debugRoute = is_array($route) ? ('MVC:' . $route[0] . '::' . $route[1]) : ($pageFile ?? 'null');
-                file_put_contents('logs/app.log', date('Y-m-d H:i:s') . " DEBUG index.php: page=$page, route=$debugRoute\n", FILE_APPEND);
+                // Debug routing (development only)
+                if ((getenv('APP_ENV') ?: 'development') !== 'production') {
+                    $debugRoute = is_array($route) ? ('MVC:' . $route[0] . '::' . $route[1]) : ($pageFile ?? 'null');
+                    file_put_contents('logs/app.log', date('Y-m-d H:i:s') . " DEBUG index.php: page=$page, route=$debugRoute\n", FILE_APPEND);
+                }
                 
                 // ========== MVC Controller Rendering (GET requests) ==========
                 if (is_array($route)) {

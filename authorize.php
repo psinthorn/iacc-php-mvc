@@ -1,9 +1,9 @@
 <?php 
 // Error reporting settings
-ini_set('display_errors', 1); // Show errors in browser for debug
+ini_set('display_errors', 0); // Never show errors to users
 ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 1);
-ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
+ini_set('display_startup_errors', 0);
+ini_set('error_log', __DIR__ . '/logs/php-error.log'); // Log file path
 error_reporting(E_ALL);
 session_start();
 require_once("inc/sys.configs.php");

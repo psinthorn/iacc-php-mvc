@@ -130,8 +130,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
       - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "3306:3306"
+    # ports: removed — MySQL only accessible internally via iacc-network
     networks:
       - iacc-network
     logging:
@@ -160,8 +159,7 @@ services:
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
-    ports:
-      - "6379:6379"
+    # ports: removed — Redis only accessible internally via iacc-network
     networks:
       - iacc-network
     logging:
@@ -186,8 +184,7 @@ services:
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
+    # ports: removed — Elasticsearch only accessible internally via iacc-network
     networks:
       - iacc-network
     logging:
@@ -208,8 +205,7 @@ services:
     restart: always
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
+    # ports: removed — Kibana accessed via Nginx reverse proxy with auth_basic
     depends_on:
       - elasticsearch
     networks:
@@ -237,8 +233,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=30d'
-    ports:
-      - "9090:9090"
+    # ports: removed — Prometheus only accessible internally via iacc-network
     networks:
       - iacc-network
     logging:
@@ -264,8 +259,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
-    ports:
-      - "3000:3000"
+    # ports: removed — Grafana accessed via Nginx reverse proxy with auth_basic
     depends_on:
       - prometheus
     networks:
@@ -286,8 +280,7 @@ services:
     image: adminer:latest
     container_name: iacc-adminer-prod
     restart: always
-    ports:
-      - "8080:8080"
+    # ports: removed — Adminer accessed via Nginx reverse proxy with auth_basic
     depends_on:
       - mysql
     networks:
