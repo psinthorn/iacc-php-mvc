@@ -1,9 +1,9 @@
-<?php 
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
-new DbConn($config);
+<?php
+/**
+ * Language Switcher
+ * Dispatched via index.php — session and $db already initialized
+ */
+global $db;
 
 if(($_SESSION['user_id']!="")&&(($_POST['chlang'] ?? '')!=$_SESSION['lang'])){
 	

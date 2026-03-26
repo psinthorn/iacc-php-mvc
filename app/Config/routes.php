@@ -161,6 +161,7 @@ return [
     
     // User Account
     'help'                   => ['HelpController', 'index'],
+    'master_data_guide'      => ['HelpController', 'masterDataGuide', 'standalone'],
 
     // ========== System / DevOps ==========
     'health'                 => ['HealthController', 'index'],
@@ -176,4 +177,30 @@ return [
     'api_key_revoke'         => ['AdminApiController', 'revokeKey'],
     'api_bookings'           => ['AdminApiController', 'bookings'],
     'api_usage_logs'         => ['AdminApiController', 'usageLogs'],
+
+    // ========== Pre-Auth Routes (no login required, standalone HTML) ==========
+    'authorize'              => ['AuthController', 'authenticate', 'public'],
+    'forgot_password'        => ['AuthController', 'forgotPassword', 'public'],
+    'reset_password'         => ['AuthController', 'resetPassword', 'public'],
+    'lang_switch'            => ['AuthController', 'switchLanguage', 'public'],
+
+    // ========== Standalone Routes (auth required, no admin shell) ==========
+
+    // PDF / Print Generators
+    'pdf_quotation'          => ['PdfController', 'quotation', 'standalone'],
+    'pdf_quotation_mail'     => ['PdfController', 'quotationMail', 'standalone'],
+    'pdf_invoice'            => ['PdfController', 'invoice', 'standalone'],
+    'pdf_invoice_mail'       => ['PdfController', 'invoiceMail', 'standalone'],
+    'pdf_tax_invoice'        => ['PdfController', 'taxInvoice', 'standalone'],
+    'pdf_tax_invoice_mail'   => ['PdfController', 'taxInvoiceMail', 'standalone'],
+    'pdf_receipt'            => ['PdfController', 'receipt', 'standalone'],
+    'pdf_split_invoice'      => ['PdfController', 'splitInvoice', 'standalone'],
+
+    // Data Exports
+    'export_invoice_payments'=> ['ExportController', 'invoicePayments', 'standalone'],
+    'export_report'          => ['ExportController', 'report', 'standalone'],
+
+    // AJAX Endpoints
+    'ajax_options'           => ['AjaxController', 'productOptions', 'standalone'],
+    'ajax_mail'              => ['AjaxController', 'emailPreview', 'standalone'],
 ];

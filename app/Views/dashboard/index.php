@@ -722,7 +722,7 @@ function get_status_badge($status) {
                                     <td><?php echo number_format($invoice['subtotal'] ?? 0, 2); ?></td>
                                     <td>
                                         <a href="index.php?page=compl_view&id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="View Details"><i class="fa fa-eye"></i></a>
-                                        <a href="inv.php?id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank"><i class="fa fa-file-pdf-o"></i></a>
+                                        <a href="index.php?page=pdf_invoice&id=<?php echo $invoice['po_id']; ?>" class="action-btn" title="Download PDF" target="_blank"><i class="fa fa-file-pdf-o"></i></a>
                                     </td>
                                 </tr>
                                 <?php endwhile; ?>
@@ -752,7 +752,7 @@ function get_status_badge($status) {
                                     <td><?php echo htmlspecialchars(mb_substr($tax_inv['description'] ?? '', 0, 25)); ?></td>
                                     <td><?php echo date('M d, Y', strtotime($tax_inv['texiv_create'])); ?></td>
                                     <td><?php echo number_format($tax_inv['subtotal'] ?? 0, 2); ?></td>
-                                    <td><a href="taxiv.php?id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="View PDF" target="_blank"><i class="fa fa-file-text-o"></i></a></td>
+                                    <td><a href="index.php?page=pdf_tax_invoice&id=<?php echo $tax_inv['po_id']; ?>" class="action-btn" title="View PDF" target="_blank"><i class="fa fa-file-text-o"></i></a></td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>

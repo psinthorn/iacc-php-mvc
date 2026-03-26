@@ -75,8 +75,8 @@ $date_to = $filters['date_to'] ?? '';
         <td><?=e($row['texiv_create'])?></td>
         <td class="hidden-xs"><span style="background:#dcfce7;color:#166534;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;"><?=$xml->$var?></span></td>
         <td>
-            <a href="taxiv.php?id=<?=e($row['id'])?>" target="_blank" style="display:inline-flex;align-items:center;padding:0 12px;height:32px;border-radius:8px;background:#dcfce7;color:#16a34a;font-weight:600;text-decoration:none;font-size:12px;">TAX</a>
-            <?php if($dir=='out'): ?><a data-toggle="modal" href="model_mail.php?page=tax&id=<?=e($row['id'])?>" data-target=".bs-example-modal-lg" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fef3c7;color:#d97706;text-decoration:none;"><i class="fa fa-envelope"></i></a><?php endif; ?>
+            <a href="index.php?page=pdf_tax_invoice&id=<?=e($row['id'])?>" target="_blank" style="display:inline-flex;align-items:center;padding:0 12px;height:32px;border-radius:8px;background:#dcfce7;color:#16a34a;font-weight:600;text-decoration:none;font-size:12px;">TAX</a>
+            <?php if($dir=='out'): ?><a data-toggle="modal" href="index.php?page=ajax_mail&type=tax&id=<?=e($row['id'])?>" data-target=".bs-example-modal-lg" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fef3c7;color:#d97706;text-decoration:none;"><i class="fa fa-envelope"></i></a><?php endif; ?>
         </td>
     </tr>
     <?php endforeach; endif; ?>

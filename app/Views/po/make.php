@@ -121,7 +121,7 @@ function onTypeChange(el) {
     var typeId = el.value;
     // Load brands via AJAX
     if(typeId) {
-        fetch('makeoptionindex.php?value='+typeId+'&mode=1').then(r=>r.text()).then(html=>{brandSel.innerHTML='<option value="0">--</option>'+html;});
+        fetch('index.php?page=ajax_options&value='+typeId+'&mode=1').then(r=>r.text()).then(html=>{brandSel.innerHTML='<option value="0">--</option>'+html;});
     }
 }
 </script>

@@ -1,16 +1,10 @@
-<?php 
-// Error reporting settings
-ini_set('display_errors', 0); // Never show errors to users
-ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 0);
-ini_set('error_log', __DIR__ . '/logs/php-error.log'); // Log file path
-error_reporting(E_ALL);
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
+<?php
+/**
+ * Authorization Handler (Login/Logout)
+ * Dispatched via index.php — session and $db already initialized
+ */
+global $db;
 require_once("inc/audit.php");
-$db = new DbConn($config);
 
 // Handle logout first
 if(isset($_SESSION['user_id']) && $_SESSION['user_id'] != ""){
