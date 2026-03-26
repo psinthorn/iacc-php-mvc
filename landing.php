@@ -1302,7 +1302,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
         </div>
     </section>
 
-    <!-- Booking API Integration Section -->
+    <!-- Sales Channel API Integration Section -->
     <section class="integrations" id="integrations">
         <div class="section-container">
             <div class="section-header">
@@ -1320,6 +1320,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <div class="integration-logos">
                         <span class="logo-tag">WordPress</span>
                         <span class="logo-tag">Shopify</span>
+                        <span class="logo-tag">WooCommerce</span>
                         <span class="logo-tag">Custom</span>
                     </div>
                 </div>
@@ -1330,6 +1331,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <p><?= __('integration_channel_2_desc') ?></p>
                     <div class="integration-logos">
                         <span class="logo-tag">LINE Messaging API</span>
+                        <span class="logo-tag">LINE OA</span>
                     </div>
                 </div>
                 
@@ -1340,6 +1342,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <div class="integration-logos">
                         <span class="logo-tag">Messenger</span>
                         <span class="logo-tag">Instagram</span>
+                        <span class="logo-tag">FB Shop</span>
                     </div>
                 </div>
                 
@@ -1372,6 +1375,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <div class="integration-logos">
                         <span class="logo-tag">Walk-in</span>
                         <span class="logo-tag">Phone</span>
+                        <span class="logo-tag">POS</span>
                     </div>
                 </div>
             </div>

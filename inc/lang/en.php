@@ -42,54 +42,54 @@ return [
     'feature_6_title' => 'Bilingual Support',
     'feature_6_desc' => 'Full English and Thai language support for international businesses.',
     
-    'feature_7_title' => 'Booking API',
-    'feature_7_desc' => 'Receive bookings from any website, LINE, Facebook, or email — automatically synced to your account.',
+    'feature_7_title' => 'Sales Channel API',
+    'feature_7_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
     
     // Integration Section
     'nav_integrations' => 'Integrations',
-    'integration_title' => 'Connect Any Booking Channel',
-    'integration_subtitle' => 'Receive bookings from your website, social media, email, and messaging apps — all automated into your accounting system.',
+    'integration_title' => 'Connect Any Online Sales Channel',
+    'integration_subtitle' => 'Whether you sell tours, domains, hosting, software, or services — capture every order from any channel and flow it straight into your accounting.',
     
-    'integration_channel_1_title' => 'Any Website',
-    'integration_channel_1_desc' => 'REST API works with WordPress, Shopify, custom sites — any platform that can send HTTP requests.',
+    'integration_channel_1_title' => 'Any Website or Store',
+    'integration_channel_1_desc' => 'REST API connects to WordPress, Shopify, WooCommerce, or custom sites — sell tours, products, domains, subscriptions, anything.',
     
     'integration_channel_2_title' => 'LINE Official',
-    'integration_channel_2_desc' => 'Customers book via LINE chat. AI parses messages and creates orders automatically.',
+    'integration_channel_2_desc' => 'Customers order via LINE chat. AI reads messages and creates quotations & invoices automatically.',
     
     'integration_channel_3_title' => 'Facebook & Instagram',
-    'integration_channel_3_desc' => 'Connect Messenger and Instagram DMs. Booking requests become invoices instantly.',
+    'integration_channel_3_desc' => 'Turn Messenger and Instagram DMs into real orders. Customer inquiries become quotations and invoices instantly.',
     
     'integration_channel_4_title' => 'Email',
-    'integration_channel_4_desc' => 'Forward booking emails to your API inbox. AI extracts customer details, dates, and items.',
+    'integration_channel_4_desc' => 'Forward order emails to your API inbox. AI extracts customer details, line items, and amounts automatically.',
     
     'integration_channel_5_title' => 'AI-Powered Parsing',
-    'integration_channel_5_desc' => 'Built-in AI reads unstructured messages in Thai & English and converts them to structured bookings.',
+    'integration_channel_5_desc' => 'Built-in AI reads unstructured messages in Thai & English — extracts products, services, quantities, and pricing into structured orders.',
     
     'integration_channel_6_title' => 'Manual Entry',
-    'integration_channel_6_desc' => 'Quick booking form for walk-ins, phone calls, or any source — takes seconds to fill in.',
+    'integration_channel_6_desc' => 'Quick order form for walk-ins, phone calls, or any offline source — log any sale in seconds.',
     
     'integration_how_title' => 'How It Works',
-    'integration_step_1' => 'Customer books via website, LINE, Facebook, or email',
-    'integration_step_2' => 'Our API receives the booking data (AI parses if unstructured)',
+    'integration_step_1' => 'Customer orders via website, LINE, Facebook, or email',
+    'integration_step_2' => 'Our API captures the order data (AI parses if unstructured)',
     'integration_step_3' => 'System auto-creates customer, quotation, and invoice',
     'integration_step_4' => 'You manage everything from your iACC dashboard',
     
     // API Pricing (inside pricing cards)
     'pricing_free_feature_5' => 'No API access',
-    'pricing_pro_feature_6' => 'Booking API (500/month)',
+    'pricing_pro_feature_6' => 'Sales API (500/month)',
     'pricing_pro_feature_7' => 'Website + Email channels',
-    'pricing_enterprise_feature_6' => 'Unlimited API bookings',
+    'pricing_enterprise_feature_6' => 'Unlimited API transactions',
     'pricing_enterprise_feature_7' => 'All channels + AI parsing',
     'pricing_enterprise_feature_8' => '14-day free trial',
     
     // Pricing Section
     'pricing_title' => 'Simple, Transparent Pricing',
-    'pricing_subtitle' => 'Choose your accounting plan, then add Booking API for automated reservations',
+    'pricing_subtitle' => 'Choose your accounting plan, then add the Sales Channel API to automate orders from every channel',
     
     // Pricing Tabs
     'pricing_tab_accounting' => 'Accounting Plans',
-    'pricing_tab_api' => 'Booking API Add-on',
-    'pricing_addon_note' => 'Booking API is a separate add-on module. Pick your accounting plan above, then add API capabilities below.',
+    'pricing_tab_api' => 'Sales Channel API',
+    'pricing_addon_note' => 'Sales Channel API is a separate add-on module. Pick your accounting plan above, then add API capabilities to connect your online channels below.',
     'pricing_yearly' => '/year',
     'pricing_save' => 'Save 20%',
     
@@ -97,7 +97,7 @@ return [
     'pricing_api_trial' => 'Trial',
     'pricing_api_trial_price' => 'Free',
     'pricing_api_trial_duration' => '14 days',
-    'pricing_api_trial_feature_1' => '50 bookings/month',
+    'pricing_api_trial_feature_1' => '50 transactions/month',
     'pricing_api_trial_feature_2' => '1 API key',
     'pricing_api_trial_feature_3' => 'Website channel only',
     'pricing_api_trial_feature_4' => 'Ollama AI only',
@@ -105,7 +105,7 @@ return [
     
     // API Starter Plan
     'pricing_api_starter' => 'Starter',
-    'pricing_api_starter_feature_1' => '500 bookings/month',
+    'pricing_api_starter_feature_1' => '500 transactions/month',
     'pricing_api_starter_feature_2' => '3 API keys',
     'pricing_api_starter_feature_3' => 'Website + Email channels',
     'pricing_api_starter_feature_4' => 'Ollama + 1 cloud AI',
@@ -113,7 +113,7 @@ return [
     
     // API Professional Plan
     'pricing_api_professional' => 'Professional',
-    'pricing_api_pro_feature_1' => '5,000 bookings/month',
+    'pricing_api_pro_feature_1' => '5,000 transactions/month',
     'pricing_api_pro_feature_2' => '10 API keys',
     'pricing_api_pro_feature_3' => 'All channels',
     'pricing_api_pro_feature_4' => 'All AI providers',
@@ -121,18 +121,18 @@ return [
     
     // API Enterprise Plan
     'pricing_api_enterprise' => 'Enterprise',
-    'pricing_api_ent_feature_1' => 'Unlimited bookings',
+    'pricing_api_ent_feature_1' => 'Unlimited transactions',
     'pricing_api_ent_feature_2' => 'Unlimited API keys',
     'pricing_api_ent_feature_3' => 'All channels + Priority',
     'pricing_api_ent_feature_4' => 'All AI + custom models',
     'pricing_api_ent_feature_5' => 'Dedicated support',
     
     // API Comparison Table
-    'pricing_compare_title' => 'Compare Booking API Plans',
+    'pricing_compare_title' => 'Compare Sales Channel API Plans',
     'pricing_compare_feature' => 'Feature',
     'pricing_compare_price' => 'Price',
     'pricing_compare_duration' => 'Duration',
-    'pricing_compare_bookings' => 'Bookings/month',
+    'pricing_compare_bookings' => 'Transactions/month',
     'pricing_compare_api_keys' => 'API Keys',
     'pricing_compare_channels' => 'Channels',
     'pricing_compare_ai' => 'AI Parsing',

@@ -42,54 +42,54 @@ return [
     'feature_6_title' => 'รองรับ 2 ภาษา',
     'feature_6_desc' => 'รองรับภาษาไทยและอังกฤษเต็มรูปแบบสำหรับธุรกิจระหว่างประเทศ',
     
-    'feature_7_title' => 'Booking API',
-    'feature_7_desc' => 'รับการจองจากเว็บไซต์ LINE Facebook หรืออีเมล — ซิงค์เข้าระบบอัตโนมัติ',
+    'feature_7_title' => 'Sales Channel API',
+    'feature_7_desc' => 'เชื่อมต่อทุกช่องทางขายออนไลน์ — เว็บไซต์ LINE Facebook หรืออีเมล — ซิงค์ทุกออเดอร์เข้าระบบบัญชีอัตโนมัติ',
     
     // Integration Section
     'nav_integrations' => 'การเชื่อมต่อ',
-    'integration_title' => 'เชื่อมต่อทุกช่องทางการจอง',
-    'integration_subtitle' => 'รับการจองจากเว็บไซต์ โซเชียลมีเดีย อีเมล และแอปข้อความ — ทั้งหมดเข้าสู่ระบบบัญชีอัตโนมัติ',
+    'integration_title' => 'เชื่อมต่อทุกช่องทางขายออนไลน์',
+    'integration_subtitle' => 'ไม่ว่าคุณจะขายทัวร์ โดเมน โฮสติ้ง ซอฟต์แวร์ หรือบริการใดๆ — รับทุกออเดอร์จากทุกช่องทางเข้าสู่ระบบบัญชีโดยตรง',
     
-    'integration_channel_1_title' => 'ทุกเว็บไซต์',
-    'integration_channel_1_desc' => 'REST API ใช้งานได้กับ WordPress, Shopify, เว็บไซต์กำหนดเอง — ทุกแพลตฟอร์มที่ส่ง HTTP ได้',
+    'integration_channel_1_title' => 'ทุกเว็บไซต์และร้านค้า',
+    'integration_channel_1_desc' => 'REST API เชื่อมต่อกับ WordPress, Shopify, WooCommerce หรือเว็บกำหนดเอง — ขายทัวร์ สินค้า โดเมน แพ็กเกจบริการ อะไรก็ได้',
     
     'integration_channel_2_title' => 'LINE Official',
-    'integration_channel_2_desc' => 'ลูกค้าจองผ่านแชท LINE ระบบ AI แปลงข้อความเป็นออเดอร์อัตโนมัติ',
+    'integration_channel_2_desc' => 'ลูกค้าสั่งซื้อผ่านแชท LINE ระบบ AI อ่านข้อความและสร้างใบเสนอราคาและใบแจ้งหนี้อัตโนมัติ',
     
     'integration_channel_3_title' => 'Facebook & Instagram',
-    'integration_channel_3_desc' => 'เชื่อมต่อ Messenger และ Instagram DM คำขอจองกลายเป็นใบแจ้งหนี้ทันที',
+    'integration_channel_3_desc' => 'เปลี่ยน Messenger และ Instagram DM เป็นออเดอร์จริง คำสั่งซื้อกลายเป็นใบเสนอราคาและใบแจ้งหนี้ทันที',
     
     'integration_channel_4_title' => 'อีเมล',
-    'integration_channel_4_desc' => 'ส่งต่ออีเมลการจองไปยัง API inbox ระบบ AI ดึงข้อมูลลูกค้า วันที่ และรายการ',
+    'integration_channel_4_desc' => 'ส่งต่ออีเมลคำสั่งซื้อไปยัง API inbox ระบบ AI ดึงข้อมูลลูกค้า รายการสินค้า และจำนวนเงินอัตโนมัติ',
     
     'integration_channel_5_title' => 'AI อัจฉริยะ',
-    'integration_channel_5_desc' => 'AI ในตัวอ่านข้อความภาษาไทยและอังกฤษ แปลงเป็นข้อมูลการจองที่มีโครงสร้าง',
+    'integration_channel_5_desc' => 'AI ในตัวอ่านข้อความภาษาไทยและอังกฤษ — ดึงสินค้า บริการ จำนวน และราคา สร้างออเดอร์ที่มีโครงสร้าง',
     
     'integration_channel_6_title' => 'กรอกข้อมูลเอง',
-    'integration_channel_6_desc' => 'ฟอร์มจองด่วนสำหรับ walk-in โทรศัพท์ หรือช่องทางอื่น — กรอกไม่กี่วินาที',
+    'integration_channel_6_desc' => 'ฟอร์มสั่งซื้อด่วนสำหรับ walk-in โทรศัพท์ หรือช่องทางออฟไลน์ — บันทึกทุกการขายในไม่กี่วินาที',
     
     'integration_how_title' => 'ทำงานอย่างไร',
-    'integration_step_1' => 'ลูกค้าจองผ่านเว็บไซต์ LINE Facebook หรืออีเมล',
-    'integration_step_2' => 'API รับข้อมูลการจอง (AI แปลงถ้าเป็นข้อความ)',
+    'integration_step_1' => 'ลูกค้าสั่งซื้อผ่านเว็บไซต์ LINE Facebook หรืออีเมล',
+    'integration_step_2' => 'API รับข้อมูลคำสั่งซื้อ (AI แปลงถ้าเป็นข้อความ)',
     'integration_step_3' => 'ระบบสร้างลูกค้า ใบเสนอราคา และใบแจ้งหนี้อัตโนมัติ',
     'integration_step_4' => 'จัดการทุกอย่างจากแดชบอร์ด iACC ของคุณ',
     
     // API Pricing (inside pricing cards)
     'pricing_free_feature_5' => 'ไม่มี API',
-    'pricing_pro_feature_6' => 'Booking API (500/เดือน)',
+    'pricing_pro_feature_6' => 'Sales API (500/เดือน)',
     'pricing_pro_feature_7' => 'ช่องทางเว็บไซต์ + อีเมล',
-    'pricing_enterprise_feature_6' => 'API ไม่จำกัด',
+    'pricing_enterprise_feature_6' => 'API ไม่จำกัดรายการ',
     'pricing_enterprise_feature_7' => 'ทุกช่องทาง + AI',
     'pricing_enterprise_feature_8' => 'ทดลองใช้ฟรี 14 วัน',
     
     // Pricing Section
     'pricing_title' => 'ราคาโปร่งใสและเรียบง่าย',
-    'pricing_subtitle' => 'เลือกแผนบัญชีของคุณ แล้วเพิ่ม Booking API สำหรับการจองอัตโนมัติ',
+    'pricing_subtitle' => 'เลือกแผนบัญชีของคุณ แล้วเพิ่ม Sales Channel API เพื่อรับออเดอร์จากทุกช่องทางอัตโนมัติ',
     
     // Pricing Tabs
     'pricing_tab_accounting' => 'แผนบัญชี',
-    'pricing_tab_api' => 'Booking API เสริม',
-    'pricing_addon_note' => 'Booking API เป็นโมดูลเสริมแยกต่างหาก เลือกแผนบัญชีด้านบน แล้วเพิ่มความสามารถ API ด้านล่าง',
+    'pricing_tab_api' => 'Sales Channel API',
+    'pricing_addon_note' => 'Sales Channel API เป็นโมดูลเสริมแยกต่างหาก เลือกแผนบัญชีด้านบน แล้วเพิ่มความสามารถ API เพื่อเชื่อมต่อช่องทางขายออนไลน์ด้านล่าง',
     'pricing_yearly' => '/ปี',
     'pricing_save' => 'ประหยัด 20%',
     
@@ -97,7 +97,7 @@ return [
     'pricing_api_trial' => 'ทดลองใช้',
     'pricing_api_trial_price' => 'ฟรี',
     'pricing_api_trial_duration' => '14 วัน',
-    'pricing_api_trial_feature_1' => '50 การจอง/เดือน',
+    'pricing_api_trial_feature_1' => '50 รายการ/เดือน',
     'pricing_api_trial_feature_2' => '1 API key',
     'pricing_api_trial_feature_3' => 'ช่องทางเว็บไซต์เท่านั้น',
     'pricing_api_trial_feature_4' => 'Ollama AI เท่านั้น',
@@ -105,7 +105,7 @@ return [
     
     // API Starter Plan
     'pricing_api_starter' => 'สตาร์ทเตอร์',
-    'pricing_api_starter_feature_1' => '500 การจอง/เดือน',
+    'pricing_api_starter_feature_1' => '500 รายการ/เดือน',
     'pricing_api_starter_feature_2' => '3 API keys',
     'pricing_api_starter_feature_3' => 'ช่องทางเว็บไซต์ + อีเมล',
     'pricing_api_starter_feature_4' => 'Ollama + 1 คลาวด์ AI',
@@ -113,7 +113,7 @@ return [
     
     // API Professional Plan
     'pricing_api_professional' => 'โปรเฟสชันแนล',
-    'pricing_api_pro_feature_1' => '5,000 การจอง/เดือน',
+    'pricing_api_pro_feature_1' => '5,000 รายการ/เดือน',
     'pricing_api_pro_feature_2' => '10 API keys',
     'pricing_api_pro_feature_3' => 'ทุกช่องทาง',
     'pricing_api_pro_feature_4' => 'AI ทุกเจ้า',
@@ -121,18 +121,18 @@ return [
     
     // API Enterprise Plan
     'pricing_api_enterprise' => 'องค์กร',
-    'pricing_api_ent_feature_1' => 'การจองไม่จำกัด',
+    'pricing_api_ent_feature_1' => 'รายการไม่จำกัด',
     'pricing_api_ent_feature_2' => 'API keys ไม่จำกัด',
     'pricing_api_ent_feature_3' => 'ทุกช่องทาง + ลำดับความสำคัญ',
     'pricing_api_ent_feature_4' => 'AI ทุกเจ้า + โมเดลกำหนดเอง',
     'pricing_api_ent_feature_5' => 'สนับสนุนเฉพาะ',
     
     // API Comparison Table
-    'pricing_compare_title' => 'เปรียบเทียบแผน Booking API',
+    'pricing_compare_title' => 'เปรียบเทียบแผน Sales Channel API',
     'pricing_compare_feature' => 'คุณสมบัติ',
     'pricing_compare_price' => 'ราคา',
     'pricing_compare_duration' => 'ระยะเวลา',
-    'pricing_compare_bookings' => 'การจอง/เดือน',
+    'pricing_compare_bookings' => 'รายการ/เดือน',
     'pricing_compare_api_keys' => 'API Keys',
     'pricing_compare_channels' => 'ช่องทาง',
     'pricing_compare_ai' => 'AI Parsing',
