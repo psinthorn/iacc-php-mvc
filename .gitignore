@@ -17,6 +17,7 @@ cache/ai-settings.json
 *.swp
 *.swo
 *~
+**/.DS_Store
 .DS_Store
 .DS_Store?
 ._*
