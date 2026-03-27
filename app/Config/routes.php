@@ -164,7 +164,7 @@ return [
     'master_data_guide'      => ['HelpController', 'masterDataGuide', 'standalone'],
 
     // ========== System / DevOps ==========
-    'health'                 => ['HealthController', 'index'],
+    'health'                 => ['HealthController', 'index', 'public'],
 
     // ========== Phase 7: Sales Channel API Admin (MVC) ==========
     'api_dashboard'          => ['AdminApiController', 'dashboard'],
