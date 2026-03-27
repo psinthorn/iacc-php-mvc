@@ -417,7 +417,7 @@ $html .= '
 </table>';
 
 // Generate PDF
-$mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4', 'default_font' => 'garuda', 'margin_left' => 12, 'margin_right' => 12, 'margin_top' => 12, 'margin_bottom' => 12, 'margin_header' => 0, 'margin_footer' => 0]);
+$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'garuda', 'margin_left' => 12, 'margin_right' => 12, 'margin_top' => 12, 'margin_bottom' => 12, 'margin_header' => 0, 'margin_footer' => 0, 'autoScriptToLang' => true, 'autoLangToFont' => true]);
 $mpdf->SetDisplayMode('fullpage');
 $mpdf->WriteHTML($html);
 $mpdf->Output("INV-" . $data['tax2'] . "-" . ($customer['name_sh'] ?? 'invoice') . ".pdf", "I");

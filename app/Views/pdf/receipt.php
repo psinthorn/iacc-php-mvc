@@ -212,7 +212,7 @@ $html .= '</table>
 
 //==============================================================
 //==============================================================
-$mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4']);
+$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'garuda', 'autoScriptToLang' => true, 'autoLangToFont' => true]);
 
 $mpdf->WriteHTML($html);
 
