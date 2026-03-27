@@ -63,7 +63,7 @@ function renderPOTable($items, $title, $icon, $xml) {
                         <?php if($row['status']=='2'): ?>
                             <a href="index.php?page=po_deliv&id=<?=$row['id']?>&action=c" class="btn btn-xs btn-success" title="Deliver"><i class="fa fa-truck"></i></a>
                         <?php endif; ?>
-                        <a href="index.php?page=po_store&method=D&id=<?=$row['id']?>&<?=csrf_field()?>" class="btn btn-xs btn-danger" onclick="return confirm('Cancel this PO?')"><i class="fa fa-times"></i></a>
+                        <a href="index.php?page=po_store&method=D&id=<?=$row['id']?>&csrf_token=<?=csrf_token()?>" class="btn btn-xs btn-danger" onclick="return confirm('Cancel this PO?')"><i class="fa fa-times"></i></a>
                     <?php endif; ?>
                 </td>
             </tr>

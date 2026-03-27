@@ -59,7 +59,7 @@ $statusLabels = ['0'=>['Pending','warning'],'1'=>['Quotation','info'],'2'=>['Con
                 <td>
                     <?php if($row['cancel']!='1' && $row['status']=='0'): ?>
                         <a href="index.php?page=po_make&id=<?=$row['id']?>" class="btn btn-xs btn-info" title="Make PO"><i class="fa fa-file"></i></a>
-                        <a href="index.php?page=pr_store&method=D&id=<?=$row['id']?>&<?=csrf_field()?>" class="btn btn-xs btn-danger" onclick="return confirm('Cancel?')"><i class="fa fa-times"></i></a>
+                        <a href="index.php?page=pr_store&method=D&id=<?=$row['id']?>&csrf_token=<?=csrf_token()?>" class="btn btn-xs btn-danger" onclick="return confirm('Cancel?')"><i class="fa fa-times"></i></a>
                     <?php endif; ?>
                 </td>
             </tr>
