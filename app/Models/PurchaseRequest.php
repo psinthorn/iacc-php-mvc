@@ -75,21 +75,25 @@ class PurchaseRequest extends BaseModel
     public function createPR(array $data, int $comId): int
     {
         $venId = !empty($data['ven_id']) ? intval($data['ven_id']) : $comId;
-        $args = ['table' => 'pr'];
-        $args['value'] = "'$comId','" . \sql_escape($data['name']) . "','" . \sql_escape($data['des']) . "','" .
+
+        // Use isolated array for PR insert (prevents state leakage)
+        $argsPR = array();
+        $argsPR['table'] = 'pr';
+        $argsPR['value'] = "'$comId','" . \sql_escape($data['name']) . "','" . \sql_escape($data['des']) . "','" .
             intval($data['user_id']) . "','" . intval($data['cus_id']) . "','" . $venId . "','" .
             date('Y-m-d') . "','0','0','0','0',NULL";
-        $prId = $this->hard->insertDbMax($args);
+        $prId = $this->hard->insertDbMax($argsPR);
 
-        // Insert product rows
+        // Insert product rows — fresh array per product
         for ($i = 0; $i < 9; $i++) {
             $typeId = $data['id' . $i] ?? '';
             $qty = $data['quantity' . $i] ?? '0';
             $price = $data['price' . $i] ?? '0';
             if (!empty($typeId) && $typeId != '0' && $qty != '0') {
-                $args['table'] = 'tmp_product';
-                $args['value'] = "NULL,'$prId','" . intval($typeId) . "','" . floatval($qty) . "','" . floatval($price) . "'";
-                $this->hard->insertDB($args);
+                $argsProduct = array();
+                $argsProduct['table'] = 'tmp_product';
+                $argsProduct['value'] = "NULL,'$prId','" . intval($typeId) . "','" . floatval($qty) . "','" . floatval($price) . "'";
+                $this->hard->insertDB($argsProduct);
             }
         }
         return $prId;

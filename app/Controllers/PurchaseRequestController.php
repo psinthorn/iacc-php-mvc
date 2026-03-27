@@ -67,6 +67,12 @@ class PurchaseRequestController extends BaseController
 
     public function store(): void
     {
+        // GET request → redirect to the PR create form
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('index.php?page=pr_make');
+            return;
+        }
+
         $this->verifyCsrf();
         $method = $this->input('method', '');
         $comId = $this->getCompanyId();
