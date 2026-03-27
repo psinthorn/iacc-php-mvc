@@ -114,6 +114,9 @@ $validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cance
                         <?php endif; ?>
                     </td>
                     <td style="white-space:nowrap;">
+                        <a href="index.php?page=api_webhook_deliveries&id=<?= $wh['id'] ?>" class="btn btn-sm btn-outline-info" title="View Deliveries">
+                            <i class="fa fa-history"></i>
+                        </a>
                         <form method="post" action="index.php?page=api_webhook_toggle" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                             <input type="hidden" name="webhook_id" value="<?= $wh['id'] ?>">

@@ -83,6 +83,7 @@ require_once __DIR__ . '/../../inc/pagination.php';
         </div>
         <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Filter</button>
         <a href="index.php?page=api_orders" class="btn btn-outline-secondary">Clear</a>
+        <a href="index.php?page=api_orders_export&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-success" title="Export to CSV"><i class="fa fa-download"></i> Export CSV</a>
     </form>
 </div>
 

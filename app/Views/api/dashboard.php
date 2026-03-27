@@ -82,7 +82,51 @@
     <?php if ($subscription['plan'] === 'trial' && $subscription['trial_end']): ?>
     <div style="margin-top:8px; font-size:0.85rem; color:#666;">
         <i class="fa fa-clock-o"></i> Trial expires: <?= date('M d, Y', strtotime($subscription['trial_end'])) ?>
+        — <a href="index.php?page=api_upgrade" style="color:#3498db;">Upgrade Now →</a>
     </div>
+    <?php endif; ?>
+
+    <?php if (($quotaPercent ?? 0) >= 80): ?>
+    <div class="alert alert-warning" style="margin-top:12px; margin-bottom:0; border-radius:8px;">
+        <i class="fa fa-exclamation-triangle"></i>
+        You are using <strong><?= intval($quotaPercent) ?>%</strong> of your monthly order quota.
+        <a href="index.php?page=api_upgrade" style="margin-left:8px;">Upgrade plan</a>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Usage Trend -->
+<div style="background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h4 style="margin:0;"><i class="fa fa-line-chart"></i> Daily API Usage (Last 7 Days)</h4>
+        <small style="color:#777;">Requests per day</small>
+    </div>
+    <?php
+    $dailyRows = $dailyUsage ?? [];
+    $maxReq = 1;
+    foreach ($dailyRows as $r) {
+        $maxReq = max($maxReq, intval($r['requests'] ?? 0));
+    }
+    ?>
+    <?php if (empty($dailyRows)): ?>
+        <p style="color:#999; margin:0;">No usage data yet.</p>
+    <?php else: ?>
+        <div style="display:flex; gap:8px; align-items:flex-end; height:180px; padding:10px 0;">
+            <?php foreach (array_reverse($dailyRows) as $r): ?>
+                <?php
+                $req = intval($r['requests'] ?? 0);
+                $h = max(6, intval(($req / $maxReq) * 140));
+                $errors = intval($r['errors'] ?? 0);
+                $barColor = $errors > 0 ? '#f39c12' : '#3498db';
+                ?>
+                <div style="flex:1; min-width:30px; text-align:center;">
+                    <div title="<?= htmlspecialchars($r['day']) ?>: <?= $req ?> request(s), <?= $errors ?> error(s)"
+                         style="height:<?= $h ?>px; background:<?= $barColor ?>; border-radius:6px 6px 0 0;"></div>
+                    <div style="font-size:0.75rem; color:#666; margin-top:6px;"><?= date('m/d', strtotime($r['day'])) ?></div>
+                    <div style="font-size:0.75rem; color:#222;"><?= $req ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
 </div>
 

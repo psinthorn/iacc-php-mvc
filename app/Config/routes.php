@@ -185,6 +185,12 @@ return [
     'api_webhook_delete'     => ['AdminApiController', 'deleteAdminWebhook'],
     'api_key_rotate'         => ['AdminApiController', 'rotateKey'],
     'api_docs'               => ['AdminApiController', 'docs'],
+    'api_orders_export'      => ['AdminApiController', 'exportOrders', 'standalone'],
+    'api_webhook_deliveries' => ['AdminApiController', 'webhookDeliveries'],
+    'api_upgrade'            => ['AdminApiController', 'upgradePlan'],
+    'api_request_upgrade'    => ['AdminApiController', 'requestUpgrade'],
+    'api_invoices'           => ['AdminApiController', 'invoices'],
+    'api_invoice_generate'   => ['AdminApiController', 'generateInvoice'],
 
     // ========== Pre-Auth Routes (no login required, standalone HTML) ==========
     'authorize'              => ['AuthController', 'authenticate', 'public'],

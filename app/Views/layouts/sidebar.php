@@ -345,6 +345,12 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=api_usage_logs"><i class="fa fa-bar-chart"></i> <?=$xml->apiusagelogs ?? 'Usage Logs'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=api_upgrade"><i class="fa fa-arrow-circle-up"></i> <?=$xml->apiupgrade ?? 'Upgrade Plan'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=api_invoices"><i class="fa fa-file-text-o"></i> <?=$xml->apiinvoices ?? 'Invoices'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=api_docs"><i class="fa fa-book"></i> <?=$xml->apidocs ?? 'API Docs'?></a>
                             </li>
                             <?php if (intval($_SESSION['user_level'] ?? 0) >= 2): ?>

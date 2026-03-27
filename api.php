@@ -107,8 +107,10 @@ if (empty($resource)) {
                 'POST /api.php/v1/orders/{id}/retry'    => 'Retry failed order',
                 'GET /api.php/v1/subscription'            => 'Subscription info & usage',
                 'POST /api.php/v1/webhooks'              => 'Register a webhook',
-                'GET /api.php/v1/webhooks'               => 'List webhooks',
+                'GET /api.php/v1/webhooks'               => 'List webhooks (pagination: ?page=1&per_page=20)',
+                'PUT /api.php/v1/webhooks/{id}'          => 'Update webhook URL or events',
                 'DELETE /api.php/v1/webhooks/{id}'        => 'Delete a webhook',
+                'POST /api.php/v1/webhooks/{id}/test'    => 'Send test ping to webhook',
             ],
             'features' => [
                 'rate_limiting'  => 'Per-minute limits by plan (X-RateLimit headers)',

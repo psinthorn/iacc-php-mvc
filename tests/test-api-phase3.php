@@ -122,14 +122,14 @@ $r = api_request('POST', '/webhooks', [
     'events' => ['order.completed', 'order.failed'],
 ]);
 test('Webhook Register', $r['code'] === 201 && ($r['body']['success'] ?? false), 
-    "HTTP {$r['code']}, webhook_id=" . ($r['body']['data']['id'] ?? 'N/A'));
-$webhookId = $r['body']['data']['id'] ?? null;
+    "HTTP {$r['code']}, webhook_id=" . ($r['body']['data']['webhook_id'] ?? $r['body']['data']['id'] ?? 'N/A'));
+$webhookId = $r['body']['data']['webhook_id'] ?? $r['body']['data']['id'] ?? null;
 $webhookSecret = $r['body']['data']['secret'] ?? null;
 
 // List webhooks
 $r = api_request('GET', '/webhooks');
 test('Webhook List', $r['code'] === 200 && !empty($r['body']['data']),
-    "HTTP {$r['code']}, count=" . count($r['body']['data'] ?? []));
+    "HTTP {$r['code']}, count=" . count($r['body']['data']['webhooks'] ?? $r['body']['data'] ?? []));
 
 // Register duplicate URL should fail
 $r2 = api_request('POST', '/webhooks', [
@@ -139,7 +139,7 @@ $r2 = api_request('POST', '/webhooks', [
 // May succeed (same URL different events is allowed) or fail - just check it returns valid response
 test('Webhook Duplicate URL handling', $r2['code'] >= 200 && $r2['code'] < 500,
     "HTTP {$r2['code']}");
-$webhookId2 = $r2['body']['data']['id'] ?? null;
+$webhookId2 = $r2['body']['data']['webhook_id'] ?? $r2['body']['data']['id'] ?? null;
 
 // Register with invalid URL should fail
 $r = api_request('POST', '/webhooks', [
