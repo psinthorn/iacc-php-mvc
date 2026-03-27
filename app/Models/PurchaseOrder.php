@@ -202,11 +202,13 @@ class PurchaseOrder extends BaseModel
     {
         $sql = "SELECT po.id, po.ref, po.name, po.date, po.valid_pay, po.deliver_date, po.vat, po.dis, po.over,
                 po.bandven, pr.cus_id, pr.ven_id, pr.des, pr.status,
-                ca.adr_tax, ca.adr, ca.name as addr_name
+                ca.adr_tax, ca.city_tax, ca.district_tax, ca.province_tax, ca.zip_tax
                 FROM po JOIN pr ON po.ref=pr.id
-                LEFT JOIN company_addr ca ON pr.cus_id=ca.com_id
+                LEFT JOIN company_addr ca ON pr.cus_id=ca.com_id AND ca.deleted_at IS NULL
                 WHERE po.id='" . \sql_int($id) . "' AND pr.status='1' AND po_id_new=''
-                AND pr.ven_id='$comId' LIMIT 1";
+                AND pr.ven_id='$comId'
+                ORDER BY (ca.valid_end = '0000-00-00' OR ca.valid_end = '9999-12-31') DESC, ca.valid_start DESC
+                LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
         return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
     }
