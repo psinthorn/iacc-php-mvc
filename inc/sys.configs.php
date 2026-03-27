@@ -1,4 +1,10 @@
 <?PHP
+// Load Composer autoloader
+$composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";
+if (file_exists($composerAutoload)) {
+    require_once($composerAutoload);
+}
+
 // Load error handler first to suppress deprecated PHP warnings
 require_once(dirname(__FILE__) . "/error-handler.php");
 
@@ -9,28 +15,29 @@ require_once(dirname(__FILE__) . "/error-handler.php");
 ini_set('session.cookie_httponly', 1);      // Prevent JavaScript access to session cookie
 ini_set('session.use_strict_mode', 1);      // Reject uninitialized session IDs
 ini_set('session.cookie_samesite', 'Lax');  // Prevent CSRF via cross-site requests
-// ini_set('session.cookie_secure', 1);     // Uncomment when using HTTPS
+
+// Enable secure cookies when served over HTTPS
+if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+    ini_set('session.cookie_secure', 1);
+}
+
+// ============================================================================
+// APPLICATION ENVIRONMENT
+// Set APP_ENV=production in your environment for production settings
+// ============================================================================
+$appEnv = getenv('APP_ENV') ?: 'development';
 
 // ============================================================================
 // SERVER : MYSQL Configuration
+// Uses environment variables if available, falls back to development defaults
 // ============================================================================
-$config["hostname"] = "mysql";
-$config["username"] = "root";
-//$config["username"] = "theiconn_cms";
-$config["password"] = "root";
-// $config["dbname"]   = "root";
-$config["dbname"]   = "iacc";
+$config["hostname"] = getenv('DB_HOST') ?: "mysql";
+$config["username"] = getenv('DB_USERNAME') ?: "root";
+$config["password"] = getenv('DB_PASSWORD') ?: "root";
+$config["dbname"]   = getenv('DB_DATABASE') ?: "iacc";
 
 // Sets the default timezone
 date_default_timezone_set("Asia/Bangkok"); 
-
-// SERVER : MYSQL Cnfiguration
-//$config["hostname"] = "localhost";
-//$config["username"] = "root";
-//$config["username"] = "theiconn_cms";
-//$config["password"] = ")q#gLfESG;M(";
-//$config["dbname"]   = "ngt-admin";
-//$config["dbname"]   = "theiconn_cms";
 
 // ============================================================================
 // DOCKER TOOLS CONFIGURATION

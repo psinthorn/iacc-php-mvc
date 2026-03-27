@@ -1,9 +1,9 @@
 <?php
 // Error reporting settings
-ini_set('display_errors', 1); // Show errors in browser for debug
+ini_set('display_errors', 0); // Never show errors to users
 ini_set('log_errors', 1);     // Enable error logging
-ini_set('display_startup_errors', 1);
-ini_set('error_log', __DIR__ . '/php-error.log'); // Log file path
+ini_set('display_startup_errors', 0);
+ini_set('error_log', __DIR__ . '/logs/php-error.log'); // Log file path
 error_reporting(E_ALL);       // Report all errors
 /**
  * iAcc Login Page
@@ -521,7 +521,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
             </div>
             <?php endif; ?>
             
-            <form action="authorize.php" method="post" id="loginForm">
+            <form action="index.php?page=authorize" method="post" id="loginForm">
                 <?= csrf_field() ?>
                 
                 <div class="form-group">
@@ -559,7 +559,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
                         <input type="checkbox" name="remember" value="1">
                         <span>Remember me</span>
                     </label>
-                    <a href="forgot-password.php" class="forgot-link">Forgot password?</a>
+                    <a href="index.php?page=forgot_password" class="forgot-link">Forgot password?</a>
                 </div>
                 
                 <button type="submit" class="btn btn-primary" id="submitBtn">

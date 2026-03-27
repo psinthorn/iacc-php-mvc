@@ -45,7 +45,7 @@ jobs:
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '8.2'
           extensions: mysqli, mbstring, xml, gd, curl, zip, pdo, pdo_mysql
           
       - name: ✅ PHP Syntax Check
@@ -55,10 +55,12 @@ jobs:
           
           # Check critical files
           php -l index.php
-          php -l core-function.php
           php -l login.php
+          php -l api.php
+          php -l landing.php
           php -l inc/class.dbconn.php
           php -l inc/security.php
+          php -l app/Config/routes.php
           echo "✅ Syntax check passed"
 
       - name: 🐳 Validate Docker files

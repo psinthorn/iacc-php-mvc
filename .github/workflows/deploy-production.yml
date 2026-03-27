@@ -1,8 +1,8 @@
 # =============================================================================
-# iACC - Production Deployment Workflow
+# iACC - Production Deployment Workflow (MVC)
 # =============================================================================
 # Triggered on push to main branch
-# Deploys to: iacc.f2.co.th (production)
+# Deploys to: iacc.f2.co.th (production via cPanel FTP)
 # =============================================================================
 
 name: 🚀 Deploy to Production
@@ -11,44 +11,117 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 env:
-  DEPLOY_PATH: .  # Deploy to the root of the FTP target directory
+  DEPLOY_PATH: .
+  PHP_VERSION: '8.2'
 
 jobs:
   # =========================================================================
-  # Job 1: Build and Test
+  # Job 1: Lint & Syntax Check
   # =========================================================================
-  build:
-    name: 🔨 Build & Test
+  lint:
+    name: 🔍 Lint & Syntax
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
-          extensions: mysqli, mbstring, xml, gd, curl
-          
-      - name: ✅ PHP Syntax Check
-        timeout-minutes: 2
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysqli, mbstring, xml, gd, curl, pdo, pdo_mysql
+
+      - name: ✅ PHP Syntax Check — Core Files
         run: |
-          echo "Checking main PHP files..."
+          echo "🔍 Checking core infrastructure..."
           php -l index.php
-          php -l core-function.php
           php -l login.php
-          php -l inc/class.dbconn.php
+          php -l api.php
+          php -l landing.php
           php -l inc/security.php
-          echo "✅ Syntax check passed"
+          php -l inc/class.dbconn.php
+          php -l app/Config/routes.php
+
+      - name: ✅ PHP Syntax Check — MVC Layer
+        run: |
+          echo "🔍 Checking all Controllers..."
+          find app/Controllers -name "*.php" | xargs -I {} php -l {}
           
+          echo "🔍 Checking all Models..."
+          find app/Models -name "*.php" | xargs -I {} php -l {}
+          
+          echo "🔍 Checking all Views..."
+          find app/Views -name "*.php" | xargs -I {} php -l {}
+          
+          echo "🔍 Checking Services..."
+          find app/Services -name "*.php" | xargs -I {} php -l {}
+          
+          echo "✅ All syntax checks passed"
+
+      - name: 📊 MVC Route Audit
+        run: |
+          php -r "
+            \$routes = require 'app/Config/routes.php';
+            \$mvc = 0; \$legacy = 0;
+            foreach (\$routes as \$k => \$v) {
+              if (is_array(\$v)) \$mvc++; else \$legacy++;
+            }
+            echo \"MVC routes: \$mvc, Legacy routes: \$legacy\n\";
+            if (\$legacy > 0) {
+              echo \"⚠️  WARNING: \$legacy legacy routes remain\n\";
+              exit(1);
+            }
+            echo \"✅ All routes are MVC\n\";
+          "
+
+  # =========================================================================
+  # Job 2: Build Deployment Artifact
+  # =========================================================================
+  build:
+    name: 📦 Build
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mysqli, mbstring, xml, gd, curl
+
+      - name: 📦 Install Composer dependencies
+        run: |
+          if [ -f composer.json ]; then
+            composer install --no-dev --optimize-autoloader --no-interaction
+          fi
+
+      - name: 🏷️ Generate version.json
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          cat > version.json <<EOF
+          {
+            "version": "5.0-mvc",
+            "commit": "${{ github.sha }}",
+            "commit_short": "${SHORT_SHA}",
+            "branch": "${{ github.ref_name }}",
+            "build_date": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+            "build_number": "${{ github.run_number }}",
+            "deployed_by": "github-actions"
+          }
+          EOF
+          cat version.json
+
       - name: 📦 Create deployment artifact
         run: |
           mkdir -p deploy
-          rsync -av --progress \
+          rsync -av \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='.gitignore' \
@@ -62,16 +135,58 @@ jobs:
             --exclude='*.backup' \
             --exclude='build' \
             --exclude='node_modules' \
-            --exclude='TODAY_WORK_SUMMARY*.txt' \
+            --exclude='legacy' \
+            --exclude='tests' \
+            --exclude='backups' \
             --exclude='phpstan.neon' \
-            --exclude='deploy-cpanel.sh' \
+            --exclude='deploy*.sh' \
+            --exclude='DEPLOYMENT_FILE_INDEX.sh' \
+            --exclude='backup.sh' \
             --exclude='inc/sys.configs.php' \
             --exclude='inc/docker-settings.json' \
             --exclude='logs/*.log' \
             --exclude='cache/*' \
-            --exclude='backups/*' \
+            --exclude='.htaccess' \
             ./ deploy/
-            
+
+          # Use cPanel htaccess for production
+          if [ -f deploy/.htaccess.cpanel ]; then
+            cp deploy/.htaccess.cpanel deploy/.htaccess
+          fi
+
+      - name: 🛠️ Generate production config
+        env:
+          PROD_DB_HOST: ${{ secrets.DB_HOST }}
+          PROD_DB_USER: ${{ secrets.DB_USERNAME }}
+          PROD_DB_PASS: ${{ secrets.DB_PASSWORD }}
+          PROD_DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          {
+            echo '<?PHP'
+            echo '$composerAutoload = dirname(__FILE__) . "/../vendor/autoload.php";'
+            echo 'if (file_exists($composerAutoload)) { require_once($composerAutoload); }'
+            echo 'require_once(dirname(__FILE__) . "/error-handler.php");'
+            echo "ini_set('session.cookie_httponly', 1);"
+            echo "ini_set('session.use_strict_mode', 1);"
+            echo "ini_set('session.cookie_samesite', 'Lax');"
+            echo "ini_set('session.cookie_secure', 1);"
+            echo 'if (!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off") {'
+            echo '    ini_set("session.cookie_secure", 1);'
+            echo '}'
+            echo '$appEnv = "production";'
+            echo "\$config[\"hostname\"] = \"${PROD_DB_HOST}\";"
+            echo "\$config[\"username\"] = \"${PROD_DB_USER}\";"
+            echo "\$config[\"password\"] = \"${PROD_DB_PASS}\";"
+            echo "\$config[\"dbname\"]   = \"${PROD_DB_NAME}\";"
+            echo 'date_default_timezone_set("Asia/Bangkok");'
+            echo '$config["docker_tools"] = "off";'
+            echo '$config["container_manager"] = "off";'
+            echo "define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');"
+          } > deploy/inc/sys.configs.php
+
+          echo "✅ Production config generated"
+          head -5 deploy/inc/sys.configs.php
+
       - name: 📤 Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -80,93 +195,72 @@ jobs:
           retention-days: 5
 
   # =========================================================================
-  # Job 2: Deploy to Production
+  # Job 3: Deploy to Production (cPanel FTP)
   # =========================================================================
   deploy:
-    name: 🚀 Deploy to Production
+    name: 🚀 Deploy
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: production
       url: https://iacc.f2.co.th
-    
+
     steps:
       - name: 📥 Download artifact
         uses: actions/download-artifact@v4
         with:
           name: production-deploy
           path: deploy/
-          
-      - name: 🛠️ Generate production config from secrets
-        run: |
-          mkdir -p deploy/inc
-          cat > deploy/inc/sys.configs.php <<EOL
-          <?php
-          $config["username"] = "${{ secrets.DB_USERNAME }}";
-          $config["password"] = "${{ secrets.DB_PASSWORD }}";
-          $config["dbname"]   = "${{ secrets.DB_NAME }}";
-          $config["host"]     = "${{ secrets.DB_HOST }}";
-          EOL
-          # Use production htaccess
-          if [ -f deploy/.htaccess.cpanel ]; then
-            cp deploy/.htaccess.cpanel deploy/.htaccess
-          fi
-          # Ensure all config templates and .htaccess.cpanel are deployed
-          for f in deploy/inc/sys.configs.*.php; do
-            [ -e "$f" ] && cp "$f" deploy/inc/ || true
-          done
-          if [ -f deploy/.htaccess.cpanel ]; then
-            cp deploy/.htaccess.cpanel deploy/
-          fi
-          
+
       - name: 📤 Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        timeout-minutes: 10
+        timeout-minutes: 30
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || 21 }}
-          protocol: ftp
+          protocol: ftps
           local-dir: ./deploy/
           server-dir: ${{ env.DEPLOY_PATH }}/
-          timeout: 60000
+          timeout: 300000
           log-level: verbose
+          dangerous-clean-slate: false
           exclude: |
-            **/.git*
             **/.git*/**
             **/node_modules/**
             **/.env
             **/logs/*.log
-            **/cache/*
-            **/backups/*
-            
-      - name: ✅ Deployment notification
+
+      - name: ✅ Deploy complete
         run: |
           echo "✅ Production deployment completed!"
           echo "🌐 URL: https://iacc.f2.co.th"
-          echo "📅 Time: $(date)"
+          echo "📅 Time: $(date -u)"
           echo "🔖 Commit: ${{ github.sha }}"
+          echo "🏷️ Build: #${{ github.run_number }}"
 
   # =========================================================================
-  # Job 3: Post-Deploy Health Check
+  # Job 4: Health Check
   # =========================================================================
   health-check:
     name: 🏥 Health Check
     runs-on: ubuntu-latest
     needs: deploy
-    
+
     steps:
-      - name: 🔍 Check site availability
+      - name: 🔍 Verify site is up
         run: |
-          echo "Waiting for deployment to propagate..."
+          echo "Waiting 30s for deployment..."
           sleep 30
-          
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://iacc.f2.co.th || echo "000")
-          
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://iacc.f2.co.th/login.php || echo "000")
+          echo "Login page: HTTP $HTTP_STATUS"
+
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" "https://iacc.f2.co.th/index.php?page=health" || echo "000")
+          echo "Health endpoint: HTTP $HEALTH"
+
           if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ]; then
-            echo "✅ Site is up! HTTP Status: $HTTP_STATUS"
+            echo "✅ Site is up!"
           else
             echo "⚠️ Site may have issues. HTTP Status: $HTTP_STATUS"
-            # Don't fail the workflow, just warn
           fi

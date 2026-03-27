@@ -1,0 +1,26 @@
+{
+    "name": "psinthorn/iacc-php-mvc",
+    "description": "iACC - Accounting & Business Management System",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1",
+        "mpdf/mpdf": "^8.2",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "classmap": [
+            "inc/"
+        ],
+        "exclude-from-classmap": [
+            "inc/class.dbconn_msql_connect.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

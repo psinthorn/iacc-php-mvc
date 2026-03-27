@@ -362,9 +362,7 @@ function generatePdfHtml($docType, $docPrefix, $docNumber, $data, $vender, $cust
  * Output PDF using mPDF
  */
 function outputPdf($html, $filename) {
-    include(__DIR__ . "/../MPDF/mpdf.php");
-    
-    $mpdf = new mPDF('th', 'A4', 0, 'Arial', 12, 12, 12, 12, 0, 0);
+    $mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4', 'default_font' => 'Arial', 'margin_left' => 12, 'margin_right' => 12, 'margin_top' => 12, 'margin_bottom' => 12, 'margin_header' => 0, 'margin_footer' => 0]);
     $mpdf->SetDisplayMode('fullpage');
     $mpdf->WriteHTML($html);
     $mpdf->Output($filename, "I");

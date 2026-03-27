@@ -17,6 +17,7 @@ cache/ai-settings.json
 *.swp
 *.swo
 *~
+**/.DS_Store
 .DS_Store
 .DS_Store?
 ._*
@@ -58,13 +59,22 @@ Thumbs.db
 *.sql.bak
 *.tar.gz
 
+# SQL dumps (keep in database/ folder if needed, but don't track)
+*.sql
+*.sql.gz
+
+# Work summary / temp notes
+TODAY_WORK_SUMMARY*.txt
+
 # PHP specific
 .php_cs.cache
 .phpunit.result.cache
+php-error.log
 
 # Generated files
 .env.production.local
 database.sqlite
+version.json
 
 # Keep but ignore content of these directories
 upload/*
@@ -80,3 +90,6 @@ products/
 !docker/**
 *.sql
 *.sql.gz
+
+# But DO track migration SQL files
+!database/migrations/*.sql

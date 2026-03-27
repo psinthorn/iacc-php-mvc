@@ -1,0 +1,220 @@
+<?php
+/**
+ * Application Route Configuration
+ * 
+ * Maps URL page parameters to file paths or controller actions.
+ * 
+ * Two formats supported:
+ *   1. Legacy (string): 'page_name' => 'filename.php'          — includes file directly
+ *   2. MVC (array):     'page_name' => ['Controller', 'method'] — dispatches to controller
+ * 
+ * Migration: As pages are migrated to MVC, change their entry from string to array format.
+ */
+
+return [
+    // ========== MVC Routes (migrated) ==========
+    
+    // Category
+    'category'        => ['CategoryController', 'index'],
+    'category_form'   => ['CategoryController', 'form'],
+    'category_store'  => ['CategoryController', 'store'],
+    'category_delete' => ['CategoryController', 'delete'],
+    
+    // Brand
+    'brand'           => ['BrandController', 'index'],
+    'brand_form'      => ['BrandController', 'form'],
+    'brand_store'     => ['BrandController', 'store'],
+    'brand_delete'    => ['BrandController', 'delete'],
+    
+    // Type
+    'type'            => ['TypeController', 'index'],
+    'type_store'      => ['TypeController', 'store'],
+    'type_delete'     => ['TypeController', 'delete'],
+    
+    // Model
+    'mo_list'         => ['ModelController', 'index'],
+    'mo_list_store'   => ['ModelController', 'store'],
+    'mo_list_delete'  => ['ModelController', 'delete'],
+    'mo_list_brands'  => ['ModelController', 'getBrands'],
+    
+    // Payment Method
+    'payment_method_list'   => ['PaymentMethodController', 'index'],
+    'payment_method'        => ['PaymentMethodController', 'form'],
+    'payment_method_store'  => ['PaymentMethodController', 'store'],
+    'payment_method_delete' => ['PaymentMethodController', 'delete'],
+    'payment_method_toggle' => ['PaymentMethodController', 'toggle'],
+
+    // Company
+    'company'          => ['CompanyController', 'index'],
+    'company_form'     => ['CompanyController', 'form'],
+    'company_store'    => ['CompanyController', 'store'],
+    'company_delete'   => ['CompanyController', 'delete'],
+    'company_credits'  => ['CompanyController', 'credits'],
+
+    // ========== Invoice / QA (Phase 3A) ==========
+    'compl_list'    => ['InvoiceController', 'index'],
+    'compl_view'    => ['InvoiceController', 'view'],
+    'compl_list2'   => ['InvoiceController', 'taxList'],
+    'qa_list'       => ['InvoiceController', 'quotations'],
+    'invoice_store' => ['InvoiceController', 'store'],
+
+    // Purchase Requisition (Phase 3B)
+    'pr_list'       => ['PurchaseRequestController', 'index'],
+    'pr_create'     => ['PurchaseRequestController', 'create'],
+    'pr_make'       => ['PurchaseRequestController', 'create'],
+    'pr_view'       => ['PurchaseRequestController', 'view'],
+    'pr_store'      => ['PurchaseRequestController', 'store'],
+
+    // Payment (Phase 3C)
+    'payment'       => ['PaymentController', 'index'],
+    'payment_store' => ['PaymentController', 'store'],
+
+    // Purchase Order (Phase 3D)
+    'po_list'       => ['PurchaseOrderController', 'index'],
+    'po_make'       => ['PurchaseOrderController', 'make'],
+    'po_edit'       => ['PurchaseOrderController', 'edit'],
+    'po_view'       => ['PurchaseOrderController', 'view'],
+    'po_deliv'      => ['PurchaseOrderController', 'delivery'],
+    'po_store'      => ['PurchaseOrderController', 'store'],
+
+    // Voucher (Phase 3E)
+    'voucher_list'  => ['VoucherController', 'index'],
+    'voc_make'      => ['VoucherController', 'make'],
+    'voc_view'      => ['VoucherController', 'view'],
+    'voucher_store' => ['VoucherController', 'store'],
+    'vou_print'     => ['VoucherController', 'print'],
+
+    // Delivery (Phase 3E)
+    'deliv_list'    => ['DeliveryController', 'index'],
+    'deliv_make'    => ['DeliveryController', 'make'],
+    'deliv_edit'    => ['DeliveryController', 'edit'],
+    'deliv_view'    => ['DeliveryController', 'view'],
+    'deliv_store'   => ['DeliveryController', 'store'],
+
+    // Receipt (Phase 3E)
+    'receipt_list'  => ['ReceiptController', 'index'],
+    'rep_make'      => ['ReceiptController', 'make'],
+    'rep_view'      => ['ReceiptController', 'view'],
+    'receipt_store' => ['ReceiptController', 'store'],
+    'rep_print'     => ['ReceiptController', 'print'],
+
+    // Billing (Phase 3E)
+    'billing'       => ['BillingController', 'index'],
+    'billing_make'  => ['BillingController', 'make'],
+    'billing_store' => ['BillingController', 'store'],
+
+    // ========== Phase 4 MVC Routes ==========
+    
+    // Dashboard
+    'dashboard'         => ['DashboardController', 'index'],
+    'dashboard_store'   => ['DashboardController', 'store'],
+    
+    // User Management
+    'user'              => ['UserController', 'index'],
+    'user_store'        => ['UserController', 'store'],
+    
+    // Reports & Invoice Payments
+    'invoice_payments'  => ['ReportController', 'invoicePayments'],
+    'report'            => ['ReportController', 'summary'],
+    
+    // Audit Log
+    'audit_log'         => ['AuditLogController', 'index'],
+    
+    // User Account
+    'profile'           => ['UserAccountController', 'profile'],
+    'settings'          => ['UserAccountController', 'settings'],
+    'account_store'     => ['UserAccountController', 'store'],
+
+    // ========== Phase 6: Admin & Dev Tools (MVC) ==========
+    'monitoring'            => ['DevToolsController', 'monitoring'],
+    'containers'            => ['DevToolsController', 'containers'],
+    // ========== Phase 5A: Payment Gateway (MVC) ==========
+    'payment_gateway_config' => ['PaymentGatewayController', 'index'],
+    'payment_gateway_test'   => ['PaymentGatewayController', 'test'],
+    'payment_webhook'        => ['PaymentGatewayController', 'webhook'],
+
+    // ========== Phase 5B: Invoice Payment Flow (MVC) ==========
+    'inv_checkout'           => ['InvoicePaymentController', 'checkout'],
+    'inv_payment_success'    => ['InvoicePaymentController', 'success'],
+    'inv_payment_cancel'     => ['InvoicePaymentController', 'cancel'],
+
+    // ========== Phase 5C: AI Admin Panel (MVC) ==========
+    'ai_chat_history'        => ['AiAdminController', 'chatHistory'],
+    'ai_schema_browser'      => ['AiAdminController', 'schemaBrowser'],
+    'ai_action_log'          => ['AiAdminController', 'actionLog'],
+    'ai_schema_refresh'      => ['AiAdminController', 'schemaRefresh'],
+
+    // ========== Phase 5D: AI Core (MVC) ==========
+    'ai_settings'            => ['AiSettingsController', 'index'],
+    'ai_chat'                => ['AiChatController', 'index'],
+
+    // Developer Tools (Admin Only)
+    'test_crud'              => ['DevToolsController', 'testCrud'],
+    'test_crud_ai'           => ['DevToolsController', 'testCrudAi'],
+    'test_rbac'              => ['DevToolsController', 'testRbac'],
+    'ai_documentation'       => ['AiAdminController', 'documentation'],
+    'debug_session'          => ['DevToolsController', 'debugSession'],
+    'debug_php'              => ['DevToolsController', 'debugPhp'],
+    'test_containers'        => ['DevToolsController', 'testContainers'],
+    'api_lang_debug'         => ['DevToolsController', 'langDebug'],
+    'dev_roadmap'            => ['DevToolsController', 'roadmap'],
+    
+    // User Account
+    'help'                   => ['HelpController', 'index'],
+    'master_data_guide'      => ['HelpController', 'masterDataGuide', 'standalone'],
+
+    // ========== System / DevOps ==========
+    'health'                 => ['HealthController', 'index'],
+
+    // ========== Phase 7: Sales Channel API Admin (MVC) ==========
+    'api_dashboard'          => ['AdminApiController', 'dashboard'],
+    'api_subscriptions'      => ['AdminApiController', 'subscriptions'],
+    'api_subscription_toggle'=> ['AdminApiController', 'toggleSubscription'],
+    'api_subscription_plan'  => ['AdminApiController', 'changePlan'],
+    'api_keys'               => ['AdminApiController', 'keys'],
+    'api_activate_trial'     => ['AdminApiController', 'activateTrial'],
+    'api_key_create'         => ['AdminApiController', 'createKey'],
+    'api_key_revoke'         => ['AdminApiController', 'revokeKey'],
+    'api_orders'           => ['AdminApiController', 'orders'],
+    'api_order_detail'     => ['AdminApiController', 'orderDetail'],
+    'api_order_update_status' => ['AdminApiController', 'updateOrderStatus'],
+    'api_usage_logs'         => ['AdminApiController', 'usageLogs'],
+    'api_webhooks'           => ['AdminApiController', 'webhooks'],
+    'api_webhook_create'     => ['AdminApiController', 'createWebhook'],
+    'api_webhook_toggle'     => ['AdminApiController', 'toggleWebhook'],
+    'api_webhook_delete'     => ['AdminApiController', 'deleteAdminWebhook'],
+    'api_key_rotate'         => ['AdminApiController', 'rotateKey'],
+    'api_docs'               => ['AdminApiController', 'docs'],
+    'api_orders_export'      => ['AdminApiController', 'exportOrders', 'standalone'],
+    'api_webhook_deliveries' => ['AdminApiController', 'webhookDeliveries'],
+    'api_upgrade'            => ['AdminApiController', 'upgradePlan'],
+    'api_request_upgrade'    => ['AdminApiController', 'requestUpgrade'],
+    'api_invoices'           => ['AdminApiController', 'invoices'],
+    'api_invoice_generate'   => ['AdminApiController', 'generateInvoice'],
+
+    // ========== Pre-Auth Routes (no login required, standalone HTML) ==========
+    'authorize'              => ['AuthController', 'authenticate', 'public'],
+    'forgot_password'        => ['AuthController', 'forgotPassword', 'public'],
+    'reset_password'         => ['AuthController', 'resetPassword', 'public'],
+    'lang_switch'            => ['AuthController', 'switchLanguage', 'public'],
+
+    // ========== Standalone Routes (auth required, no admin shell) ==========
+
+    // PDF / Print Generators
+    'pdf_quotation'          => ['PdfController', 'quotation', 'standalone'],
+    'pdf_quotation_mail'     => ['PdfController', 'quotationMail', 'standalone'],
+    'pdf_invoice'            => ['PdfController', 'invoice', 'standalone'],
+    'pdf_invoice_mail'       => ['PdfController', 'invoiceMail', 'standalone'],
+    'pdf_tax_invoice'        => ['PdfController', 'taxInvoice', 'standalone'],
+    'pdf_tax_invoice_mail'   => ['PdfController', 'taxInvoiceMail', 'standalone'],
+    'pdf_receipt'            => ['PdfController', 'receipt', 'standalone'],
+    'pdf_split_invoice'      => ['PdfController', 'splitInvoice', 'standalone'],
+
+    // Data Exports
+    'export_invoice_payments'=> ['ExportController', 'invoicePayments', 'standalone'],
+    'export_report'          => ['ExportController', 'report', 'standalone'],
+
+    // AJAX Endpoints
+    'ajax_options'           => ['AjaxController', 'productOptions', 'standalone'],
+    'ajax_mail'              => ['AjaxController', 'emailPreview', 'standalone'],
+];

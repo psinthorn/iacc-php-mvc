@@ -1,6 +1,6 @@
-FROM php:7.4-fpm
+FROM php:8.2-fpm
 
-# Install required PHP extensions
+# Install required PHP extensions and system dependencies
 RUN apt-get update && apt-get install -y \
     default-mysql-client \
     libfreetype6-dev \
@@ -17,11 +17,21 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy composer files first for better Docker layer caching
+COPY composer.json ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist 2>/dev/null || true
+
 # Copy application files
-COPY ./iacc /var/www/html
+COPY . /var/www/html
+
+# Install/update Composer dependencies
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
