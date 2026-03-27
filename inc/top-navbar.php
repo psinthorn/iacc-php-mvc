@@ -479,7 +479,7 @@ body.has-top-nav .navbar-static-side {
                         <span><?= isset($xml->help) ? $xml->help : 'Help & Support' ?></span>
                     </a>
                     <div class="user-dropdown-divider"></div>
-                    <a href="authorize.php?logout=1" class="user-dropdown-item logout">
+                    <a href="index.php?page=authorize&logout=1" class="user-dropdown-item logout">
                         <i class="fa fa-sign-out"></i>
                         <span><?= isset($xml->logout) ? $xml->logout : 'Sign Out' ?></span>
                     </a>
