@@ -59,6 +59,11 @@ jobs:
           echo "Checking Views..."
           find app/Views -name "*.php" | xargs -I {} php -l {}
           echo "✅ MVC syntax check passed"
+
+      - name: 📦 Install Composer dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+          echo "✅ Composer dependencies installed"
           
       - name: 📦 Create deployment artifact
         run: |
