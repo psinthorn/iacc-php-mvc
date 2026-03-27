@@ -40,11 +40,11 @@ jobs:
           echo "🔍 Checking core infrastructure..."
           php -l index.php
           php -l login.php
-          php -l authorize.php
-          php -l core-function.php
-          php -l menu.php
+          php -l api.php
+          php -l landing.php
           php -l inc/security.php
           php -l inc/class.dbconn.php
+          php -l app/Config/routes.php
 
       - name: ✅ PHP Syntax Check — MVC Layer
         run: |
@@ -55,10 +55,10 @@ jobs:
           find app/Models -name "*.php" | xargs -I {} php -l {}
           
           echo "🔍 Checking all Views..."
-          find views -name "*.php" | xargs -I {} php -l {}
+          find app/Views -name "*.php" | xargs -I {} php -l {}
           
-          echo "🔍 Checking Config..."
-          php -l app/Config/routes.php
+          echo "🔍 Checking Services..."
+          find app/Services -name "*.php" | xargs -I {} php -l {}
           
           echo "✅ All syntax checks passed"
 
