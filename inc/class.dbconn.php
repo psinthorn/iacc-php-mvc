@@ -23,8 +23,18 @@ class DbConn {
 
 	function __construct($config) {
 		$this->config = $config;
-		$this->conn = mysqli_connect($config['hostname'], $config['username'], $config['password'], $config["dbname"]);
-		if (!$this->conn) {
+		
+		// Set connection timeout to avoid hanging on unreachable DB
+		$this->conn = mysqli_init();
+		mysqli_options($this->conn, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+		$connected = @mysqli_real_connect(
+			$this->conn,
+			$config['hostname'],
+			$config['username'],
+			$config['password'],
+			$config['dbname']
+		);
+		if (!$connected) {
 			die("Database connection failed: " . mysqli_connect_error());
 		}
 		

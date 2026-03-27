@@ -38,6 +38,19 @@ if (isset($_REQUEST['page'])) {
 
 // Load core files
 require_once("inc/sys.configs.php");
+
+// Get requested page early (before DB connection) for fast-path landing page
+$page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : '';
+
+// ========== Fast-path: Landing page for anonymous visitors ==========
+// If no page requested and no active session, show landing page WITHOUT DB connection
+// This avoids DB timeout issues blocking the public landing page
+if ($page === '' && empty($_SESSION['user_id'])) {
+    include __DIR__ . '/landing.php';
+    exit;
+}
+
+// From here on, DB connection is needed
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 
@@ -46,9 +59,6 @@ $db = new DbConn($config);
 
 // Page routing configuration — loaded from external config
 $routes = require __DIR__ . '/app/Config/routes.php';
-
-// Get requested page (sanitized)
-$page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : '';
 
 // Determine route type: MVC (array) or legacy (string filename)
 $route = isset($routes[$page]) ? $routes[$page] : null;
