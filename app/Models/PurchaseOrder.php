@@ -283,10 +283,10 @@ class PurchaseOrder extends BaseModel
 
     public function getTmpProducts(int $prId): array
     {
-        return $this->fetchAll("SELECT tmp_product.*, type.name as type_name, type.des as type_des, category.cat_name
+        return $this->fetchAll("SELECT tmp_product.*, t.name as type_name, t.des as type_des, category.cat_name
             FROM tmp_product
-            JOIN type ON tmp_product.type_id=type.id
-            LEFT JOIN category ON type.cat_id=category.id
+            LEFT JOIN type t ON tmp_product.type=t.id
+            LEFT JOIN category ON t.cat_id=category.id
             WHERE tmp_product.pr_id='" . \sql_int($prId) . "'");
     }
 
