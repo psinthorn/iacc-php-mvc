@@ -27,8 +27,8 @@ session_start();
 
 // Fix double-encoded URLs before any other processing
 // Handles cases like "page=index.php%3Fpage%3Dcompl_view%26id%3D123" from old bookmarks
-if (isset($_REQUEST['page'])) {
-    $decoded = urldecode($_REQUEST['page']);
+if (isset($_GET['page'])) {
+    $decoded = urldecode($_GET['page']);
     if (preg_match('/^index\.php\?page=([a-z0-9_]+)(.*)/i', $decoded, $m)) {
         $fixedUrl = 'index.php?page=' . $m[1] . $m[2];
         header('Location: ' . $fixedUrl, true, 301);
@@ -40,7 +40,9 @@ if (isset($_REQUEST['page'])) {
 require_once("inc/sys.configs.php");
 
 // Get requested page early (before DB connection) for fast-path landing page
-$page = isset($_REQUEST['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_REQUEST['page']) : '';
+// IMPORTANT: Use $_GET['page'] NOT $_REQUEST['page'] — POST forms with hidden
+// name="page" fields would override the URL route and break store/delete actions
+$page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_]/i', '', $_GET['page']) : '';
 
 // ========== Fast-path: Landing page for anonymous visitors ==========
 // If no page requested and no active session, show landing page WITHOUT DB connection
@@ -98,7 +100,7 @@ if ($page === '') {
 
 // ========== Handle Company Switching (Admin/Super Admin only) ==========
 // This must happen before any HTML output so we can redirect
-if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'remote') {
+if (isset($_GET['page']) && $_GET['page'] === 'remote') {
     $userLevel = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
     
     if ($userLevel < 1) {
@@ -153,7 +155,7 @@ if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'remote') {
 }
 
 // ========== Company Search API for Dashboard Smart Search ==========
-if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'company_search_api') {
+if (isset($_GET['page']) && $_GET['page'] === 'company_search_api') {
     header('Content-Type: application/json');
     
     $userLevel = isset($_SESSION['user_level']) ? intval($_SESSION['user_level']) : 0;
