@@ -273,7 +273,7 @@ class PurchaseOrder extends BaseModel
     public function getTypes(int $comId): array
     {
         $cf = \CompanyFilter::getInstance();
-        return $this->fetchAll("SELECT t.name, t.id, t.des, c.cat_name FROM type t LEFT JOIN category c ON t.cat_id=c.id WHERE 1=1 " . $cf->andCompanyFilter('type'));
+        return $this->fetchAll("SELECT t.name, t.id, t.des, c.cat_name FROM type t LEFT JOIN category c ON t.cat_id=c.id WHERE 1=1 " . $cf->andCompanyFilter('t'));
     }
 
     public function getModels(): array
