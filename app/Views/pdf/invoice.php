@@ -2,15 +2,9 @@
 /**
  * Invoice PDF Generator
  * Modern minimal design with improved security
+ * Included via PdfController — session, auth, and $db already initialized by index.php
  */
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/class.current.php");
-require_once("inc/security.php");
-
-$db = new DbConn($config);
-$db->checkSecurity();
+global $db;
 
 // Validate input
 $id = input('id', 'int', ['required' => true, 'min' => 1]);
