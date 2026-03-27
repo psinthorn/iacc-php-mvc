@@ -93,7 +93,7 @@ $date_to = $filters['date_to'] ?? '';
             <a class="action-btn success" href="index.php?page=po_view&id=<?=$d['id']?>" title="Confirm"><i class="fa fa-check"></i></a>
             <a class="action-btn default" href="exp.php?id=<?=$d['id']?>" target="blank" title="View"><i class="fa fa-search"></i></a>
             <span class="mail-btn-wrapper"><a class="action-btn default" data-toggle="modal" href="model_mail.php?page=exp&id=<?=$d['id']?>" data-target=".bs-example-modal-lg"><i class="fa fa-envelope"></i></a><span class="<?=$badgeClass?>"><?=$mailcount?></span></span>
-            <?php if(!$isCancelled): ?><a class="action-btn danger" onClick="return Conf(this)" href="core-function.php?page=po_list&id=<?=$d['id']?>&method=D"><i class="fa fa-trash"></i></a><?php endif; ?>
+            <?php if(!$isCancelled): ?><a class="action-btn danger" onClick="return Conf(this)" href="index.php?page=po_store&method=D&id=<?=$d['id']?>&<?=csrf_field()?>"><i class="fa fa-trash"></i></a><?php endif; ?>
         </td>
     </tr>
     <?php endforeach; endif; ?>
@@ -124,7 +124,7 @@ $date_to = $filters['date_to'] ?? '';
         <td>
             <a class="action-btn success" href="index.php?page=po_view&id=<?=$d['id']?>" title="Confirm"><i class="fa fa-check"></i></a>
             <a class="action-btn default" href="exp.php?id=<?=$d['id']?>" target="blank" title="View"><i class="fa fa-search"></i></a>
-            <?php if(!$isCancelled): ?><a class="action-btn danger" onClick="return Conf(this)" href="core-function.php?page=po_list&id=<?=$d['id']?>&method=D"><i class="fa fa-trash"></i></a><?php endif; ?>
+            <?php if(!$isCancelled): ?><a class="action-btn danger" onClick="return Conf(this)" href="index.php?page=po_store&method=D&id=<?=$d['id']?>&<?=csrf_field()?>"><i class="fa fa-trash"></i></a><?php endif; ?>
         </td>
     </tr>
     <?php endforeach; endif; ?>

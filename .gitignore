@@ -17,6 +17,7 @@ cache/ai-settings.json
 *.swp
 *.swo
 *~
+**/.DS_Store
 .DS_Store
 .DS_Store?
 ._*
@@ -89,3 +90,6 @@ products/
 !docker/**
 *.sql
 *.sql.gz
+
+# But DO track migration SQL files
+!database/migrations/*.sql

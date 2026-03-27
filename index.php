@@ -25,6 +25,17 @@ ini_set('session.use_strict_mode', '1');
 
 session_start();
 
+// Fix double-encoded URLs before any other processing
+// Handles cases like "page=index.php%3Fpage%3Dcompl_view%26id%3D123" from old bookmarks
+if (isset($_REQUEST['page'])) {
+    $decoded = urldecode($_REQUEST['page']);
+    if (preg_match('/^index\.php\?page=([a-z0-9_]+)(.*)/i', $decoded, $m)) {
+        $fixedUrl = 'index.php?page=' . $m[1] . $m[2];
+        header('Location: ' . $fixedUrl, true, 301);
+        exit;
+    }
+}
+
 // Load core files
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
@@ -32,7 +43,13 @@ require_once("inc/security.php");
 
 // Initialize database and check authentication
 $db = new DbConn($config);
-$db->checkSecurity();
+$isAuthenticated = $db->checkSecurity();
+
+// Not logged in → show landing page (no redirect, clean / URL)
+if (!$isAuthenticated) {
+    include __DIR__ . '/landing.php';
+    exit;
+}
 
 // ========== Handle Company Switching (Admin/Super Admin only) ==========
 // This must happen before any HTML output so we can redirect
