@@ -6,7 +6,7 @@
  *   $items, $total, $count, $pagination, $stats,
  *   $search, $type_filter, $com_id, $query_params
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 $total_items     = $stats['total'];
 $total_vendors   = $stats['vendors'];
 $total_customers = $stats['customers'];

@@ -3,7 +3,7 @@
  * Delivery List View
  * Variables: $items_out, $items_in, $sendouts_out, $sendouts_in, $total_out, $total_in, $total_records, $pagination, $filters, $per_page
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 <div class="master-data-container">

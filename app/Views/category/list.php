@@ -16,7 +16,7 @@
  */
 
 // Import pagination renderer
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 

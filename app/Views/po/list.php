@@ -3,7 +3,7 @@
  * PO List View
  * Variables: $items_out, $items_in, $total_out, $total_in, $total_records, $pagination, $filters, $per_page, $query_params
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 <div class="master-data-container">

@@ -15,7 +15,7 @@
  *   $query_params - current GET params
  *   $xml          - i18n strings
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 
