@@ -1,10 +1,10 @@
 # iACC - Accounting Management System
 
-**Version**: 5.0-mvc  
+**Version**: 5.1-channel-api  
 **Status**: Production Ready  
-**Last Updated**: March 26, 2026  
-**Architecture**: MVC (Model-View-Controller)  
-**PHP**: 8.2 | **MySQL**: 8.0 | **Nginx**: Alpine
+**Last Updated**: March 27, 2026  
+**Architecture**: MVC (Model-View-Controller) + REST API  
+**PHP**: 8.2+ | **MySQL**: 8.0 | **Nginx**: Alpine
 
 ## 🚀 Deployment Status
 
@@ -15,7 +15,7 @@
 |-------------|-----|--------|--------|
 | **Production** | [iacc.f2.co.th](https://iacc.f2.co.th) | `main` | cPanel FTP via GitHub Actions |
 | **Staging** | [dev.iacc.f2.co.th](https://dev.iacc.f2.co.th) | `develop` | cPanel FTP via GitHub Actions |
-| **Development** | [localhost](http://localhost) | `mvc` | Docker Compose |
+| **Development** | [localhost](http://localhost) | `feature/*` | Docker Compose |
 
 ---
 
@@ -23,50 +23,57 @@
 
 | Metric | Count |
 |--------|-------|
-| **Controllers** | 28 |
-| **Models** | 22 |
-| **Views** | 67 |
-| **MVC Routes** | 96 |
+| **Controllers** | 34 |
+| **Models** | 28 |
+| **Views** | 98 |
+| **Services** | 1 (ChannelService) |
+| **MVC Routes** | 139 |
 | **Legacy Routes** | 0 |
-| **Test Cases** | 168 (42 E2E + 126 comprehensive) |
-| **Active Root Files** | 24 |
-| **Archived Legacy Files** | 85 |
+| **Test Cases** | 188 (42 E2E + 20 API + 126 MVC) |
+| **Active Root Files** | 12 |
+| **Archived Legacy Files** | 95 |
 
 ---
 
 ## 🏗️ Architecture
 
-### MVC Structure
+### MVC + API Structure
 
 ```
 app/
 ├── Config/
-│   └── routes.php              # All 96 MVC routes
-├── Controllers/                # 28 controllers
-│   ├── BaseController.php      # Base with auth, DB, CSRF
-│   ├── CategoryController.php
-│   ├── BrandController.php
-│   ├── CompanyController.php
-│   ├── InvoiceController.php
-│   ├── PurchaseOrderController.php
-│   ├── PurchaseRequestController.php
+│   └── routes.php                 # 139 MVC routes (public, standalone, normal)
+├── Controllers/ (34)
+│   ├── BaseController.php         # Base with auth, DB, CSRF
+│   ├── ChannelApiController.php   # Sales Channel REST API
+│   ├── AdminApiController.php     # API admin panel
 │   ├── DashboardController.php
-│   ├── HealthController.php    # System health endpoint
+│   ├── CompanyController.php
+│   ├── PurchaseOrderController.php
+│   ├── InvoiceController.php
+│   ├── HealthController.php       # System health endpoint
+│   ├── AuthController.php         # Login/logout/forgot password
 │   └── ...
-└── Models/                     # 22 models
-    ├── BaseModel.php           # Base with DB helpers
-    ├── Category.php
-    ├── Company.php
-    ├── PurchaseOrder.php
+├── Models/ (28)
+│   ├── BaseModel.php              # Base with DB helpers
+│   ├── ApiKey.php                 # API key management
+│   ├── ChannelOrder.php           # Channel order processing
+│   ├── Webhook.php                # Webhook management
+│   ├── ApiUsageLog.php            # API usage tracking
+│   ├── ApiInvoice.php             # API invoice generation
+│   └── ...
+├── Services/ (1)
+│   └── ChannelService.php         # Business logic for channel API
+└── Views/ (98)
+    ├── api/                       # 11 API admin panel views
+    ├── auth/                      # Login, forgot/reset password
+    ├── dashboard/                 # Dashboard views
+    ├── company/                   # Company management
+    ├── po/                        # Purchase orders
+    ├── invoice/                   # Invoicing
+    ├── pdf/                       # PDF templates
+    ├── layouts/                   # head, sidebar, scripts
     └── ...
-
-views/                          # 67 view templates
-├── category/
-├── company/
-├── dashboard/
-├── invoice/
-├── po/
-└── ...
 ```
 
 ### Request Flow
@@ -76,18 +83,73 @@ Browser → index.php → routes.php → Controller → Model → View
                                         ↓
                                    BaseController
                                    (auth, DB, CSRF)
+
+API Client → api.php → ChannelApiController → ChannelService → JSON Response
+                              ↓
+                         API Key Auth
+                     Rate Limiting (60/min)
+                        Idempotency
 ```
 
-### Active Root PHP Files (22)
+### Active Root PHP Files (12)
 
 | Category | Files |
 |----------|-------|
-| **Core** | `index.php`, `login.php`, `authorize.php`, `menu.php`, `css.php`, `script.php` |
-| **Includes** | `lang.php`, `makeoptionindex.php`, `master-data-guide.php` |
-| **Print/PDF** | `inv.php`, `exp.php`, `taxiv.php`, `rec.php`, `sptinv.php` |
-| **Email** | `model_mail.php`, `exp-m.php`, `inv-m.php`, `taxiv-m.php` |
-| **Export** | `report-export.php`, `invoice-payments-export.php` |
-| **Auth** | `forgot-password.php`, `reset-password.php` |
+| **Core** | `index.php`, `login.php`, `api.php` |
+| **Public Pages** | `landing.php`, `about.php`, `contact.php`, `roadmap.php`, `blog.php`, `press.php`, `careers.php` |
+| **Legal** | `privacy.php`, `terms.php` |
+
+> All admin/business pages routed through `index.php` via MVC controllers. Legacy files archived to `legacy/` (95 files).
+
+---
+
+## 🔌 Sales Channel API
+
+Full REST API for external integrations (OTA, PMS, channel managers).
+
+### API Features (5 Phases)
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1 | REST API — CRUD, API key auth, endpoints | ✅ Complete |
+| 2 | Rate limiting (60/min), key rotation, idempotency | ✅ Complete |
+| 3 | Webhooks, API docs page, order detail view | ✅ Complete |
+| 4 | Order management UI — approve/reject/cancel/retry | ✅ Complete |
+| 5 | Export (CSV/JSON), notifications, webhook API, invoices | ✅ Complete |
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api.php/orders` | List orders (paginated, filterable) |
+| `GET` | `/api.php/orders/{id}` | Get order details |
+| `POST` | `/api.php/orders` | Create new order |
+| `PUT` | `/api.php/orders/{id}` | Update order |
+| `PUT` | `/api.php/orders/{id}/retry` | Retry failed order |
+| `DELETE` | `/api.php/orders/{id}` | Cancel order |
+| `GET` | `/api.php/webhooks` | List webhooks |
+| `POST` | `/api.php/webhooks` | Create webhook |
+| `DELETE` | `/api.php/webhooks/{id}` | Delete webhook |
+
+### API Security
+
+- **Authentication**: API key via `X-API-Key` header
+- **Rate Limiting**: 60 requests/minute per key
+- **Idempotency**: `Idempotency-Key` header prevents duplicate orders
+- **Key Rotation**: Seamless key rotation with grace period
+- **Webhook Signing**: HMAC-SHA256 payload signatures
+
+### Admin Panel
+
+| Page | Route | Description |
+|------|-------|-------------|
+| API Keys | `?page=api_keys` | Manage API keys (create/revoke/rotate) |
+| Orders | `?page=api_orders` | View & manage channel orders |
+| Webhooks | `?page=api_webhooks` | Configure webhook endpoints |
+| Usage Logs | `?page=api_usage` | Monitor API usage & rate limits |
+| Settings | `?page=api_settings` | API configuration & plans |
+| Docs | `?page=api_docs` | Interactive API documentation |
+| Export | `?page=api_export` | Export orders (CSV/JSON) |
 
 ---
 
@@ -97,19 +159,21 @@ Browser → index.php → routes.php → Controller → Model → View
 iAcc-PHP-MVC/
 │
 ├── app/                          # MVC application layer
-│   ├── Config/routes.php         # Route definitions (96 MVC, 0 legacy)
-│   ├── Controllers/ (28)         # Request handlers
-│   └── Models/ (22)              # Business logic & data access
-│
-├── views/ (67)                   # View templates organized by module
+│   ├── Config/routes.php         # Route definitions (139 MVC, 0 legacy)
+│   ├── Controllers/ (34)         # Request handlers
+│   ├── Models/ (28)              # Business logic & data access
+│   ├── Services/ (1)             # Business services (ChannelService)
+│   └── Views/ (98)               # View templates organized by module
 │
 ├── inc/                          # Core includes
 │   ├── sys.configs.php           # Database & app config
-│   ├── class.dbconn.php          # Database connection
+│   ├── class.dbconn.php          # Database connection (5s timeout)
 │   ├── class.hard.php            # Database abstraction layer
 │   ├── security.php              # Auth, CSRF, RBAC, rate limiting
 │   ├── error-handler.php         # Error handling
+│   ├── pagination.php            # Pagination helper
 │   ├── pdf-template.php          # Shared PDF template
+│   ├── lang/en.php, th.php       # Language files
 │   ├── string-th.xml             # Thai language strings
 │   └── string-us.xml             # English language strings
 │
@@ -119,7 +183,7 @@ iAcc-PHP-MVC/
 │   ├── ai-language.php           # Thai/English detection
 │   └── chat-stream.php           # SSE streaming endpoint
 │
-├── vendor/                       # Composer dependencies
+├── vendor/                       # Composer dependencies (PSR-4 autoloading)
 │   ├── mpdf/                     # mPDF 8.x (PDF generation)
 │   └── phpmailer/                # PHPMailer 6.x (email)
 │
@@ -129,14 +193,12 @@ iAcc-PHP-MVC/
 │   ├── nginx/default.conf        # Nginx config (security rules)
 │   └── mysql/my.cnf              # MySQL config
 │
-├── scripts/                      # Utility scripts
-│   └── generate-version.sh       # Version.json generator
-│
-├── tests/                        # Test suites (168 total)
+├── tests/                        # Test suites (188 total)
 │   ├── test-e2e-crud.php         # 42 E2E integration tests
+│   ├── test-api-phase3.php       # 20 Sales Channel API tests
 │   └── test-mvc-comprehensive.php # 126 comprehensive MVC tests
 │
-├── legacy/                       # Archived pre-MVC files (85 files)
+├── legacy/                       # Archived pre-MVC files (95 files)
 ├── backups/                      # SQL backup files
 ├── logs/                         # Application logs
 │
@@ -144,13 +206,13 @@ iAcc-PHP-MVC/
 │   ├── copilot-instructions.md   # AI assistant context
 │   └── workflows/
 │       ├── deploy-production.yml # 4-job CI/CD pipeline
-│       ├── deploy-staging.yml    # Staging deployment
+│       ├── deploy-staging.yml    # Staging deploy (with Composer)
 │       └── deploy-docker-digitalocean.yml
 │
 ├── docker-compose.yml            # Development environment
 ├── docker-compose.prod.yml       # Production Docker config
 ├── Dockerfile                    # PHP-FPM 8.2 image
-├── .htaccess                     # Dev Apache config
+├── composer.json                 # PSR-4 autoloading + dependencies
 ├── .htaccess.cpanel              # Production Apache config
 └── deploy-cpanel.sh              # cPanel deployment packager
 ```
@@ -165,12 +227,13 @@ iAcc-PHP-MVC/
 |---------|----------------|
 | **Password Hashing** | bcrypt (cost=12) with MD5 auto-migration |
 | **CSRF Protection** | Token validation on all forms |
-| **Rate Limiting** | 5 attempts / 15 min per IP |
+| **Rate Limiting** | 5 attempts / 15 min per IP (login), 60/min (API) |
 | **Account Lockout** | 10 failed attempts → 30 min lock |
 | **SQL Injection Prevention** | Prepared statements + `real_escape_string` |
 | **Session Security** | HttpOnly, Strict, SameSite=Lax, Secure (HTTPS) |
 | **Remember Me** | Secure tokens, 30-day expiry |
 | **Password Reset** | Token-based email reset (1 hour expiry) |
+| **API Key Auth** | SHA-256 hashed keys with rate limiting |
 
 ### User Roles
 
@@ -226,6 +289,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Payments** — Payment recording, gateway integration, tracking
 - **Deliveries** — Delivery tracking with receipt confirmation
 - **Reports** — Business reporting with CSV/JSON export
+- **Sales Channel API** — REST API for OTA/PMS/channel manager integrations
 - **Multi-language** — Thai and English support
 - **AI Chatbot** — 29 tools, OpenAI/Ollama, Thai/English, streaming
 - **Dashboard** — Statistics, charts, company selector
@@ -255,8 +319,11 @@ docker compose ps
 # View application
 open http://localhost
 
-# Run E2E tests (from inside container)
+# Run E2E tests
 docker exec iacc_php php /var/www/html/tests/test-e2e-crud.php
+
+# Run API tests
+docker exec iacc_php php /var/www/html/tests/test-api-phase3.php
 
 # Run comprehensive MVC tests
 docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
@@ -275,6 +342,21 @@ docker compose down
 
 ## 🚀 CI/CD Pipeline
 
+### Staging Deployment (GitHub Actions)
+
+Triggered on push to `develop`:
+
+```
+PHP Syntax Check → Composer Install → Build Artifact → FTP Deploy
+```
+
+| Step | Details |
+|------|---------|
+| **Syntax Check** | Core files + all Controllers, Models, Services, Views |
+| **Composer** | `composer install --no-dev --optimize-autoloader` |
+| **Config** | Generate `sys.configs.php` from GitHub Secrets |
+| **Deploy** | FTP to cPanel staging via `SamKirkland/FTP-Deploy-Action` |
+
 ### Production Deployment (GitHub Actions)
 
 4-job pipeline triggered on push to `main`:
@@ -285,32 +367,22 @@ Lint → Build → Deploy → Health Check
 
 | Job | Actions |
 |-----|---------|
-| **Lint** | PHP 8.2 syntax check on all Controllers, Models, Views, core files. Route audit fails if any legacy routes exist. |
-| **Build** | Composer install, generate `version.json`, create deploy artifact (excludes tests/legacy/docker/backups), generate production `sys.configs.php` from GitHub secrets |
-| **Deploy** | FTP deploy to cPanel via `SamKirkland/FTP-Deploy-Action` |
-| **Health Check** | Verify `login.php` and `health` endpoint respond after deploy |
-
-### cPanel Manual Deployment
-
-```bash
-# Create deployment package
-./deploy-cpanel.sh v5.0
-
-# Result: build/iacc-cpanel-v5.0.zip
-# Upload to cPanel → Extract → Configure sys.configs.php
-```
+| **Lint** | PHP 8.2 syntax check on all MVC files. Route audit fails if any legacy routes exist. |
+| **Build** | Composer install, generate `version.json`, create deploy artifact, generate production `sys.configs.php` |
+| **Deploy** | FTP deploy to cPanel production |
+| **Health Check** | Verify `login.php` and `health` endpoint respond |
 
 ### Required GitHub Secrets
 
 | Secret | Purpose |
 |--------|---------|
-| `DB_HOST` | Production database host |
-| `DB_USERNAME` | Database username |
-| `DB_PASSWORD` | Database password |
-| `DB_NAME` | Database name |
+| `DB_HOST` / `DB_HOST_STAGING` | Database host |
+| `DB_USERNAME` / `DB_USERNAME_STAGING` | Database username |
+| `DB_PASSWORD` / `DB_PASSWORD_STAGING` | Database password |
+| `DB_NAME` / `DB_NAME_STAGING` | Database name |
 | `FTP_SERVER` | cPanel FTP server |
-| `FTP_USERNAME` | FTP username |
-| `FTP_PASSWORD` | FTP password |
+| `FTP_USERNAME` / `FTP_USERNAME_STAGING` | FTP username |
+| `FTP_PASSWORD` / `FTP_PASSWORD_STAGING` | FTP password |
 
 ---
 
@@ -318,7 +390,7 @@ Lint → Build → Deploy → Health Check
 
 ### Database
 
-**File**: `inc/sys.configs.php` (auto-generated in CI, template in `inc/sys.configs.cpanel.php`)
+**File**: `inc/sys.configs.php` (auto-generated in CI from GitHub Secrets)
 
 ```php
 $config["hostname"] = getenv('DB_HOST') ?: "mysql";
@@ -327,9 +399,11 @@ $config["password"] = getenv('DB_PASS') ?: "root";
 $config["dbname"]   = getenv('DB_NAME') ?: "iacc";
 ```
 
-### Environment Variables
+### Connection Resilience
 
-See `.env.example` for all available settings.
+- **Timeout**: 5-second connection timeout (prevents page hang on unreachable DB)
+- **Fast-path landing**: Anonymous visitors see landing page without DB connection
+- **Error handling**: Custom error handler logs to `logs/error.log`
 
 ---
 
@@ -352,6 +426,20 @@ See `.env.example` for all available settings.
 | `deliv` | Deliveries |
 | `pay` | Payments |
 | `credit` | Credits |
+
+### API Tables
+
+| Table | Description |
+|-------|-------------|
+| `api_keys` | API key management (hashed, rate limits, plans) |
+| `channel_orders` | Orders from external channels |
+| `channel_order_items` | Line items for channel orders |
+| `webhooks` | Webhook endpoint configurations |
+| `webhook_deliveries` | Webhook delivery logs |
+| `api_usage_logs` | API request logs (auth, rate limiting) |
+| `api_invoices` | Invoices generated from API orders |
+| `api_notifications` | API notification queue |
+| `idempotency_keys` | Idempotency key storage |
 
 ### Security Tables
 
@@ -379,18 +467,38 @@ See `.env.example` for all available settings.
 ```bash
 # Run all tests from inside PHP container
 docker exec iacc_php php /var/www/html/tests/test-e2e-crud.php
+docker exec iacc_php php /var/www/html/tests/test-api-phase3.php
 docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ```
 
 | Suite | Tests | Coverage |
 |-------|-------|----------|
 | **E2E CRUD** | 42 | Company, Category, Type, Brand, Model, PR→PO workflow, Payment, HardClass |
+| **Sales Channel API** | 20 | API auth, CRUD orders, rate limiting, webhooks, key rotation, idempotency |
 | **MVC Comprehensive** | 126 | Routes, Controllers, Models, Views, Config, Security, RBAC |
-| **Total** | **168** | **All passing ✅** |
+| **Total** | **188** | **All passing ✅** |
 
 ---
 
 ## 📋 Changelog
+
+### v5.1-channel-api (March 27, 2026) — Sales Channel API + Staging
+
+**Sales Channel API** — Complete REST API for external integrations:
+
+- **Phase 1**: REST API foundation — CRUD endpoints, API key authentication, admin panel
+- **Phase 2**: Rate limiting (60/min), API key rotation, idempotency keys
+- **Phase 3**: Webhooks with HMAC-SHA256 signing, interactive API docs, order detail view
+- **Phase 4**: Order management UI — approve/reject/cancel/retry actions
+- **Phase 5**: Export (CSV/JSON), notifications, webhook management API, invoice generation
+
+**Staging Environment** — Full CI/CD to dev.iacc.f2.co.th:
+
+- Added composer install to staging workflow (fixes autoloader for MVC)
+- Fast-path landing page — anonymous visitors skip DB connection
+- 5-second DB connection timeout (prevents page hangs)
+- Logout fix — updated URLs for MVC file relocation
+- CI workflow syntax checks updated for MVC file structure
 
 ### v5.0-mvc (March 26, 2026) — Full MVC Migration
 
@@ -398,91 +506,31 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 - **Phase 1**: Upgrade PHP 8.2, Composer, mPDF 8.x, PHPMailer 6.x
 - **Phase 2**: MVC foundation — BaseController, BaseModel, routing system
-  - Migrated: Category, Brand, Type, Model, PaymentMethod, Company
-- **Phase 3**: Business logic migration
-  - Invoice, Purchase Request, Payment, Purchase Order, Voucher, Delivery, Receipt, Billing
-- **Phase 4**: Admin & user features
-  - Dashboard, User Management, Reports, Audit Log, Profile/Settings
-- **Phase 5**: Advanced features
-  - Payment Gateway, Invoice Payment, AI Admin Panel, AI Core
-- **Phase 6**: 100% migration — All remaining 15 routes converted
+- **Phase 3**: Business logic migration (Invoice, PR, PO, Delivery, Payment)
+- **Phase 4**: Admin features (Dashboard, Users, Reports, Audit Log)
+- **Phase 5**: Advanced features (Payment Gateway, Invoice Payment, AI Admin)
+- **Phase 6**: 100% migration — all remaining routes converted, zero legacy
 
-**Post-Migration** (Tasks 1–6):
-- Fix PurchaseRequest date column bug
-- Controller audit (no property conflicts)
-- 126 comprehensive MVC tests (168 total)
-- Security hardening: CSRF on all admin forms, intval/floatval safety, security headers
-- Production readiness: env-based config, display_errors off, Nginx security blocks
-- Root PHP cleanup: archived 85 legacy files, 24 active remain
-
-**DevOps** (CI/CD & Deployment):
-- New 4-job CI/CD pipeline (Lint → Build → Deploy → Health Check)
-- HealthController with public/admin system status
-- version.json generation (CI + local script)
-- .htaccess.cpanel: block tests/, legacy/, app/ directories
-- deploy-cpanel.sh: updated excludes, version.json output
-
-### v4.13 (March 24, 2026)
-- Fix: PHP 8 compatibility (`each()` → `foreach()`)
-- Fix: Hardcoded Docker log paths → relative paths
-- Fix: Auto-create logs directory
-
-### v4.12 (March 21, 2026)
-- Fix: Receipt/Voucher PDF "data already output" error
-- Fix: Non-existent `complain` table JOIN → proper `iv` table
+**Post-Migration**:
+- 126 comprehensive MVC tests (168 total at the time)
+- Security hardening: CSRF on all forms, security headers, rate limiting
+- Root PHP cleanup: archived 85 to 95 legacy files, 24 to 12 active remain
+- CI/CD pipeline: 4-job deploy (Lint, Build, Deploy, Health Check)
 
 ### v4.11 (February 6, 2026)
-- Critical: PO Edit products disappearing (shared `$args` array fix)
-- Company checkbox handling fix
-- Docker environment stability
-- 42 integration tests added
+- Critical: PO Edit products disappearing (shared $args array fix)
+- Docker environment stability, 42 integration tests added
 
 ### v4.10 (January 20, 2026)
 - PO View, Delivery, Invoice, Tax Invoice PDF fixes
-- PO Reference field support
-- Customer/vendor LEFT JOIN fixes across PDFs
 
 ### v4.9 (January 19, 2026)
-- Company management improvements
-- Company list redesign with filter tabs
-- Dashboard company selector
-- Soft delete for companies
+- Company management improvements, dashboard company selector, soft delete
 
-### v4.8 (January 10, 2026)
-- PR form fix (nested HTML structure)
-- `insertDbMax` AUTO_INCREMENT fix
-- Column width expansion (pr.name, po.name)
-
-### v4.7 (January 9, 2026)
-- Developer role & menu access control
-- RBAC test page
-
-### v4.6 (January 9, 2026)
-- RBAC enforcement complete (has_permission, has_role, require_permission, can)
-
-### v4.5 (January 8, 2026)
-- Delivery note workflow complete
-- Invoice view redesign
-- Payment recording fix
-- PDF template typo fixes
-
-### v4.4 (January 7, 2026)
-- Critical: Product INSERT fix (numeric type casting)
-- PO Edit page redesign
-- PO View product description fix
-
-### v4.3–v4.0 (January 5–7, 2026)
-- AI chatbot (29 tools, OpenAI/Ollama, Thai/English, streaming)
-- RAG enhancement, multi-language support
-- UI modernization (Inter font, card layouts, gradients)
-- Docker development environment
-- Security: bcrypt, CSRF, rate limiting, account lockout, SQL injection prevention
-
-### v3.x (January 4, 2026)
-- Soft delete system (16 tables)
-- Database optimization (40+ indexes, 13 foreign keys)
-- Invoice workflow completion
-- Session security improvements
+### v4.0 to v4.8 (January 2026)
+- AI chatbot (29 tools), RBAC system, delivery workflow, UI modernization
+- Docker environment, security suite (bcrypt, CSRF, rate limiting)
+- Database optimization (40+ indexes, 13 foreign keys, soft delete)
 
 ---
 

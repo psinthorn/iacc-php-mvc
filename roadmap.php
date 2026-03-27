@@ -308,19 +308,55 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
-            <!-- In Progress - Production Deployment -->
-            <div class="timeline-item in-progress">
+            <!-- Completed - Production Deployment -->
+            <div class="timeline-item completed">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q1 2026</span>
-                    <span class="status-badge in-progress"><?= $lang === 'th' ? 'กำลังดำเนินการ' : 'In Progress' ?></span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
                 </div>
                 <h3><?= $lang === 'th' ? 'การ Deploy สู่ Production' : 'Production Deployment' ?></h3>
-                <p><?= $lang === 'th' ? 'การนำระบบขึ้น cPanel Production และการทดสอบ' : 'Deploy to cPanel production environment and testing.' ?></p>
+                <p><?= $lang === 'th' ? 'ระบบขึ้น cPanel Production สำเร็จ พร้อม CI/CD Pipeline' : 'Successfully deployed to cPanel production with full CI/CD pipeline.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-spinner fa-spin"></i> <?= $lang === 'th' ? 'Deploy สู่ cPanel' : 'cPanel deployment' ?></li>
-                    <li><i class="fa fa-spinner fa-spin"></i> <?= $lang === 'th' ? 'อัพเกรด PHP 8.3' : 'PHP 8.3 upgrade' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'อัพเกรด MySQL 8.0' : 'MySQL 8.0 upgrade' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Load Testing' : 'Load testing' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Deploy สู่ cPanel' : 'cPanel deployment' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PHP 8.3 บน Staging' : 'PHP 8.3 on staging' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'CI/CD GitHub Actions' : 'CI/CD GitHub Actions' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Health Check อัตโนมัติ' : 'Automated health checks' ?></li>
+                </ul>
+            </div>
+            
+            <!-- Completed - v5.0 MVC Architecture -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.0 - สถาปัตยกรรม MVC' : 'v5.0 - MVC Architecture' ?></h3>
+                <p><?= $lang === 'th' ? 'การปรับโครงสร้างทั้งหมดจาก Monolithic PHP เป็น MVC Pattern พร้อม 34 Controllers, 28 Models, 98 Views' : 'Complete migration from monolithic PHP to MVC pattern with 34 Controllers, 28 Models, 98 Views.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '139 MVC Routes' : '139 MVC routes' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PSR-4 Autoloading' : 'PSR-4 autoloading' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '126 MVC Tests' : '126 MVC tests' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ลบ Legacy Routes 100%' : 'Zero legacy routes' ?></li>
+                </ul>
+            </div>
+            
+            <!-- Completed - v5.1 Sales Channel API -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.1 - Sales Channel API' : 'v5.1 - Sales Channel API' ?></h3>
+                <p><?= $lang === 'th' ? 'REST API สำหรับเชื่อมต่อ OTA, PMS และ Channel Manager พร้อมระบบ Webhook และจัดการคำสั่งซื้อ' : 'REST API for OTA, PMS, and channel manager integrations with webhooks and order management.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'REST API (CRUD)' : 'REST API (CRUD)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'API Key Authentication' : 'API key authentication' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Rate Limiting (60/นาที)' : 'Rate limiting (60/min)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Webhooks (HMAC-SHA256)' : 'Webhooks (HMAC-SHA256)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'จัดการคำสั่งซื้อ' : 'Order management UI' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Export CSV/JSON' : 'Export CSV/JSON' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '20 API Tests' : '20 API tests' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Staging Environment' : 'Staging environment' ?></li>
                 </ul>
             </div>
             
@@ -330,13 +366,13 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <span class="timeline-quarter">Q2 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'RBAC และการชำระเงิน' : 'RBAC & Payment Gateway' ?></h3>
-                <p><?= $lang === 'th' ? 'บังคับใช้ RBAC ทั่วระบบและเชื่อมต่อ Payment Gateway' : 'Enforce RBAC permissions system-wide and integrate payment gateways.' ?></p>
+                <h3><?= $lang === 'th' ? 'Payment Gateway และ Multi-Currency' : 'Payment Gateway & Multi-Currency' ?></h3>
+                <p><?= $lang === 'th' ? 'เชื่อมต่อ Payment Gateway และรองรับหลายสกุลเงิน' : 'Integrate payment gateways and multi-currency support.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'บังคับใช้ RBAC ทุกหน้า' : 'RBAC enforcement all pages' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'PayPal Integration' : 'PayPal integration' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Stripe Integration' : 'Stripe integration' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'QR PromptPay' : 'QR PromptPay' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับหลายสกุลเงิน' : 'Multi-currency support' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานภาษีอัตโนมัติ' : 'Automated tax reports' ?></li>
                 </ul>
             </div>
             
@@ -362,12 +398,12 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <span class="timeline-quarter">Q4 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'การผสานรวม API' : 'API Integrations' ?></h3>
+                <h3><?= $lang === 'th' ? 'การผสานรวมขั้นสูง' : 'Advanced Integrations' ?></h3>
                 <p><?= $lang === 'th' ? 'เชื่อมต่อกับเครื่องมือธุรกิจยอดนิยมและบริการทางการเงิน' : 'Connect with popular business tools and financial services.' ?></p>
                 <ul class="feature-list">
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมต่อธนาคาร' : 'Bank connections' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผสานรวม E-commerce' : 'E-commerce integrations' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'API สำหรับนักพัฒนา' : 'Developer API' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Public Developer API' : 'Public developer API' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมต่อ Zapier' : 'Zapier integration' ?></li>
                 </ul>
             </div>
