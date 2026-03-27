@@ -198,6 +198,25 @@ return [
     'reset_password'         => ['AuthController', 'resetPassword', 'public'],
     'lang_switch'            => ['AuthController', 'switchLanguage', 'public'],
 
+    // ========== Phase 8: Q2 2026 – Payment Gateway & Multi-Currency (MVC) ==========
+
+    // Tax Reports
+    'tax_reports'            => ['TaxReportController', 'index'],
+    'tax_report_pp30'        => ['TaxReportController', 'pp30'],
+    'tax_report_wht'         => ['TaxReportController', 'wht'],
+    'tax_report_save'        => ['TaxReportController', 'save'],
+    'tax_report_export'      => ['TaxReportController', 'export', 'standalone'],
+
+    // Currency Management
+    'currency_list'          => ['CurrencyController', 'index'],
+    'currency_rates'         => ['CurrencyController', 'rates'],
+    'currency_refresh'       => ['CurrencyController', 'refresh'],
+    'currency_toggle'        => ['CurrencyController', 'toggle'],
+
+    // PromptPay Payment
+    'promptpay_checkout'     => ['InvoicePaymentController', 'promptpayCheckout'],
+    'promptpay_confirm'      => ['InvoicePaymentController', 'promptpayConfirm'],
+
     // ========== Standalone Routes (auth required, no admin shell) ==========
 
     // PDF / Print Generators

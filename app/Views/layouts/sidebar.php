@@ -322,6 +322,13 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=payment_gateway_config"><i class="fa fa-cogs"></i> <?=$xml->gatewayconfig ?? 'Gateway Config'?></a>
                             </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=tax_reports"><i class="fa fa-file-text"></i> <?=$xml->taxreports ?? 'Tax Reports'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=currency_list"><i class="fa fa-money"></i> <?=$xml->currencymanage ?? 'Currency'?></a>
+                            </li>
                         </ul>
                     </li>
                     

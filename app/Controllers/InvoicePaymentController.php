@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\InvoicePayment;
+use App\Services\PromptPayService;
 
 /**
  * InvoicePaymentController
@@ -81,6 +82,10 @@ class InvoicePaymentController extends BaseController
                         header('Location: ' . $result['checkout_url']);
                         exit;
                     }
+                } elseif ($selectedGateway === 'promptpay') {
+                    // PromptPay QR redirect
+                    header('Location: index.php?page=promptpay_checkout&id=' . $invoice['tex']);
+                    exit;
                 }
             } catch (\Exception $e) {
                 $error = $e->getMessage();
@@ -219,6 +224,91 @@ class InvoicePaymentController extends BaseController
         }
 
         include __DIR__ . '/../Views/invoice-payment/cancel.php';
+        exit;
+    }
+
+    /**
+     * PromptPay QR checkout page — shows QR code and slip upload form
+     */
+    public function promptpayCheckout(): void
+    {
+        $invoiceId = intval($_GET['id'] ?? 0);
+        if (!$invoiceId) {
+            die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Error</h2><p>Invalid invoice ID</p></div>');
+        }
+
+        $invoice = $this->model->getInvoiceForCheckout($invoiceId);
+        if (!$invoice) {
+            die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Invoice Not Found</h2><p>The invoice does not exist, is already paid, or has been deleted.</p></div>');
+        }
+
+        $totals = $this->model->calculateTotal($invoiceId, $invoice);
+        $lang = $_SESSION['lang'] ?? 'th';
+
+        try {
+            $promptpay = new PromptPayService();
+            $qrData = $promptpay->generateQR($totals['amountDue']);
+            $promptpayName = $promptpay->getConfig()['promptpay_name'] ?? '';
+            $paymentLogId = $promptpay->createPendingPayment($invoiceId, $totals['amountDue']);
+        } catch (\Exception $e) {
+            $qrData = ['qr_url' => '', 'amount' => $totals['amountDue'], 'target' => ''];
+            $promptpayName = '';
+            $paymentLogId = 0;
+        }
+
+        include __DIR__ . '/../Views/payment-gateway/promptpay.php';
+        exit;
+    }
+
+    /**
+     * Handle PromptPay payment notification (slip upload + manual confirm)
+     */
+    public function promptpayConfirm(): void
+    {
+        $invoiceId = intval($_POST['invoice_id'] ?? 0);
+        $paymentLogId = intval($_POST['payment_log_id'] ?? 0);
+        $transRef = trim($_POST['trans_ref'] ?? '');
+
+        if (!$invoiceId) {
+            $_SESSION['error'] = 'Invalid invoice';
+            header('Location: index.php?page=inv_checkout&id=' . $invoiceId);
+            exit;
+        }
+
+        // Handle slip upload
+        $slipPath = '';
+        if (isset($_FILES['slip']) && $_FILES['slip']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../../upload/slips/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $ext = pathinfo($_FILES['slip']['name'], PATHINFO_EXTENSION);
+            $filename = 'slip_' . $invoiceId . '_' . time() . '.' . $ext;
+            move_uploaded_file($_FILES['slip']['tmp_name'], $uploadDir . $filename);
+            $slipPath = 'upload/slips/' . $filename;
+        }
+
+        // Update payment_log with slip info
+        if ($paymentLogId) {
+            $transRef = sql_escape($transRef);
+            $slipPath = sql_escape($slipPath);
+            $sql = "UPDATE payment_log SET 
+                        transaction_id = '$transRef',
+                        slip_image = '$slipPath',
+                        status = 'pending_review',
+                        updated_at = NOW()
+                    WHERE id = $paymentLogId";
+            mysqli_query($this->conn, $sql);
+        }
+
+        // Redirect to success page with pending status
+        $lang = $_SESSION['lang'] ?? 'th';
+        $message = $lang === 'th' 
+            ? 'แจ้งชำระเงินสำเร็จ รอการตรวจสอบจากผู้ดูแล' 
+            : 'Payment notification sent. Awaiting admin verification.';
+        $_SESSION['success'] = $message;
+
+        header('Location: index.php?page=inv_payment_success&invoice_id=' . $invoiceId . '&gateway=promptpay');
         exit;
     }
 }
