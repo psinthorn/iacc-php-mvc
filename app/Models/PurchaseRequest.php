@@ -154,9 +154,14 @@ class PurchaseRequest extends BaseModel
 
     public function getPRDetail(int $id, int $comId): ?array
     {
-        $sql = "SELECT pr.*, company.name_en as company_name FROM pr
-            JOIN company ON (pr.cus_id=company.id OR pr.ven_id=company.id)
-            WHERE pr.id='" . \sql_int($id) . "' AND (pr.ven_id='$comId' OR pr.cus_id='$comId')
+        $where = $comId > 0 ? " AND (pr.ven_id='$comId' OR pr.cus_id='$comId')" : '';
+        $sql = "SELECT pr.*, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate,
+                cust.name_en as customer_name, ven.name_en as vendor_name,
+                COALESCE(cust.name_en, ven.name_en) as company_name
+            FROM pr
+            LEFT JOIN company cust ON pr.cus_id=cust.id
+            LEFT JOIN company ven ON pr.ven_id=ven.id
+            WHERE pr.id='" . \sql_int($id) . "'" . $where . "
             LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
         return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
@@ -164,8 +169,8 @@ class PurchaseRequest extends BaseModel
 
     public function getTmpProducts(int $prId): array
     {
-        return $this->fetchAll("SELECT tp.*, type.name as type_name FROM tmp_product tp
-            LEFT JOIN type ON tp.type_id=type.id WHERE tp.pr_id='" . \sql_int($prId) . "'");
+        return $this->fetchAll("SELECT tp.*, t.name as type_name FROM tmp_product tp
+            LEFT JOIN type t ON tp.type=t.id WHERE tp.pr_id='" . \sql_int($prId) . "'");
     }
 
     private function fetchAll(string $sql): array

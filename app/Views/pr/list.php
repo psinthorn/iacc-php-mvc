@@ -57,6 +57,7 @@ $statusLabels = ['0'=>['Pending','warning'],'1'=>['Quotation','info'],'2'=>['Con
                 <td><?=e($row['createdate'])?></td>
                 <td><span class="label label-<?=$st[1]?>"><?=$st[0]?></span></td>
                 <td>
+                    <a href="index.php?page=pr_view&id=<?=$row['id']?>" class="btn btn-xs btn-default" title="View"><i class="fa fa-eye"></i></a>
                     <?php if($row['cancel']!='1' && $row['status']=='0'): ?>
                         <a href="index.php?page=po_make&id=<?=$row['id']?>" class="btn btn-xs btn-info" title="Make PO"><i class="fa fa-file"></i></a>
                         <a href="index.php?page=pr_store&method=D&id=<?=$row['id']?>&csrf_token=<?=csrf_token()?>" class="btn btn-xs btn-danger" onclick="return confirm('Cancel?')"><i class="fa fa-times"></i></a>
@@ -83,6 +84,7 @@ $statusLabels = ['0'=>['Pending','warning'],'1'=>['Quotation','info'],'2'=>['Con
                 <td><?=e($row['createdate'])?></td>
                 <td><span class="label label-<?=$st[1]?>"><?=$st[0]?></span></td>
                 <td>
+                    <a href="index.php?page=pr_view&id=<?=$row['id']?>" class="btn btn-xs btn-default" title="View"><i class="fa fa-eye"></i></a>
                     <?php if($row['cancel']!='1' && $row['status']=='0'): ?>
                         <a href="index.php?page=po_make&id=<?=$row['id']?>" class="btn btn-xs btn-info"><i class="fa fa-file"></i></a>
                     <?php endif; ?>
