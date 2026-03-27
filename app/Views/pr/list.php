@@ -3,7 +3,7 @@
  * PR List View
  * Variables: $items_out, $items_in, $total_out, $total_in, $total_records, $pagination, $filters, $per_page, $query_params
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 $statusLabels = ['0'=>['Pending','warning'],'1'=>['Quotation','info'],'2'=>['Confirmed','primary'],'3'=>['Delivered','success'],'4'=>['Invoiced','danger'],'5'=>['Completed','success']];
 ?>
 <link rel="stylesheet" href="css/master-data.css">

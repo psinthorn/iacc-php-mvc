@@ -5,7 +5,7 @@
  * Variables from AdminApiController::usageLogs():
  *   $logs, $total, $pagination, $daily_summary, $channel_breakdown, $subscription
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 

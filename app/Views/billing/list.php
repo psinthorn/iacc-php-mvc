@@ -3,7 +3,7 @@
  * Billing List View
  * Variables: $items, $stats, $total_records, $pagination, $filters, $per_page
  */
-require_once __DIR__ . '/../../inc/pagination.php';
+require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 <div class="master-data-container">
