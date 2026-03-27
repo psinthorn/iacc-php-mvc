@@ -45,10 +45,14 @@ class ChannelService
     {
         // Mark as processing
         $this->orderModel->updateStatus($orderId, 'processing');
+        $ownerCompanyId = intval($authData['company_id']);
+
+        // New order notification
+        $order['id'] = $orderId;
+        $order['status'] = 'pending';
+        $this->sendNotificationEmail($ownerCompanyId, $order, 'order.created');
 
         try {
-            $ownerCompanyId = intval($authData['company_id']);
-
             // Step 1: Find or create the customer company
             $customerId = $this->findOrCreateCustomer(
                 $order['guest_name'],
@@ -69,6 +73,11 @@ class ChannelService
             // Step 5: Link order to created records
             $this->orderModel->linkRecords($orderId, $customerId, $prId, $poId);
 
+            // Step 6: Send email notification (completed)
+            $completedOrder = $this->orderModel->findForCompany($orderId, $ownerCompanyId) ?? $order;
+            $completedOrder['status'] = 'completed';
+            $this->sendNotificationEmail($ownerCompanyId, $completedOrder, 'order.completed');
+
             return [
                 'success' => true,
                 'data' => [
@@ -84,6 +93,11 @@ class ChannelService
             $this->orderModel->updateStatus($orderId, 'failed', [
                 'error_message' => $e->getMessage(),
             ]);
+
+            // Send failure notification
+            $order['status'] = 'failed';
+            $order['error_message'] = $e->getMessage();
+            $this->sendNotificationEmail($ownerCompanyId, $order, 'order.failed');
 
             return [
                 'success' => false,
@@ -277,6 +291,63 @@ class ChannelService
         $id = $this->hard->insertSafe('product', $data);
         if (!$id) {
             throw new \RuntimeException('Failed to create product line item');
+        }
+    }
+
+    /**
+     * Send email notification for order events
+     */
+    private function sendNotificationEmail(int $companyId, array $order, string $event): void
+    {
+        try {
+            $cid = \sql_int($companyId);
+            $sql = "SELECT email, name_en FROM company WHERE id = '$cid' LIMIT 1";
+            $result = mysqli_query($this->conn, $sql);
+            if (!$result) return;
+            $company = mysqli_fetch_assoc($result);
+            if (!$company || empty($company['email'])) return;
+
+            $to = $company['email'];
+
+            switch ($event) {
+                case 'order.created':
+                    $subject = "📬 New Channel Order #{$order['id']} — {$order['guest_name']}";
+                    $intro = "A new order has been received via the {$order['channel']} channel.";
+                    break;
+                case 'order.completed':
+                    $subject = "✅ Order #{$order['id']} Completed — {$order['guest_name']}";
+                    $intro = "An order has been successfully processed and linked to your iACC records.";
+                    break;
+                case 'order.failed':
+                    $subject = "⚠️ Order #{$order['id']} Failed — {$order['guest_name']}";
+                    $intro = "An order has failed processing. Please review and retry if needed.";
+                    break;
+                default:
+                    $subject = "📋 Order #{$order['id']} Updated — {$order['guest_name']}";
+                    $intro = "An order status has been updated.";
+            }
+
+            $body = "{$intro}\n\n";
+            $body .= "Order Details:\n";
+            $body .= str_repeat('─', 40) . "\n";
+            $body .= "Order ID:    #{$order['id']}\n";
+            $body .= "Guest:       {$order['guest_name']}\n";
+            $body .= "Channel:     {$order['channel']}\n";
+            $body .= "Status:      {$order['status']}\n";
+            $body .= "Amount:      ฿" . number_format(floatval($order['total_amount']), 2) . "\n";
+            if (!empty($order['check_in'])) $body .= "Check-in:    {$order['check_in']}\n";
+            if (!empty($order['check_out'])) $body .= "Check-out:   {$order['check_out']}\n";
+            if (!empty($order['room_type'])) $body .= "Room:        {$order['room_type']}\n";
+            if (!empty($order['error_message'])) $body .= "Error:       {$order['error_message']}\n";
+            $body .= str_repeat('─', 40) . "\n\n";
+            $body .= "This is an automated notification from iACC Sales Channel API.\n";
+
+            $headers = "From: iACC Notifications <noreply@iacc.local>\r\n";
+            $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+            @mail($to, $subject, $body, $headers);
+        } catch (\Exception $e) {
+            // Silently fail — email notifications should never break order processing
         }
     }
 }

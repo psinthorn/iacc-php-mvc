@@ -51,6 +51,14 @@ class BaseModel
         $this->companyFilter = \CompanyFilter::getInstance();
     }
 
+    /**
+     * Get the database connection (for use in controllers that need raw queries)
+     */
+    public function getConnection(): \mysqli
+    {
+        return $this->conn;
+    }
+
     // =====================================================
     // CRUD Operations
     // =====================================================

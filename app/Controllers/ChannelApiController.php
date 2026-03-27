@@ -99,6 +99,14 @@ class ChannelApiController
                     $this->deleteWebhook($resourceId);
                     break;
 
+                case $method === 'PUT' && $path === 'webhooks' && $resourceId:
+                    $this->updateWebhookEndpoint($resourceId);
+                    break;
+
+                case $method === 'POST' && $path === 'webhooks' && $resourceId && $subAction === 'test':
+                    $this->testWebhook($resourceId);
+                    break;
+
                 default:
                     $this->jsonError('Not Found', 404, 'ENDPOINT_NOT_FOUND');
             }
@@ -182,6 +190,13 @@ class ChannelApiController
             $this->jsonError('Failed to create order', 500, 'CREATE_FAILED');
             return;
         }
+
+        $this->fireWebhook('order.created', [
+            'order_id' => $orderId,
+            'guest_name' => $orderData['guest_name'],
+            'channel' => $orderData['channel'],
+            'status' => 'pending',
+        ]);
 
         // Process order (create Company → PR → PO → Products)
         $service = new ChannelService();
@@ -555,12 +570,19 @@ class ChannelApiController
     }
 
     /**
-     * GET /api/v1/webhooks — List all webhooks
+     * GET /api/v1/webhooks — List all webhooks (with pagination)
      */
     private function listWebhooks(): void
     {
         $companyId = intval($this->authData['company_id']);
         $webhooks = $this->webhookModel->getByCompanyId($companyId);
+
+        // Pagination
+        $page = max(1, intval($_GET['page'] ?? 1));
+        $perPage = min(50, max(1, intval($_GET['per_page'] ?? 20)));
+        $total = count($webhooks);
+        $offset = ($page - 1) * $perPage;
+        $paged = array_slice($webhooks, $offset, $perPage);
 
         $formatted = array_map(function ($w) {
             return [
@@ -573,10 +595,16 @@ class ChannelApiController
                 'last_status'   => $w['last_status'] ? intval($w['last_status']) : null,
                 'created_at'    => $w['created_at'],
             ];
-        }, $webhooks);
+        }, $paged);
 
         $this->logRequest('GET /api/v1/webhooks', '', 200);
-        $this->jsonSuccess(['webhooks' => $formatted, 'total' => count($formatted)]);
+        $this->jsonSuccess([
+            'webhooks'   => $formatted,
+            'total'      => $total,
+            'page'       => $page,
+            'per_page'   => $perPage,
+            'total_pages' => ceil($total / $perPage),
+        ]);
     }
 
     /**
@@ -595,6 +623,150 @@ class ChannelApiController
         $this->webhookModel->deleteWebhook($id);
         $this->logRequest("DELETE /api/v1/webhooks/$id", '', 200);
         $this->jsonSuccess(['webhook_id' => $id], 200, 'Webhook deleted');
+    }
+
+    /**
+     * PUT /api/v1/webhooks/:id — Update a webhook's URL or events
+     */
+    private function updateWebhookEndpoint(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $webhook = $this->webhookModel->findForCompany($id, $companyId);
+
+        if (!$webhook) {
+            $this->jsonError('Webhook not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        $input = $this->getJsonInput();
+        $updateData = [];
+
+        // Update URL if provided
+        if (isset($input['url'])) {
+            if (!filter_var($input['url'], FILTER_VALIDATE_URL)) {
+                $this->jsonError('A valid URL is required', 422, 'VALIDATION_ERROR');
+                return;
+            }
+            if (strpos($input['url'], 'https://') !== 0 && strpos($input['url'], 'http://localhost') !== 0 && strpos($input['url'], 'http://127.0.0.1') !== 0) {
+                $this->jsonError('Webhook URL must use HTTPS', 422, 'VALIDATION_ERROR');
+                return;
+            }
+            $updateData['url'] = $input['url'];
+        }
+
+        // Update events if provided
+        if (isset($input['events'])) {
+            if (!is_array($input['events'])) {
+                $this->jsonError('events must be an array', 422, 'VALIDATION_ERROR');
+                return;
+            }
+            $validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cancelled', 'order.updated'];
+            $events = array_intersect($input['events'], $validEvents);
+            if (empty($events)) {
+                $this->jsonError('At least one valid event is required: ' . implode(', ', $validEvents), 422, 'VALIDATION_ERROR');
+                return;
+            }
+            $updateData['events'] = implode(',', $events);
+        }
+
+        if (empty($updateData)) {
+            $this->jsonError('No valid fields to update. Provide url and/or events.', 422, 'VALIDATION_ERROR');
+            return;
+        }
+
+        $this->webhookModel->updateWebhook($id, $updateData);
+
+        $updated = $this->webhookModel->findForCompany($id, $companyId);
+
+        $this->logRequest("PUT /api/v1/webhooks/$id", '', 200);
+        $this->jsonSuccess([
+            'id'        => intval($updated['id']),
+            'url'       => $updated['url'],
+            'events'    => explode(',', $updated['events']),
+            'is_active' => (bool)$updated['is_active'],
+        ], 200, 'Webhook updated');
+    }
+
+    /**
+     * POST /api/v1/webhooks/:id/test — Send a test ping to a webhook
+     */
+    private function testWebhook(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $webhook = $this->webhookModel->findForCompany($id, $companyId);
+
+        if (!$webhook) {
+            $this->jsonError('Webhook not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        if (!$webhook['is_active']) {
+            $this->jsonError('Webhook is disabled. Enable it before testing.', 409, 'WEBHOOK_DISABLED');
+            return;
+        }
+
+        // Build test payload
+        $testPayload = [
+            'event'     => 'webhook.test',
+            'timestamp' => date('c'),
+            'data'      => [
+                'message'    => 'This is a test ping from iACC Sales Channel API',
+                'webhook_id' => intval($webhook['id']),
+                'test'       => true,
+            ],
+        ];
+
+        $body = json_encode($testPayload, JSON_UNESCAPED_UNICODE);
+        $signature = hash_hmac('sha256', $body, $webhook['secret']);
+
+        $startTime = microtime(true);
+        $error = null;
+        $responseCode = null;
+        $responseBody = null;
+
+        try {
+            $ch = curl_init($webhook['url']);
+            curl_setopt_array($ch, [
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => $body,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 10,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_HTTPHEADER     => [
+                    'Content-Type: application/json',
+                    'X-Webhook-Event: webhook.test',
+                    'X-Webhook-Signature: sha256=' . $signature,
+                    'X-Webhook-Id: ' . $webhook['id'],
+                    'User-Agent: iACC-Webhook/1.0',
+                ],
+            ]);
+
+            $responseBody = curl_exec($ch);
+            $responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+            }
+
+            curl_close($ch);
+        } catch (\Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        $durationMs = intval((microtime(true) - $startTime) * 1000);
+        $success = $responseCode >= 200 && $responseCode < 300 && !$error;
+
+        $this->logRequest("POST /api/v1/webhooks/$id/test", '', 200);
+        $this->jsonSuccess([
+            'webhook_id'  => intval($webhook['id']),
+            'url'         => $webhook['url'],
+            'test_result' => [
+                'success'     => $success,
+                'status_code' => $responseCode,
+                'duration_ms' => $durationMs,
+                'error'       => $error,
+            ],
+        ], 200, $success ? 'Webhook test successful' : 'Webhook test failed');
     }
 
     // =========================================================
