@@ -67,9 +67,16 @@ $routeType = (is_array($route) && isset($route[2])) ? $route[2] : 'normal';
 // ========== Pre-Auth Routes (public pages, auth handlers) ==========
 // Dispatched BEFORE authentication check — no login required
 if ($routeType === 'public') {
-    $controllerName = 'App\\Controllers\\' . $route[0];
-    $controller = new $controllerName();
-    $controller->{$route[1]}();
+    try {
+        $controllerName = 'App\\Controllers\\' . $route[0];
+        $controller = new $controllerName();
+        $controller->{$route[1]}();
+    } catch (\Throwable $e) {
+        http_response_code(500);
+        error_log(date('Y-m-d H:i:s') . " ROUTE ERROR [public:{$page}] {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n", 3, __DIR__ . '/logs/error.log');
+        echo '<h2>System Error</h2><p>An error occurred processing this request.</p>';
+        if ((getenv('APP_ENV') ?: 'development') !== 'production') echo '<pre>' . htmlspecialchars($e) . '</pre>';
+    }
     exit;
 }
 
@@ -198,9 +205,16 @@ if (isset($_REQUEST['page']) && $_REQUEST['page'] === 'company_search_api') {
 // ========== Standalone Routes (auth required, no admin HTML shell) ==========
 // Dispatched AFTER auth but BEFORE the HTML layout (PDF, exports, AJAX)
 if ($routeType === 'standalone') {
-    $controllerName = 'App\\Controllers\\' . $route[0];
-    $controller = new $controllerName();
-    $controller->{$route[1]}();
+    try {
+        $controllerName = 'App\\Controllers\\' . $route[0];
+        $controller = new $controllerName();
+        $controller->{$route[1]}();
+    } catch (\Throwable $e) {
+        http_response_code(500);
+        error_log(date('Y-m-d H:i:s') . " ROUTE ERROR [standalone:{$page}] {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n", 3, __DIR__ . '/logs/error.log');
+        echo '<h2>System Error</h2><p>An error occurred processing this request.</p>';
+        if ((getenv('APP_ENV') ?: 'development') !== 'production') echo '<pre>' . htmlspecialchars($e) . '</pre>';
+    }
     exit;
 }
 
@@ -213,8 +227,15 @@ if (is_array($route)) {
     // Dispatch before HTML for: POST actions, store/delete methods, AJAX endpoints, and GET actions that redirect
     $earlyDispatchMethods = ['store', 'delete', 'getBrands', 'toggle'];
     if ($_SERVER['REQUEST_METHOD'] === 'POST' || in_array($methodName, $earlyDispatchMethods)) {
-        $controller = new $controllerName();
-        $controller->$methodName();
+        try {
+            $controller = new $controllerName();
+            $controller->$methodName();
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            error_log(date('Y-m-d H:i:s') . " ROUTE ERROR [early:{$page}] {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n", 3, __DIR__ . '/logs/error.log');
+            echo '<h2>System Error</h2><p>An error occurred processing this request.</p>';
+            if ((getenv('APP_ENV') ?: 'development') !== 'production') echo '<pre>' . htmlspecialchars($e) . '</pre>';
+        }
         exit; // Controller handles redirect/response
     }
 }
@@ -249,8 +270,20 @@ $pageFile = is_string($route) ? $route : null;
                 if (is_array($route)) {
                     $controllerName = 'App\\Controllers\\' . $route[0];
                     $methodName = $route[1];
-                    $controller = new $controllerName();
-                    $controller->$methodName();
+                    try {
+                        $controller = new $controllerName();
+                        $controller->$methodName();
+                    } catch (\Throwable $e) {
+                        error_log(date('Y-m-d H:i:s') . " ROUTE ERROR [render:{$page}] {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}\n", 3, __DIR__ . '/logs/error.log');
+                        echo '<div class="col-lg-12"><div class="alert alert-danger">';
+                        echo '<h4><i class="fa fa-exclamation-triangle"></i> Error Loading Page</h4>';
+                        echo '<p>An error occurred while loading this page. The error has been logged.</p>';
+                        if ((getenv('APP_ENV') ?: 'development') !== 'production') {
+                            echo '<pre>' . htmlspecialchars($e->getMessage() . "\n" . $e->getFile() . ':' . $e->getLine()) . '</pre>';
+                        }
+                        echo '<a href="index.php?page=dashboard" class="btn btn-primary">Return to Dashboard</a>';
+                        echo '</div></div>';
+                    }
                 }
                 // ========== Legacy File Include ==========
                 elseif ($pageFile && file_exists($pageFile)) {

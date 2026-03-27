@@ -165,6 +165,7 @@ return [
 
     // ========== System / DevOps ==========
     'health'                 => ['HealthController', 'index', 'public'],
+    'health_diagnose'        => ['HealthController', 'diagnose'],
 
     // ========== Phase 7: Sales Channel API Admin (MVC) ==========
     'api_dashboard'          => ['AdminApiController', 'dashboard'],
