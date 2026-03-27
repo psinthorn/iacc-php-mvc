@@ -37,7 +37,7 @@ class PurchaseRequest extends BaseModel
             $where = "cus_id='$comId'";
         }
         $statusCond = $this->getStatusCondition($filters['status'] ?? '');
-        $sql = "SELECT pr.id, pr.name, name_en, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate, status, cancel
+        $sql = "SELECT pr.id, pr.name, pr.des, name_en, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate, status, cancel
             FROM pr $join WHERE cancel='0' AND $where $statusCond {$conds['search']} {$conds['date']}
             ORDER BY pr.id DESC LIMIT $offset, $limit";
         return $this->fetchAll($sql);
@@ -45,8 +45,14 @@ class PurchaseRequest extends BaseModel
 
     private function getStatusCondition(string $status): string
     {
-        $map = ['pending'=>" AND status='0'", 'quotation'=>" AND status='1'", 'confirmed'=>" AND status='2'",
-                'delivered'=>" AND status='3'", 'invoiced'=>" AND status='4'", 'completed'=>" AND status='5'"];
+        // Numeric values 0-5 filter specific status, 6 or empty = show all
+        $map = [
+            '0' => " AND status='0'", '1' => " AND status='1'", '2' => " AND status='2'",
+            '3' => " AND status='3'", '4' => " AND status='4'", '5' => " AND status='5'",
+            // Legacy text keys (kept for backward compat)
+            'pending' => " AND status='0'", 'quotation' => " AND status='1'", 'confirmed' => " AND status='2'",
+            'delivered' => " AND status='3'", 'invoiced' => " AND status='4'", 'completed' => " AND status='5'",
+        ];
         return $map[$status] ?? '';
     }
 
@@ -55,7 +61,7 @@ class PurchaseRequest extends BaseModel
         $search = '';
         if (!empty($f['search'])) {
             $s = \sql_escape($f['search']);
-            $search = " AND (pr.name LIKE '%$s%' OR company.name_en LIKE '%$s%')";
+            $search = " AND (pr.name LIKE '%$s%' OR pr.des LIKE '%$s%' OR company.name_en LIKE '%$s%')";
         }
         $date = '';
         if (!empty($f['date_from'])) $date .= " AND pr.date >= '" . \sql_escape($f['date_from']) . "'";
