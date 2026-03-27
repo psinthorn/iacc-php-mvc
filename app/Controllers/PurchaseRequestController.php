@@ -49,12 +49,10 @@ class PurchaseRequestController extends BaseController
     public function create(): void
     {
         $comId = $this->getCompanyId();
-        $mode = $this->input('mode', 'vendor'); // vendor or customer
         $this->render('pr/create', [
-            'mode' => $mode,
-            'vendors' => $this->pr->getVendors(),
             'customers' => $this->pr->getCustomers(),
-            'categories' => $this->pr->getCategories($comId),
+            'categories' => $this->pr->getCategoriesWithTypes($comId),
+            'com_id' => $comId,
         ]);
     }
 

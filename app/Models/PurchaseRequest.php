@@ -101,6 +101,37 @@ class PurchaseRequest extends BaseModel
         return $this->fetchAll("SELECT * FROM category " . $cf->whereCompanyFilter());
     }
 
+    /**
+     * Get categories with nested types and average prices for product selection modal.
+     * Returns categories that have at least one type.
+     */
+    public function getCategoriesWithTypes(int $comId): array
+    {
+        $companyCondition = $comId > 0 ? " AND company_id = " . intval($comId) : '';
+
+        $categories = [];
+        $querycat = mysqli_query($this->conn, "SELECT * FROM category WHERE deleted_at IS NULL" . $companyCondition);
+        if ($querycat) {
+            while ($cat = mysqli_fetch_assoc($querycat)) {
+                $cat['types'] = [];
+                $query_type = mysqli_query($this->conn, "SELECT * FROM type WHERE cat_id='" . intval($cat['id']) . "' AND deleted_at IS NULL" . $companyCondition);
+                if ($query_type) {
+                    while ($type = mysqli_fetch_assoc($query_type)) {
+                        $sql = "SELECT COALESCE(SUM(p.price)/NULLIF(SUM(p.quantity),0), 0) as net 
+                                FROM product p WHERE p.type='" . intval($type['id']) . "'";
+                        $netResult = mysqli_fetch_assoc(mysqli_query($this->conn, $sql));
+                        $type['price'] = floor($netResult['net'] ?? 0);
+                        $cat['types'][] = $type;
+                    }
+                }
+                if (!empty($cat['types'])) {
+                    $categories[] = $cat;
+                }
+            }
+        }
+        return $categories;
+    }
+
     public function getTypesByCategory(int $catId, int $comId): array
     {
         $cf = \CompanyFilter::getInstance();
