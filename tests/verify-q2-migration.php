@@ -8,18 +8,35 @@
  * ⚠️ DELETE this file after verification in production!
  */
 
-// Load database connection
-require_once(dirname(__FILE__) . '/../inc/sys.configs.php');
-require_once(dirname(__FILE__) . '/../inc/class.dbconn.php');
+// Load database connection - use sys.configs.php for credentials but connect directly
+// (class.dbconn.php has XML dependencies that may fail in test context)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+set_time_limit(10); // Prevent hanging
+
+$configFile = dirname(__FILE__) . '/../inc/sys.configs.php';
+if (!file_exists($configFile)) {
+    die("❌ Config file not found: inc/sys.configs.php");
+}
+
+// Extract config without loading class.dbconn.php (which has XML/session deps)
+$config = [];
+require_once($configFile);
 
 header('Content-Type: text/html; charset=utf-8');
 
-$db = new DbConn($config);
-$conn = $db->conn;
+// Direct MySQLi connection
+$conn = @new mysqli(
+    $config['hostname'] ?? 'localhost',
+    $config['username'] ?? 'root',
+    $config['password'] ?? '',
+    $config['dbname'] ?? 'iacc'
+);
 
-if (!$conn) {
-    die("❌ Database connection failed");
+if ($conn->connect_error) {
+    die("❌ Database connection failed: " . $conn->connect_error);
 }
+$conn->set_charset('utf8mb4');
 
 $dbName = $conn->query("SELECT DATABASE() AS db")->fetch_assoc()['db'];
 $results = [];
