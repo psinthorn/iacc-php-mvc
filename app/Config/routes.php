@@ -205,7 +205,21 @@ return [
 
     // ========== Phase 8: Q2 2026 – Payment Gateway & Multi-Currency (MVC) ==========
 
+    // ========== Q3 2026 – Expense Module ==========
+    'expense_list'           => ['ExpenseController', 'index'],
+    'expense_form'           => ['ExpenseController', 'form'],
+    'expense_store'          => ['ExpenseController', 'store'],
+    'expense_view'           => ['ExpenseController', 'view'],
+    'expense_delete'         => ['ExpenseController', 'delete'],
+    'expense_status'         => ['ExpenseController', 'status'],
+    'expense_summary'        => ['ExpenseController', 'summary'],
+    'expense_cat_list'       => ['ExpenseController', 'categories'],
+    'expense_cat_store'      => ['ExpenseController', 'categoryStore'],
+    'expense_cat_toggle'     => ['ExpenseController', 'categoryToggle'],
+    'expense_cat_delete'     => ['ExpenseController', 'categoryDelete'],
+
     // Tax Reports
+
     'tax_reports'            => ['TaxReportController', 'index'],
     'tax_report_pp30'        => ['TaxReportController', 'pp30'],
     'tax_report_wht'         => ['TaxReportController', 'wht'],

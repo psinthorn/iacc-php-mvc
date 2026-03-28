@@ -283,6 +283,25 @@ include_once 'inc/top-navbar.php';
                         <a href="index.php?page=report"><i class="glyphicon glyphicon-book"></i> <?=$xml->report ?? 'Reports'?></a>
                     </li>  
                     
+                    <!-- Expenses -->
+                    <li>
+                        <a href="#"><i class="fa fa-money"></i> <?=$xml->expenses ?? 'Expenses'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=expense_list"><i class="fa fa-list"></i> <?=$xml->expenselist ?? 'Expense List'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=expense_form"><i class="fa fa-plus-circle"></i> <?=$xml->newexpense ?? 'New Expense'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=expense_cat_list"><i class="fa fa-tags"></i> <?=$xml->expensecategories ?? 'Categories'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=expense_summary"><i class="fa fa-bar-chart"></i> <?=$xml->expensesummary ?? 'Summary'?></a>
+                            </li>
+                        </ul>
+                    </li>
+
                     <?php } ?>
                     
                     <!-- Master Data / Settings -->
