@@ -402,11 +402,11 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
 
-            <!-- In Progress Q3 - Expense Module -->
-            <div class="timeline-item in-progress">
+            <!-- Completed Q3 - Expense Module -->
+            <div class="timeline-item completed">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q3 2026</span>
-                    <span class="status-badge in-progress"><?= $lang === 'th' ? 'กำลังดำเนินการ' : 'In Progress' ?></span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
                 </div>
                 <h3><?= $lang === 'th' ? 'v5.4 - ระบบค่าใช้จ่าย (Expense Module)' : 'v5.4 - Expense Tracking Module' ?></h3>
                 <p><?= $lang === 'th' ? 'บันทึกค่าใช้จ่ายรายวัน เชื่อมโยงกับโปรเจกต์/ใบแจ้งหนี้ รายงานต้นทุน และ P&L' : 'Daily expense recording, project/invoice linking, cost reporting, and profit & loss analysis.' ?></p>
@@ -418,9 +418,9 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'รองรับ VAT/WHT พร้อมคำนวณอัตโนมัติ' : 'VAT/WHT with live calculator' ?></li>
                     <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'อัปโหลดใบเสร็จ/เอกสาร' : 'Receipt/document upload' ?></li>
                     <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'สรุปรายเดือน + กราฟแยกหมวด' : 'Monthly summary + category chart' ?></li>
-                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '11 Routes, 5 Views, 2 Models' : '11 routes, 5 views, 2 models' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานต้นทุนตามโปรเจกต์' : 'Project cost report' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Export CSV/PDF' : 'Export CSV/PDF' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '13 Routes, 6 Views, 2 Models' : '13 routes, 6 views, 2 models' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'รายงานต้นทุนตามโปรเจกต์' : 'Project cost report' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Export CSV/JSON' : 'Export CSV/JSON' ?></li>
                 </ul>
             </div>
 
