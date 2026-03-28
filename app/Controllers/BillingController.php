@@ -54,6 +54,7 @@ class BillingController extends BaseController
     {
         require_once __DIR__ . '/../../inc/pagination.php';
         $comId = $this->getCompanyId();
+        $poId = $this->inputInt('po_id', 0);
         $invId = $this->inputInt('inv_id', 0);
         $customerId = $this->inputInt('customer_id', 0);
 
@@ -74,10 +75,12 @@ class BillingController extends BaseController
         $perPage = $this->inputInt('per_page', 20);
         if (!in_array($perPage, [10, 20, 50, 100])) $perPage = 20;
 
-        // Determine customer: from inv_id param, customer_id param, or null
+        // Determine customer: from po_id param, inv_id param, customer_id param, or null
         $customer = null;
-        if ($invId > 0) {
-            $customer = $this->billing->getCustomerFromInvoice($invId);
+        if ($poId > 0) {
+            $customer = $this->billing->getCustomerFromPO($poId);
+        } elseif ($invId > 0) {
+            $customer = $this->billing->getCustomerFromPO($invId);
         } elseif ($customerId > 0) {
             $customer = $this->billing->getCustomerById($customerId);
         }
@@ -94,7 +97,7 @@ class BillingController extends BaseController
 
         $this->render('billing/make', [
             'customer' => $customer,
-            'inv_id' => $invId,
+            'po_id' => $poId > 0 ? $poId : $invId,
             'customers' => $this->billing->getCustomersWithUnbilledInvoices($comId),
             'unbilled' => $unbilled,
             'pagination' => $pagination,
