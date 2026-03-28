@@ -360,6 +360,27 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
+            <!-- Completed - v5.2 UI Modernization -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.2 - ปรับปรุง UX/UI ทุกหน้า MVC' : 'v5.2 - MVC View Modernization' ?></h3>
+                <p><?= $lang === 'th' ? 'อัปเกรด 18 หน้า MVC Views ทั้งหมดเป็นดีไซน์ Legacy Modern พร้อม Design System แบบ Color-coded ตามโมดูล' : 'Upgraded all 18 MVC views to legacy modern design with color-coded module design system.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '18 Views อัปเกรด' : '18 views upgraded' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PO Module (4 หน้า)' : 'PO module (4 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Delivery Module (4 หน้า)' : 'Delivery module (4 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Receipt Module (3 หน้า)' : 'Receipt module (3 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Voucher Module (3 หน้า)' : 'Voucher module (3 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PR, Payment, Billing (4 หน้า)' : 'PR, Payment, Billing (4 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Gradient สีตามโมดูล' : 'Color-coded module gradients' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Inter Font + Responsive' : 'Inter font + responsive layout' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '42/42 E2E Tests ผ่าน' : '42/42 E2E tests passing' ?></li>
+                </ul>
+            </div>
+            
             <!-- Planned Q2 -->
             <div class="timeline-item planned">
                 <div class="timeline-header">

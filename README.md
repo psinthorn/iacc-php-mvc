@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 5.1-channel-api  
+**Version**: 5.2-ui-modernization  
 **Status**: Production Ready  
-**Last Updated**: March 27, 2026  
+**Last Updated**: March 28, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 8.0 | **Nginx**: Alpine
 
@@ -481,6 +481,27 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.2-ui-modernization (March 28, 2026) — MVC View Upgrade
+
+**Legacy Modern UI** — Upgraded all 18 MVC views to consistent legacy modern UX/UI design:
+
+- **PO Module** (4 views): List with filters/pagination/date presets, detail view with info-cards, edit form with dynamic products, delivery form with serial numbers
+- **Delivery Module** (4 views): List with DN OUT/IN tables and sendouts, detail with receive forms, standalone create form, edit form
+- **PR Module** (1 view): Detail view with info-cards, products table, create quotation action
+- **Receipt Module** (3 views): List with stats/filters, create/edit with source type selector (manual/quotation/invoice), detail with summary
+- **Voucher Module** (3 views): List with stats, create/edit with vendor info and products, detail with summary
+- **Payment Module** (1 view): Inline add/edit with search, indigo theme
+- **Billing Module** (2 views): Invoice list with billing status, create with multi-invoice checkbox selector
+
+**Design System** — Consistent patterns across all modules:
+
+- Color-coded gradients per module (PO green, Delivery purple, Receipt green, Voucher red, Payment indigo, Billing violet)
+- Inter font, card-based layouts, glass-effect header buttons, status-badge pills
+- Responsive grid layouts with mobile breakpoints
+- Dynamic product forms with add/remove JavaScript
+- All forms use MVC routes with CSRF protection
+- 42/42 E2E tests passing
 
 ### v5.1-channel-api (March 27, 2026) — Sales Channel API + Staging
 
