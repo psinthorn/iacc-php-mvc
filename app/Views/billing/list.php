@@ -240,7 +240,7 @@ function toggleBillingGroup(row, bilId) {
             renderSubRows(row, bilId, billingInvoiceCache[bilId]);
         } else {
             var loadingRow = document.querySelector('.billing-sub-loading[data-parent="' + bilId + '"]');
-            if (loadingRow) loadingRow.style.display = '';
+            if (loadingRow) loadingRow.style.display = 'table-row';
             fetch('index.php?page=billing_invoices_json&bil_id=' + bilId)
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
@@ -267,7 +267,7 @@ function renderSubRows(parentRow, bilId, invoices) {
         var tr = document.createElement('tr');
         tr.className = 'billing-sub-row';
         tr.setAttribute('data-parent', bilId);
-        tr.style.display = '';
+        tr.style.display = 'table-row';
         tr.innerHTML = '<td style="color:#9ca3af;text-align:center">' + (j+1) + '</td>'
             + '<td style="padding-left:48px !important"><i class="fa fa-file-text-o" style="color:#8b5cf6;margin-right:6px"></i>' + escHtml(inv.po_number || inv.inv_no || '') + '</td>'
             + '<td>' + escHtml(inv.pr_description || inv.po_name || '') + '</td>'
@@ -282,7 +282,7 @@ function renderSubRows(parentRow, bilId, invoices) {
         var tr = document.createElement('tr');
         tr.className = 'billing-sub-row';
         tr.setAttribute('data-parent', bilId);
-        tr.style.display = '';
+        tr.style.display = 'table-row';
         tr.innerHTML = '<td colspan="7" style="text-align:center;padding:16px;color:#9ca3af">No invoices linked</td>';
         ref.parentNode.insertBefore(tr, ref.nextSibling);
     }
