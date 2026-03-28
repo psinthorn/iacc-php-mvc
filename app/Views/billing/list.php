@@ -193,7 +193,7 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                         </td>
                         <td><span class="billing-badge billing-no">Unbilled</span></td>
                         <td>
-                            <a href="index.php?page=billing_make&inv_id=<?=e($b['display_id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
+                            <a href="index.php?page=billing_make&inv_id=<?=e($b['tex'] ?? $b['display_id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
                         </td>
                     </tr>
                     <?php endif; ?>
