@@ -79,8 +79,10 @@ return [
 
     // Voucher (Phase 3E)
     'voucher_list'  => ['VoucherController', 'index'],
-    'voc_make'      => ['VoucherController', 'make'],
-    'voc_view'      => ['VoucherController', 'view'],
+    'voucher_make'  => ['VoucherController', 'make'],
+    'voucher_view'  => ['VoucherController', 'view'],
+    'voc_make'      => ['VoucherController', 'make'],   // legacy alias
+    'voc_view'      => ['VoucherController', 'view'],   // legacy alias
     'voucher_store' => ['VoucherController', 'store'],
     'vou_print'     => ['VoucherController', 'print'],
 
@@ -93,8 +95,10 @@ return [
 
     // Receipt (Phase 3E)
     'receipt_list'  => ['ReceiptController', 'index'],
-    'rep_make'      => ['ReceiptController', 'make'],
-    'rep_view'      => ['ReceiptController', 'view'],
+    'receipt_make'  => ['ReceiptController', 'make'],
+    'receipt_view'  => ['ReceiptController', 'view'],
+    'rep_make'      => ['ReceiptController', 'make'],   // legacy alias
+    'rep_view'      => ['ReceiptController', 'view'],   // legacy alias
     'receipt_store' => ['ReceiptController', 'store'],
     'rep_print'     => ['ReceiptController', 'print'],
 
