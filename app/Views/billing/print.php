@@ -67,6 +67,7 @@ $bilNo = 'BN-' . str_pad($bil['bil_id'] ?? 0, 6, '0', STR_PAD_LEFT);
 <body>
     <div class="action-buttons no-print">
         <button onclick="window.print()">🖨️ Print</button>
+        <button onclick="downloadPDF()" id="btnDownloadPdf">📥 Download PDF</button>
         <a href="index.php?page=billing_view&id=<?=htmlspecialchars($bil['bil_id'] ?? 0)?>">← Back to View</a>
         <a href="index.php?page=billing">← Billing List</a>
     </div>
@@ -168,5 +169,36 @@ $bilNo = 'BN-' . str_pad($bil['bil_id'] ?? 0, 6, '0', STR_PAD_LEFT);
             <p>This is a computer-generated document. No signature is required.</p>
         </div>
     </div>
+
+    <!-- html2pdf.js for PDF download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+    <script>
+    function downloadPDF() {
+        var btn = document.getElementById('btnDownloadPdf');
+        btn.textContent = '⏳ Generating...';
+        btn.disabled = true;
+
+        var element = document.querySelector('.billing-container');
+        var filename = '<?=addslashes($bilNo)?>.pdf';
+
+        var opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(opt).from(element).save().then(function() {
+            btn.textContent = '📥 Download PDF';
+            btn.disabled = false;
+        }).catch(function() {
+            btn.textContent = '📥 Download PDF';
+            btn.disabled = false;
+            alert('PDF generation failed. Please use Print > Save as PDF instead.');
+        });
+    }
+    </script>
 </body>
 </html>
