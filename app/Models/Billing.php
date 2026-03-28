@@ -99,7 +99,7 @@ class Billing extends BaseModel
             $sql = "SELECT COUNT(*) as cnt $base AND bi.bil_id IS NULL";
         } else {
             // billing notes count + unbilled invoices count
-            $sql = "SELECT (SELECT COUNT(DISTINCT b2.bil_id) $base AND bi.bil_id IS NOT NULL)
+            $sql = "SELECT (SELECT COUNT(DISTINCT b.bil_id) $base AND bi.bil_id IS NOT NULL)
                     + (SELECT COUNT(*) $base AND bi.bil_id IS NULL) as cnt";
         }
         $r = mysqli_query($this->conn, $sql);
