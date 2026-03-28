@@ -92,7 +92,7 @@
 
 <?php
 $cust = $customer ?? null;
-$inv_id_param = $inv_id ?? '';
+$po_id_param = $po_id ?? '';
 $unbilled_items = $unbilled ?? [];
 $customers_list = $customers ?? [];
 $pg = $pagination ?? null;
@@ -231,7 +231,7 @@ $search = $search ?? '';
                             $vat_amt = $after_disc * ($vat_pct / 100);
                             $wh_amt = $after_disc * ($wh_pct / 100);
                             $inv_total = $after_disc + $vat_amt;
-                            $is_preselected = ($inv_id_param && $inv_id_param == $inv['id']);
+                            $is_preselected = ($po_id_param && $po_id_param == $inv['po_id']);
                         ?>
                         <tr class="<?=$is_preselected ? 'selected-row' : ''?>">
                             <td class="col-select"><input type="checkbox" name="invoices[]" value="<?=e($inv['id'])?>" class="invoice-checkbox inv-check" data-amount="<?=$inv_total?>" <?=$is_preselected ? 'checked' : ''?> onchange="toggleRow(this);calcTotal()"></td>
