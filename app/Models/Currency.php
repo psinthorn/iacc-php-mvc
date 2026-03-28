@@ -63,7 +63,7 @@ class Currency extends BaseModel
      */
     public function getCompanyDefaultCurrency(int $companyId): string
     {
-        $sql = "SELECT default_currency FROM company WHERE com_id = {$companyId} LIMIT 1";
+        $sql = "SELECT default_currency FROM company WHERE id = {$companyId} LIMIT 1";
         $result = mysqli_query($this->conn, $sql);
         if ($result && $row = mysqli_fetch_assoc($result)) {
             return $row['default_currency'] ?: 'THB';

@@ -9,11 +9,13 @@ namespace App\Models;
  *   - ภ.ง.ด.3 (PND3) — Withholding Tax (individual)
  *   - ภ.ง.ด.53 (PND53) — Withholding Tax (company)
  * 
- * Data sources:
- *   - po/iv tables — Output VAT (sales)
- *   - pr/po tables — Input VAT (purchases)
- *   - pay table — Payment records with WHT
- *   - company table — Vendor/customer tax IDs
+ * Key relationships:
+ *   iv.tex = po.id (invoice links to PO)
+ *   po.ref = pr.id (PO links to PR)
+ *   pr.ven_id = company.id (vendor/seller)
+ *   pr.cus_id = company.id (customer/buyer)
+ *   product.po_id = po.id (products on a PO)
+ *   pay.po_id = po.id (payments on a PO)
  * 
  * @package App\Models
  * @version 1.0.0 — Q2 2026
@@ -24,32 +26,39 @@ class TaxReport extends BaseModel
 
     /**
      * Get Output VAT summary (ภาษีขาย) for a period
-     * Output VAT = VAT collected from sales invoices
+     * Output VAT = VAT collected from sales invoices (where we are the vendor)
      * 
-     * @param int    $companyId Company ID
+     * @param int    $companyId Company ID (our company = pr.ven_id)
      * @param string $startDate Period start (Y-m-d)
      * @param string $endDate   Period end (Y-m-d)
      * @return array ['items' => [...], 'total_base' => float, 'total_vat' => float]
      */
     public function getOutputVAT(int $companyId, string $startDate, string $endDate): array
     {
+        $startDate = sql_escape($startDate);
+        $endDate = sql_escape($endDate);
+        
         $sql = "SELECT 
                     iv.tex AS invoice_no,
+                    iv.taxrw AS invoice_display_no,
                     iv.texiv_rw AS tax_invoice_no,
                     iv.texiv_create AS tax_invoice_date,
-                    po.po_name AS customer_name,
-                    c.tax_id AS customer_tax_id,
+                    po.name AS description,
+                    c_cus.name_en AS customer_name,
+                    c_cus.tax AS customer_tax_id,
                     po.vat AS vat_rate,
-                    SUM(p.price * p.qty) AS subtotal,
+                    SUM(p.price * p.quantity) AS subtotal,
                     po.dis AS discount_pct,
                     po.over AS overhead_pct
                 FROM iv 
-                JOIN po ON iv.po_id = po.po_id
-                JOIN product p ON p.po_id = po.po_id
-                LEFT JOIN company c ON po.com_id = c.com_id
-                WHERE po.com_id_owner = {$companyId}
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                JOIN product p ON p.po_id = po.id AND p.deleted_at IS NULL
+                LEFT JOIN company c_cus ON pr.cus_id = c_cus.id
+                WHERE pr.ven_id = {$companyId}
                 AND iv.deleted_at IS NULL
                 AND po.deleted_at IS NULL
+                AND (po.po_id_new IS NULL OR po.po_id_new = '' OR po.po_id_new = '0')
                 AND iv.texiv_create BETWEEN '{$startDate}' AND '{$endDate}'
                 AND po.vat > 0
                 GROUP BY iv.tex
@@ -90,36 +99,41 @@ class TaxReport extends BaseModel
 
     /**
      * Get Input VAT summary (ภาษีซื้อ) for a period
-     * Input VAT = VAT paid on purchases
+     * Input VAT = VAT paid on purchases (where we are the customer)
      * 
-     * @param int    $companyId Company ID
+     * @param int    $companyId Company ID (our company = pr.cus_id)
      * @param string $startDate Period start
      * @param string $endDate   Period end
      * @return array
      */
     public function getInputVAT(int $companyId, string $startDate, string $endDate): array
     {
+        $startDate = sql_escape($startDate);
+        $endDate = sql_escape($endDate);
+        
         $sql = "SELECT 
-                    po.po_id,
-                    po.po_running AS po_number,
-                    po.po_create AS po_date,
-                    po.po_name AS vendor_name,
-                    c.tax_id AS vendor_tax_id,
+                    po.id AS po_id,
+                    po.tax AS po_number,
+                    po.date AS po_date,
+                    po.name AS vendor_name,
+                    c_ven.name_en AS vendor_company_name,
+                    c_ven.tax AS vendor_tax_id,
                     po.vat AS vat_rate,
-                    SUM(p.price * p.qty) AS subtotal,
+                    SUM(p.price * p.quantity) AS subtotal,
                     po.dis AS discount_pct,
                     po.over AS overhead_pct
                 FROM po
-                JOIN product p ON p.po_id = po.po_id
-                LEFT JOIN company c ON po.com_id = c.com_id
-                WHERE po.com_id_owner = {$companyId}
+                JOIN pr ON po.ref = pr.id
+                JOIN product p ON p.po_id = po.id AND p.deleted_at IS NULL
+                LEFT JOIN company c_ven ON pr.ven_id = c_ven.id
+                WHERE pr.cus_id = {$companyId}
                 AND po.deleted_at IS NULL
-                AND po.po_status IN (1, 2)
-                AND po.po_create BETWEEN '{$startDate}' AND '{$endDate}'
+                AND (po.po_id_new IS NULL OR po.po_id_new = '' OR po.po_id_new = '0')
+                AND pr.status >= 2
+                AND po.date BETWEEN '{$startDate}' AND '{$endDate}'
                 AND po.vat > 0
-                AND po.po_type = 'po'
-                GROUP BY po.po_id
-                ORDER BY po.po_create ASC";
+                GROUP BY po.id
+                ORDER BY po.date ASC";
         
         $result = mysqli_query($this->conn, $sql);
         $items = [];
@@ -155,11 +169,6 @@ class TaxReport extends BaseModel
     /**
      * Generate ภ.พ.30 (PP30) — Monthly VAT Return summary
      * Net VAT = Output VAT - Input VAT
-     * 
-     * @param int    $companyId Company ID
-     * @param int    $year      Tax year
-     * @param int    $month     Tax month (1-12)
-     * @return array Complete PP30 data
      */
     public function generatePP30(int $companyId, int $year, int $month): array
     {
@@ -191,35 +200,30 @@ class TaxReport extends BaseModel
     /**
      * Get Withholding Tax (WHT) records for a period
      * For ภ.ง.ด.3 (individuals) and ภ.ง.ด.53 (companies)
-     * 
-     * @param int    $companyId Company ID
-     * @param string $startDate Period start
-     * @param string $endDate   Period end
-     * @param string $type      'pnd3' (individual) or 'pnd53' (company)
-     * @return array WHT records
      */
     public function getWithholdingTax(int $companyId, string $startDate, string $endDate, string $type = 'pnd53'): array
     {
-        // WHT records from payments that have withholding tax applied
-        $companyType = ($type === 'pnd3') ? 'individual' : 'company';
+        $startDate = sql_escape($startDate);
+        $endDate = sql_escape($endDate);
         
         $sql = "SELECT 
-                    pay.pay_id,
+                    pay.id AS payment_id,
                     pay.date AS payment_date,
-                    po.po_name AS payee_name,
-                    c.tax_id AS payee_tax_id,
-                    c.com_type AS company_type,
+                    po.name AS payee_description,
+                    c_payee.name_en AS payee_name,
+                    c_payee.tax AS payee_tax_id,
                     pay.volumn AS payment_amount,
                     pay.wht_rate,
                     pay.wht_amount,
-                    pay.wht_type AS income_type
+                    pay.wht_type
                 FROM pay
-                JOIN po ON pay.po_id = po.po_id
-                LEFT JOIN company c ON po.com_id = c.com_id
-                WHERE po.com_id_owner = {$companyId}
+                JOIN po ON pay.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN company c_payee ON pr.ven_id = c_payee.id
+                WHERE pr.cus_id = {$companyId}
                 AND pay.deleted_at IS NULL
                 AND pay.date BETWEEN '{$startDate}' AND '{$endDate}'
-                AND pay.wht_amount > 0
+                AND pay.wht_amount IS NOT NULL AND pay.wht_amount > 0
                 ORDER BY pay.date ASC";
         
         $result = mysqli_query($this->conn, $sql);
@@ -247,39 +251,77 @@ class TaxReport extends BaseModel
     }
 
     /**
-     * Get tax period summary for dashboard
-     * 
-     * @param int $companyId Company ID
-     * @param int $year      Tax year
-     * @return array Monthly summaries
+     * Get annual summary for dashboard — monthly output/input VAT breakdown
      */
     public function getAnnualSummary(int $companyId, int $year): array
     {
         $months = [];
+        $totalOutputVat = 0;
+        $totalInputVat = 0;
+        
         for ($m = 1; $m <= 12; $m++) {
             $startDate = sprintf('%04d-%02d-01', $year, $m);
             $endDate = date('Y-m-t', strtotime($startDate));
             
-            // Quick summary query (not full PP30)
-            $sqlOutput = "SELECT COALESCE(SUM(
-                            (SELECT SUM(p.price * p.qty) FROM product p WHERE p.po_id = po.po_id) 
-                            * po.vat / 100
-                          ), 0) AS output_vat
-                          FROM iv JOIN po ON iv.po_id = po.po_id
-                          WHERE po.com_id_owner = {$companyId}
-                          AND iv.texiv_create BETWEEN '{$startDate}' AND '{$endDate}'
-                          AND iv.deleted_at IS NULL AND po.deleted_at IS NULL AND po.vat > 0";
+            // Output VAT quick summary (sales — we are vendor)
+            $sqlOutput = "SELECT COALESCE(SUM(sub.vat_amount), 0) AS output_vat FROM (
+                            SELECT 
+                                (SUM(p.price * p.quantity) * (1 - po.dis/100) * (1 + po.over/100)) * (po.vat / 100) AS vat_amount
+                            FROM iv 
+                            JOIN po ON iv.tex = po.id
+                            JOIN pr ON po.ref = pr.id
+                            JOIN product p ON p.po_id = po.id AND p.deleted_at IS NULL
+                            WHERE pr.ven_id = {$companyId}
+                            AND iv.texiv_create BETWEEN '{$startDate}' AND '{$endDate}'
+                            AND iv.deleted_at IS NULL AND po.deleted_at IS NULL
+                            AND (po.po_id_new IS NULL OR po.po_id_new = '' OR po.po_id_new = '0')
+                            AND po.vat > 0
+                            GROUP BY iv.tex
+                          ) sub";
             
             $r = mysqli_query($this->conn, $sqlOutput);
             $outputVat = $r ? floatval(mysqli_fetch_assoc($r)['output_vat'] ?? 0) : 0;
+            
+            // Input VAT quick summary (purchases — we are customer)
+            $sqlInput = "SELECT COALESCE(SUM(sub.vat_amount), 0) AS input_vat FROM (
+                            SELECT 
+                                (SUM(p.price * p.quantity) * (1 - po.dis/100) * (1 + po.over/100)) * (po.vat / 100) AS vat_amount
+                            FROM po
+                            JOIN pr ON po.ref = pr.id
+                            JOIN product p ON p.po_id = po.id AND p.deleted_at IS NULL
+                            WHERE pr.cus_id = {$companyId}
+                            AND po.date BETWEEN '{$startDate}' AND '{$endDate}'
+                            AND po.deleted_at IS NULL
+                            AND (po.po_id_new IS NULL OR po.po_id_new = '' OR po.po_id_new = '0')
+                            AND pr.status >= 2
+                            AND po.vat > 0
+                            GROUP BY po.id
+                          ) sub";
+            
+            $r2 = mysqli_query($this->conn, $sqlInput);
+            $inputVat = $r2 ? floatval(mysqli_fetch_assoc($r2)['input_vat'] ?? 0) : 0;
+            
+            $netVat = round($outputVat - $inputVat, 2);
+            $totalOutputVat += $outputVat;
+            $totalInputVat += $inputVat;
+            
+            // Check saved report status
+            $status = 'pending';
+            $sqlStatus = "SELECT status FROM tax_reports 
+                          WHERE com_id = {$companyId} AND report_type = 'PP30' 
+                          AND tax_year = {$year} AND tax_month = {$m} LIMIT 1";
+            $r3 = mysqli_query($this->conn, $sqlStatus);
+            if ($r3 && $row = mysqli_fetch_assoc($r3)) {
+                $status = $row['status'];
+            }
             
             $months[] = [
                 'month'      => $m,
                 'month_name' => date('F', mktime(0, 0, 0, $m, 1)),
                 'output_vat' => round($outputVat, 2),
-                'input_vat'  => 0, // TODO: add input VAT summary query
-                'net_vat'    => round($outputVat, 2),
-                'status'     => ($m < intval(date('n')) && $year <= intval(date('Y'))) ? 'filed' : 'pending',
+                'input_vat'  => round($inputVat, 2),
+                'net_vat'    => $netVat,
+                'status'     => $status,
             ];
         }
         
@@ -287,9 +329,9 @@ class TaxReport extends BaseModel
             'year'    => $year,
             'months'  => $months,
             'totals'  => [
-                'output_vat' => array_sum(array_column($months, 'output_vat')),
-                'input_vat'  => array_sum(array_column($months, 'input_vat')),
-                'net_vat'    => array_sum(array_column($months, 'net_vat')),
+                'output_vat' => round($totalOutputVat, 2),
+                'input_vat'  => round($totalInputVat, 2),
+                'net_vat'    => round($totalOutputVat - $totalInputVat, 2),
             ],
         ];
     }
@@ -299,18 +341,23 @@ class TaxReport extends BaseModel
      */
     public function saveReport(array $reportData): int
     {
+        $comId = intval($reportData['company_id']);
+        $reportType = sql_escape($reportData['report_type']);
+        $taxYear = intval($reportData['tax_year']);
+        $taxMonth = intval($reportData['tax_month'] ?? 0);
+        $outputVat = floatval($reportData['output_vat']['total_vat'] ?? 0);
+        $inputVat = floatval($reportData['input_vat']['total_vat'] ?? 0);
+        $netVat = floatval($reportData['net_vat'] ?? 0);
+        $totalWht = floatval($reportData['total_wht'] ?? 0);
+        $jsonData = sql_escape(json_encode($reportData, JSON_UNESCAPED_UNICODE));
+        $userId = intval($_SESSION['user_id'] ?? 0);
+        
         $sql = "INSERT INTO tax_reports 
-                (company_id, report_type, tax_year, tax_month, report_data, status, created_at, created_by)
-                VALUES (
-                    " . intval($reportData['company_id']) . ",
-                    '" . sql_escape($reportData['report_type']) . "',
-                    " . intval($reportData['tax_year']) . ",
-                    " . intval($reportData['tax_month'] ?? 0) . ",
-                    '" . sql_escape(json_encode($reportData)) . "',
-                    'draft',
-                    NOW(),
-                    " . intval($_SESSION['user_id'] ?? 0) . "
-                )";
+                (com_id, report_type, tax_year, tax_month, output_vat, input_vat, net_vat, total_wht, report_data, status, created_at, created_by)
+                VALUES ({$comId}, '{$reportType}', {$taxYear}, {$taxMonth}, {$outputVat}, {$inputVat}, {$netVat}, {$totalWht}, '{$jsonData}', 'draft', NOW(), {$userId})
+                ON DUPLICATE KEY UPDATE 
+                    output_vat = {$outputVat}, input_vat = {$inputVat}, net_vat = {$netVat}, 
+                    total_wht = {$totalWht}, report_data = '{$jsonData}', updated_at = NOW()";
         mysqli_query($this->conn, $sql);
         return (int) mysqli_insert_id($this->conn);
     }
@@ -320,7 +367,7 @@ class TaxReport extends BaseModel
      */
     public function getSavedReports(int $companyId, int $year = 0): array
     {
-        $sql = "SELECT * FROM tax_reports WHERE company_id = {$companyId}";
+        $sql = "SELECT * FROM tax_reports WHERE com_id = {$companyId}";
         if ($year > 0) {
             $sql .= " AND tax_year = {$year}";
         }

@@ -74,6 +74,14 @@ class PromptPayService
     }
 
     /**
+     * Get current config array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+    /**
      * Generate PromptPay QR payload string (EMVCo format)
      * 
      * @param float  $amount  Payment amount in THB (0 for open amount)
@@ -157,16 +165,18 @@ class PromptPayService
      * @param int   $companyId  Company ID
      * @return int  Payment log ID
      */
-    public function createPendingPayment(int $invoiceId, float $amount, int $companyId): int
+    public function createPendingPayment(int $invoiceId, float $amount, int $companyId = 0): int
     {
-        $sql = "INSERT INTO payment_log (gateway, order_id, amount, currency, status, 
-                    request_data, company_id, created_at)
-                VALUES ('promptpay', 'INV-{$invoiceId}', {$amount}, 'THB', 'pending',
-                    '" . sql_escape(json_encode([
-                        'invoice_id' => $invoiceId,
-                        'promptpay_id' => $this->config['promptpay_id'] ?? '',
-                        'generated_at' => date('Y-m-d H:i:s'),
-                    ])) . "', {$companyId}, NOW())";
+        $requestData = sql_escape(json_encode([
+            'invoice_id' => $invoiceId,
+            'company_id' => $companyId,
+            'promptpay_id' => $this->config['promptpay_id'] ?? '',
+            'generated_at' => date('Y-m-d H:i:s'),
+        ]));
+        $sql = "INSERT INTO payment_log (gateway, order_id, reference_id, amount, currency, status, 
+                    request_data, created_at)
+                VALUES ('promptpay', 'INV-{$invoiceId}', 'PP-{$invoiceId}', {$amount}, 'THB', 'pending',
+                    '{$requestData}', NOW())";
         mysqli_query($this->conn, $sql);
         return (int) mysqli_insert_id($this->conn);
     }
@@ -181,15 +191,19 @@ class PromptPayService
      */
     public function confirmPayment(int $paymentLogId, string $transRef = '', string $slipImage = ''): bool
     {
-        $responseData = json_encode([
+        $responseData = sql_escape(json_encode([
             'confirmed_at' => date('Y-m-d H:i:s'),
             'confirmed_by' => $_SESSION['user_id'] ?? 0,
             'transaction_ref' => $transRef,
             'slip_image' => $slipImage,
-        ]);
+        ]));
         
+        $slipEsc = sql_escape($slipImage);
+        $refEsc = sql_escape($transRef);
         $sql = "UPDATE payment_log SET status = 'completed', 
-                    response_data = '" . sql_escape($responseData) . "',
+                    reference_id = '{$refEsc}',
+                    slip_image = '{$slipEsc}',
+                    response_data = '{$responseData}',
                     updated_at = NOW()
                 WHERE id = " . intval($paymentLogId) . " AND gateway = 'promptpay'";
         return mysqli_query($this->conn, $sql) && mysqli_affected_rows($this->conn) > 0;

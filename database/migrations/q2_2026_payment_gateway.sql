@@ -83,38 +83,50 @@ CREATE TABLE IF NOT EXISTS `tax_reports` (
 -- =============================================
 -- 4. Add WHT fields to pay table
 -- =============================================
-ALTER TABLE `pay`
-    ADD COLUMN `wht_rate` DECIMAL(5,2) DEFAULT NULL COMMENT 'Withholding tax rate (%)' AFTER `pay_vat`,
-    ADD COLUMN `wht_amount` DECIMAL(15,2) DEFAULT NULL COMMENT 'Withholding tax amount' AFTER `wht_rate`,
-    ADD COLUMN `wht_type` ENUM('PND3','PND53') DEFAULT NULL COMMENT 'WHT form type' AFTER `wht_amount`;
+-- Use IF NOT EXISTS pattern via procedure for safe re-runs
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='pay' AND COLUMN_NAME='wht_rate');
+SET @sql = IF(@col_exists = 0, 'ALTER TABLE `pay` ADD COLUMN `wht_rate` DECIMAL(5,2) DEFAULT NULL COMMENT ''Withholding tax rate (%)'', ADD COLUMN `wht_amount` DECIMAL(15,2) DEFAULT NULL COMMENT ''Withholding tax amount'', ADD COLUMN `wht_type` ENUM(''PND3'',''PND53'') DEFAULT NULL COMMENT ''WHT form type''', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- =============================================
 -- 5. Add default_currency to company table
 -- =============================================
-ALTER TABLE `company`
-    ADD COLUMN `default_currency` VARCHAR(3) NOT NULL DEFAULT 'THB' COMMENT 'Default currency code' AFTER `com_email`;
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='company' AND COLUMN_NAME='default_currency');
+SET @sql = IF(@col_exists = 0, 'ALTER TABLE `company` ADD COLUMN `default_currency` VARCHAR(3) NOT NULL DEFAULT ''THB'' COMMENT ''Default currency code'' AFTER `email`', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- =============================================
 -- 6. Add currency to invoice (iv) table
 -- =============================================
-ALTER TABLE `iv`
-    ADD COLUMN `currency_code` VARCHAR(3) DEFAULT 'THB' COMMENT 'Invoice currency' AFTER `total`,
-    ADD COLUMN `exchange_rate` DECIMAL(16,6) DEFAULT NULL COMMENT 'Exchange rate to THB at time of creation' AFTER `currency_code`;
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='iv' AND COLUMN_NAME='currency_code');
+SET @sql = IF(@col_exists = 0, 'ALTER TABLE `iv` ADD COLUMN `currency_code` VARCHAR(3) DEFAULT ''THB'' COMMENT ''Invoice currency'', ADD COLUMN `exchange_rate` DECIMAL(16,6) DEFAULT NULL COMMENT ''Exchange rate to THB at time of creation''', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- =============================================
 -- 7. Add PromptPay as payment method
 -- =============================================
-INSERT INTO `payment_methods` (`pm_name`, `pm_code`, `pm_type`, `pm_active`, `pm_sort`)
-SELECT 'PromptPay', 'promptpay', 'online', 1, 
-       COALESCE((SELECT MAX(`pm_sort`) FROM `payment_methods` AS pm2), 0) + 1
-WHERE NOT EXISTS (SELECT 1 FROM `payment_methods` WHERE `pm_code` = 'promptpay');
+-- Insert PromptPay for each active company that doesn't already have it
+INSERT IGNORE INTO `payment_methods` (`method_name`, `method_type`, `is_active`, `sort_order`, `com_id`)
+SELECT 'PromptPay', 'qrcode', 1,
+       COALESCE((SELECT MAX(`sort_order`) FROM `payment_methods` AS pm2 WHERE pm2.com_id = c.id), 0) + 1, c.id
+FROM `company` c WHERE c.deleted_at IS NULL
+AND NOT EXISTS (SELECT 1 FROM `payment_methods` pm3 WHERE pm3.method_name = 'PromptPay' AND pm3.com_id = c.id);
 
 -- =============================================
 -- 8. Add currency to payment_log for multi-currency payments
 -- =============================================
-ALTER TABLE `payment_log`
-    ADD COLUMN `currency_code` VARCHAR(3) DEFAULT 'THB' COMMENT 'Payment currency' AFTER `amount`,
-    ADD COLUMN `exchange_rate` DECIMAL(16,6) DEFAULT NULL COMMENT 'Exchange rate to THB' AFTER `currency_code`;
+-- payment_log already has 'currency' column; add exchange_rate and slip_image if missing
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='payment_log' AND COLUMN_NAME='exchange_rate');
+SET @sql = IF(@col_exists = 0, 'ALTER TABLE `payment_log` ADD COLUMN `exchange_rate` DECIMAL(16,6) DEFAULT NULL COMMENT ''Exchange rate to THB'' AFTER `currency`, ADD COLUMN `slip_image` VARCHAR(255) DEFAULT NULL COMMENT ''PromptPay slip upload path''', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- =============================================================================
 -- End of Q2 2026 Migration

@@ -246,10 +246,12 @@ class InvoicePaymentController extends BaseController
         $lang = $_SESSION['lang'] ?? 'th';
 
         try {
-            $promptpay = new PromptPayService();
+            $companyId = intval($invoice['com_id'] ?? $_SESSION['com_id'] ?? 0);
+            $promptpay = new PromptPayService($this->conn);
+            $promptpay->loadConfig($companyId);
             $qrData = $promptpay->generateQR($totals['amountDue']);
             $promptpayName = $promptpay->getConfig()['promptpay_name'] ?? '';
-            $paymentLogId = $promptpay->createPendingPayment($invoiceId, $totals['amountDue']);
+            $paymentLogId = $promptpay->createPendingPayment($invoiceId, $totals['amountDue'], $companyId);
         } catch (\Exception $e) {
             $qrData = ['qr_url' => '', 'amount' => $totals['amountDue'], 'target' => ''];
             $promptpayName = '';
@@ -293,7 +295,7 @@ class InvoicePaymentController extends BaseController
             $transRef = sql_escape($transRef);
             $slipPath = sql_escape($slipPath);
             $sql = "UPDATE payment_log SET 
-                        transaction_id = '$transRef',
+                        reference_id = '$transRef',
                         slip_image = '$slipPath',
                         status = 'pending_review',
                         updated_at = NOW()
