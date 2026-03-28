@@ -74,7 +74,7 @@ class Billing extends BaseModel
 
     public function getUnbilledInvoices(int $customerId, int $comId): array
     {
-        return $this->fetchAll("SELECT iv.id, po.id as po_id, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
+        return $this->fetchAll("SELECT iv.id, iv.texiv_rw as inv_no, po.id as po_id, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
             pr.des,
             (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
              FROM product WHERE product.po_id=po.id) as subtotal,
