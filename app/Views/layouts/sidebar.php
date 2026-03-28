@@ -299,6 +299,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=expense_summary"><i class="fa fa-bar-chart"></i> <?=$xml->expensesummary ?? 'Summary'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=expense_project_report"><i class="fa fa-folder-open"></i> <?=$xml->expenseprojects ?? 'Project Costs'?></a>
+                            </li>
                         </ul>
                     </li>
 

@@ -298,4 +298,135 @@ class Expense extends BaseModel
         }
         return $names;
     }
+
+    /**
+     * Get expenses grouped by project for cost report
+     */
+    public function getByProject(array $filters = []): array
+    {
+        $comId = (int) ($_SESSION['com_id'] ?? 0);
+        $where = ["e.com_id = {$comId}", "e.deleted_at IS NULL", "e.project_name IS NOT NULL", "e.project_name != ''"];
+
+        if (!empty($filters['date_from'])) {
+            $where[] = "e.expense_date >= '" . sql_escape($filters['date_from']) . "'";
+        }
+        if (!empty($filters['date_to'])) {
+            $where[] = "e.expense_date <= '" . sql_escape($filters['date_to']) . "'";
+        }
+        if (!empty($filters['status'])) {
+            $where[] = "e.status = '" . sql_escape($filters['status']) . "'";
+        }
+
+        $whereStr = implode(' AND ', $where);
+
+        $sql = "SELECT e.project_name,
+                    COUNT(*) AS expense_count,
+                    COALESCE(SUM(e.amount), 0) AS total_amount,
+                    COALESCE(SUM(e.vat_amount), 0) AS total_vat,
+                    COALESCE(SUM(e.wht_amount), 0) AS total_wht,
+                    COALESCE(SUM(e.net_amount), 0) AS total_net,
+                    MIN(e.expense_date) AS first_expense,
+                    MAX(e.expense_date) AS last_expense,
+                    SUM(CASE WHEN e.status = 'paid' THEN e.net_amount ELSE 0 END) AS paid_amount,
+                    SUM(CASE WHEN e.status = 'pending' OR e.status = 'approved' THEN e.net_amount ELSE 0 END) AS unpaid_amount
+                FROM expenses e
+                WHERE {$whereStr}
+                GROUP BY e.project_name
+                ORDER BY total_net DESC";
+
+        $result = mysqli_query($this->conn, $sql);
+        $data = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $data[] = $row;
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Get expense detail rows for a specific project
+     */
+    public function getProjectExpenses(string $projectName, array $filters = []): array
+    {
+        $comId = (int) ($_SESSION['com_id'] ?? 0);
+        $pn = sql_escape($projectName);
+        $where = ["e.com_id = {$comId}", "e.deleted_at IS NULL", "e.project_name = '{$pn}'"];
+
+        if (!empty($filters['date_from'])) {
+            $where[] = "e.expense_date >= '" . sql_escape($filters['date_from']) . "'";
+        }
+        if (!empty($filters['date_to'])) {
+            $where[] = "e.expense_date <= '" . sql_escape($filters['date_to']) . "'";
+        }
+
+        $whereStr = implode(' AND ', $where);
+
+        $sql = "SELECT e.*, 
+                    ec.name AS category_name, ec.name_th AS category_name_th,
+                    ec.icon AS category_icon, ec.color AS category_color
+                FROM expenses e
+                LEFT JOIN expense_categories ec ON ec.id = e.category_id
+                WHERE {$whereStr}
+                ORDER BY e.expense_date DESC";
+
+        $result = mysqli_query($this->conn, $sql);
+        $expenses = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $expenses[] = $row;
+            }
+        }
+        return $expenses;
+    }
+
+    /**
+     * Get all expenses for CSV/JSON export (with filters)
+     */
+    public function getExpensesForExport(array $filters = []): array
+    {
+        $comId = (int) ($_SESSION['com_id'] ?? 0);
+        $where = ["e.com_id = {$comId}", "e.deleted_at IS NULL"];
+
+        if (!empty($filters['status'])) {
+            $where[] = "e.status = '" . sql_escape($filters['status']) . "'";
+        }
+        if (!empty($filters['category_id'])) {
+            $where[] = "e.category_id = " . (int) $filters['category_id'];
+        }
+        if (!empty($filters['date_from'])) {
+            $where[] = "e.expense_date >= '" . sql_escape($filters['date_from']) . "'";
+        }
+        if (!empty($filters['date_to'])) {
+            $where[] = "e.expense_date <= '" . sql_escape($filters['date_to']) . "'";
+        }
+        if (!empty($filters['project_name'])) {
+            $where[] = "e.project_name = '" . sql_escape($filters['project_name']) . "'";
+        }
+        if (!empty($filters['vendor_name'])) {
+            $where[] = "e.vendor_name LIKE '%" . sql_escape($filters['vendor_name']) . "%'";
+        }
+
+        $whereStr = implode(' AND ', $where);
+
+        $sql = "SELECT e.expense_number, e.title, e.expense_date, e.status,
+                    ec.name AS category_name,
+                    e.vendor_name, e.vendor_tax_id, e.project_name,
+                    e.amount, e.vat_rate, e.vat_amount, e.wht_rate, e.wht_amount, e.net_amount,
+                    e.currency_code, e.payment_method, e.reference_no, e.due_date, e.paid_date,
+                    e.description
+                FROM expenses e
+                LEFT JOIN expense_categories ec ON ec.id = e.category_id
+                WHERE {$whereStr}
+                ORDER BY e.expense_date DESC, e.id DESC";
+
+        $result = mysqli_query($this->conn, $sql);
+        $expenses = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $expenses[] = $row;
+            }
+        }
+        return $expenses;
+    }
 }
