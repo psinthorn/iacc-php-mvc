@@ -217,6 +217,8 @@ return [
     'expense_cat_store'      => ['ExpenseController', 'categoryStore'],
     'expense_cat_toggle'     => ['ExpenseController', 'categoryToggle'],
     'expense_cat_delete'     => ['ExpenseController', 'categoryDelete'],
+    'expense_project_report' => ['ExpenseController', 'projectReport'],
+    'expense_export'         => ['ExpenseController', 'export', 'standalone'],
 
     // Tax Reports
 

@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 5.3-payment-gateway  
+**Version**: 5.4-expense-module  
 **Status**: Production Ready  
 **Last Updated**: March 28, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
@@ -23,11 +23,11 @@
 
 | Metric | Count |
 |--------|-------|
-| **Controllers** | 37 (+3 Q2) |
-| **Models** | 30 (+2 Q2) |
-| **Views** | 109 (+11 Q2) |
+| **Controllers** | 38 (+1 Q3) |
+| **Models** | 32 (+2 Q3) |
+| **Views** | 114 (+5 Q3) |
 | **Services** | 3 (ChannelService, PromptPayService, CurrencyService) |
-| **MVC Routes** | 160 (+21 Q2) |
+| **MVC Routes** | 171 (+11 Q3) |
 | **Legacy Routes** | 0 |
 | **Test Cases** | 188 (42 E2E + 20 API + 126 MVC) |
 | **Active Root Files** | 12 |
@@ -42,7 +42,7 @@
 ```
 app/
 ├── Config/
-│   └── routes.php                 # 139 MVC routes (public, standalone, normal)
+│   └── routes.php                 # 150 MVC routes (public, standalone, normal)
 ├── Controllers/ (37)
 │   ├── BaseController.php         # Base with auth, DB, CSRF
 │   ├── ChannelApiController.php   # Sales Channel REST API
@@ -56,6 +56,7 @@ app/
 │   ├── SlipReviewController.php   # Payment slip review workflow
 │   ├── InvoicePaymentController.php # PromptPay checkout flow
 │   ├── PaymentGatewayController.php # Gateway configuration
+│   ├── ExpenseController.php      # Expense tracking & categories
 │   ├── HealthController.php       # System health endpoint
 │   ├── AuthController.php         # Login/logout/forgot password
 │   └── ...
@@ -65,6 +66,8 @@ app/
 │   ├── TaxReport.php              # VAT/WHT report generation
 │   ├── SlipReview.php             # Slip approval/rejection
 │   ├── InvoicePayment.php         # Invoice payment processing
+│   ├── Expense.php                # Expense CRUD & reporting
+│   ├── ExpenseCategory.php        # Expense category management
 │   ├── ApiKey.php                 # API key management
 │   ├── ChannelOrder.php           # Channel order processing
 │   └── ...
@@ -73,6 +76,7 @@ app/
 │   ├── PromptPayService.php       # QR code generation & payment
 │   └── CurrencyService.php        # Exchange rates (BOT API)
 └── Views/ (109)
+    ├── expense/                   # 5 expense views (list, form, view, categories, summary)
     ├── api/                       # 11 API admin panel views
     ├── tax/                       # 3 tax report views (dashboard, PP30, WHT)
     ├── currency/                  # 2 currency views (list, rates)
@@ -172,11 +176,11 @@ Full REST API for external integrations (OTA, PMS, channel managers).
 iAcc-PHP-MVC/
 │
 ├── app/                          # MVC application layer
-│   ├── Config/routes.php         # Route definitions (139 MVC, 0 legacy)
-│   ├── Controllers/ (34)         # Request handlers
-│   ├── Models/ (28)              # Business logic & data access
-│   ├── Services/ (1)             # Business services (ChannelService)
-│   └── Views/ (98)               # View templates organized by module
+│   ├── Config/routes.php         # Route definitions (150 MVC, 0 legacy)
+│   ├── Controllers/ (38)         # Request handlers
+│   ├── Models/ (32)              # Business logic & data access
+│   ├── Services/ (3)             # Business services
+│   └── Views/ (114)              # View templates organized by module
 │
 ├── inc/                          # Core includes
 │   ├── sys.configs.php           # Database & app config
@@ -302,6 +306,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Payments** — Payment recording, gateway integration, tracking
 - **Deliveries** — Delivery tracking with receipt confirmation
 - **Reports** — Business reporting with CSV/JSON export
+- **Expense Tracking** — Expense CRUD with categories, VAT/WHT, approval workflow, monthly summary
 - **Sales Channel API** — REST API for OTA/PMS/channel manager integrations
 - **Payment Gateway** — PromptPay QR, slip upload & admin review workflow
 - **Multi-Currency** — 10 currencies, BOT exchange rates, toggle activation
@@ -468,6 +473,13 @@ $config["dbname"]   = getenv('DB_NAME') ?: "iacc";
 | `payment_log` | Payment transaction logs |
 | `payment_method` | Payment method registry (PromptPay, etc.) |
 
+### Expense Tables (Q3 2026)
+
+| Table | Description |
+|-------|-------------|
+| `expense_categories` | Expense category definitions (10 seeded, bilingual EN/TH) |
+| `expenses` | Expense records with VAT/WHT, approval workflow, receipt upload |
+
 ### Security Tables
 
 | Table | Description |
@@ -508,6 +520,26 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.4-expense-module (March 28, 2026) — Q3 Expense Tracking
+
+**Expense Module Foundation** — Complete expense tracking with approval workflow:
+
+- **Expense CRUD**: Create, edit, view, delete expenses with auto-generated number (EXP-YYYYMM-XXXX)
+- **Expense Categories**: 10 seeded categories (bilingual EN/TH) — Office Rent, Utilities, Travel, Salary, etc.
+- **VAT/WHT Calculator**: Live JavaScript calculation with preview on expense form
+- **Approval Workflow**: Draft → Pending → Approved → Paid (with reject/cancel actions)
+- **Monthly Summary**: Category breakdown with colored bars, 12-month chart, status breakdown
+- **Category Management**: Card grid with color-coded icons, toggle active, modal add/edit
+- **Receipt Upload**: File attachment support (JPG/PNG/PDF)
+- **Vendor/Project Tracking**: Autocomplete with linkage to PO/PR
+
+**Technical Details**:
+- 1 new controller (ExpenseController — 11 methods), 2 new models, 5 new views
+- 11 new routes (171 total MVC routes)
+- 2 new database tables with FK constraint
+- Migration: `database/migrations/004_expense_tables.sql`
+- Sidebar: Expenses menu with 4 sub-items (List, New, Categories, Summary)
 
 ### v5.3-payment-gateway (March 28, 2026) — Q2 Payment & Tax
 

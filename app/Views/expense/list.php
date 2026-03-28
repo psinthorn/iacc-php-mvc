@@ -74,11 +74,14 @@ $messages = [
                 <p><?= $isThai ? 'จัดการค่าใช้จ่ายทั้งหมดของบริษัท' : 'Track and manage all company expenses' ?></p>
             </div>
             <div class="header-actions">
+                <a href="index.php?page=expense_export&format=csv&date_from=<?= $filters['date_from'] ?? '' ?>&date_to=<?= $filters['date_to'] ?? '' ?>&status=<?= $filters['status'] ?? '' ?>&category_id=<?= $filters['category_id'] ?? '' ?>" class="btn-header btn-header-outline" style="color:#10b981;">
+                    <i class="fa fa-download"></i> <?= $isThai ? 'ส่งออก CSV' : 'Export CSV' ?>
+                </a>
+                <a href="index.php?page=expense_project_report" class="btn-header btn-header-outline">
+                    <i class="fa fa-folder-open"></i> <?= $isThai ? 'โปรเจกต์' : 'Projects' ?>
+                </a>
                 <a href="index.php?page=expense_summary" class="btn-header btn-header-outline">
                     <i class="fa fa-bar-chart"></i> <?= $isThai ? 'สรุป' : 'Summary' ?>
-                </a>
-                <a href="index.php?page=expense_cat_list" class="btn-header btn-header-outline">
-                    <i class="fa fa-tags"></i> <?= $isThai ? 'หมวดหมู่' : 'Categories' ?>
                 </a>
                 <a href="index.php?page=expense_form" class="btn-header btn-header-primary">
                     <i class="fa fa-plus"></i> <?= $isThai ? 'สร้างค่าใช้จ่าย' : 'New Expense' ?>

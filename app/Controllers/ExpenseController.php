@@ -266,6 +266,101 @@ class ExpenseController extends BaseController
         $this->render('expense/summary', compact('summary', 'byCategory', 'monthlyTotals', 'year', 'month', 'lang'));
     }
 
+    /**
+     * Project cost report — expenses grouped by project
+     */
+    public function projectReport(): void
+    {
+        if ($this->user['level'] < 1) {
+            echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied.</div>';
+            return;
+        }
+
+        $filters = [
+            'date_from' => $this->inputStr('date_from'),
+            'date_to'   => $this->inputStr('date_to'),
+            'status'    => $this->inputStr('status'),
+        ];
+
+        // Default: current year
+        if (empty($filters['date_from']) && empty($filters['date_to'])) {
+            $filters['date_from'] = date('Y') . '-01-01';
+            $filters['date_to'] = date('Y-m-t');
+        }
+
+        $projects = $this->model->getByProject($filters);
+        
+        // If a specific project is selected, get detail rows
+        $selectedProject = $this->inputStr('project');
+        $projectExpenses = [];
+        if (!empty($selectedProject)) {
+            $projectExpenses = $this->model->getProjectExpenses($selectedProject, $filters);
+        }
+
+        $summary = $this->model->getSummary($filters);
+        $lang = $_SESSION['lang'] ?? '2';
+
+        $this->render('expense/project-report', compact('projects', 'projectExpenses', 'selectedProject', 'summary', 'filters', 'lang'));
+    }
+
+    /**
+     * Export expenses as CSV or JSON (standalone route)
+     */
+    public function export(): void
+    {
+        $filters = [
+            'status'      => $_GET['status'] ?? '',
+            'category_id' => intval($_GET['category_id'] ?? 0),
+            'date_from'   => $_GET['date_from'] ?? '',
+            'date_to'     => $_GET['date_to'] ?? '',
+            'project_name'=> $_GET['project'] ?? '',
+            'vendor_name' => $_GET['vendor'] ?? '',
+        ];
+
+        $format = $_GET['format'] ?? 'csv';
+        $dateLabel = ($filters['date_from'] ?: 'all') . '_to_' . ($filters['date_to'] ?: 'now');
+        $filename = "expenses-{$dateLabel}";
+
+        $expenses = $this->model->getExpensesForExport($filters);
+
+        if ($format === 'json') {
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '.json"');
+            echo json_encode($expenses, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        // CSV export
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+        echo "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+
+        $output = fopen('php://output', 'w');
+
+        // Header row
+        fputcsv($output, [
+            'Expense No', 'Title', 'Date', 'Status', 'Category',
+            'Vendor', 'Vendor Tax ID', 'Project',
+            'Amount', 'VAT Rate', 'VAT Amount', 'WHT Rate', 'WHT Amount', 'Net Amount',
+            'Currency', 'Payment Method', 'Reference No', 'Due Date', 'Paid Date',
+            'Description'
+        ]);
+
+        foreach ($expenses as $row) {
+            fputcsv($output, [
+                $row['expense_number'], $row['title'], $row['expense_date'], $row['status'],
+                $row['category_name'],
+                $row['vendor_name'], $row['vendor_tax_id'], $row['project_name'],
+                $row['amount'], $row['vat_rate'], $row['vat_amount'], $row['wht_rate'], $row['wht_amount'], $row['net_amount'],
+                $row['currency_code'], $row['payment_method'], $row['reference_no'], $row['due_date'], $row['paid_date'],
+                $row['description']
+            ]);
+        }
+
+        fclose($output);
+        exit;
+    }
+
     // =====================================================
     // Category Management
     // =====================================================
