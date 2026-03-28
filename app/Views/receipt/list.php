@@ -1,65 +1,149 @@
 <?php
 /**
- * Receipt List View
+ * Receipt List View — Legacy Modern Design
  * Variables: $items, $stats, $total_records, $pagination, $filters, $per_page
  */
 require_once __DIR__ . '/../../../inc/pagination.php';
 ?>
-<link rel="stylesheet" href="css/master-data.css">
-<div class="master-data-container">
-<div class="master-data-header">
-    <h2><i class="fa fa-file-text"></i> <?=$xml->receipt ?? 'Receipts'?></h2>
-    <a href="index.php?page=rep_make" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Create Receipt</a>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    .receipt-wrapper { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1400px; margin: 0 auto; }
+    .page-header { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; padding: 24px 28px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 10px 40px rgba(5,150,105,0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .page-header h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+    .page-header .header-actions a { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+    .page-header .header-actions a:hover { background: rgba(255,255,255,0.35); text-decoration: none; color: white; }
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .summary-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px; text-align: center; }
+    .summary-card .number { font-size: 28px; font-weight: 700; }
+    .summary-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280; margin-top: 4px; }
+    .filter-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px 20px; margin-bottom: 24px; }
+    .filter-card form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .filter-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 8px 12px; font-size: 13px; }
+    .filter-card .form-control:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.1); outline: none; }
+    .filter-card .btn { border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; }
+    .data-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; }
+    .data-card .card-header { background: #f9fafb; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; font-size: 14px; }
+    .data-card table { width: 100%; border-collapse: collapse; }
+    .data-card thead th { background: #f9fafb; padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; border-bottom: 2px solid #e5e7eb; text-align: left; letter-spacing: 0.05em; }
+    .data-card tbody td { padding: 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+    .data-card tbody tr:hover { background: #f9fafb; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .status-draft { background: #fef3c7; color: #d97706; }
+    .status-confirmed { background: #d1fae5; color: #059669; }
+    .status-cancelled { background: #fee2e2; color: #dc2626; }
+    .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; text-decoration: none; margin: 0 2px; }
+    .action-btn:hover { text-decoration: none; }
+    .action-view { background: rgba(102,126,234,0.1); color: #667eea; }
+    .action-view:hover { background: #667eea; color: white; }
+    .action-edit { background: rgba(16,185,129,0.1); color: #10b981; }
+    .action-edit:hover { background: #10b981; color: white; }
+    .action-print { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+    .action-print:hover { background: #8b5cf6; color: white; }
+    .source-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .source-invoice { background: #ede9fe; color: #7c3aed; }
+    .source-quotation { background: #dbeafe; color: #2563eb; }
+    .source-direct { background: #f3f4f6; color: #6b7280; }
+    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } .data-card { overflow-x: auto; } }
+</style>
 
-<div class="stats-row">
-    <div class="stat-card primary"><div class="stat-value"><?=$stats['total']?></div><div class="stat-label">Total</div></div>
-    <div class="stat-card success"><div class="stat-value"><?=$stats['confirmed']?></div><div class="stat-label">Confirmed</div></div>
-    <div class="stat-card warning"><div class="stat-value"><?=$stats['draft']?></div><div class="stat-label">Draft</div></div>
-</div>
+<?php
+$filters = $filters ?? [];
+$search = $filters['search'] ?? '';
+$status_filter = $filters['status'] ?? '';
+$date_from = $filters['date_from'] ?? '';
+$date_to = $filters['date_to'] ?? '';
+$date_preset = $filters['date_preset'] ?? '';
+$stats = $stats ?? ['total' => 0, 'confirmed' => 0, 'draft' => 0, 'cancelled' => 0];
+$per_page = $per_page ?? 25;
+$query_params = ['search' => $search, 'status' => $status_filter, 'date_from' => $date_from, 'date_to' => $date_to, 'date_preset' => $date_preset, 'per_page' => $per_page];
+?>
 
-<div class="action-toolbar">
-    <form method="get" class="search-form" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%">
-        <input type="hidden" name="page" value="receipt_list">
-        <div class="search-input-wrapper" style="flex:1;min-width:200px">
-            <i class="fa fa-search search-icon"></i>
-            <input type="text" name="search" value="<?=e($filters['search'])?>" placeholder="Search..." class="search-input">
+<div class="receipt-wrapper">
+    <div class="page-header">
+        <h2><i class="fa fa-file-text"></i> <?=$xml->receipt ?? 'Receipt'?> <?=$xml->list ?? 'List'?></h2>
+        <div class="header-actions">
+            <a href="index.php?page=receipt_make"><i class="fa fa-plus"></i> <?=$xml->create ?? 'Create'?></a>
         </div>
-        <select name="source_type" class="form-control input-sm" style="width:auto">
-            <option value="">All Sources</option>
-            <option value="manual" <?=($filters['source_type']??'')==='manual'?'selected':''?>>Manual</option>
-            <option value="quotation" <?=($filters['source_type']??'')==='quotation'?'selected':''?>>Quotation</option>
-            <option value="invoice" <?=($filters['source_type']??'')==='invoice'?'selected':''?>>Invoice</option>
-        </select>
-        <?php render_date_presets($filters['date_from'] ?? '', $filters['date_to'] ?? ''); ?>
-        <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-search"></i></button>
-    </form>
-</div>
+    </div>
 
-<div class="panel panel-default">
-    <table class="table table-striped table-hover">
-        <thead><tr><th>Receipt#</th><th>Source</th><th>Payment</th><th class="text-right">VAT</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-        <tbody>
-        <?php if(empty($items)): ?><tr><td colspan="7" class="text-center text-muted">No records</td></tr>
-        <?php else: foreach($items as $row):
-            $sc = match($row['status']??'') { 'confirmed'=>'success', 'draft'=>'warning', 'cancelled'=>'danger', default=>'default' };
-        ?>
-            <tr>
-                <td><strong><?=e($row['rep_rw'])?></strong></td>
-                <td><span class="label label-info"><?=e($row['source_type']??'manual')?></span></td>
-                <td><?=e($row['payment_method'] ?? '-')?></td>
-                <td class="text-right"><?=number_format(floatval($row['vat']??0),2)?></td>
-                <td><span class="label label-<?=$sc?>"><?=e($row['status'])?></span></td>
-                <td><?=e($row['createdate'])?></td>
-                <td>
-                    <a href="index.php?page=rep_view&id=<?=$row['id']?>" class="btn btn-xs btn-info"><i class="fa fa-eye"></i></a>
-                    <a href="index.php?page=rep_make&id=<?=$row['id']?>" class="btn btn-xs btn-warning"><i class="fa fa-pencil"></i></a>
-                    <a href="index.php?page=rep_print&id=<?=$row['id']?>" class="btn btn-xs btn-default" target="_blank"><i class="fa fa-print"></i></a>
-                </td>
-            </tr>
-        <?php endforeach; endif; ?>
-        </tbody>
-    </table>
-</div>
-<?php render_pagination($pagination, ['page'=>'receipt_list']); ?>
+    <div class="summary-cards">
+        <div class="summary-card"><div class="number" style="color:#059669"><?=number_format($stats['total'])?></div><div class="label"><?=$xml->total ?? 'Total'?></div></div>
+        <div class="summary-card"><div class="number" style="color:#10b981"><?=number_format($stats['confirmed'])?></div><div class="label"><?=$xml->confirmed ?? 'Confirmed'?></div></div>
+        <div class="summary-card"><div class="number" style="color:#d97706"><?=number_format($stats['draft'])?></div><div class="label"><?=$xml->draft ?? 'Draft'?></div></div>
+        <div class="summary-card"><div class="number" style="color:#dc2626"><?=number_format($stats['cancelled'])?></div><div class="label"><?=$xml->cancelled ?? 'Cancelled'?></div></div>
+    </div>
+
+    <div class="filter-card">
+        <form method="get">
+            <input type="hidden" name="page" value="receipt_list">
+            <input type="text" name="search" class="form-control" placeholder="<?=$xml->search ?? 'Search'?>..." value="<?=e($search)?>" style="min-width:180px">
+            <select name="status" class="form-control">
+                <option value="">-- <?=$xml->status ?? 'Status'?> --</option>
+                <option value="draft" <?=$status_filter=='draft'?'selected':''?>><?=$xml->draft ?? 'Draft'?></option>
+                <option value="confirmed" <?=$status_filter=='confirmed'?'selected':''?>><?=$xml->confirmed ?? 'Confirmed'?></option>
+                <option value="cancelled" <?=$status_filter=='cancelled'?'selected':''?>><?=$xml->cancelled ?? 'Cancelled'?></option>
+            </select>
+            <input type="date" name="date_from" class="form-control" value="<?=e($date_from)?>">
+            <input type="date" name="date_to" class="form-control" value="<?=e($date_to)?>">
+            <button type="submit" class="btn btn-success"><i class="fa fa-search"></i></button>
+            <a href="index.php?page=receipt_list" class="btn btn-default"><i class="fa fa-refresh"></i></a>
+        </form>
+        <?php if(function_exists('render_date_presets')): ?>
+        <div style="margin-top:10px"><?= render_date_presets($date_preset, 'receipt_list') ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="data-card">
+        <div class="card-header"><i class="fa fa-list" style="color:#059669;margin-right:8px"></i> <?=$xml->receipt ?? 'Receipt'?> (<?=number_format($total_records ?? 0)?>)</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th><?=$xml->receipt ?? 'Receipt'?>#</th>
+                        <th>Source</th>
+                        <th><?=$xml->name ?? 'Name'?></th>
+                        <th><?=$xml->payment ?? 'Payment'?></th>
+                        <th>VAT</th>
+                        <th><?=$xml->status ?? 'Status'?></th>
+                        <th><?=$xml->datecreate ?? 'Date'?></th>
+                        <th><?=$xml->action ?? 'Actions'?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if(!empty($items)): foreach($items as $i => $r): 
+                        $st = $r['status'] ?? 'draft';
+                        $st_class = $st == 'confirmed' ? 'status-confirmed' : ($st == 'cancelled' ? 'status-cancelled' : 'status-draft');
+                        $src = $r['source_type'] ?? 'direct';
+                        $src_class = $src == 'invoice' ? 'source-invoice' : ($src == 'quotation' ? 'source-quotation' : 'source-direct');
+                        $vat_val = !empty($r['taxrw']) ? $r['taxrw'] : (!empty($r['po_tax']) ? $r['po_tax'] : '');
+                    ?>
+                    <tr>
+                        <td><?=$i+1?></td>
+                        <td><strong><?=e($r['rep_rw'] ?? $r['id'])?></strong></td>
+                        <td><span class="source-badge <?=$src_class?>"><?=e($src)?></span></td>
+                        <td><?=e($r['name'] ?? '')?></td>
+                        <td><?=e($r['payment_method'] ?? '')?></td>
+                        <td><?=$vat_val ? e($vat_val).'%' : '-'?></td>
+                        <td><span class="status-badge <?=$st_class?>"><?=e($st)?></span></td>
+                        <td><?=e($r['createdate'] ?? '')?></td>
+                        <td>
+                            <a href="index.php?page=receipt_view&id=<?=e($r['id'])?>" class="action-btn action-view" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
+                            <?php if($st !== 'cancelled'): ?>
+                            <a href="index.php?page=receipt_make&id=<?=e($r['id'])?>" class="action-btn action-edit" title="<?=$xml->edits ?? 'Edit'?>"><i class="fa fa-pencil"></i></a>
+                            <?php endif; ?>
+                            <a href="index.php?page=receipt_print&id=<?=e($r['id'])?>" class="action-btn action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>
+                        </td>
+                    </tr>
+                    <?php endforeach; else: ?>
+                    <tr><td colspan="9" class="text-center" style="padding:40px;color:#9ca3af"><i class="fa fa-inbox" style="font-size:28px;display:block;margin-bottom:8px"></i><?=$xml->nodata ?? 'No receipts found'?></td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <?php if(!empty($pagination) && function_exists('render_pagination')): ?>
+    <div class="text-center"><?= render_pagination($pagination, '?page=receipt_list', $query_params) ?></div>
+    <?php endif; ?>
 </div>
