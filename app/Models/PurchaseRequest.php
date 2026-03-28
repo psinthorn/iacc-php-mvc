@@ -90,8 +90,10 @@ class PurchaseRequest extends BaseModel
             date('Y-m-d') . "','0','0','0','0',NULL";
         $prId = $this->hard->insertDbMax($argsPR);
 
-        // Insert product rows — fresh array per product
-        for ($i = 0; $i < 9; $i++) {
+        // Insert product rows — fresh array per product (dynamic row count)
+        $rowCount = intval($data['row_count'] ?? 9);
+        if ($rowCount > 50) $rowCount = 50;
+        for ($i = 0; $i < $rowCount; $i++) {
             $typeId = $data['id' . $i] ?? '';
             $qty = $data['quantity' . $i] ?? '0';
             $price = $data['price' . $i] ?? '0';
