@@ -149,12 +149,12 @@ class Billing extends BaseModel
 
         // Part 2: Unbilled invoices (flat rows)
         if ($status !== 'billed') {
-            $parts[] = "(SELECT 'unbilled' as row_type, 0 as bil_id, iv.tex as display_id,
+            $parts[] = "(SELECT 'unbilled' as row_type, 0 as bil_id, po.tax as display_id,
                 po.name as description, DATE_FORMAT(iv.createdate, '%d-%m-%Y') as display_date,
                 0 as total_amount, 0 as customer_id, 0 as inv_count,
                 company.name_en as customer_name,
                 iv.createdate as sort_date,
-                po.tax as tex,
+                iv.tex as tex,
                 (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
                  FROM product WHERE product.po_id=po.id) as subtotal,
                 po.vat, po.dis as discount_pct, po.over as withholding
