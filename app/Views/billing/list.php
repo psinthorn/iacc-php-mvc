@@ -16,10 +16,16 @@ require_once __DIR__ . '/../../../inc/pagination.php';
     .summary-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px; text-align: center; }
     .summary-card .number { font-size: 28px; font-weight: 700; }
     .summary-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280; margin-top: 4px; }
-    .filter-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px 20px; margin-bottom: 24px; }
-    .filter-card form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .filter-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 8px 12px; font-size: 13px; }
+    .filter-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
+    .filter-card .filter-header { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 10px; }
+    .filter-card .filter-body { padding: 20px; }
+    .filter-card .form-control { border-radius: 10px; border: 1px solid #e5e7eb; height: 44px; }
     .filter-card .form-control:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.1); outline: none; }
+    .filter-card .btn-primary { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+    .filter-card .btn-primary:hover { box-shadow: 0 4px 12px rgba(139,92,246,0.35); }
+    .date-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .date-presets .btn { border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; }
+    .date-presets .btn.active { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border-color: #7c3aed; }
     .data-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; }
     .data-card .card-header { background: #f9fafb; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; font-size: 14px; }
     .data-card table { width: 100%; border-collapse: collapse; }
@@ -44,7 +50,7 @@ $search = $filters['search'] ?? '';
 $status_filter = $filters['status'] ?? '';
 $date_from = $filters['date_from'] ?? '';
 $date_to = $filters['date_to'] ?? '';
-$date_preset = $filters['date_preset'] ?? '';
+$date_preset = $date_preset ?? ($filters['date_preset'] ?? '');
 $stats = $stats ?? ['total' => 0, 'with_billing' => 0, 'without_billing' => 0, 'total_amount' => 0];
 $per_page = $per_page ?? 25;
 $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' => $date_from, 'date_to' => $date_to, 'date_preset' => $date_preset, 'per_page' => $per_page];
@@ -66,22 +72,32 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
     </div>
 
     <div class="filter-card">
-        <form method="get">
-            <input type="hidden" name="page" value="billing">
-            <input type="text" name="search" class="form-control" placeholder="<?=$xml->search ?? 'Search'?>..." value="<?=e($search)?>" style="min-width:180px">
-            <select name="status" class="form-control">
-                <option value="">-- Billing Status --</option>
-                <option value="billed" <?=$status_filter=='billed'?'selected':''?>>Billed</option>
-                <option value="unbilled" <?=$status_filter=='unbilled'?'selected':''?>>Unbilled</option>
-            </select>
-            <input type="date" name="date_from" class="form-control" value="<?=e($date_from)?>">
-            <input type="date" name="date_to" class="form-control" value="<?=e($date_to)?>">
-            <button type="submit" class="btn btn-primary" style="border-radius:8px"><i class="fa fa-search"></i></button>
-            <a href="index.php?page=billing" class="btn btn-default" style="border-radius:8px"><i class="fa fa-refresh"></i></a>
-        </form>
-        <?php if(function_exists('render_date_presets')): ?>
-        <div style="margin-top:10px"><?= render_date_presets($date_preset, 'billing') ?></div>
-        <?php endif; ?>
+        <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?></div>
+        <div class="filter-body">
+            <form method="get" action="">
+                <input type="hidden" name="page" value="billing">
+                <div class="date-presets"><?= render_date_presets($date_preset, 'billing') ?></div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
+                        <input type="text" class="form-control" name="search" placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Name..." value="<?=htmlspecialchars($search)?>">
+                    </div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;">
+                        <select name="status" class="form-control">
+                            <option value=""><?=$xml->all ?? 'All'?> Status</option>
+                            <option value="billed" <?=$status_filter=='billed'?'selected':''?>>Billed</option>
+                            <option value="unbilled" <?=$status_filter=='unbilled'?'selected':''?>>Unbilled</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>"></div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>"></div>
+                    <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+                        <a href="?page=billing" class="btn btn-default"><i class="fa fa-refresh"></i></a>
+                        <?= render_per_page_selector($per_page) ?>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="data-card">
@@ -148,7 +164,12 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
         </div>
     </div>
 
-    <?php if(!empty($pagination) && function_exists('render_pagination')): ?>
-    <div class="text-center"><?= render_pagination($pagination, '?page=billing', $query_params) ?></div>
+    <?php if(!empty($pagination) && $pagination['total_pages'] > 0): ?>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+        <div style="font-size:13px;color:#6b7280;font-weight:500">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
+        <?php if($pagination['total_pages'] > 1): ?>
+        <div><?= render_pagination($pagination, '?page=billing', $query_params) ?></div>
+        <?php endif; ?>
+    </div>
     <?php endif; ?>
 </div>
