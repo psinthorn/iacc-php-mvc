@@ -68,6 +68,24 @@
     .btn-submit:hover { box-shadow: 0 6px 20px rgba(139,92,246,0.35); color: white; }
     .error-card { background: white; border-radius: 12px; padding: 60px 20px; text-align: center; border: 1px solid #e5e7eb; }
     .invoice-count-badge { background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+
+    /* Date Range Filter */
+    .filter-bar { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+    .filter-bar .filter-field { display: flex; flex-direction: column; gap: 4px; }
+    .filter-bar .filter-field label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    .filter-bar .filter-field input[type="date"] { border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 13px; min-height: 38px; }
+    .filter-bar .filter-field input[type="date"]:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.1); outline: none; }
+    .filter-bar .btn-filter { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; min-height: 38px; display: inline-flex; align-items: center; gap: 5px; }
+    .filter-bar .btn-filter:hover { box-shadow: 0 4px 12px rgba(139,92,246,0.35); }
+    .filter-bar .btn-clear { background: white; color: #6b7280; border: 1px solid #e5e7eb; padding: 8px 16px; border-radius: 8px; font-weight: 500; font-size: 13px; cursor: pointer; min-height: 38px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+    .filter-bar .btn-clear:hover { border-color: #d1d5db; color: #374151; text-decoration: none; }
+
+    /* Per-Page & Pagination */
+    .pagination-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+    .per-page-select { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; }
+    .per-page-select select { border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px 8px; font-size: 13px; cursor: pointer; }
+    .per-page-select select:focus { border-color: #8b5cf6; outline: none; }
+    .pagination-info-text { font-size: 13px; color: #6b7280; font-weight: 500; }
     @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } .total-display { flex-direction: column; text-align: center; gap: 8px; } .customer-select-card .select-row { flex-direction: column; } }
 </style>
 
@@ -76,6 +94,11 @@ $cust = $customer ?? null;
 $inv_id_param = $inv_id ?? '';
 $unbilled_items = $unbilled ?? [];
 $customers_list = $customers ?? [];
+$pg = $pagination ?? null;
+$total_rec = $total_records ?? 0;
+$pp = $per_page ?? 20;
+$df = $date_from ?? '';
+$dt = $date_to ?? '';
 ?>
 
 <div class="billing-wrapper">
@@ -118,6 +141,22 @@ $customers_list = $customers ?? [];
         <input type="hidden" name="customer_id" value="<?=e($cust['id'] ?? '')?>">
         <?= csrf_field() ?>
 
+        <!-- Date Range Filter -->
+        <div class="filter-bar">
+            <div class="filter-field">
+                <label><i class="fa fa-calendar"></i> From</label>
+                <input type="date" id="filter_date_from" value="<?=e($df)?>">
+            </div>
+            <div class="filter-field">
+                <label><i class="fa fa-calendar"></i> To</label>
+                <input type="date" id="filter_date_to" value="<?=e($dt)?>">
+            </div>
+            <button type="button" class="btn-filter" onclick="applyDateFilter()"><i class="fa fa-filter"></i> Filter</button>
+            <?php if($df || $dt): ?>
+            <a href="index.php?page=billing_make&customer_id=<?=e($cust['id'] ?? '')?>" class="btn-clear"><i class="fa fa-times"></i> Clear</a>
+            <?php endif; ?>
+        </div>
+
         <!-- Billing Details -->
         <div class="form-card">
             <div class="card-header"><i class="fa fa-edit" style="color:#8b5cf6;margin-right:8px"></i> Billing <?=$xml->detail ?? 'Details'?></div>
@@ -154,7 +193,7 @@ $customers_list = $customers ?? [];
         <div class="data-card">
             <div class="card-header">
                 <span><i class="fa fa-file-text-o" style="color:#8b5cf6;margin-right:8px"></i> Unbilled Invoices</span>
-                <span class="invoice-count-badge"><?=count($unbilled_items)?> invoice<?=count($unbilled_items) != 1 ? 's' : ''?></span>
+                <span class="invoice-count-badge"><?=$total_rec?> invoice<?=$total_rec != 1 ? 's' : ''?><?php if($df || $dt) echo ' (filtered)'; ?></span>
             </div>
             <div class="table-responsive">
                 <table id="invoiceTable">
@@ -200,6 +239,26 @@ $customers_list = $customers ?? [];
             </div>
         </div>
 
+        <!-- Pagination Bar -->
+        <?php if($pg && $pg['total_pages'] > 0): ?>
+        <div class="pagination-bar">
+            <div class="per-page-select">
+                <span>Show</span>
+                <select onchange="changePerPage(this.value)">
+                    <?php foreach([10,20,50,100] as $pp_opt): ?>
+                    <option value="<?=$pp_opt?>" <?=$pp == $pp_opt ? 'selected' : ''?>><?=$pp_opt?></option>
+                    <?php endforeach; ?>
+                </select>
+                <span>per page</span>
+                <span class="pagination-info-text" style="margin-left:12px">Showing <?=$pg['start_record']?>-<?=$pg['end_record']?> of <?=$pg['total_records']?></span>
+            </div>
+            <?php if($pg['total_pages'] > 1): ?>
+            <div>
+                <?= render_pagination($pg, 'index.php?page=billing_make', ['customer_id' => $cust['id'] ?? '', 'date_from' => $df, 'date_to' => $dt, 'per_page' => $pp]) ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
         <?php if(!empty($unbilled_items)): ?>
         <div class="text-right" style="margin-bottom:40px">
             <button type="submit" class="btn-submit"><i class="fa fa-check"></i> <?=$xml->create ?? 'Create'?> <?=$xml->billing ?? 'Billing'?></button>
@@ -231,7 +290,35 @@ function loadCustomerInvoices() {
     var sel = document.getElementById('customer_select');
     var customerId = sel.value;
     if (!customerId) { alert('Please select a customer'); return; }
-    window.location.href = 'index.php?page=billing_make&customer_id=' + customerId;
+    var url = 'index.php?page=billing_make&customer_id=' + customerId;
+    var df = document.getElementById('filter_date_from');
+    var dt = document.getElementById('filter_date_to');
+    if (df && df.value) url += '&date_from=' + df.value;
+    if (dt && dt.value) url += '&date_to=' + dt.value;
+    window.location.href = url;
+}
+
+/* Date range filter */
+function applyDateFilter() {
+    var customerId = '<?=e($cust['id'] ?? '')?>';
+    if (!customerId) return;
+    var df = document.getElementById('filter_date_from').value;
+    var dt = document.getElementById('filter_date_to').value;
+    var url = 'index.php?page=billing_make&customer_id=' + customerId;
+    if (df) url += '&date_from=' + df;
+    if (dt) url += '&date_to=' + dt;
+    window.location.href = url;
+}
+
+/* Per-page selector */
+function changePerPage(val) {
+    var customerId = '<?=e($cust['id'] ?? '')?>';
+    var url = 'index.php?page=billing_make&customer_id=' + customerId + '&per_page=' + val;
+    var df = document.getElementById('filter_date_from');
+    var dt = document.getElementById('filter_date_to');
+    if (df && df.value) url += '&date_from=' + df.value;
+    if (dt && dt.value) url += '&date_to=' + dt.value;
+    window.location.href = url;
 }
 
 /* Also load on select change */

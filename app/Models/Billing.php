@@ -72,18 +72,44 @@ class Billing extends BaseModel
         return $cond;
     }
 
-    public function getUnbilledInvoices(int $customerId, int $comId): array
+    private function buildUnbilledWhere(int $customerId, string $dateFrom = '', string $dateTo = ''): string
     {
-        return $this->fetchAll("SELECT iv.id, iv.texiv_rw as inv_no, po.id as po_id, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
+        $where = "(CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)='" . \sql_int($customerId) . "'
+            AND po.po_id_new='' AND pr.status>=3
+            AND iv.id NOT IN (SELECT inv_id FROM billing_items)";
+        if ($dateFrom !== '') {
+            $where .= " AND iv.createdate >= '" . \sql_str($dateFrom) . "'";
+        }
+        if ($dateTo !== '') {
+            $where .= " AND iv.createdate <= '" . \sql_str($dateTo) . "'";
+        }
+        return $where;
+    }
+
+    public function countUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = ''): int
+    {
+        $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo);
+        $r = mysqli_query($this->conn, "SELECT COUNT(*) as cnt
+            FROM iv JOIN po ON iv.tex=po.id JOIN pr ON po.ref=pr.id
+            WHERE $where");
+        return ($r && $row = mysqli_fetch_assoc($r)) ? intval($row['cnt']) : 0;
+    }
+
+    public function getUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = '', int $offset = 0, int $limit = 0): array
+    {
+        $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo);
+        $sql = "SELECT iv.id, iv.texiv_rw as inv_no, po.id as po_id, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
             pr.des,
             (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
              FROM product WHERE product.po_id=po.id) as subtotal,
             po.vat, po.dis as discount, po.over as withholding
             FROM iv JOIN po ON iv.tex=po.id JOIN pr ON po.ref=pr.id
-            WHERE (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)='" . \sql_int($customerId) . "'
-            AND po.po_id_new='' AND pr.status>=3
-            AND iv.id NOT IN (SELECT inv_id FROM billing_items)
-            ORDER BY iv.createdate DESC");
+            WHERE $where
+            ORDER BY iv.createdate DESC";
+        if ($limit > 0) {
+            $sql .= " LIMIT $offset, $limit";
+        }
+        return $this->fetchAll($sql);
     }
 
     public function getCustomersWithUnbilledInvoices(int $comId): array
