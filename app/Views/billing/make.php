@@ -139,35 +139,35 @@ $search = $search ?? '';
         <?php if(!empty($cust['email'])): ?><div class="info-row"><span class="info-label"><?=$xml->email ?? 'Email'?></span><span class="info-value"><?=e($cust['email'])?></span></div><?php endif; ?>
     </div>
 
+    <!-- Search & Date Range Filter (compl_list style) - OUTSIDE billing form to avoid nested form -->
+    <div class="filter-card">
+        <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?></div>
+        <div class="filter-body">
+            <form method="get" action="" id="filterForm">
+                <input type="hidden" name="page" value="billing_make">
+                <input type="hidden" name="customer_id" value="<?=e($cust['id'] ?? '')?>">
+                <input type="hidden" name="per_page" value="<?=$pp?>">
+                <div class="date-presets"><?= render_date_presets($date_preset, 'billing_make') ?></div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
+                        <input type="text" class="form-control" name="search" placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Description..." value="<?=htmlspecialchars($search)?>">
+                    </div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($df)?>" placeholder="From"></div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($dt)?>" placeholder="To"></div>
+                    <div class="col-xs-12 col-sm-5" style="margin-bottom:12px;">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+                        <a href="?page=billing_make&customer_id=<?=e($cust['id'] ?? '')?>" class="btn btn-default"><i class="fa fa-refresh"></i></a>
+                        <?= render_per_page_selector($pp) ?>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <form method="post" action="index.php?page=billing_store" id="billingForm">
         <input type="hidden" name="method" value="A">
         <input type="hidden" name="customer_id" value="<?=e($cust['id'] ?? '')?>">
         <?= csrf_field() ?>
-
-        <!-- Search & Date Range Filter (compl_list style) -->
-        <div class="filter-card">
-            <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?></div>
-            <div class="filter-body">
-                <form method="get" action="" id="filterForm">
-                    <input type="hidden" name="page" value="billing_make">
-                    <input type="hidden" name="customer_id" value="<?=e($cust['id'] ?? '')?>">
-                    <input type="hidden" name="per_page" value="<?=$pp?>">
-                    <div class="date-presets"><?= render_date_presets($date_preset, 'billing_make') ?></div>
-                    <div class="row">
-                        <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
-                            <input type="text" class="form-control" name="search" placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Description..." value="<?=htmlspecialchars($search)?>">
-                        </div>
-                        <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($df)?>" placeholder="From"></div>
-                        <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($dt)?>" placeholder="To"></div>
-                        <div class="col-xs-12 col-sm-5" style="margin-bottom:12px;">
-                            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
-                            <a href="?page=billing_make&customer_id=<?=e($cust['id'] ?? '')?>" class="btn btn-default"><i class="fa fa-refresh"></i></a>
-                            <?= render_per_page_selector($pp) ?>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
 
         <!-- Billing Details -->
         <div class="form-card">
@@ -253,12 +253,10 @@ $search = $search ?? '';
 
         <!-- Pagination Bar -->
         <?php if($pg && $pg['total_pages'] > 0): ?>
-        <div class="pagination-bar">
-            <div class="pagination-info-text">Showing <?=$pg['start_record']?>-<?=$pg['end_record']?> of <?=$pg['total_records']?> invoices</div>
+        <div style="text-align:center;margin-bottom:24px">
+            <div class="pagination-info-text" style="margin-bottom:8px">Showing <?=$pg['start_record']?>-<?=$pg['end_record']?> of <?=$pg['total_records']?> invoices</div>
             <?php if($pg['total_pages'] > 1): ?>
-            <div>
-                <?= render_pagination($pg, 'index.php?page=billing_make', ['customer_id' => $cust['id'] ?? '', 'date_from' => $df, 'date_to' => $dt, 'search' => $search, 'per_page' => $pp]) ?>
-            </div>
+            <?= render_pagination($pg, 'index.php?page=billing_make', ['customer_id' => $cust['id'] ?? '', 'date_from' => $df, 'date_to' => $dt, 'search' => $search, 'per_page' => $pp]) ?>
             <?php endif; ?>
         </div>
         <?php endif; ?>
