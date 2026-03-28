@@ -374,9 +374,33 @@ global $xml;
     
     .no-products { text-align: center; padding: 40px; color: #6b7280; }
     .no-products i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+    .btn-add-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 10px 20px;
+        background: #f0f4ff;
+        color: #667eea;
+        border: 1px dashed #667eea;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-add-row:hover {
+        background: #667eea;
+        color: white;
+        border-style: solid;
+    }
 </style>
 
 <script type="text/javascript">
+var rowCount = 3; // initial rows shown
+var maxRows = 50;
+
 function calprice(id) { 
     if(document.getElementById('quantity'+id).value==0){
         alert('Value Quantity is Not Zero'); 
@@ -388,10 +412,38 @@ function calprice(id) {
   
 function sumall() { 
     var totalsum=0;
-    for(i=0;i<9;i++){
-        totalsum+=parseFloat(document.getElementById('total'+i).value);
+    for(var i=0; i<rowCount; i++){
+        var el = document.getElementById('total'+i);
+        if(el) totalsum += parseFloat(el.value) || 0;
     }
     document.getElementById('totalnet').value=totalsum.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+    document.getElementById('row_count').value = rowCount;
+}
+
+function addProductRow() {
+    if(rowCount >= maxRows) { alert('Maximum ' + maxRows + ' rows reached'); return; }
+    var container = document.getElementById('productRowsContainer');
+    var i = rowCount;
+    var div = document.createElement('div');
+    div.className = 'product-row-pr';
+    div.id = 'product-row-' + i;
+    div.innerHTML = '<input type="text" name="ordername' + i + '" id="ordername' + i + '" readonly placeholder="Click to select product..." onclick="openProductModal(' + i + ');" style="cursor:pointer;"/>'
+        + '<input type="hidden" name="id' + i + '" id="id' + i + '" value="0" />'
+        + '<input type="text" name="quantity' + i + '" id="quantity' + i + '" onchange="calprice(\'' + i + '\');" required value="1" />'
+        + '<input type="text" name="price' + i + '" readonly id="price' + i + '" value="0" />'
+        + '<input type="text" name="total' + i + '" readonly id="total' + i + '" value="0" />'
+        + '<button type="button" class="btn-clear-row" onclick="removeProductRow(' + i + ')">✕</button>';
+    container.appendChild(div);
+    rowCount++;
+    document.getElementById('row_count').value = rowCount;
+}
+
+function removeProductRow(i) {
+    var row = document.getElementById('product-row-' + i);
+    if(row) {
+        row.remove();
+        sumall();
+    }
 }
 
 var currentRowIndex = null;
@@ -568,8 +620,9 @@ function clearRow(i) {
                     <div></div>
                 </div>
                 
-                <?php for($i=0; $i<9; $i++): ?>
-                <div class="product-row-pr">
+                <div id="productRowsContainer">
+                <?php for($i=0; $i<3; $i++): ?>
+                <div class="product-row-pr" id="product-row-<?=$i?>">
                     <input type="text" name="ordername<?=$i?>" id="ordername<?=$i?>" readonly placeholder="Click to select product..." onclick="openProductModal(<?=$i?>);" style="cursor: pointer;"/>
                     <input type="hidden" name="id<?=$i?>" id="id<?=$i?>" value="0" />
                     <input type="text" name="quantity<?=$i?>" id="quantity<?=$i?>" onchange="calprice('<?=$i?>');" required value="1" />
@@ -578,6 +631,11 @@ function clearRow(i) {
                     <button type="button" class="btn-clear-row" onclick="clearRow(<?=$i?>)">✕</button>
                 </div>
                 <?php endfor; ?>
+                </div>
+                <input type="hidden" name="row_count" id="row_count" value="3" />
+                <button type="button" class="btn-add-row" onclick="addProductRow()">
+                    <i class="fa fa-plus"></i> Add Product Row
+                </button>
             </div>
             
             <div class="summary-section">
