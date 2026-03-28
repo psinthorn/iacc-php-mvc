@@ -145,7 +145,7 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                         </td>
                         <td>
                             <?php if(!$has_billing): ?>
-                            <a href="index.php?page=billing_make&inv_id=<?=e($b['id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
+                            <a href="index.php?page=billing_make&po_id=<?=e($b['tex'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
                             <?php else: ?>
                             <form method="post" action="index.php?page=billing_store" style="display:inline" onsubmit="return confirm('<?=$xml->confirmdelete ?? 'Delete this billing?'?>')">
                                 <input type="hidden" name="method" value="D">

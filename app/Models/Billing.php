@@ -102,7 +102,7 @@ class Billing extends BaseModel
     public function getUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = '', string $search = '', int $offset = 0, int $limit = 0): array
     {
         $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo, $search);
-        $sql = "SELECT iv.id, iv.texiv_rw as inv_no, po.id as po_id, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
+        $sql = "SELECT iv.id, iv.tex as po_id, iv.texiv_rw as inv_no, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
             pr.des,
             (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
              FROM product WHERE product.po_id=po.id) as subtotal,
@@ -139,8 +139,17 @@ class Billing extends BaseModel
 
     public function getCustomerFromInvoice(int $invId): ?array
     {
+        return $this->getCustomerFromPO($invId);
+    }
+
+    /**
+     * Lookup customer from PO id (iv.tex = po.id = primary key, unique).
+     * iv.id is NOT unique, so always use iv.tex for reliable lookups.
+     */
+    public function getCustomerFromPO(int $poId): ?array
+    {
         $r = mysqli_query($this->conn, "SELECT CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END as customer_id
-            FROM iv JOIN po ON iv.tex=po.id JOIN pr ON po.ref=pr.id WHERE iv.id='" . \sql_int($invId) . "'");
+            FROM iv JOIN po ON iv.tex=po.id JOIN pr ON po.ref=pr.id WHERE iv.tex='" . \sql_int($poId) . "' LIMIT 1");
         if (!$r || mysqli_num_rows($r) == 0) return null;
         $custId = mysqli_fetch_assoc($r)['customer_id'];
         $r2 = mysqli_query($this->conn, "SELECT id, name_en, name_sh, tax, phone, email FROM company WHERE id='" . \sql_int($custId) . "'");
