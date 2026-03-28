@@ -243,7 +243,7 @@ class Billing extends BaseModel
             b.logo
             FROM company c
             LEFT JOIN company_addr ca ON c.id = ca.com_id AND ca.valid_end = '0000-00-00'
-            LEFT JOIN brand b ON c.id = b.com_id
+            LEFT JOIN brand b ON c.id = b.company_id
             WHERE c.id = '" . \sql_int($comId) . "' LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
         return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
