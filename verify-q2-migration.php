@@ -8,33 +8,48 @@
  * ⚠️ DELETE this file after verification in production!
  */
 
-// Load database connection - use sys.configs.php for credentials but connect directly
-// (class.dbconn.php has XML dependencies that may fail in test context)
+// Load database connection - try sys.configs.php first, fallback to direct credentials
+// This script is fully self-contained - no class.dbconn.php dependency
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 set_time_limit(10); // Prevent hanging
 
-$configFile = dirname(__FILE__) . '/../inc/sys.configs.php';
-if (!file_exists($configFile)) {
-    die("❌ Config file not found: inc/sys.configs.php");
-}
-
-// Extract config without loading class.dbconn.php (which has XML/session deps)
-$config = [];
-require_once($configFile);
-
 header('Content-Type: text/html; charset=utf-8');
 
+$config = [];
+$configFile = dirname(__FILE__) . '/inc/sys.configs.php';
+if (file_exists($configFile)) {
+    require_once($configFile);
+}
+
+// Allow URL params to override: ?host=xxx&user=xxx&pass=xxx&db=xxx
+$dbHost = $_GET['host'] ?? $config['hostname'] ?? 'localhost';
+$dbUser = $_GET['user'] ?? $config['username'] ?? 'root';
+$dbPass = $_GET['pass'] ?? $config['password'] ?? '';
+$dbName = $_GET['db']   ?? $config['dbname']   ?? 'iacc';
+
 // Direct MySQLi connection
-$conn = @new mysqli(
-    $config['hostname'] ?? 'localhost',
-    $config['username'] ?? 'root',
-    $config['password'] ?? '',
-    $config['dbname'] ?? 'iacc'
-);
+$conn = @new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
 if ($conn->connect_error) {
-    die("❌ Database connection failed: " . $conn->connect_error);
+    echo "<!DOCTYPE html><html><head><meta charset='utf-8'><title>DB Connect</title>";
+    echo "<style>body{font-family:Inter,sans-serif;max-width:600px;margin:60px auto;padding:0 20px}";
+    echo "h2{color:#dc2626}form{background:#f8fafc;padding:24px;border-radius:12px;margin-top:20px}";
+    echo "label{display:block;margin:12px 0 4px;font-weight:600;font-size:14px}";
+    echo "input{width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;box-sizing:border-box}";
+    echo "button{margin-top:20px;padding:10px 24px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer}";
+    echo ".err{background:#fef2f2;border-left:4px solid #ef4444;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;font-size:14px}</style></head><body>";
+    echo "<h2>❌ Database Connection Failed</h2>";
+    echo "<div class='err'>" . htmlspecialchars($conn->connect_error) . "</div>";
+    echo "<p>Enter your database credentials for this environment:</p>";
+    echo "<form method='get'>";
+    echo "<label>Host</label><input name='host' value='" . htmlspecialchars($dbHost) . "'>";
+    echo "<label>Username</label><input name='user' value='" . htmlspecialchars($dbUser) . "'>";
+    echo "<label>Password</label><input name='pass' type='password' value=''>";
+    echo "<label>Database</label><input name='db' value='" . htmlspecialchars($dbName) . "'>";
+    echo "<button type='submit'>🔌 Connect & Verify</button>";
+    echo "</form></body></html>";
+    exit;
 }
 $conn->set_charset('utf8mb4');
 
@@ -144,7 +159,7 @@ $viewFiles = [
     'app/Views/payment-gateway/promptpay.php' => 'PromptPay View',
 ];
 
-$basePath = dirname(__FILE__) . '/../';
+$basePath = dirname(__FILE__) . '/';
 foreach ($viewFiles as $file => $name) {
     $exists = file_exists($basePath . $file);
     check("View file: $name", $exists, $exists ? $file : "FILE MISSING: $file");
