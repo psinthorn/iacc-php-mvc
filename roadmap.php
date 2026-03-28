@@ -402,23 +402,25 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
 
-            <!-- Planned Q3 - Expense Module -->
-            <div class="timeline-item planned">
+            <!-- In Progress Q3 - Expense Module -->
+            <div class="timeline-item in-progress">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q3 2026</span>
-                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                    <span class="status-badge in-progress"><?= $lang === 'th' ? 'กำลังดำเนินการ' : 'In Progress' ?></span>
                 </div>
                 <h3><?= $lang === 'th' ? 'v5.4 - ระบบค่าใช้จ่าย (Expense Module)' : 'v5.4 - Expense Tracking Module' ?></h3>
                 <p><?= $lang === 'th' ? 'บันทึกค่าใช้จ่ายรายวัน เชื่อมโยงกับโปรเจกต์/ใบแจ้งหนี้ รายงานต้นทุน และ P&L' : 'Daily expense recording, project/invoice linking, cost reporting, and profit & loss analysis.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'CRUD ค่าใช้จ่าย (สร้าง/แก้ไข/ลบ)' : 'Expense CRUD (create/edit/delete)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'หมวดหมู่ค่าใช้จ่าย (ค่าเช่า, เดินทาง, เงินเดือน)' : 'Expense categories (rent, travel, salary)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมโยง PO/PR/Invoice' : 'Link to PO/PR/Invoice' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'มุมมองค่าใช้จ่ายรายวัน' : 'Daily expense view' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'CRUD ค่าใช้จ่าย (สร้าง/แก้ไข/ลบ)' : 'Expense CRUD (create/edit/delete)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'หมวดหมู่ค่าใช้จ่าย (10 หมวด EN/TH)' : 'Expense categories (10 seeded, bilingual)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'เชื่อมโยง PO/PR/Invoice' : 'Link to PO/PR/Invoice' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Workflow อนุมัติ (draft → approved → paid)' : 'Approval workflow (draft → approved → paid)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'รองรับ VAT/WHT พร้อมคำนวณอัตโนมัติ' : 'VAT/WHT with live calculator' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'อัปโหลดใบเสร็จ/เอกสาร' : 'Receipt/document upload' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'สรุปรายเดือน + กราฟแยกหมวด' : 'Monthly summary + category chart' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '11 Routes, 5 Views, 2 Models' : '11 routes, 5 views, 2 models' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานต้นทุนตามโปรเจกต์' : 'Project cost report' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Workflow อนุมัติ (draft → approved → paid)' : 'Approval workflow (draft → approved → paid)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับ VAT/WHT ในค่าใช้จ่าย' : 'VAT/WHT support on expenses' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'อัปโหลดใบเสร็จ/เอกสาร' : 'Receipt/document upload' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Export CSV/PDF' : 'Export CSV/PDF' ?></li>
                 </ul>
             </div>
 
