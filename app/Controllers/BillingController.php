@@ -125,4 +125,66 @@ class BillingController extends BaseController
         }
         $this->redirect('index.php?page=billing');
     }
+
+    /**
+     * View a single billing note within admin shell
+     */
+    public function view(): void
+    {
+        $comId = $this->getCompanyId();
+        $bilId = $this->inputInt('id', 0);
+
+        $billing = $this->billing->getBillingById($bilId);
+        if (!$billing) {
+            $this->redirect('index.php?page=billing');
+            return;
+        }
+
+        $invoices = $this->billing->getBillingInvoices($bilId);
+        $vendor = $this->billing->getCompanyWithAddress($comId);
+        $customer = $this->billing->getCompanyWithAddress(intval($billing['customer_id']));
+
+        // Calculate total from items
+        $totalAmount = 0;
+        foreach ($invoices as $inv) {
+            $totalAmount += floatval($inv['amount']);
+        }
+        // Use billing price if set, otherwise calculated total
+        $amount = floatval($billing['price']) > 0 ? floatval($billing['price']) : $totalAmount;
+
+        $this->render('billing/view', [
+            'billing' => $billing,
+            'invoices' => $invoices,
+            'vendor' => $vendor,
+            'customer' => $customer,
+            'amount' => $amount,
+        ]);
+    }
+
+    /**
+     * Print/Download a billing note (standalone page)
+     */
+    public function print(): void
+    {
+        $comId = $this->getCompanyId();
+        $bilId = $this->inputInt('id', 0);
+
+        $billing = $this->billing->getBillingById($bilId);
+        if (!$billing) {
+            die('<div style="text-align:center;padding:50px;font-family:Arial;"><h2>Billing Note Not Found</h2></div>');
+        }
+
+        $invoices = $this->billing->getBillingInvoices($bilId);
+        $vendor = $this->billing->getCompanyWithAddress($comId);
+        $customer = $this->billing->getCompanyWithAddress(intval($billing['customer_id']));
+
+        $totalAmount = 0;
+        foreach ($invoices as $inv) {
+            $totalAmount += floatval($inv['amount']);
+        }
+        $amount = floatval($billing['price']) > 0 ? floatval($billing['price']) : $totalAmount;
+
+        include __DIR__ . '/../Views/billing/print.php';
+        exit;
+    }
 }
