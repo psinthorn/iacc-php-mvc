@@ -165,10 +165,10 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
     </div>
 
     <?php if(!empty($pagination) && $pagination['total_pages'] > 0): ?>
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
-        <div style="font-size:13px;color:#6b7280;font-weight:500">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
+    <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:13px;color:#6b7280;font-weight:500;margin-bottom:8px">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
         <?php if($pagination['total_pages'] > 1): ?>
-        <div><?= render_pagination($pagination, '?page=billing', $query_params) ?></div>
+        <?= render_pagination($pagination, '?page=billing', $query_params) ?>
         <?php endif; ?>
     </div>
     <?php endif; ?>
