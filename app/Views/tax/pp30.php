@@ -106,11 +106,48 @@ $isPayable   = $vatPayable > 0;
 .net-result-text.payable { color: #dc2626; }
 .net-result-text.refundable { color: #059669; }
 
+/* Search Toolbar */
+.pp30-search-bar {
+    background: white; border-radius: 14px; padding: 16px 24px;
+    border: 1px solid var(--md-border, #e2e8f0); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.pp30-search-input {
+    flex: 1; min-width: 200px; padding: 10px 16px 10px 40px; border-radius: 10px;
+    border: 1.5px solid var(--md-border, #e2e8f0); font-size: 13px; font-weight: 500;
+    font-family: 'Inter', sans-serif; transition: all 0.2s; background: var(--md-bg-secondary, #f8fafc);
+}
+.pp30-search-input:focus {
+    outline: none; border-color: #4f46e5; background: white;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+}
+.pp30-search-wrap {
+    position: relative; flex: 1; min-width: 200px;
+}
+.pp30-search-wrap .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--md-text-muted, #94a3b8); font-size: 14px; pointer-events: none;
+}
+.pp30-search-wrap .clear-btn {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--md-text-muted, #94a3b8); cursor: pointer;
+    font-size: 14px; display: none; padding: 4px;
+}
+.pp30-search-wrap .clear-btn:hover { color: #ef4444; }
+.pp30-match-count {
+    font-size: 12px; font-weight: 600; color: var(--md-text-secondary, #64748b);
+    white-space: nowrap;
+}
+.pp30-match-count strong { color: var(--md-primary, #4f46e5); }
+tr.pp30-hidden { display: none; }
+tr.pp30-highlight td { background: rgba(79,70,229,0.04); }
+
 @media (max-width: 768px) {
     .net-summary-top { grid-template-columns: 1fr; gap: 12px; }
     .net-operator { font-size: 20px; }
     .net-col .amount { font-size: 22px; }
     .stats-row { grid-template-columns: repeat(2, 1fr) !important; }
+    .pp30-search-bar { flex-direction: column; }
 }
 </style>
 
@@ -170,6 +207,17 @@ $isPayable   = $vatPayable > 0;
         </div>
     </div>
 
+    <!-- Search Filter -->
+    <div class="pp30-search-bar">
+        <div class="pp30-search-wrap">
+            <i class="fa fa-search search-icon"></i>
+            <input type="text" id="pp30Search" class="pp30-search-input" 
+                   placeholder="<?= $lang === 'th' ? 'ค้นหา... ชื่อลูกค้า, ผู้ขาย, เลขใบกำกับ, เลขผู้เสียภาษี' : 'Search... customer, vendor, invoice no., tax ID' ?>">
+            <button class="clear-btn" id="pp30Clear" title="Clear"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="pp30-match-count" id="pp30MatchCount"></div>
+    </div>
+
     <!-- Output VAT Section -->
     <div class="vat-section">
         <div class="vat-section-header output">
@@ -177,7 +225,7 @@ $isPayable   = $vatPayable > 0;
             <span class="vat-count output"><?= count($outputItems) ?> <?= $lang === 'th' ? 'รายการ' : 'items' ?></span>
         </div>
         <div style="overflow-x:auto;">
-            <table class="vat-table">
+            <table class="vat-table" id="outputVatTable">
                 <thead>
                     <tr>
                         <th style="width:50px;">#</th>
@@ -228,7 +276,7 @@ $isPayable   = $vatPayable > 0;
             <span class="vat-count input"><?= count($inputItems) ?> <?= $lang === 'th' ? 'รายการ' : 'items' ?></span>
         </div>
         <div style="overflow-x:auto;">
-            <table class="vat-table">
+            <table class="vat-table" id="inputVatTable">
                 <thead>
                     <tr>
                         <th style="width:50px;">#</th>
@@ -305,3 +353,57 @@ $isPayable   = $vatPayable > 0;
     </div>
 
 </div>
+
+<script>
+(function() {
+    const input = document.getElementById('pp30Search');
+    const clearBtn = document.getElementById('pp30Clear');
+    const matchCount = document.getElementById('pp30MatchCount');
+    const lang = '<?= $lang ?>';
+    if (!input) return;
+
+    function getBodyRows(tableId) {
+        const t = document.getElementById(tableId);
+        return t ? Array.from(t.querySelectorAll('tbody tr:not(.vat-empty-row)')) : [];
+    }
+
+    function filterTables() {
+        const q = input.value.trim().toLowerCase();
+        clearBtn.style.display = q ? 'block' : 'none';
+
+        const outputRows = getBodyRows('outputVatTable');
+        const inputRows = getBodyRows('inputVatTable');
+        const allRows = outputRows.concat(inputRows);
+
+        if (!q) {
+            allRows.forEach(r => { r.classList.remove('pp30-hidden','pp30-highlight'); });
+            matchCount.innerHTML = '';
+            return;
+        }
+
+        let matched = 0;
+        allRows.forEach(r => {
+            const text = r.textContent.toLowerCase();
+            if (text.includes(q)) {
+                r.classList.remove('pp30-hidden');
+                r.classList.add('pp30-highlight');
+                matched++;
+            } else {
+                r.classList.add('pp30-hidden');
+                r.classList.remove('pp30-highlight');
+            }
+        });
+
+        const label = lang === 'th' ? 'พบ' : 'Found';
+        const suffix = lang === 'th' ? 'รายการ' : 'records';
+        matchCount.innerHTML = '<strong>' + matched + '</strong> / ' + allRows.length + ' ' + suffix;
+    }
+
+    input.addEventListener('input', filterTables);
+    clearBtn.addEventListener('click', function() {
+        input.value = '';
+        filterTables();
+        input.focus();
+    });
+})();
+</script>
