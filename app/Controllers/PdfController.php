@@ -8,6 +8,13 @@ namespace App\Controllers;
  */
 class PdfController extends BaseController
 {
+    public function __construct()
+    {
+        parent::__construct();
+        // PDF views use bahtEng()/bahtThai() currency-to-words functions
+        require_once __DIR__ . '/../../inc/class.current.php';
+    }
+
     /** Quotation PDF */
     public function quotation(): void
     {

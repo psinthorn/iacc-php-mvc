@@ -491,7 +491,7 @@ if ($recId > 0) {
     }
 
     // Search
-    $recFiltered = $rec->countReceipts($testComId, ['search' => 'Receipt Test']);
+    $recFiltered = $rec->countReceipts($testComId, ['search' => 'Updated Receipt']);
     test("countReceipts() search works", $recFiltered >= 1);
 
     // Cleanup

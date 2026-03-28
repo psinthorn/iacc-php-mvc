@@ -1,11 +1,9 @@
 <?php
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
-require_once("inc/class.current.php");
-$users=new DbConn($config);
-// Security already checked in index.php
+/**
+ * Quotation Email PDF Generator
+ * Included via PdfController — session, auth, and $db already initialized by index.php
+ */
+global $db;
 
 // SECURITY FIX: Sanitize user input to prevent SQL injection
 $post_id = sql_int($_POST['id'] ?? 0);
@@ -188,7 +186,7 @@ $html .= '
 
 //==============================================================
 //==============================================================
-$mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4']);
+$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'garuda', 'autoScriptToLang' => true, 'autoLangToFont' => true]);
 
 //$mail->isSMTP();
 //$mail->SMTPDebug = 2;

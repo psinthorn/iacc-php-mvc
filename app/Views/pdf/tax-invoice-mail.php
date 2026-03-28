@@ -1,11 +1,9 @@
 <?php
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
-require_once("inc/class.current.php");
-$users=new DbConn($config);
-// Security already checked in index.php
+/**
+ * Tax Invoice Email PDF Generator
+ * Included via PdfController — session, auth, and $db already initialized by index.php
+ */
+global $db;
 
 $id = sql_int($_REQUEST['id']);
 $com_id = sql_int($_SESSION['com_id']);
@@ -203,7 +201,7 @@ $html .= '
 
 //==============================================================
 //==============================================================
-$mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4']);
+$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'garuda', 'autoScriptToLang' => true, 'autoLangToFont' => true]);
 
 
 $mpdf->WriteHTML($html);

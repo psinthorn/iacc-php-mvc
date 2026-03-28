@@ -1,78 +1,144 @@
 <?php
 /**
- * Receipt View (Detail)
+ * Receipt View — Legacy Modern Design
  * Variables: $receipt, $products, $id
  */
 ?>
-<link rel="stylesheet" href="css/master-data.css">
-<div class="master-data-container">
-<div class="master-data-header">
-    <h2><i class="fa fa-file-text"></i> Receipt <?=e($receipt['rep_rw'] ?? '')?></h2>
-    <div>
-        <a href="index.php?page=receipt_list" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> Back</a>
-        <?php if($receipt): ?>
-            <a href="index.php?page=rep_make&id=<?=$id?>" class="btn btn-warning btn-sm"><i class="fa fa-pencil"></i> Edit</a>
-            <a href="index.php?page=rep_print&id=<?=$id?>" class="btn btn-default btn-sm" target="_blank"><i class="fa fa-print"></i> Print</a>
-        <?php endif; ?>
-    </div>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    .receipt-wrapper { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1200px; margin: 0 auto; }
+    .page-header { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 24px 28px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 10px 40px rgba(39,174,96,0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .page-header h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+    .page-header .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .page-header .header-actions a { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+    .page-header .header-actions a:hover { background: rgba(255,255,255,0.35); text-decoration: none; color: white; }
+    .info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .info-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 20px; }
+    .info-card h4 { margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: #27ae60; display: flex; align-items: center; gap: 8px; }
+    .info-card .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+    .info-card .info-row:last-child { border-bottom: none; }
+    .info-card .info-label { color: #6b7280; font-weight: 500; }
+    .info-card .info-value { color: #1f2937; font-weight: 600; text-align: right; max-width: 60%; }
+    .data-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; }
+    .data-card .card-header { background: #f9fafb; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; font-size: 14px; }
+    .data-card table { width: 100%; border-collapse: collapse; }
+    .data-card thead th { background: #f9fafb; padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; border-bottom: 2px solid #e5e7eb; text-align: left; letter-spacing: 0.05em; }
+    .data-card tbody td { padding: 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+    .data-card tbody tr:hover { background: #f9fafb; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .status-draft { background: #fef3c7; color: #d97706; }
+    .status-confirmed { background: #d1fae5; color: #059669; }
+    .status-cancelled { background: #fee2e2; color: #dc2626; }
+    .source-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .source-invoice { background: #ede9fe; color: #7c3aed; }
+    .source-quotation { background: #dbeafe; color: #2563eb; }
+    .source-direct { background: #f3f4f6; color: #6b7280; }
+    .summary-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 20px; margin-bottom: 24px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+    .summary-item { text-align: center; padding: 12px; }
+    .summary-item .label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+    .summary-item .value { font-size: 20px; font-weight: 700; color: #1f2937; }
+    .summary-item .value.total { color: #27ae60; font-size: 24px; }
+    .error-card { background: white; border-radius: 12px; padding: 60px 20px; text-align: center; color: #ef4444; border: 1px solid #e5e7eb; }
+    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } }
+</style>
 
 <?php if(!$receipt): ?>
-<div class="alert alert-warning">Receipt not found.</div>
-<?php else: $sc=match($receipt['status']??''){'confirmed'=>'success','draft'=>'warning','cancelled'=>'danger',default=>'default'}; ?>
-
-<?php if(($receipt['source_type']??'manual') !== 'manual'): ?>
-<div class="alert alert-info"><i class="fa fa-info-circle"></i> Source: <strong><?=ucfirst(e($receipt['source_type']))?></strong> #<?=e($receipt['source_id']??'N/A')?></div>
-<?php endif; ?>
-
-<div class="panel panel-default">
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-md-3"><label>Receipt#:</label><br><strong><?=e($receipt['rep_rw'])?></strong></div>
-            <div class="col-md-3"><label>Status:</label><br><span class="label label-<?=$sc?>"><?=e($receipt['status'])?></span></div>
-            <div class="col-md-3"><label>Payment:</label><br><?=e($receipt['payment_method']??'-')?></div>
-            <div class="col-md-3"><label>Date:</label><br><?=date('d-m-Y', strtotime($receipt['createdate']))?></div>
-        </div>
-        <?php if(!empty($receipt['description'])): ?>
-        <div class="row" style="margin-top:10px"><div class="col-md-12"><label>Notes:</label><br><?=e($receipt['description'])?></div></div>
-        <?php endif; ?>
-    </div>
+<div class="receipt-wrapper">
+    <div class="page-header"><h2><i class="fa fa-exclamation-triangle"></i> <?=$xml->error ?? 'Error'?></h2></div>
+    <div class="error-card"><i class="fa fa-exclamation-triangle" style="font-size:48px;display:block;margin-bottom:12px"></i><p style="font-size:16px;font-weight:600"><?=$xml->nodata ?? 'Receipt not found'?></p>
+        <a href="index.php?page=receipt_list" style="display:inline-block;margin-top:16px;color:#27ae60;font-weight:600"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a></div>
 </div>
-
-<div class="panel panel-default">
-    <div class="panel-heading"><strong>Products</strong></div>
-    <table class="table table-bordered table-striped">
-        <thead><tr><th>#</th><th>Product</th><th>Qty</th><th class="text-right">Price</th><th class="text-right">Total</th></tr></thead>
-        <tbody>
-        <?php $subtotal=0; foreach($products as $i=>$p):
-            $total = floatval($p['price']??0) * floatval($p['quantity']??1);
-            $subtotal += $total; ?>
-            <tr>
-                <td><?=$i+1?></td>
-                <td><?=e($p['type_name']??'')?><?php if(!empty($p['brand_name'])): ?> (<?=e($p['brand_name'])?>)<?php endif; ?></td>
-                <td><?=e($p['quantity'])?></td>
-                <td class="text-right"><?=number_format(floatval($p['price']??0),2)?></td>
-                <td class="text-right"><?=number_format($total,2)?></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+<?php return; endif; ?>
 
 <?php
-    $dis = floatval($receipt['discount'] ?? 0);
-    $afterDis = $subtotal - $dis;
-    $vatRate = floatval($receipt['vat'] ?? 0);
-    $vatAmt = $afterDis * ($vatRate / 100);
-    $grand = $afterDis + $vatAmt;
+$rc = $receipt;
+$rc_id = $id ?? ($rc['id'] ?? '');
+$st = $rc['status'] ?? 'draft';
+$st_class = $st == 'confirmed' ? 'status-confirmed' : ($st == 'cancelled' ? 'status-cancelled' : 'status-draft');
+$src = $rc['source_type'] ?? 'direct';
+$src_class = $src == 'invoice' ? 'source-invoice' : ($src == 'quotation' ? 'source-quotation' : 'source-direct');
+$vat_pct = floatval($rc['include_vat'] ?? 0);
+$dis_pct = floatval($rc['dis'] ?? $rc['discount'] ?? 0);
 ?>
-<div class="panel panel-default"><div class="panel-body"><div class="row"><div class="col-md-6 col-md-offset-6">
-    <table class="table table-condensed">
-        <tr><td>Subtotal:</td><td class="text-right"><?=number_format($subtotal,2)?></td></tr>
-        <?php if($dis>0): ?><tr><td>Discount:</td><td class="text-right">-<?=number_format($dis,2)?></td></tr><?php endif; ?>
-        <?php if($vatRate>0): ?><tr><td>VAT (<?=$vatRate?>%):</td><td class="text-right"><?=number_format($vatAmt,2)?></td></tr><?php endif; ?>
-        <tr style="font-weight:bold;font-size:1.2em"><td>Grand Total:</td><td class="text-right"><?=number_format($grand,2)?></td></tr>
-    </table>
-</div></div></div></div>
-<?php endif; ?>
+
+<div class="receipt-wrapper">
+    <div class="page-header">
+        <h2><i class="fa fa-file-text"></i> <?=$xml->receipt ?? 'Receipt'?> #<?=e($rc['rep_rw'] ?? $rc_id)?></h2>
+        <div class="header-actions">
+            <a href="index.php?page=receipt_list"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
+            <?php if($st !== 'cancelled'): ?>
+            <a href="index.php?page=receipt_make&id=<?=e($rc_id)?>"><i class="fa fa-pencil"></i> <?=$xml->edits ?? 'Edit'?></a>
+            <?php endif; ?>
+            <a href="index.php?page=receipt_print&id=<?=e($rc_id)?>" target="_blank"><i class="fa fa-print"></i> <?=$xml->print ?? 'Print'?></a>
+        </div>
+    </div>
+
+    <div class="info-cards">
+        <div class="info-card">
+            <h4><i class="fa fa-info-circle"></i> <?=$xml->receipt ?? 'Receipt'?> <?=$xml->detail ?? 'Details'?></h4>
+            <div class="info-row"><span class="info-label"><?=$xml->receipt ?? 'Receipt'?>#</span><span class="info-value"><?=e($rc['rep_rw'] ?? $rc_id)?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->datecreate ?? 'Date'?></span><span class="info-value"><?=e($rc['createdate'] ?? '')?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->status ?? 'Status'?></span><span class="info-value"><span class="status-badge <?=$st_class?>"><?=e($st)?></span></span></div>
+            <div class="info-row"><span class="info-label">Source</span><span class="info-value"><span class="source-badge <?=$src_class?>"><?=e($src)?></span></span></div>
+        </div>
+        <div class="info-card">
+            <h4><i class="fa fa-user"></i> <?=$xml->customerinfo ?? 'Contact'?></h4>
+            <div class="info-row"><span class="info-label"><?=$xml->name ?? 'Name'?></span><span class="info-value"><?=e($rc['name'] ?? '')?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->email ?? 'Email'?></span><span class="info-value"><?=e($rc['email'] ?? '')?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->phone ?? 'Phone'?></span><span class="info-value"><?=e($rc['phone'] ?? '')?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->payment ?? 'Payment'?></span><span class="info-value"><?=e($rc['payment_method'] ?? '')?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->supplier ?? 'Vendor'?></span><span class="info-value"><?=e($rc['vender'] ?? '')?></span></div>
+        </div>
+    </div>
+
+    <div class="data-card">
+        <div class="card-header"><i class="fa fa-cubes" style="color:#27ae60;margin-right:8px"></i> <?=$xml->Product ?? 'Products'?></div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr><th>#</th><th><?=$xml->Product ?? 'Product'?></th><th><?=$xml->brand ?? 'Brand'?></th><th><?=$xml->model ?? 'Model'?></th><th><?=$xml->Unit ?? 'Qty'?></th><th><?=$xml->Price ?? 'Price'?></th><th><?=$xml->discount ?? 'Disc.'?></th><th><?=$xml->total ?? 'Amount'?></th></tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $subtotal = 0;
+                    if(!empty($products)): foreach($products as $i => $p):
+                        $qty = floatval($p['quantity'] ?? $p['qty'] ?? 0);
+                        $price = floatval($p['price'] ?? 0);
+                        $disc = floatval($p['discount'] ?? 0);
+                        $amount = ($price * $qty) - ($disc * $qty);
+                        $subtotal += $amount;
+                    ?>
+                    <tr>
+                        <td><?=$i+1?></td>
+                        <td><strong><?=e($p['type_name'] ?? '')?></strong></td>
+                        <td><?=e($p['brand_name'] ?? '-')?></td>
+                        <td><?=e($p['model_name'] ?? '-')?></td>
+                        <td><?=number_format($qty)?></td>
+                        <td><?=number_format($price, 2)?></td>
+                        <td><?=$disc > 0 ? number_format($disc, 2) : '-'?></td>
+                        <td><strong><?=number_format($amount, 2)?></strong></td>
+                    </tr>
+                    <?php endforeach; else: ?>
+                    <tr><td colspan="8" class="text-center" style="padding:40px;color:#9ca3af"><i class="fa fa-inbox"></i> <?=$xml->nodata ?? 'No products'?></td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <?php
+    $discount_amt = $subtotal * ($dis_pct / 100);
+    $after_disc = $subtotal - $discount_amt;
+    $vat_amt = $after_disc * ($vat_pct / 100);
+    $grand = $after_disc + $vat_amt;
+    ?>
+    <div class="summary-card">
+        <div class="summary-grid">
+            <div class="summary-item"><div class="label"><?=$xml->total ?? 'Subtotal'?></div><div class="value"><?=number_format($subtotal, 2)?></div></div>
+            <div class="summary-item"><div class="label"><?=$xml->discount ?? 'Discount'?> (<?=$dis_pct?>%)</div><div class="value" style="color:#ef4444">-<?=number_format($discount_amt, 2)?></div></div>
+            <div class="summary-item"><div class="label">VAT (<?=$vat_pct?>%)</div><div class="value" style="color:#d97706">+<?=number_format($vat_amt, 2)?></div></div>
+            <div class="summary-item"><div class="label"><?=$xml->grandtotal ?? 'Grand Total'?></div><div class="value total"><?=number_format($grand, 2)?></div></div>
+        </div>
+    </div>
 </div>

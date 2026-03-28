@@ -111,11 +111,15 @@ class BaseController
      * @param string $page  Page name (route key)
      * @param array  $params Additional query parameters
      */
-    protected function redirect(string $page, array $params = []): void
+    protected function redirect(string $url, array $params = []): void
     {
-        $url = 'index.php?page=' . urlencode($page);
+        // Support both full URLs ("index.php?page=foo") and page names ("foo")
+        if (strpos($url, 'index.php') === false && strpos($url, '/') === false && strpos($url, 'http') === false) {
+            $url = 'index.php?page=' . urlencode($url);
+        }
         if (!empty($params)) {
-            $url .= '&' . http_build_query($params);
+            $separator = (strpos($url, '?') !== false) ? '&' : '?';
+            $url .= $separator . http_build_query($params);
         }
         header('Location: ' . $url);
         exit;

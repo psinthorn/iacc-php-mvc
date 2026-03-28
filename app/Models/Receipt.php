@@ -24,7 +24,7 @@ class Receipt extends BaseModel
     public function countReceipts(int $comId, array $filters): int
     {
         $conds = $this->buildConditions($filters);
-        $sql = "SELECT COUNT(*) as total FROM receipt WHERE vender='$comId' AND deleted_at IS NULL $conds";
+        $sql = "SELECT COUNT(*) as total FROM receipt r WHERE r.vender='$comId' AND r.deleted_at IS NULL $conds";
         $r = mysqli_query($this->conn, $sql);
         return $r ? intval(mysqli_fetch_assoc($r)['total']) : 0;
     }

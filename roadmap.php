@@ -360,6 +360,27 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
+            <!-- Completed - v5.2 UI Modernization -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.2 - ปรับปรุง UX/UI ทุกหน้า MVC' : 'v5.2 - MVC View Modernization' ?></h3>
+                <p><?= $lang === 'th' ? 'อัปเกรด 18 หน้า MVC Views ทั้งหมดเป็นดีไซน์ Legacy Modern พร้อม Design System แบบ Color-coded ตามโมดูล' : 'Upgraded all 18 MVC views to legacy modern design with color-coded module design system.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '18 Views อัปเกรด' : '18 views upgraded' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PO Module (4 หน้า)' : 'PO module (4 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Delivery Module (4 หน้า)' : 'Delivery module (4 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Receipt Module (3 หน้า)' : 'Receipt module (3 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Voucher Module (3 หน้า)' : 'Voucher module (3 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PR, Payment, Billing (4 หน้า)' : 'PR, Payment, Billing (4 views)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Gradient สีตามโมดูล' : 'Color-coded module gradients' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Inter Font + Responsive' : 'Inter font + responsive layout' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '42/42 E2E Tests ผ่าน' : '42/42 E2E tests passing' ?></li>
+                </ul>
+            </div>
+            
             <!-- Planned Q2 -->
             <div class="timeline-item planned">
                 <div class="timeline-header">
@@ -373,6 +394,23 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'QR PromptPay' : 'QR PromptPay' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับหลายสกุลเงิน' : 'Multi-currency support' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานภาษีอัตโนมัติ' : 'Automated tax reports' ?></li>
+                </ul>
+            </div>
+            
+            <!-- Planned v5.3 - Journal Module -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q2 2026</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.3 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.3 - Journal Module & Voucher Classification' ?></h3>
+                <p><?= $lang === 'th' ? 'เพิ่มโมดูลสมุดรายวัน (Journal Voucher) และระบบจำแนกประเภทใบสำคัญ (Payment/Receipt/Journal)' : 'Add Journal Voucher module and voucher type classification system (Payment/Receipt/Journal).' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'คอลัมน์ voucher_type (payment/receipt/journal)' : 'voucher_type column (payment/receipt/journal)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Debit/Credit บันทึกบัญชีคู่' : 'Debit/credit double-entry recording' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานตามประเภทใบสำคัญ' : 'Reports filtered by voucher type' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts integration' ?></li>
                 </ul>
             </div>
             

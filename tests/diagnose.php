@@ -1,304 +1,204 @@
 <?php
-chdir(__DIR__ . "/.."); // Set working directory to project root
 /**
- * iACC Diagnostic Tool for cPanel
- * Upload this to your hosting root and access it via browser
- * DELETE THIS FILE after debugging!
- * 
- * Usage: https://iacc.f2.co.th/diagnose.php
+ * Production Environment Diagnostic
+ * Checks all critical requirements for MVC routing to work
+ * Access: https://iacc.f2.co.th/tests/diagnose.php
  */
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-cache');
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('log_errors', 1);
+$results = [];
+$errors = [];
 
-echo "<html><head><title>iACC Diagnostics</title>";
-echo "<style>body{font-family:monospace;max-width:900px;margin:20px auto;background:#1a1a2e;color:#e0e0e0;padding:20px}";
-echo "h1{color:#667eea}h2{color:#f0a500;border-bottom:1px solid #333;padding-bottom:5px}";
-echo ".ok{color:#4caf50}.err{color:#f44336}.warn{color:#ff9800}";
-echo "pre{background:#0d0d1a;padding:10px;border-radius:5px;overflow-x:auto;border:1px solid #333}";
-echo ".box{background:#0d0d1a;padding:15px;border-radius:8px;margin:10px 0;border:1px solid #333}</style></head><body>";
-
-echo "<h1>🔧 iACC Diagnostic Tool</h1>";
-echo "<p>Time: " . date('Y-m-d H:i:s') . "</p>";
-
-// ======= 1. PHP Version =======
-echo "<h2>1. PHP Version</h2>";
-$phpVer = phpversion();
-echo "<div class='box'>PHP Version: <b>$phpVer</b> ";
-if (version_compare($phpVer, '8.0', '>=')) {
-    echo "<span class='warn'>⚠️ PHP 8.x - each() function removed, needs fixes</span>";
-} elseif (version_compare($phpVer, '7.4', '>=')) {
-    echo "<span class='ok'>✅ OK (7.4+)</span>";
-} else {
-    echo "<span class='err'>❌ Too old (needs 7.4+)</span>";
+// 1. PHP Version
+$results['php_version'] = PHP_VERSION;
+$results['php_sapi'] = php_sapi_name();
+if (version_compare(PHP_VERSION, '8.1', '<')) {
+    $errors[] = "PHP version " . PHP_VERSION . " is below required 8.1";
 }
-echo "</div>";
 
-// ======= 2. Required Extensions =======
-echo "<h2>2. PHP Extensions</h2>";
-$required = ['mysqli', 'mbstring', 'session', 'json', 'simplexml', 'libxml'];
-echo "<div class='box'>";
-foreach ($required as $ext) {
+// 2. Required PHP extensions
+$requiredExt = ['mysqli', 'mbstring', 'json', 'session', 'gd'];
+$results['extensions'] = [];
+foreach ($requiredExt as $ext) {
     $loaded = extension_loaded($ext);
-    echo ($loaded ? "<span class='ok'>✅" : "<span class='err'>❌") . " $ext</span><br>";
+    $results['extensions'][$ext] = $loaded;
+    if (!$loaded) $errors[] = "Missing PHP extension: $ext";
 }
-echo "</div>";
 
-// ======= 3. Config File =======
-echo "<h2>3. Configuration</h2>";
-echo "<div class='box'>";
-$configFile = __DIR__ . '/../inc/sys.configs.php';
-if (file_exists($configFile)) {
-    echo "<span class='ok'>✅ sys.configs.php exists</span><br>";
-    
-    // Check if it still has placeholder values
-    $configContent = file_get_contents($configFile);
-    if (strpos($configContent, 'YOUR_CPANEL_USERNAME') !== false) {
-        echo "<span class='err'>❌ Config still has placeholder values (YOUR_CPANEL_USERNAME)! Update database credentials.</span><br>";
-    } else {
-        echo "<span class='ok'>✅ Config appears customized</span><br>";
-    }
-    
-    if (strpos($configContent, '"mysql"') !== false || strpos($configContent, "'mysql'") !== false) {
-        echo "<span class='err'>❌ Config uses Docker hostname 'mysql' - should be 'localhost' for cPanel!</span><br>";
-    }
+// 3. Composer autoloader
+$autoloadPath = __DIR__ . '/../vendor/autoload.php';
+$results['composer_autoload_exists'] = file_exists($autoloadPath);
+if (!file_exists($autoloadPath)) {
+    $errors[] = "vendor/autoload.php not found at: $autoloadPath";
 } else {
-    echo "<span class='err'>❌ sys.configs.php NOT FOUND - rename sys.configs.cpanel.php to sys.configs.php</span><br>";
+    require_once $autoloadPath;
+    $results['composer_autoload_loaded'] = true;
 }
 
-// Check cpanel config availability
-if (file_exists(__DIR__ . '/../inc/sys.configs.cpanel.php')) {
-    echo "<span class='ok'>✅ sys.configs.cpanel.php available as template</span><br>";
-}
-echo "</div>";
-
-// ======= 4. Database Connection =======
-echo "<h2>4. Database Connection</h2>";
-echo "<div class='box'>";
-try {
-    // Load config
-    $config = [];
-    // Manually parse config to avoid side effects
-    $configLines = file_get_contents($configFile);
-    preg_match_all('/\$config\["(\w+)"\]\s*=\s*"([^"]*)"/', $configLines, $matches);
-    for ($i = 0; $i < count($matches[1]); $i++) {
-        $config[$matches[1][$i]] = $matches[2][$i];
-    }
-    
-    echo "Host: <b>" . ($config['hostname'] ?? 'NOT SET') . "</b><br>";
-    echo "User: <b>" . ($config['username'] ?? 'NOT SET') . "</b><br>";
-    echo "DB: <b>" . ($config['dbname'] ?? 'NOT SET') . "</b><br>";
-    
-    if (!empty($config['hostname']) && !empty($config['username'])) {
-        $conn = @mysqli_connect($config['hostname'], $config['username'], $config['password'] ?? '', $config['dbname'] ?? '');
-        if ($conn) {
-            echo "<span class='ok'>✅ Database connection successful!</span><br>";
-            
-            // Check required tables
-            $tables_needed = ['company', 'company_addr', 'keep_log', 'users'];
-            $result = mysqli_query($conn, "SHOW TABLES");
-            $existing = [];
-            while ($row = mysqli_fetch_row($result)) {
-                $existing[] = $row[0];
-            }
-            echo "Tables found: <b>" . count($existing) . "</b><br>";
-            foreach ($tables_needed as $t) {
-                if (in_array($t, $existing)) {
-                    echo "<span class='ok'>  ✅ $t</span><br>";
-                } else {
-                    echo "<span class='err'>  ❌ $t MISSING - need to import SQL</span><br>";
-                }
-            }
-            
-            // Check company table structure
-            if (in_array('company', $existing)) {
-                $cols = mysqli_query($conn, "SHOW COLUMNS FROM company");
-                $colNames = [];
-                while ($col = mysqli_fetch_assoc($cols)) {
-                    $colNames[] = $col['Field'];
-                }
-                echo "<br>Company columns: " . implode(', ', $colNames) . "<br>";
-                
-                // Check for company_id column (multi-tenant)
-                if (!in_array('company_id', $colNames)) {
-                    echo "<span class='warn'>⚠️ 'company_id' column missing in company table</span><br>";
-                }
-                if (!in_array('deleted_at', $colNames)) {
-                    echo "<span class='warn'>⚠️ 'deleted_at' column missing in company table</span><br>";
-                }
-            }
-            
-            mysqli_close($conn);
-        } else {
-            echo "<span class='err'>❌ Connection FAILED: " . mysqli_connect_error() . "</span><br>";
-        }
-    } else {
-        echo "<span class='err'>❌ Config values missing or not parseable</span><br>";
-    }
-} catch (Exception $e) {
-    echo "<span class='err'>❌ Error: " . $e->getMessage() . "</span><br>";
-}
-echo "</div>";
-
-// ======= 5. Directory Permissions =======
-echo "<h2>5. Directory Permissions</h2>";
-echo "<div class='box'>";
-$dirs = [
-    'logs' => __DIR__ . '/../logs',
-    'upload' => __DIR__ . '/../upload',
-    'file' => __DIR__ . '/../file',
-    'cache' => __DIR__ . '/../cache',
-    'inc' => __DIR__ . '/../inc',
+// 4. PSR-4 autoloading - can we load controllers?
+$controllerTests = [
+    'App\\Controllers\\BaseController',
+    'App\\Controllers\\DashboardController',
+    'App\\Controllers\\PurchaseOrderController',
+    'App\\Controllers\\CompanyController',
+    'App\\Controllers\\PdfController',
 ];
-foreach ($dirs as $name => $path) {
-    if (is_dir($path)) {
-        $writable = is_writable($path);
-        echo ($writable ? "<span class='ok'>✅" : "<span class='err'>❌") . " /$name/ - " . ($writable ? "writable" : "NOT WRITABLE") . "</span><br>";
-    } else {
-        echo "<span class='warn'>⚠️ /$name/ does not exist</span>";
-        // Try to create it
-        if (@mkdir($path, 0755, true)) {
-            echo " → <span class='ok'>Created!</span>";
-        } else {
-            echo " → <span class='err'>Could not create</span>";
-        }
-        echo "<br>";
+$results['controllers'] = [];
+foreach ($controllerTests as $class) {
+    try {
+        $exists = class_exists($class, true);
+        $results['controllers'][$class] = $exists ? 'OK' : 'NOT FOUND';
+        if (!$exists) $errors[] = "Cannot autoload: $class";
+    } catch (\Throwable $e) {
+        $results['controllers'][$class] = 'ERROR: ' . $e->getMessage();
+        $errors[] = "Error loading $class: " . $e->getMessage();
     }
 }
-echo "</div>";
 
-// ======= 6. Error Log Contents =======
-echo "<h2>6. Error Logs</h2>";
-$logFiles = [
-    'logs/php_errors.log',
-    'logs/app.log',
-    'logs/error.log',
-    'error.log',
-    'php-error.log',
+// 5. Model autoloading
+$modelTests = [
+    'App\\Models\\PurchaseOrder',
+    'App\\Models\\Company',
+    'App\\Models\\Dashboard',
 ];
-echo "<div class='box'>";
-foreach ($logFiles as $lf) {
-    $fullPath = __DIR__ . '/../' . $lf;
-    if (file_exists($fullPath)) {
-        $size = filesize($fullPath);
-        echo "<b>📄 $lf</b> (" . number_format($size) . " bytes)<br>";
-        // Show last 20 lines
-        $content = file_get_contents($fullPath);
-        $lines = explode("\n", trim($content));
-        $last = array_slice($lines, -20);
-        echo "<pre>" . htmlspecialchars(implode("\n", $last)) . "</pre>";
-    } else {
-        echo "<span class='warn'>⚠️ $lf not found</span><br>";
+$results['models'] = [];
+foreach ($modelTests as $class) {
+    try {
+        $exists = class_exists($class, true);
+        $results['models'][$class] = $exists ? 'OK' : 'NOT FOUND';
+        if (!$exists) $errors[] = "Cannot autoload: $class";
+    } catch (\Throwable $e) {
+        $results['models'][$class] = 'ERROR: ' . $e->getMessage();
+        $errors[] = "Error loading $class: " . $e->getMessage();
     }
 }
-echo "</div>";
 
-// ======= 7. each() Function Check =======
-echo "<h2>7. Deprecated Function Check</h2>";
-echo "<div class='box'>";
-if (function_exists('each')) {
-    echo "<span class='ok'>✅ each() function available (PHP < 8.0)</span><br>";
-} else {
-    echo "<span class='warn'>⚠️ each() NOT available (PHP 8.0+) - files need update</span><br>";
-    
-    // Scan for remaining each() usage
-    $filesToCheck = glob(__DIR__ . '/../*.php');
-    $filesToCheck = array_merge($filesToCheck, glob(__DIR__ . '/../inc/*.php'));
-    $found = [];
-    foreach ($filesToCheck as $f) {
-        $content = file_get_contents($f);
-        if (preg_match('/each\s*\(/', $content)) {
-            $lines = explode("\n", $content);
-            foreach ($lines as $num => $line) {
-                if (preg_match('/\beach\s*\(/', $line) && strpos($line, '//') === false) {
-                    $found[] = basename($f) . ":" . ($num+1) . " → " . trim($line);
-                }
-            }
-        }
-    }
-    if ($found) {
-        echo "<span class='err'>❌ Files still using each():</span><pre>" . htmlspecialchars(implode("\n", $found)) . "</pre>";
-    } else {
-        echo "<span class='ok'>✅ No remaining each() calls found</span><br>";
-    }
-}
-echo "</div>";
-
-// ======= 8. Session Test =======
-echo "<h2>8. Session & Security</h2>";
-echo "<div class='box'>";
-session_start();
-echo "Session save path: <b>" . (session_save_path() ?: 'default') . "</b><br>";
-echo "Session ID: <b>" . session_id() . "</b><br>";
-echo "Session status: <b>" . (session_status() === PHP_SESSION_ACTIVE ? 'Active ✅' : 'Inactive ❌') . "</b><br>";
-
-if (isset($_SESSION['user_id'])) {
-    echo "Logged in as: user_id=<b>" . htmlspecialchars($_SESSION['user_id']) . "</b>, com_id=<b>" . htmlspecialchars($_SESSION['com_id'] ?? 'not set') . "</b><br>";
-} else {
-    echo "<span class='warn'>⚠️ Not logged in - login first to test company creation</span><br>";
-}
-
-// Check CSRF
-if (isset($_SESSION['csrf_token'])) {
-    echo "CSRF token: <span class='ok'>✅ Set</span><br>";
-} else {
-    echo "CSRF token: <span class='warn'>⚠️ Not set (will be created on first page load)</span><br>";
-}
-echo "</div>";
-
-// ======= 9. File Existence Check =======
-echo "<h2>9. Critical Files</h2>";
-echo "<div class='box'>";
+// 6. Critical file paths
 $criticalFiles = [
-    'index.php',
     'inc/sys.configs.php',
     'inc/class.dbconn.php',
-    'inc/class.hard.php',
     'inc/security.php',
-    'inc/class.company_filter.php',
     'inc/error-handler.php',
-    'inc/string-us.xml',
-    'inc/string-th.xml',
+    'inc/class.hard.php',
+    'inc/class.current.php',
+    'inc/class.company_filter.php',
+    'inc/pdf-template.php',
+    'app/Config/routes.php',
+    'app/Controllers/BaseController.php',
+    'app/Controllers/PurchaseOrderController.php',
+    'app/Views/layouts/head.php',
+    'app/Views/layouts/sidebar.php',
+    'app/Views/layouts/scripts.php',
+    'vendor/autoload.php',
 ];
+$results['files'] = [];
 foreach ($criticalFiles as $f) {
-    $exists = file_exists(__DIR__ . '/../' . $f);
-    echo ($exists ? "<span class='ok'>✅" : "<span class='err'>❌") . " $f</span><br>";
+    $fullPath = __DIR__ . '/../' . $f;
+    $exists = file_exists($fullPath);
+    $results['files'][$f] = $exists;
+    if (!$exists) $errors[] = "Missing file: $f";
 }
-echo "</div>";
 
-// ======= 10. Quick Simulation =======
-echo "<h2>10. Quick MVC Simulation</h2>";
-echo "<div class='box'>";
-echo "Simulating require chain for MVC controllers...<br>";
-try {
-    // Test loading config
-    $testConfig = [];
-    @include(__DIR__ . '/../inc/sys.configs.php');
-    echo "<span class='ok'>✅ sys.configs.php loaded</span><br>";
+// 7. Directory structure
+$dirs = ['app', 'app/Controllers', 'app/Models', 'app/Views', 'app/Config', 'vendor', 'inc', 'logs'];
+$results['directories'] = [];
+foreach ($dirs as $d) {
+    $fullPath = __DIR__ . '/../' . $d;
+    $exists = is_dir($fullPath);
+    $results['directories'][$d] = $exists;
+    if (!$exists) $errors[] = "Missing directory: $d";
+}
+
+// 8. Working directory and paths
+$results['cwd'] = getcwd();
+$results['document_root'] = $_SERVER['DOCUMENT_ROOT'] ?? 'N/A';
+$results['script_filename'] = $_SERVER['SCRIPT_FILENAME'] ?? 'N/A';
+$results['__dir__'] = __DIR__;
+$results['realpath_root'] = realpath(__DIR__ . '/..');
+
+// 9. PHP settings that affect operation
+$results['php_settings'] = [
+    'display_errors' => ini_get('display_errors'),
+    'error_reporting' => error_reporting(),
+    'max_execution_time' => ini_get('max_execution_time'),
+    'memory_limit' => ini_get('memory_limit'),
+    'open_basedir' => ini_get('open_basedir') ?: '(none)',
+    'short_open_tag' => ini_get('short_open_tag'),
+];
+
+// 10. open_basedir restrictions
+$openBasedir = ini_get('open_basedir');
+if ($openBasedir) {
+    $results['open_basedir_paths'] = explode(':', $openBasedir);
+}
+
+// 11. Test route loading
+$routesFile = __DIR__ . '/../app/Config/routes.php';
+if (file_exists($routesFile)) {
+    $routes = require $routesFile;
+    $results['total_routes'] = count($routes);
+    $results['po_edit_route'] = $routes['po_edit'] ?? 'NOT FOUND';
     
-    // Test DB connection class
-    if (file_exists(__DIR__ . '/../inc/class.dbconn.php')) {
-        // Check if simplexml can load language file
-        $langFile = __DIR__ . '/../inc/string-us.xml';
-        if (file_exists($langFile)) {
-            $xml = @simplexml_load_file($langFile, "SimpleXMLElement", LIBXML_NOCDATA);
-            if ($xml) {
-                echo "<span class='ok'>✅ Language XML loaded</span><br>";
-            } else {
-                echo "<span class='err'>❌ Failed to parse string-us.xml</span><br>";
-            }
-        } else {
-            echo "<span class='err'>❌ string-us.xml not found</span><br>";
-        }
+    $mvcCount = 0;
+    foreach ($routes as $k => $v) {
+        if (is_array($v)) $mvcCount++;
     }
-} catch (Exception $e) {
-    echo "<span class='err'>❌ Error: " . $e->getMessage() . "</span><br>";
-} catch (Error $e) {
-    echo "<span class='err'>❌ Fatal: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine() . "</span><br>";
+    $results['mvc_routes'] = $mvcCount;
 }
-echo "</div>";
 
-echo "<br><p style='color:#f44336'><b>⚠️ DELETE this file (diagnose.php) after debugging!</b></p>";
-echo "</body></html>";
-?>
+// 12. Check error logs
+$errorLog = __DIR__ . '/../logs/error.log';
+if (file_exists($errorLog) && filesize($errorLog) > 0) {
+    $lines = array_filter(explode("\n", file_get_contents($errorLog)));
+    $results['error_log_lines'] = count($lines);
+    $results['error_log_last_10'] = array_slice($lines, -10);
+}
+
+// 13. Check app.log
+$appLog = __DIR__ . '/../logs/app.log';
+if (file_exists($appLog) && filesize($appLog) > 0) {
+    $lines = array_filter(explode("\n", file_get_contents($appLog)));
+    $results['app_log_lines'] = count($lines);
+    $results['app_log_last_5'] = array_slice($lines, -5);
+}
+
+// 14. Check PHP error log (system)
+$phpErrorLog = ini_get('error_log');
+$results['php_error_log_path'] = $phpErrorLog ?: 'default';
+
+// 15. Try to instantiate a controller (the real test)
+try {
+    // Load required files first
+    require_once __DIR__ . '/../inc/sys.configs.php';
+    require_once __DIR__ . '/../inc/class.dbconn.php';
+    require_once __DIR__ . '/../inc/security.php';
+    
+    $db = new DbConn($config);
+    $results['db_connection'] = $db->conn ? 'OK' : 'FAILED';
+    
+    // Simulate session for controller test
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    $_SESSION['com_id'] = $_SESSION['com_id'] ?? 1;
+    $_SESSION['user_id'] = $_SESSION['user_id'] ?? 1;
+    $_SESSION['user_level'] = $_SESSION['user_level'] ?? 0;
+    $_SESSION['user_email'] = $_SESSION['user_email'] ?? 'test';
+    $_SESSION['lang'] = $_SESSION['lang'] ?? 'en';
+    $_SESSION['com_name'] = $_SESSION['com_name'] ?? 'test';
+    
+    // Test instantiating controller
+    $controller = new App\Controllers\DashboardController();
+    $results['controller_instantiation'] = 'OK';
+} catch (\Throwable $e) {
+    $results['controller_error'] = $e->getMessage();
+    $results['controller_error_file'] = $e->getFile() . ':' . $e->getLine();
+    $results['controller_error_trace'] = array_slice(explode("\n", $e->getTraceAsString()), 0, 5);
+    $errors[] = "Controller instantiation failed: " . $e->getMessage();
+}
+
+// Summary
+$results['total_errors'] = count($errors);
+$results['errors'] = $errors;
+$results['status'] = count($errors) === 0 ? 'ALL OK' : 'ISSUES FOUND';
+
+echo json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

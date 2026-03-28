@@ -37,7 +37,7 @@ class PurchaseRequest extends BaseModel
             $where = "cus_id='$comId'";
         }
         $statusCond = $this->getStatusCondition($filters['status'] ?? '');
-        $sql = "SELECT pr.id, pr.name, name_en, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate, status, cancel
+        $sql = "SELECT pr.id, pr.name, pr.des, name_en, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate, status, cancel
             FROM pr $join WHERE cancel='0' AND $where $statusCond {$conds['search']} {$conds['date']}
             ORDER BY pr.id DESC LIMIT $offset, $limit";
         return $this->fetchAll($sql);
@@ -45,8 +45,14 @@ class PurchaseRequest extends BaseModel
 
     private function getStatusCondition(string $status): string
     {
-        $map = ['pending'=>" AND status='0'", 'quotation'=>" AND status='1'", 'confirmed'=>" AND status='2'",
-                'delivered'=>" AND status='3'", 'invoiced'=>" AND status='4'", 'completed'=>" AND status='5'"];
+        // Numeric values 0-5 filter specific status, 6 or empty = show all
+        $map = [
+            '0' => " AND status='0'", '1' => " AND status='1'", '2' => " AND status='2'",
+            '3' => " AND status='3'", '4' => " AND status='4'", '5' => " AND status='5'",
+            // Legacy text keys (kept for backward compat)
+            'pending' => " AND status='0'", 'quotation' => " AND status='1'", 'confirmed' => " AND status='2'",
+            'delivered' => " AND status='3'", 'invoiced' => " AND status='4'", 'completed' => " AND status='5'",
+        ];
         return $map[$status] ?? '';
     }
 
@@ -55,7 +61,7 @@ class PurchaseRequest extends BaseModel
         $search = '';
         if (!empty($f['search'])) {
             $s = \sql_escape($f['search']);
-            $search = " AND (pr.name LIKE '%$s%' OR company.name_en LIKE '%$s%')";
+            $search = " AND (pr.name LIKE '%$s%' OR pr.des LIKE '%$s%' OR company.name_en LIKE '%$s%')";
         }
         $date = '';
         if (!empty($f['date_from'])) $date .= " AND pr.date >= '" . \sql_escape($f['date_from']) . "'";
@@ -75,21 +81,25 @@ class PurchaseRequest extends BaseModel
     public function createPR(array $data, int $comId): int
     {
         $venId = !empty($data['ven_id']) ? intval($data['ven_id']) : $comId;
-        $args = ['table' => 'pr'];
-        $args['value'] = "'$comId','" . \sql_escape($data['name']) . "','" . \sql_escape($data['des']) . "','" .
+
+        // Use isolated array for PR insert (prevents state leakage)
+        $argsPR = array();
+        $argsPR['table'] = 'pr';
+        $argsPR['value'] = "'$comId','" . \sql_escape($data['name']) . "','" . \sql_escape($data['des']) . "','" .
             intval($data['user_id']) . "','" . intval($data['cus_id']) . "','" . $venId . "','" .
             date('Y-m-d') . "','0','0','0','0',NULL";
-        $prId = $this->hard->insertDbMax($args);
+        $prId = $this->hard->insertDbMax($argsPR);
 
-        // Insert product rows
+        // Insert product rows — fresh array per product
         for ($i = 0; $i < 9; $i++) {
             $typeId = $data['id' . $i] ?? '';
             $qty = $data['quantity' . $i] ?? '0';
             $price = $data['price' . $i] ?? '0';
             if (!empty($typeId) && $typeId != '0' && $qty != '0') {
-                $args['table'] = 'tmp_product';
-                $args['value'] = "NULL,'$prId','" . intval($typeId) . "','" . floatval($qty) . "','" . floatval($price) . "'";
-                $this->hard->insertDB($args);
+                $argsProduct = array();
+                $argsProduct['table'] = 'tmp_product';
+                $argsProduct['value'] = "NULL,'$prId','" . intval($typeId) . "','" . floatval($qty) . "','" . floatval($price) . "'";
+                $this->hard->insertDB($argsProduct);
             }
         }
         return $prId;
@@ -99,6 +109,37 @@ class PurchaseRequest extends BaseModel
     {
         $cf = \CompanyFilter::getInstance();
         return $this->fetchAll("SELECT * FROM category " . $cf->whereCompanyFilter());
+    }
+
+    /**
+     * Get categories with nested types and average prices for product selection modal.
+     * Returns categories that have at least one type.
+     */
+    public function getCategoriesWithTypes(int $comId): array
+    {
+        $companyCondition = $comId > 0 ? " AND company_id = " . intval($comId) : '';
+
+        $categories = [];
+        $querycat = mysqli_query($this->conn, "SELECT * FROM category WHERE deleted_at IS NULL" . $companyCondition);
+        if ($querycat) {
+            while ($cat = mysqli_fetch_assoc($querycat)) {
+                $cat['types'] = [];
+                $query_type = mysqli_query($this->conn, "SELECT * FROM type WHERE cat_id='" . intval($cat['id']) . "' AND deleted_at IS NULL" . $companyCondition);
+                if ($query_type) {
+                    while ($type = mysqli_fetch_assoc($query_type)) {
+                        $sql = "SELECT COALESCE(SUM(p.price)/NULLIF(SUM(p.quantity),0), 0) as net 
+                                FROM product p WHERE p.type='" . intval($type['id']) . "'";
+                        $netResult = mysqli_fetch_assoc(mysqli_query($this->conn, $sql));
+                        $type['price'] = floor($netResult['net'] ?? 0);
+                        $cat['types'][] = $type;
+                    }
+                }
+                if (!empty($cat['types'])) {
+                    $categories[] = $cat;
+                }
+            }
+        }
+        return $categories;
     }
 
     public function getTypesByCategory(int $catId, int $comId): array
@@ -119,9 +160,14 @@ class PurchaseRequest extends BaseModel
 
     public function getPRDetail(int $id, int $comId): ?array
     {
-        $sql = "SELECT pr.*, company.name_en as company_name FROM pr
-            JOIN company ON (pr.cus_id=company.id OR pr.ven_id=company.id)
-            WHERE pr.id='" . \sql_int($id) . "' AND (pr.ven_id='$comId' OR pr.cus_id='$comId')
+        $where = $comId > 0 ? " AND (pr.ven_id='$comId' OR pr.cus_id='$comId')" : '';
+        $sql = "SELECT pr.*, DATE_FORMAT(pr.date,'%d-%m-%Y') as createdate,
+                cust.name_en as customer_name, ven.name_en as vendor_name,
+                COALESCE(cust.name_en, ven.name_en) as company_name
+            FROM pr
+            LEFT JOIN company cust ON pr.cus_id=cust.id
+            LEFT JOIN company ven ON pr.ven_id=ven.id
+            WHERE pr.id='" . \sql_int($id) . "'" . $where . "
             LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
         return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
@@ -129,8 +175,8 @@ class PurchaseRequest extends BaseModel
 
     public function getTmpProducts(int $prId): array
     {
-        return $this->fetchAll("SELECT tp.*, type.name as type_name FROM tmp_product tp
-            LEFT JOIN type ON tp.type_id=type.id WHERE tp.pr_id='" . \sql_int($prId) . "'");
+        return $this->fetchAll("SELECT tp.*, t.name as type_name FROM tmp_product tp
+            LEFT JOIN type t ON tp.type=t.id WHERE tp.pr_id='" . \sql_int($prId) . "'");
     }
 
     private function fetchAll(string $sql): array

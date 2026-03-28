@@ -202,11 +202,13 @@ class PurchaseOrder extends BaseModel
     {
         $sql = "SELECT po.id, po.ref, po.name, po.date, po.valid_pay, po.deliver_date, po.vat, po.dis, po.over,
                 po.bandven, pr.cus_id, pr.ven_id, pr.des, pr.status,
-                ca.adr_tax, ca.adr, ca.name as addr_name
+                ca.adr_tax, ca.city_tax, ca.district_tax, ca.province_tax, ca.zip_tax
                 FROM po JOIN pr ON po.ref=pr.id
-                LEFT JOIN company_addr ca ON pr.cus_id=ca.com_id
+                LEFT JOIN company_addr ca ON pr.cus_id=ca.com_id AND ca.deleted_at IS NULL
                 WHERE po.id='" . \sql_int($id) . "' AND pr.status='1' AND po_id_new=''
-                AND pr.ven_id='$comId' LIMIT 1";
+                AND pr.ven_id='$comId'
+                ORDER BY (ca.valid_end = '0000-00-00' OR ca.valid_end = '9999-12-31') DESC, ca.valid_start DESC
+                LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
         return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
     }
@@ -271,7 +273,7 @@ class PurchaseOrder extends BaseModel
     public function getTypes(int $comId): array
     {
         $cf = \CompanyFilter::getInstance();
-        return $this->fetchAll("SELECT t.name, t.id, t.des, c.cat_name FROM type t LEFT JOIN category c ON t.cat_id=c.id WHERE 1=1 " . $cf->andCompanyFilter('type'));
+        return $this->fetchAll("SELECT t.name, t.id, t.des, c.cat_name FROM type t LEFT JOIN category c ON t.cat_id=c.id WHERE 1=1 " . $cf->andCompanyFilter('t'));
     }
 
     public function getModels(): array
@@ -281,10 +283,10 @@ class PurchaseOrder extends BaseModel
 
     public function getTmpProducts(int $prId): array
     {
-        return $this->fetchAll("SELECT tmp_product.*, type.name as type_name, type.des as type_des, category.cat_name
+        return $this->fetchAll("SELECT tmp_product.*, t.name as type_name, t.des as type_des, category.cat_name
             FROM tmp_product
-            JOIN type ON tmp_product.type_id=type.id
-            LEFT JOIN category ON type.cat_id=category.id
+            LEFT JOIN type t ON tmp_product.type=t.id
+            LEFT JOIN category ON t.cat_id=category.id
             WHERE tmp_product.pr_id='" . \sql_int($prId) . "'");
     }
 

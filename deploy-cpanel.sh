@@ -59,7 +59,6 @@ EXCLUDES=(
     "*.backup"
     "build"
     "node_modules"
-    "vendor"
     "TODAY_WORK_SUMMARY*.txt"
     "phpstan.neon"
     "deploy-cpanel.sh"

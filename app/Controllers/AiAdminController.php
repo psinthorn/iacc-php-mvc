@@ -13,31 +13,62 @@ class AiAdminController extends BaseController
     /** @var \PDO Direct PDO connection for AI tables */
     private $pdo;
 
+    /** @var bool Whether current user has admin access */
+    private bool $hasAccess = false;
+
     public function __construct()
     {
         parent::__construct();
         
-        // Require super admin
-        if (($this->user['level'] ?? 0) < 2) {
+        // Create PDO connection from app config (supports all environments)
+        global $config;
+        $host     = $config['hostname'] ?? 'localhost';
+        $dbname   = $config['dbname']   ?? 'iacc';
+        $username = $config['username'] ?? 'root';
+        $password = $config['password'] ?? '';
+        
+        try {
+            $this->pdo = new \PDO(
+                "mysql:host={$host};dbname={$dbname};charset=utf8mb4",
+                $username, $password,
+                [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC]
+            );
+        } catch (\PDOException $e) {
+            $this->pdo = null;
+        }
+        
+        // Check super admin access
+        $this->hasAccess = (($this->user['level'] ?? 0) >= 2);
+    }
+
+    /**
+     * Guard: check admin access and PDO availability
+     * Returns true if access denied (caller should return)
+     */
+    private function guardAccess(): bool
+    {
+        if (!$this->hasAccess) {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'error' => 'Access denied']);
             }
             echo '<div class="alert alert-danger">Access denied. Super Admin required.</div>';
-            return;
+            return true;
         }
-        
-        // Create PDO connection for AI queries
-        $this->pdo = new \PDO(
-            'mysql:host=mysql;dbname=iacc;charset=utf8mb4',
-            'root', 'root',
-            [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC]
-        );
+        if (!$this->pdo) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'error' => 'Database connection failed']);
+            }
+            echo '<div class="alert alert-danger">Database connection error.</div>';
+            return true;
+        }
+        return false;
     }
 
     // ==================== Chat History ====================
 
     public function chatHistory(): void
     {
+        if ($this->guardAccess()) return;
         if ($this->isAjax()) {
             $this->handleChatHistoryAjax();
             return;
@@ -84,6 +115,7 @@ class AiAdminController extends BaseController
 
     public function schemaBrowser(): void
     {
+        if ($this->guardAccess()) return;
         if ($this->isAjax()) {
             $this->handleSchemaBrowserAjax();
             return;
@@ -138,6 +170,7 @@ class AiAdminController extends BaseController
 
     public function actionLog(): void
     {
+        if ($this->guardAccess()) return;
         if ($this->isAjax()) {
             $this->handleActionLogAjax();
             return;
@@ -215,6 +248,7 @@ class AiAdminController extends BaseController
 
     public function schemaRefresh(): void
     {
+        if ($this->guardAccess()) return;
         if ($this->isAjax()) {
             $this->handleSchemaRefreshAjax();
             return;
@@ -352,6 +386,7 @@ class AiAdminController extends BaseController
 
     public function documentation(): void
     {
+        if ($this->guardAccess()) return;
         $this->render('ai/documentation');
     }
 }

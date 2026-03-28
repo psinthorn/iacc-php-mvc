@@ -386,9 +386,6 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=debug_session"><i class="fa fa-key"></i> <?=$xml->debugsession ?? 'Session Debug'?></a>
                             </li>
                             <li>
-                                <a href="index.php?page=debug_invoice"><i class="fa fa-file-text-o"></i> <?=$xml->debuginvoice ?? 'Invoice Debug'?></a>
-                            </li>
-                            <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
                             <li>
@@ -399,9 +396,6 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <?php if ($docker_debug_enabled): ?>
                             <li class="divider"></li>
-                            <li>
-                                <a href="index.php?page=docker_test"><i class="fa fa-cloud"></i> <?=$xml->dockertest ?? 'Docker Test'?></a>
-                            </li>
                             <li>
                                 <a href="index.php?page=test_containers"><i class="fa fa-cube"></i> <?=$xml->testcontainers ?? 'Container Debug'?></a>
                             </li>
