@@ -106,6 +106,8 @@ return [
     'billing'       => ['BillingController', 'index'],
     'billing_make'  => ['BillingController', 'make'],
     'billing_store' => ['BillingController', 'store'],
+    'billing_view'  => ['BillingController', 'view'],
+    'billing_print' => ['BillingController', 'print'],
 
     // ========== Phase 4 MVC Routes ==========
     

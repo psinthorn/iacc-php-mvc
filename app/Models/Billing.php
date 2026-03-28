@@ -194,6 +194,61 @@ class Billing extends BaseModel
         mysqli_query($this->conn, "DELETE FROM billing WHERE bil_id='" . \sql_int($bilId) . "'");
     }
 
+    /**
+     * Get a single billing note with customer info
+     */
+    public function getBillingById(int $bilId): ?array
+    {
+        $sql = "SELECT b.bil_id, b.des, b.price, b.customer_id, b.created_at,
+            DATE_FORMAT(b.created_at, '%d/%m/%Y') as billing_date,
+            c.name_en, c.name_sh, c.tax as cust_tax, c.phone as cust_phone, c.email as cust_email
+            FROM billing b
+            LEFT JOIN company c ON b.customer_id = c.id
+            WHERE b.bil_id = '" . \sql_int($bilId) . "'";
+        $r = mysqli_query($this->conn, $sql);
+        return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
+    }
+
+    /**
+     * Get all invoices linked to a billing note
+     */
+    public function getBillingInvoices(int $bilId): array
+    {
+        $sql = "SELECT bi.inv_id, bi.amount,
+            po.tax as po_number, po.name as po_name,
+            iv.texiv_rw as inv_no,
+            DATE_FORMAT(iv.createdate, '%d/%m/%Y') as invoice_date,
+            pr.des as pr_description,
+            (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
+             FROM product WHERE product.po_id=po.id) as subtotal,
+            po.vat, po.dis as discount, po.over as withholding
+            FROM billing_items bi
+            JOIN iv ON bi.inv_id = iv.id
+            JOIN po ON iv.tex = po.id
+            JOIN pr ON po.ref = pr.id
+            WHERE bi.bil_id = '" . \sql_int($bilId) . "'
+            AND po.po_id_new = ''
+            AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
+            ORDER BY iv.createdate ASC";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Get vendor/company info with address for billing print
+     */
+    public function getCompanyWithAddress(int $comId): ?array
+    {
+        $sql = "SELECT c.id, c.name_en, c.name_sh, c.tax, c.phone, c.email, c.fax,
+            ca.adr_tax, ca.city_tax, ca.district_tax, ca.province_tax, ca.zip_tax,
+            b.logo
+            FROM company c
+            LEFT JOIN company_addr ca ON c.id = ca.com_id AND ca.valid_end = '0000-00-00'
+            LEFT JOIN brand b ON c.id = b.com_id
+            WHERE c.id = '" . \sql_int($comId) . "' LIMIT 1";
+        $r = mysqli_query($this->conn, $sql);
+        return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
+    }
+
     private function calculateInvoiceAmount(int $invId): float
     {
         $sql = "SELECT
