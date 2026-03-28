@@ -38,16 +38,31 @@ class BillingController extends BaseController
             else { $dr = get_date_range($datePreset); $filters['date_from'] = $dr['from']; $filters['date_to'] = $dr['to']; }
         }
 
-        $total = $this->billing->countBillingItems($comId, $filters);
+        $total = $this->billing->countBillingGroups($comId, $filters);
         $pagination = paginate($total, $perPage, $page);
 
         $this->render('billing/list', [
-            'items' => $this->billing->getBillingItems($comId, $filters, $pagination['offset'], $perPage),
+            'items' => $this->billing->getBillingGroups($comId, $filters, $pagination['offset'], $perPage),
             'stats' => $this->billing->getStats($comId),
             'total_records' => $total, 'pagination' => $pagination,
             'filters' => $filters, 'per_page' => $perPage,
             'date_preset' => $datePreset,
         ]);
+    }
+
+    /**
+     * AJAX endpoint: return invoices for a billing note as JSON
+     */
+    public function invoicesJson(): void
+    {
+        header('Content-Type: application/json');
+        $bilId = $this->inputInt('bil_id', 0);
+        if ($bilId <= 0) {
+            echo json_encode([]);
+            return;
+        }
+        $invoices = $this->billing->getBillingNoteInvoices($bilId);
+        echo json_encode($invoices);
     }
 
     public function make(): void
