@@ -32,6 +32,12 @@ class BillingController extends BaseController
             'date_to' => $this->input('date_to', ''),
         ];
 
+        $datePreset = $this->input('date_preset', '');
+        if (!empty($datePreset)) {
+            if ($datePreset === 'all') { $filters['date_from'] = ''; $filters['date_to'] = ''; }
+            else { $dr = get_date_range($datePreset); $filters['date_from'] = $dr['from']; $filters['date_to'] = $dr['to']; }
+        }
+
         $total = $this->billing->countBillingItems($comId, $filters);
         $pagination = paginate($total, $perPage, $page);
 
@@ -40,6 +46,7 @@ class BillingController extends BaseController
             'stats' => $this->billing->getStats($comId),
             'total_records' => $total, 'pagination' => $pagination,
             'filters' => $filters, 'per_page' => $perPage,
+            'date_preset' => $datePreset,
         ]);
     }
 
