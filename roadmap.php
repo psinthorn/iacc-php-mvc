@@ -397,6 +397,23 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
+            <!-- Planned v5.3 - Journal Module -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q2 2026</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.3 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.3 - Journal Module & Voucher Classification' ?></h3>
+                <p><?= $lang === 'th' ? 'เพิ่มโมดูลสมุดรายวัน (Journal Voucher) และระบบจำแนกประเภทใบสำคัญ (Payment/Receipt/Journal)' : 'Add Journal Voucher module and voucher type classification system (Payment/Receipt/Journal).' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'คอลัมน์ voucher_type (payment/receipt/journal)' : 'voucher_type column (payment/receipt/journal)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Debit/Credit บันทึกบัญชีคู่' : 'Debit/credit double-entry recording' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานตามประเภทใบสำคัญ' : 'Reports filtered by voucher type' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts integration' ?></li>
+                </ul>
+            </div>
+            
             <!-- Planned Q3 -->
             <div class="timeline-item planned">
                 <div class="timeline-header">

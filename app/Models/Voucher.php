@@ -126,7 +126,32 @@ class Voucher extends BaseModel
     public function getTypes(int $comId): array
     {
         $cf = \CompanyFilter::getInstance();
-        return $this->fetchAll("SELECT name, id FROM type WHERE 1=1 " . $cf->andCompanyFilter('type'));
+        return $this->fetchAll("SELECT t.name, t.id, t.des, c.cat_name FROM type t LEFT JOIN category c ON t.cat_id=c.id WHERE 1=1 " . $cf->andCompanyFilter('t'));
+    }
+
+    /** Get all brands for company (for cascading dropdown) */
+    public function getBrands(int $comId): array
+    {
+        $cf = \CompanyFilter::getInstance();
+        return $this->fetchAll("SELECT brand_name, id FROM brand WHERE 1=1 " . $cf->andCompanyFilter('brand'));
+    }
+
+    /** Get all models (for client-side type→model filtering) */
+    public function getModels(): array
+    {
+        return $this->fetchAll("SELECT m.id, m.type_id, m.model_name, m.des, m.price, m.brand_id FROM model m WHERE m.deleted_at IS NULL");
+    }
+
+    /** Get vendor/company brand logos for brandven dropdown */
+    public function getVendorBrands(int $comId): array
+    {
+        return $this->fetchAll("SELECT brand_name, id FROM brand WHERE ven_id='$comId'");
+    }
+
+    /** Get active payment methods for dropdown */
+    public function getPaymentMethods(int $comId): array
+    {
+        return $this->fetchAll("SELECT * FROM payment_methods WHERE com_id='$comId' AND is_active=1 ORDER BY method_type");
     }
 
     private function fetchAll(string $sql): array
