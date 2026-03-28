@@ -64,12 +64,132 @@ class Billing extends BaseModel
             $cond .= " AND (po.name LIKE '%$s%' OR po.tax LIKE '%$s%' OR company.name_en LIKE '%$s%')";
         }
         if (!empty($f['status'])) {
-            if ($f['status'] === 'with_billing') $cond .= " AND bi.bil_id IS NOT NULL";
-            elseif ($f['status'] === 'without_billing') $cond .= " AND bi.bil_id IS NULL";
+            if ($f['status'] === 'billed' || $f['status'] === 'with_billing') $cond .= " AND bi.bil_id IS NOT NULL";
+            elseif ($f['status'] === 'unbilled' || $f['status'] === 'without_billing') $cond .= " AND bi.bil_id IS NULL";
         }
         if (!empty($f['date_from'])) $cond .= " AND iv.createdate >= '" . \sql_escape($f['date_from']) . "'";
         if (!empty($f['date_to'])) $cond .= " AND iv.createdate <= '" . \sql_escape($f['date_to']) . "'";
         return $cond;
+    }
+
+    /**
+     * Count billing groups (billing notes + unbilled invoices counted individually)
+     */
+    public function countBillingGroups(int $comId, array $filters): int
+    {
+        $searchCond = '';
+        $dateCond = '';
+        if (!empty($filters['search'])) {
+            $s = \sql_escape($filters['search']);
+            $searchCond = " AND (po.name LIKE '%$s%' OR po.tax LIKE '%$s%' OR company.name_en LIKE '%$s%')";
+        }
+        if (!empty($filters['date_from'])) $dateCond .= " AND iv.createdate >= '" . \sql_escape($filters['date_from']) . "'";
+        if (!empty($filters['date_to'])) $dateCond .= " AND iv.createdate <= '" . \sql_escape($filters['date_to']) . "'";
+
+        $base = "FROM iv JOIN po ON iv.tex=po.id JOIN pr ON po.ref=pr.id
+            JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
+            LEFT JOIN billing_items bi ON bi.inv_id=iv.id
+            LEFT JOIN billing b ON bi.bil_id=b.bil_id
+            WHERE pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond";
+
+        $status = $filters['status'] ?? '';
+        if ($status === 'billed') {
+            $sql = "SELECT COUNT(DISTINCT b.bil_id) as cnt $base AND bi.bil_id IS NOT NULL";
+        } elseif ($status === 'unbilled') {
+            $sql = "SELECT COUNT(*) as cnt $base AND bi.bil_id IS NULL";
+        } else {
+            // billing notes count + unbilled invoices count
+            $sql = "SELECT (SELECT COUNT(DISTINCT b2.bil_id) $base AND bi.bil_id IS NOT NULL)
+                    + (SELECT COUNT(*) $base AND bi.bil_id IS NULL) as cnt";
+        }
+        $r = mysqli_query($this->conn, $sql);
+        return $r ? intval(mysqli_fetch_assoc($r)['cnt']) : 0;
+    }
+
+    /**
+     * Get billing groups: billing notes (grouped) + unbilled invoices (flat)
+     * Returns array of rows: billing notes first (with inv_count, total_amount), then unbilled invoices
+     */
+    public function getBillingGroups(int $comId, array $filters, int $offset, int $limit): array
+    {
+        $searchCond = '';
+        $dateCond = '';
+        if (!empty($filters['search'])) {
+            $s = \sql_escape($filters['search']);
+            $searchCond = " AND (po.name LIKE '%$s%' OR po.tax LIKE '%$s%' OR company.name_en LIKE '%$s%')";
+        }
+        if (!empty($filters['date_from'])) $dateCond .= " AND iv.createdate >= '" . \sql_escape($filters['date_from']) . "'";
+        if (!empty($filters['date_to'])) $dateCond .= " AND iv.createdate <= '" . \sql_escape($filters['date_to']) . "'";
+
+        $status = $filters['status'] ?? '';
+
+        $parts = [];
+
+        // Part 1: Billing notes (grouped)
+        if ($status !== 'unbilled') {
+            $parts[] = "(SELECT 'billing' as row_type, b.bil_id, CONCAT('BN-', LPAD(b.bil_id, 6, '0')) as display_id,
+                b.des as description, DATE_FORMAT(b.created_at, '%d-%m-%Y') as display_date,
+                b.price as total_amount, b.customer_id,
+                (SELECT COUNT(*) FROM billing_items bi2 WHERE bi2.bil_id=b.bil_id) as inv_count,
+                company.name_en as customer_name,
+                b.created_at as sort_date,
+                '' as tex, 0 as subtotal, 0 as vat, 0 as discount_pct, 0 as withholding
+                FROM billing b
+                JOIN billing_items bi ON bi.bil_id=b.bil_id
+                JOIN iv ON bi.inv_id=iv.id
+                JOIN po ON iv.tex=po.id
+                JOIN pr ON po.ref=pr.id
+                JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
+                WHERE pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond
+                GROUP BY b.bil_id)";
+        }
+
+        // Part 2: Unbilled invoices (flat rows)
+        if ($status !== 'billed') {
+            $parts[] = "(SELECT 'unbilled' as row_type, 0 as bil_id, iv.tex as display_id,
+                po.name as description, DATE_FORMAT(iv.createdate, '%d-%m-%Y') as display_date,
+                0 as total_amount, 0 as customer_id, 0 as inv_count,
+                company.name_en as customer_name,
+                iv.createdate as sort_date,
+                po.tax as tex,
+                (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
+                 FROM product WHERE product.po_id=po.id) as subtotal,
+                po.vat, po.dis as discount_pct, po.over as withholding
+                FROM iv
+                JOIN po ON iv.tex=po.id
+                JOIN pr ON po.ref=pr.id
+                JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
+                LEFT JOIN billing_items bi ON bi.inv_id=iv.id
+                WHERE bi.bil_id IS NULL AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond)";
+        }
+
+        if (empty($parts)) return [];
+
+        $sql = implode(" UNION ALL ", $parts) . " ORDER BY sort_date DESC LIMIT $offset, $limit";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Get invoices for a specific billing note (for AJAX expand)
+     */
+    public function getBillingNoteInvoices(int $bilId): array
+    {
+        $sql = "SELECT bi.inv_id, bi.amount, iv.tex as po_id,
+            po.tax as po_number, po.name as po_name,
+            iv.texiv_rw as inv_no,
+            DATE_FORMAT(iv.createdate, '%d-%m-%Y') as invoice_date,
+            pr.des as pr_description,
+            (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
+             FROM product WHERE product.po_id=po.id) as subtotal,
+            po.vat, po.dis as discount_pct, po.over as withholding
+            FROM billing_items bi
+            JOIN iv ON bi.inv_id = iv.id
+            JOIN po ON iv.tex = po.id
+            JOIN pr ON po.ref = pr.id
+            WHERE bi.bil_id = '" . \sql_int($bilId) . "'
+            AND po.po_id_new = ''
+            ORDER BY iv.createdate ASC";
+        return $this->fetchAll($sql);
     }
 
     private function buildUnbilledWhere(int $customerId, string $dateFrom = '', string $dateTo = '', string $search = ''): string

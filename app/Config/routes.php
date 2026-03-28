@@ -108,6 +108,7 @@ return [
     'billing_store' => ['BillingController', 'store'],
     'billing_view'  => ['BillingController', 'view'],
     'billing_print' => ['BillingController', 'print', 'standalone'],
+    'billing_invoices_json' => ['BillingController', 'invoicesJson', 'standalone'],
 
     // ========== Phase 4 MVC Routes ==========
     
