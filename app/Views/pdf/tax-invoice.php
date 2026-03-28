@@ -2,16 +2,10 @@
 /**
  * Tax Invoice PDF Generator
  * Uses shared PDF template
+ * Included via PdfController — session, auth, and $db already initialized by index.php
  */
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/class.current.php");
-require_once("inc/security.php");
+global $db;
 require_once("inc/pdf-template.php");
-
-$db = new DbConn($config);
-$db->checkSecurity();
 
 // Validate and sanitize input
 $id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;

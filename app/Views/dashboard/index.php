@@ -6,7 +6,7 @@
  *   $com_id, $com_name, $user_level, $is_admin, $is_super_admin
  *   $show_admin_panel, $show_user_dashboard
  *   $admin  — array of admin stats (only if $is_admin)
- *   $user   — array of user/company stats (only if $show_user_dashboard)
+ *   $dashboard — array of user/company stats (only if $show_user_dashboard)
  *   $dev_tools — array of docker settings (only if $is_super_admin)
  *   $flash  — flash messages from POST
  */
@@ -574,7 +574,7 @@ function get_status_badge($status) {
 
     <?php if ($show_user_dashboard): ?>
     <!-- ============ USER DASHBOARD (Company-specific data) ============ -->
-    <?php $u = $user; ?>
+    <?php $u = $dashboard; ?>
     
     <!-- KPI Cards Row -->
     <div class="row kpi-row">

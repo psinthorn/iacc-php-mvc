@@ -270,6 +270,9 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=invoice_payments"><i class="fa fa-money"></i> <?=$xml->paymenttracking ?? 'Payment Tracking'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=slip_review"><i class="fa fa-qrcode"></i> <?=$xml->slipreview ?? 'Slip Review'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=payment"><i class="fa fa-clock-o"></i> <?=$xml->paymentterms ?? 'Payment Terms'?></a>
                             </li>
                         </ul>
@@ -321,6 +324,13 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <li>
                                 <a href="index.php?page=payment_gateway_config"><i class="fa fa-cogs"></i> <?=$xml->gatewayconfig ?? 'Gateway Config'?></a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=tax_reports"><i class="fa fa-file-text"></i> <?=$xml->taxreports ?? 'Tax Reports'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=currency_list"><i class="fa fa-money"></i> <?=$xml->currencymanage ?? 'Currency'?></a>
                             </li>
                         </ul>
                     </li>
@@ -379,9 +389,6 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=debug_session"><i class="fa fa-key"></i> <?=$xml->debugsession ?? 'Session Debug'?></a>
                             </li>
                             <li>
-                                <a href="index.php?page=debug_invoice"><i class="fa fa-file-text-o"></i> <?=$xml->debuginvoice ?? 'Invoice Debug'?></a>
-                            </li>
-                            <li>
                                 <a href="index.php?page=api_lang_debug"><i class="fa fa-language"></i> <?=$xml->apilangdebug ?? 'Language Debug'?></a>
                             </li>
                             <li>
@@ -392,9 +399,6 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <?php if ($docker_debug_enabled): ?>
                             <li class="divider"></li>
-                            <li>
-                                <a href="index.php?page=docker_test"><i class="fa fa-cloud"></i> <?=$xml->dockertest ?? 'Docker Test'?></a>
-                            </li>
                             <li>
                                 <a href="index.php?page=test_containers"><i class="fa fa-cube"></i> <?=$xml->testcontainers ?? 'Container Debug'?></a>
                             </li>

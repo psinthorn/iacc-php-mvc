@@ -103,7 +103,7 @@ class DashboardController extends BaseController
             'show_admin_panel'    => $showAdminPanel,
             'show_user_dashboard' => $showUserDashboard,
             'admin'               => $adminData,
-            'user'                => $userData,
+            'dashboard'           => $userData,
             'dev_tools'           => $devTools,
             'flash'               => $flash,
         ]);

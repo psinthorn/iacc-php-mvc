@@ -52,12 +52,32 @@ class PurchaseOrderController extends BaseController
         $pr = $this->po->getPOForMake($id, $comId);
         $credit = $pr ? $this->po->getCredit($comId, intval($pr['cus_id'])) : null;
 
+        // Group models by type_id for JS dropdown population (matches legacy behavior)
+        $flatModels = $this->po->getModels();
+        $modelsByType = [];
+        foreach ($flatModels as $m) {
+            $tid = $m['type_id'];
+            if (!isset($modelsByType[$tid])) $modelsByType[$tid] = [];
+            $modelsByType[$tid][] = $m;
+        }
+
+        // Get vendor company name for brand select header
+        $companies = $this->po->getCompanies();
+        $vendor = null;
+        if ($pr) {
+            foreach ($companies as $c) {
+                if ($c['id'] == $pr['ven_id']) { $vendor = $c; break; }
+            }
+        }
+
         $this->render('po/make', [
             'pr' => $pr, 'id' => $id,
             'types' => $this->po->getTypes($comId),
-            'models' => $this->po->getModels(),
+            'models' => $flatModels,
+            'models_by_type' => $modelsByType,
             'brands' => $this->po->getBrands($comId),
-            'companies' => $this->po->getCompanies(),
+            'companies' => $companies,
+            'vendor' => $vendor,
             'tmp_products' => $pr ? $this->po->getTmpProducts($id) : [],
             'credit' => $credit,
         ]);

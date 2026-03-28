@@ -49,12 +49,10 @@ class PurchaseRequestController extends BaseController
     public function create(): void
     {
         $comId = $this->getCompanyId();
-        $mode = $this->input('mode', 'vendor'); // vendor or customer
         $this->render('pr/create', [
-            'mode' => $mode,
-            'vendors' => $this->pr->getVendors(),
             'customers' => $this->pr->getCustomers(),
-            'categories' => $this->pr->getCategories($comId),
+            'categories' => $this->pr->getCategoriesWithTypes($comId),
+            'com_id' => $comId,
         ]);
     }
 
@@ -69,9 +67,26 @@ class PurchaseRequestController extends BaseController
 
     public function store(): void
     {
-        $this->verifyCsrf();
         $method = $this->input('method', '');
         $comId = $this->getCompanyId();
+
+        // Cancel via GET (from list page cancel button with csrf_token in URL)
+        if ($_SERVER['REQUEST_METHOD'] === 'GET' && $method === 'D') {
+            if (!csrf_verify()) {
+                die('CSRF token validation failed.');
+            }
+            $this->pr->cancelPR($this->inputInt('id', 0), $comId);
+            $this->redirect('index.php?page=pr_list');
+            return;
+        }
+
+        // Other GET requests → redirect to create form
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('index.php?page=pr_make');
+            return;
+        }
+
+        $this->verifyCsrf();
 
         if ($method === 'D') {
             $this->pr->cancelPR($this->inputInt('id', 0), $comId);

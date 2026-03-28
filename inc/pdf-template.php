@@ -28,7 +28,7 @@ if (!function_exists('e')) {
 function getPdfStyles() {
     return '
 <style>
-    body { font-family: Arial, sans-serif; font-size: 11px; color: #333; }
+    body { font-family: garuda, Arial, sans-serif; font-size: 11px; color: #333; }
     
     /* Header */
     .header { text-align: center; margin-bottom: 10px; }
@@ -362,7 +362,19 @@ function generatePdfHtml($docType, $docPrefix, $docNumber, $data, $vender, $cust
  * Output PDF using mPDF
  */
 function outputPdf($html, $filename) {
-    $mpdf = new \Mpdf\Mpdf(['mode' => 'th', 'format' => 'A4', 'default_font' => 'Arial', 'margin_left' => 12, 'margin_right' => 12, 'margin_top' => 12, 'margin_bottom' => 12, 'margin_header' => 0, 'margin_footer' => 0]);
+    $mpdf = new \Mpdf\Mpdf([
+        'mode' => 'utf-8',
+        'format' => 'A4',
+        'default_font' => 'garuda',
+        'margin_left' => 12,
+        'margin_right' => 12,
+        'margin_top' => 12,
+        'margin_bottom' => 12,
+        'margin_header' => 0,
+        'margin_footer' => 0,
+        'autoScriptToLang' => true,
+        'autoLangToFont' => true,
+    ]);
     $mpdf->SetDisplayMode('fullpage');
     $mpdf->WriteHTML($html);
     $mpdf->Output($filename, "I");

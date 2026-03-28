@@ -183,10 +183,33 @@ class PaymentGateway
     public function testConnection(string $gatewayCode, array $configs): array
     {
         return match ($gatewayCode) {
-            'paypal' => $this->testPayPal($configs),
-            'stripe' => $this->testStripe($configs),
-            default  => ['success' => false, 'message' => 'Unknown gateway: ' . $gatewayCode],
+            'paypal'    => $this->testPayPal($configs),
+            'stripe'    => $this->testStripe($configs),
+            'promptpay' => $this->testPromptPay($configs),
+            default     => ['success' => false, 'message' => 'Unknown gateway: ' . $gatewayCode],
         };
+    }
+
+    /**
+     * Test PromptPay configuration (validate PromptPay ID format)
+     */
+    public function testPromptPay(array $configs): array
+    {
+        $promptpayId = $configs['promptpay_id'] ?? '';
+        if (empty($promptpayId)) {
+            return ['success' => false, 'message' => 'PromptPay ID is required'];
+        }
+
+        // Clean and validate
+        $clean = preg_replace('/[^0-9]/', '', $promptpayId);
+
+        // Phone: 10 digits, NID: 13 digits, Tax ID: 13 digits
+        if (strlen($clean) === 10 || strlen($clean) === 13) {
+            $type = strlen($clean) === 10 ? 'Phone Number' : 'National ID / Tax ID';
+            return ['success' => true, 'message' => "PromptPay ID is valid ({$type}: {$clean}). QR code generation ready."];
+        }
+
+        return ['success' => false, 'message' => 'Invalid PromptPay ID. Must be 10-digit phone or 13-digit national/tax ID.'];
     }
 
     /**
@@ -209,6 +232,11 @@ class PaymentGateway
                 'secret_key' => ['label' => 'Secret Key', 'type' => 'password', 'placeholder' => 'sk_test_... or sk_live_...', 'required' => true, 'encrypted' => true, 'help' => 'Keep this secret! Never expose in frontend'],
                 'webhook_secret' => ['label' => 'Webhook Secret', 'type' => 'password', 'placeholder' => 'whsec_... (optional)', 'required' => false, 'encrypted' => true, 'help' => 'For verifying webhook signatures'],
                 'currency' => ['label' => 'Default Currency', 'type' => 'select', 'options' => ['thb' => 'THB - Thai Baht', 'usd' => 'USD - US Dollar', 'eur' => 'EUR - Euro', 'gbp' => 'GBP - British Pound'], 'required' => true, 'help' => 'Default currency for payments'],
+            ],
+            'promptpay' => [
+                'promptpay_id' => ['label' => 'PromptPay ID', 'type' => 'text', 'placeholder' => 'Phone (0812345678) or National/Tax ID (1234567890123)', 'required' => true, 'help' => '10-digit phone number or 13-digit national/tax ID'],
+                'promptpay_name' => ['label' => 'Account Name', 'type' => 'text', 'placeholder' => 'Name shown to customers', 'required' => true, 'help' => 'Display name for the PromptPay account holder'],
+                'promptpay_auto_confirm' => ['label' => 'Auto Confirm', 'type' => 'select', 'options' => ['0' => 'Manual (Admin confirms)', '1' => 'Auto (with bank API)'], 'required' => false, 'help' => 'Manual: admin reviews transfer slip. Auto: requires bank API integration.'],
             ],
         ];
     }

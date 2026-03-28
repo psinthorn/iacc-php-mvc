@@ -79,8 +79,10 @@ return [
 
     // Voucher (Phase 3E)
     'voucher_list'  => ['VoucherController', 'index'],
-    'voc_make'      => ['VoucherController', 'make'],
-    'voc_view'      => ['VoucherController', 'view'],
+    'voucher_make'  => ['VoucherController', 'make'],
+    'voucher_view'  => ['VoucherController', 'view'],
+    'voc_make'      => ['VoucherController', 'make'],   // legacy alias
+    'voc_view'      => ['VoucherController', 'view'],   // legacy alias
     'voucher_store' => ['VoucherController', 'store'],
     'vou_print'     => ['VoucherController', 'print'],
 
@@ -93,8 +95,10 @@ return [
 
     // Receipt (Phase 3E)
     'receipt_list'  => ['ReceiptController', 'index'],
-    'rep_make'      => ['ReceiptController', 'make'],
-    'rep_view'      => ['ReceiptController', 'view'],
+    'receipt_make'  => ['ReceiptController', 'make'],
+    'receipt_view'  => ['ReceiptController', 'view'],
+    'rep_make'      => ['ReceiptController', 'make'],   // legacy alias
+    'rep_view'      => ['ReceiptController', 'view'],   // legacy alias
     'receipt_store' => ['ReceiptController', 'store'],
     'rep_print'     => ['ReceiptController', 'print'],
 
@@ -164,7 +168,8 @@ return [
     'master_data_guide'      => ['HelpController', 'masterDataGuide', 'standalone'],
 
     // ========== System / DevOps ==========
-    'health'                 => ['HealthController', 'index'],
+    'health'                 => ['HealthController', 'index', 'public'],
+    'health_diagnose'        => ['HealthController', 'diagnose'],
 
     // ========== Phase 7: Sales Channel API Admin (MVC) ==========
     'api_dashboard'          => ['AdminApiController', 'dashboard'],
@@ -197,6 +202,30 @@ return [
     'forgot_password'        => ['AuthController', 'forgotPassword', 'public'],
     'reset_password'         => ['AuthController', 'resetPassword', 'public'],
     'lang_switch'            => ['AuthController', 'switchLanguage', 'public'],
+
+    // ========== Phase 8: Q2 2026 – Payment Gateway & Multi-Currency (MVC) ==========
+
+    // Tax Reports
+    'tax_reports'            => ['TaxReportController', 'index'],
+    'tax_report_pp30'        => ['TaxReportController', 'pp30'],
+    'tax_report_wht'         => ['TaxReportController', 'wht'],
+    'tax_report_save'        => ['TaxReportController', 'save'],
+    'tax_report_export'      => ['TaxReportController', 'export', 'standalone'],
+
+    // Currency Management
+    'currency_list'          => ['CurrencyController', 'index'],
+    'currency_rates'         => ['CurrencyController', 'rates'],
+    'currency_refresh'       => ['CurrencyController', 'refresh'],
+    'currency_toggle'        => ['CurrencyController', 'toggle'],
+
+    // PromptPay Payment
+    'promptpay_checkout'     => ['InvoicePaymentController', 'promptpayCheckout'],
+    'promptpay_confirm'      => ['InvoicePaymentController', 'promptpayConfirm'],
+
+    // Slip Review (Admin)
+    'slip_review'            => ['SlipReviewController', 'index'],
+    'slip_review_approve'    => ['SlipReviewController', 'approve'],
+    'slip_review_reject'     => ['SlipReviewController', 'reject'],
 
     // ========== Standalone Routes (auth required, no admin shell) ==========
 

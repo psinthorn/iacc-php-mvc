@@ -47,10 +47,25 @@ class VoucherController extends BaseController
     {
         $comId = $this->getCompanyId();
         $id = $this->inputInt('id', 0);
+
+        // Group models by type_id for JS dropdown population (same pattern as PO)
+        $flatModels = $this->voucher->getModels();
+        $modelsByType = [];
+        foreach ($flatModels as $m) {
+            $tid = $m['type_id'];
+            if (!isset($modelsByType[$tid])) $modelsByType[$tid] = [];
+            $modelsByType[$tid][] = $m;
+        }
+
         $this->render('voucher/make', [
             'voucher' => $id > 0 ? $this->voucher->findVoucher($id, $comId) : null,
             'products' => $id > 0 ? $this->voucher->getVoucherProducts($id) : [],
             'types' => $this->voucher->getTypes($comId),
+            'models' => $flatModels,
+            'models_by_type' => $modelsByType,
+            'brands' => $this->voucher->getBrands($comId),
+            'vendor_brands' => $this->voucher->getVendorBrands($comId),
+            'payment_methods' => $this->voucher->getPaymentMethods($comId),
             'id' => $id,
         ]);
     }

@@ -1,127 +1,786 @@
 <?php
 /**
- * PO Make View (Create PO from PR)
- * Variables: $pr, $id, $types, $models, $brands, $companies, $tmp_products, $credit
+ * PO Make View — Modern UX/UI (from legacy po-make.php)
+ * Variables: $pr, $id, $types, $models, $models_by_type, $brands, $companies, $vendor, $tmp_products, $credit
  */
-$allModelsJson = json_encode($models);
+global $xml;
+
+// Group models by type_id for JavaScript dropdown population
+$allModelsJson = json_encode($models_by_type ?? [], JSON_HEX_APOS | JSON_HEX_QUOT);
+
+// Build companies JSON for customer/vendor filter
+$allCompaniesJson = [];
+foreach ($companies as $c) {
+    $allCompaniesJson[] = [
+        'id' => $c['id'],
+        'name' => $c['name_en'] ?: ($c['name_sh'] ?? ''),
+        'customer' => $c['customer'] ?? 0,
+        'vendor' => $c['vender'] ?? 0,
+    ];
+}
+
+$_date = explode("-", date("d-m-Y"));
+$day = $_date[0]; $month = $_date[1]; $year = $_date[2];
 ?>
-<link rel="stylesheet" href="css/master-data.css">
-<div class="master-data-container">
-<div class="master-data-header">
-    <h2><i class="fa fa-plus-circle"></i> Create Purchase Order</h2>
-    <a href="index.php?page=pr_list" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> Back</a>
-</div>
 
-<?php if(!$pr): ?>
-<div class="alert alert-warning">Purchase Request not found or not available.</div>
-<?php else: ?>
-<form method="post" action="index.php?page=po_store" enctype="multipart/form-data" id="poForm">
-    <input type="hidden" name="method" value="A">
-    <input type="hidden" name="ref" value="<?=$id?>">
-    <?php echo csrf_field(); ?>
-
-    <div class="panel panel-default">
-        <div class="panel-heading"><strong>PO Details</strong></div>
-        <div class="panel-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Description</label>
-                        <input type="text" name="name" class="form-control" value="<?=e($pr['name'])?>" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Customer</label>
-                        <select name="cus_id" class="form-control">
-                            <?php foreach($companies as $c): ?>
-                                <option value="<?=$c['id']?>" <?=$c['id']==$pr['cus_id']?'selected':''?>><?=e($c['name_en'])?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Brand/Vendor</label>
-                        <select name="brandven" class="form-control">
-                            <option value="0">-- None --</option>
-                            <?php foreach($brands as $b): ?>
-                                <option value="<?=$b['id']?>"><?=e($b['brand_name'])?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-3"><div class="form-group"><label>Payment Due</label><input type="date" name="valid_pay" class="form-control" value="<?=date('Y-m-d', strtotime('+'.($credit['limit_day']??30).' days'))?>"></div></div>
-                <div class="col-md-3"><div class="form-group"><label>Delivery Date</label><input type="date" name="deliver_date" class="form-control" value="<?=date('Y-m-d', strtotime('+7 days'))?>"></div></div>
-                <div class="col-md-2"><div class="form-group"><label>Discount</label><input type="number" name="dis" class="form-control" value="0" step="0.01"></div></div>
-                <div class="col-md-2"><div class="form-group"><label>VAT %</label><input type="number" name="vat" class="form-control" value="7" step="0.01"></div></div>
-                <div class="col-md-2"><div class="form-group"><label>Withholding %</label><input type="number" name="over" class="form-control" value="0" step="0.01"></div></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Products -->
-    <div class="panel panel-default">
-        <div class="panel-heading"><strong>Products</strong> <button type="button" class="btn btn-xs btn-success pull-right" id="addRow"><i class="fa fa-plus"></i> Add Row</button></div>
-        <div class="panel-body" style="overflow-x:auto">
-            <table class="table table-bordered" id="productTable">
-                <thead><tr><th>Product</th><th>Brand</th><th>Model</th><th>Qty</th><th>Price</th><th>Description</th><th>Labour</th><th>Labour Price</th><th></th></tr></thead>
-                <tbody id="productBody">
-                <?php
-                $initRows = !empty($tmp_products) ? $tmp_products : [['type_id'=>'','quantity'=>'1','price'=>'0']];
-                foreach($initRows as $i => $tp): ?>
-                <tr class="product-row">
-                    <td><select name="type[]" class="form-control input-sm" onchange="onTypeChange(this)">
-                        <option value="">-- Select --</option>
-                        <?php foreach($types as $t): ?>
-                            <option value="<?=$t['id']?>" <?=($t['id']==($tp['type_id']??''))?'selected':''?>><?=e($t['name'])?></option>
-                        <?php endforeach; ?>
-                    </select></td>
-                    <td><select name="ban_id[]" class="form-control input-sm"><option value="0">--</option></select></td>
-                    <td><select name="model[]" class="form-control input-sm"><option value="0">--</option></select></td>
-                    <td><input type="number" name="quantity[]" class="form-control input-sm" value="<?=e($tp['quantity']??1)?>" min="1"></td>
-                    <td><input type="number" name="price[]" class="form-control input-sm" value="<?=e($tp['price']??0)?>" step="0.01"></td>
-                    <td><input type="text" name="des[]" class="form-control input-sm" value=""></td>
-                    <td><select name="a_labour[]" class="form-control input-sm"><option value="0">No</option><option value="1">Yes</option></select></td>
-                    <td><input type="number" name="v_labour[]" class="form-control input-sm" value="0" step="0.01"></td>
-                    <td><button type="button" class="btn btn-xs btn-danger removeRow"><i class="fa fa-trash"></i></button></td>
-                </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="text-right"><button type="submit" class="btn btn-primary btn-lg"><i class="fa fa-check"></i> Create PO</button></div>
-</form>
-<?php endif; ?>
-</div>
-
-<script>
-var allModels = <?=$allModelsJson?>;
-document.getElementById('addRow')?.addEventListener('click', function() {
-    var tbody = document.getElementById('productBody');
-    var row = tbody.querySelector('.product-row').cloneNode(true);
-    row.querySelectorAll('input').forEach(function(el) { el.value = el.type==='number' ? '0' : ''; });
-    row.querySelectorAll('select').forEach(function(el) { el.selectedIndex = 0; });
-    tbody.appendChild(row);
-});
-document.addEventListener('click', function(e) {
-    if(e.target.closest('.removeRow')) {
-        var rows = document.querySelectorAll('.product-row');
-        if(rows.length > 1) e.target.closest('tr').remove();
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    .po-form-wrapper {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 1400px;
+        margin: 0 auto;
     }
-});
-function onTypeChange(el) {
-    var row = el.closest('tr');
-    var brandSel = row.querySelector('[name="ban_id[]"]');
-    var modelSel = row.querySelector('[name="model[]"]');
-    var typeId = el.value;
-    // Load brands via AJAX
-    if(typeId) {
-        fetch('index.php?page=ajax_options&value='+typeId+'&mode=1').then(r=>r.text()).then(html=>{brandSel.innerHTML='<option value="0">--</option>'+html;});
+    
+    .page-header-po {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px 28px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .page-header-po h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .page-header-po .subtitle {
+        opacity: 0.9;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+    
+    .btn-back {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-back:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .section-title i { color: #667eea; }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    
+    .po-form-wrapper .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .po-form-wrapper .form-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .po-form-wrapper .form-group .form-control {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+        height: 46px;
+    }
+    
+    .po-form-wrapper .form-group textarea.form-control {
+        height: auto;
+        min-height: 70px;
+        resize: vertical;
+    }
+    
+    .po-form-wrapper .form-group .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    .po-form-wrapper .form-group .form-control[readonly] {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .input-with-addon {
+        display: flex;
+        align-items: stretch;
+    }
+    
+    .input-with-addon .form-control {
+        border-radius: 8px 0 0 8px;
+        border-right: none;
+    }
+    
+    .input-with-addon .addon {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 14px;
+        font-size: 12px;
+        color: #6b7280;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Product Items */
+    .products-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .products-header h3 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #334155;
+    }
+    
+    .products-header p {
+        margin: 0;
+        font-size: 13px;
+        color: #64748b;
+    }
+    
+    .product-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.2s;
+    }
+    
+    .product-item:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .product-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .product-item-number {
+        background: #667eea;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .product-item-name {
+        font-weight: 600;
+        color: #374151;
+        flex: 1;
+        margin-left: 12px;
+    }
+    
+    .product-row-main {
+        display: grid;
+        grid-template-columns: 1.5fr 1.5fr 1fr 0.8fr 1fr 1.2fr;
+        gap: 12px;
+        align-items: end;
+    }
+    
+    .product-row-notes { width: 100%; }
+    
+    .labour-field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 46px;
+    }
+    
+    .labour-field input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #667eea;
+        flex-shrink: 0;
+    }
+    
+    .labour-field input[type="text"] { flex: 1; height: 46px; }
+    
+    .notes-row label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .btn-add-row {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+    
+    .btn-add-row:hover { background: #059669; }
+    
+    .btn-remove-row {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn-remove-row:hover { background: #dc2626; }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 15px;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .error-page {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .error-page i {
+        font-size: 64px;
+        color: #e5e7eb;
+        margin-bottom: 20px;
+    }
+    
+    .error-page h3 { color: #374151; margin-bottom: 8px; }
+    .error-page p { color: #6b7280; }
+    
+    @media (max-width: 1400px) {
+        .product-row-main { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 992px) {
+        .product-row-main { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 576px) {
+        .product-row-main { grid-template-columns: 1fr; }
+        .page-header-po { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+</style>
+
+<script type="text/javascript">
+function del_tr(btn) {
+    var row = btn.closest('.product-item');
+    if (row) {
+        row.remove();
+        updateProductNumbers();
     }
 }
+
+var allModelsData = <?= $allModelsJson ?>;
+
+function updateCategoryDisplay(selectElement) {
+    var index = $(selectElement).data('index');
+    var selectedOption = $(selectElement).find(':selected');
+    var catName = selectedOption.data('cat') || 'N/A';
+    var productName = selectedOption.text();
+    var productDes = selectedOption.data('des') || '';
+    var typeId = selectedOption.val();
+    
+    $('#cat_display' + index).val(catName);
+    $(selectElement).closest('.product-item').find('.product-item-name').text(productName);
+    $('#des' + index).val(productDes);
+    updateModelDropdown(index, typeId);
+}
+
+function updateModelDropdown(index, typeId) {
+    var modelSelect = $('#model' + index);
+    var selectElement = modelSelect[0];
+    modelSelect.empty();
+    modelSelect.append('<option value="0">-- No Model --</option>');
+    
+    var typeIdStr = String(typeId);
+    if(typeId && allModelsData[typeIdStr]) {
+        allModelsData[typeIdStr].forEach(function(model) {
+            var escapedName = $('<div>').text(model.model_name).html();
+            var escapedDes = model.des ? $('<div>').text(model.des).html() : '';
+            modelSelect.append('<option value="' + model.id + '" data-des="' + escapedDes + '" data-price="' + model.price + '">' + escapedName + '</option>');
+        });
+    }
+    
+    if(selectElement && selectElement._smartDropdown) {
+        selectElement._smartDropdown.refresh();
+    }
+}
+
+function updateModelDescription(selectElement) {
+    var index = $(selectElement).data('index');
+    var selectedOption = $(selectElement).find(':selected');
+    var modelDes = selectedOption.data('des') || '';
+    var modelPrice = selectedOption.data('price');
+    
+    if(modelDes) { $('#des' + index).val(modelDes); }
+    if(modelPrice && modelPrice > 0) {
+        $('input[name="price[' + index + ']"]').val(modelPrice);
+    }
+}
+
+function initSmartDropdowns(container) {
+    if(typeof SmartDropdown !== 'undefined' && container) {
+        var selects = container.querySelectorAll('.smart-dropdown');
+        selects.forEach(function(select) {
+            if(select.style.display !== 'none') {
+                new SmartDropdown(select);
+            }
+        });
+    }
+}
+
+function updateProductNumbers() {
+    document.querySelectorAll('.product-item').forEach((item, index) => {
+        item.querySelector('.product-item-number').textContent = index + 1;
+    });
+}
+
+$(document).ready(function() {
+    $(document).on('change', '.product-select', function() {
+        updateCategoryDisplay(this);
+    });
+    $(document).on('change', '.model-select', function() {
+        updateModelDescription(this);
+    });
+});
+
+$(function(){
+    $("#addRow").click(function(){
+        var indexthis = parseInt(document.getElementById("countloop").value);
+        document.getElementById("countloop").value = indexthis + 1;
+        
+        var NR = `
+        <div class="product-item" id="fr[${indexthis}]">
+            <div class="product-item-header">
+                <div class="product-item-number">${indexthis + 1}</div>
+                <span class="product-item-name">New Item</span>
+                <button type="button" class="btn-remove-row" onclick="del_tr(this)"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="product-item-grid" style="display:flex;flex-direction:column;gap:16px;">
+                <div class="product-row-main">
+                    <div class="form-group">
+                        <label><?=$xml->product ?? 'Product'?></label>
+                        <select id="type${indexthis}" name="type[${indexthis}]" class="form-control product-select smart-dropdown" data-index="${indexthis}" required>
+                            <?php 
+                            echo "<option value=''>-- Select --</option>";
+                            foreach($types as $prod){
+                                $escapedCat = htmlspecialchars($prod['cat_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8');
+                                $escapedDes = htmlspecialchars($prod['des'] ?? '', ENT_QUOTES, 'UTF-8');
+                                $escapedName = htmlspecialchars($prod['name'], ENT_QUOTES, 'UTF-8');
+                                echo "<option value='".$prod['id']."' data-cat='".$escapedCat."' data-des='".$escapedDes."'>".$escapedName."</option>";
+                            }?>
+                        </select>
+                        <input type="hidden" name="ban_id[${indexthis}]" value="0">
+                        <input type="hidden" name="pack_quantity[${indexthis}]" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label><?=$xml->model ?? 'Model'?></label>
+                        <select id="model${indexthis}" name="model[${indexthis}]" class="form-control model-select smart-dropdown" data-index="${indexthis}">
+                            <option value="0">-- No Model --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><?=$xml->category ?? 'Category'?></label>
+                        <input type="text" class="form-control" readonly value="N/A" id="cat_display${indexthis}">
+                    </div>
+                    <div class="form-group">
+                        <label><?=$xml->unit ?? 'Quantity'?></label>
+                        <div class="input-with-addon">
+                            <input type="number" class="form-control" name="quantity[${indexthis}]" id="quantity${indexthis}" required value="1" min="1">
+                            <span class="addon"><?=$xml->unit ?? 'Unit'?></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><?=$xml->price ?? 'Price'?></label>
+                        <div class="input-with-addon">
+                            <input type="text" class="form-control" name="price[${indexthis}]" id="price${indexthis}" required placeholder="0">
+                            <span class="addon"><?=$xml->baht ?? 'Baht'?></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><?=$xml->labour ?? 'Labour'?></label>
+                        <div class="labour-field">
+                            <input type="checkbox" name="a_labour[${indexthis}]" id="a_labour${indexthis}" value="1">
+                            <input type="text" class="form-control" name="v_labour[${indexthis}]" id="v_labour${indexthis}" placeholder="Cost...">
+                        </div>
+                    </div>
+                </div>
+                <div class="product-row-notes">
+                    <div class="notes-row">
+                        <label><?=$xml->note ?? 'Notes'?></label>
+                        <textarea name="des[${indexthis}]" id="des${indexthis}" class="form-control" placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
+        $("#productsList").append(NR);
+        var newRow = document.getElementById('fr[' + indexthis + ']');
+        if(newRow) { initSmartDropdowns(newRow); }
+    });
+    
+    $("#removeRow").click(function(){
+        var items = $(".product-item");
+        if(items.length > 1){
+            items.last().remove();
+        } else {
+            alert("At least one product is required");
+        }
+    });
+});
 </script>
+
+<div class="po-form-wrapper">
+<?php if ($pr): ?>
+    <!-- Page Header -->
+    <div class="page-header-po">
+        <div>
+            <h2><i class="fa fa-file-text-o"></i> <?=$xml->quotation ?? 'Create Quotation'?></h2>
+            <div class="subtitle">PR-<?= str_pad($id, 6, '0', STR_PAD_LEFT) ?> → Convert to Purchase Order</div>
+        </div>
+        <a href="index.php?page=pr_list" class="btn-back"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
+    </div>
+
+    <form action="index.php?page=po_store" method="post" id="company-form" enctype="multipart/form-data">
+        <?= csrf_field() ?>
+        
+        <!-- Request Information Card -->
+        <div class="form-card">
+            <div class="section-title"><i class="fa fa-info-circle"></i> <?=$xml->requestinformation ?? 'Request Information'?></div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><?=$xml->name ?? 'Name'?></label>
+                    <input id="name" name="name" class="form-control" required value="<?= e($pr['name']) ?>" type="text">
+                </div>
+                <div class="form-group">
+                    <label><?=$xml->brand ?? 'Vendor Brand'?></label>
+                    <select id="brandven" name="brandven" class="form-control smart-dropdown">
+                        <option value="0"><?= e($vendor['name_en'] ?? $vendor['name_sh'] ?? '---') ?></option>
+                        <?php foreach($brands as $b): ?>
+                            <option value="<?=$b['id']?>"><?= e($b['brand_name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><?=$xml->customer ?? 'Customer'?> / <?=$xml->vendor ?? 'Vendor'?></label>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="company_type_filter" class="form-control" style="width: 120px; flex-shrink: 0;" onchange="filterCompanyList()">
+                            <option value="customer"><?=$xml->customer ?? 'Customer'?></option>
+                            <option value="vendor"><?=$xml->vendor ?? 'Vendor'?></option>
+                            <option value="all"><?=$xml->all ?? 'All'?></option>
+                        </select>
+                        <select id="cus_id" name="cus_id" class="form-control smart-dropdown" style="flex: 1;">
+                            <?php foreach($companies as $c):
+                                if (($c['customer'] ?? 0) == 1): ?>
+                                <option value="<?=$c['id']?>" <?=$c['id']==$pr['cus_id']?'selected':''?>><?= e($c['name_en'] ?: $c['name_sh']) ?></option>
+                            <?php endif; endforeach; ?>
+                        </select>
+                    </div>
+                    <script>
+                        var allCompaniesData = <?= json_encode($allCompaniesJson) ?>;
+                        function filterCompanyList() {
+                            var filterType = document.getElementById('company_type_filter').value;
+                            var select = document.getElementById('cus_id');
+                            var currentValue = select.value;
+                            select.innerHTML = '';
+                            allCompaniesData.forEach(function(comp) {
+                                var show = false;
+                                if(filterType === 'all') show = true;
+                                else if(filterType === 'customer' && comp.customer == 1) show = true;
+                                else if(filterType === 'vendor' && comp.vendor == 1) show = true;
+                                if(show) {
+                                    var option = document.createElement('option');
+                                    option.value = comp.id;
+                                    option.textContent = comp.name;
+                                    if(comp.id == currentValue) option.selected = true;
+                                    select.appendChild(option);
+                                }
+                            });
+                            if(window.SmartDropdown) {
+                                var wrapper = select.closest('.smart-dropdown-wrapper');
+                                if(wrapper) {
+                                    var parent = wrapper.parentNode;
+                                    parent.insertBefore(select, wrapper);
+                                    wrapper.remove();
+                                    select.style.display = '';
+                                }
+                                new SmartDropdown(select);
+                            }
+                        }
+                    </script>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><?=$xml->description ?? 'Description'?></label>
+                <textarea class="form-control" readonly rows="3"><?= e($pr['des'] ?? '') ?></textarea>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><?=$xml->vat ?? 'VAT'?></label>
+                    <div class="input-with-addon">
+                        <input class="form-control" required name="vat" type="text" value="7">
+                        <span class="addon">%</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><?=$xml->discount ?? 'Discount'?></label>
+                    <div class="input-with-addon">
+                        <input class="form-control" required name="dis" type="text" value="0">
+                        <span class="addon">%</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><?=$xml->overhead ?? 'Overhead'?></label>
+                    <div class="input-with-addon">
+                        <input class="form-control" required name="over" type="text" value="0">
+                        <span class="addon">%</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><?=$xml->validpay ?? 'Valid Payment'?></label>
+                    <input class="form-control" name="valid_pay" type="text" value="<?= date('d-m-Y', mktime(0,0,0, intval($month), (intval($day)+intval($credit['limit_day'] ?? 30)), intval($year))) ?>">
+                </div>
+                <div class="form-group">
+                    <label><?=$xml->deliverydate ?? 'Delivery Date'?></label>
+                    <input class="form-control" name="deliver_date" type="text" value="<?= date('d-m-Y', mktime(0,0,0, intval($month), intval($day)+1, intval($year))) ?>">
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Card -->
+        <div class="form-card">
+            <div class="section-title"><i class="fa fa-cubes"></i> <?=$xml->pleaseselectproduct ?? 'Product Details'?></div>
+            
+            <div class="products-header">
+                <h3><i class="fa fa-check-circle"></i> <?=$xml->productfrompr ?? 'Products from Purchase Request'?></h3>
+                <p>These products were selected in the PR. Review and adjust quantities/prices if needed.</p>
+            </div>
+            
+            <div id="productsList">
+                <?php 
+                $i = 0;
+                if(!empty($tmp_products)){
+                    foreach($tmp_products as $tp): 
+                        $typeId = $tp['type'] ?? '';
+                ?>
+                <div class="product-item" id="fr[<?=$i?>]">
+                    <div class="product-item-header">
+                        <div class="product-item-number"><?= $i + 1 ?></div>
+                        <span class="product-item-name"><?= e($tp['type_name'] ?? 'Product') ?></span>
+                        <?php if($i > 0): ?>
+                        <button type="button" class="btn-remove-row" onclick="del_tr(this)"><i class="fa fa-times"></i></button>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div style="display:flex;flex-direction:column;gap:16px;">
+                        <div class="product-row-main">
+                            <!-- Product -->
+                            <div class="form-group">
+                                <label><?=$xml->product ?? 'Product'?></label>
+                                <select name="type[<?=$i?>]" id="type<?=$i?>" class="form-control product-select smart-dropdown" data-index="<?=$i?>" required>
+                                    <?php 
+                                    if(empty($types)){
+                                        echo "<option value=''>No products available</option>";
+                                    } else {
+                                        foreach($types as $prod){
+                                            $selected = ($prod['id'] == $typeId) ? 'selected' : '';
+                                            $escapedCat = htmlspecialchars($prod['cat_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8');
+                                            $escapedDes = htmlspecialchars($prod['des'] ?? '', ENT_QUOTES, 'UTF-8');
+                                            $escapedName = htmlspecialchars($prod['name'], ENT_QUOTES, 'UTF-8');
+                                            echo "<option value='".$prod['id']."' data-cat='".$escapedCat."' data-des='".$escapedDes."' $selected>".$escapedName."</option>";
+                                        }
+                                    }?>
+                                </select>
+                                <input type="hidden" name="ban_id[<?=$i?>]" value="0">
+                                <input type="hidden" name="pack_quantity[<?=$i?>]" value="1">
+                            </div>
+                            
+                            <!-- Model -->
+                            <div class="form-group">
+                                <label><?=$xml->model ?? 'Model'?></label>
+                                <select name="model[<?=$i?>]" id="model<?=$i?>" class="form-control model-select smart-dropdown" data-index="<?=$i?>">
+                                    <option value="0">-- No Model --</option>
+                                    <?php 
+                                    if(isset($models_by_type[$typeId])){
+                                        foreach($models_by_type[$typeId] as $model){
+                                            $escapedModelName = htmlspecialchars($model['model_name'], ENT_QUOTES, 'UTF-8');
+                                            $escapedModelDes = htmlspecialchars($model['des'] ?? '', ENT_QUOTES, 'UTF-8');
+                                            echo "<option value='".$model['id']."' data-des='".$escapedModelDes."' data-price='".$model['price']."'>".$escapedModelName."</option>";
+                                        }
+                                    }?>
+                                </select>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="form-group">
+                                <label><?=$xml->category ?? 'Category'?></label>
+                                <input type="text" class="form-control" readonly id="cat_display<?=$i?>" value="<?= e($tp['cat_name'] ?? 'N/A') ?>">
+                            </div>
+                            
+                            <!-- Quantity -->
+                            <div class="form-group">
+                                <label><?=$xml->unit ?? 'Quantity'?></label>
+                                <div class="input-with-addon">
+                                    <input type="number" class="form-control" name="quantity[<?=$i?>]" value="<?= e($tp['quantity'] ?? 1) ?>" id="quantity[<?=$i?>]" required min="1">
+                                    <span class="addon"><?=$xml->unit ?? 'Unit'?></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Price -->
+                            <div class="form-group">
+                                <label><?=$xml->price ?? 'Price'?></label>
+                                <div class="input-with-addon">
+                                    <input type="text" class="form-control" name="price[<?=$i?>]" id="price[<?=$i?>]" required value="<?= e($tp['price'] ?? 0) ?>">
+                                    <span class="addon"><?=$xml->baht ?? 'Baht'?></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Labour -->
+                            <div class="form-group">
+                                <label><?=$xml->labour ?? 'Labour'?></label>
+                                <div class="labour-field">
+                                    <input type="checkbox" name="a_labour[<?=$i?>]" id="a_labour[<?=$i?>]" value="1">
+                                    <input type="text" class="form-control" name="v_labour[<?=$i?>]" id="v_labour[<?=$i?>]" placeholder="Cost...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="product-row-notes">
+                            <div class="notes-row">
+                                <label><?=$xml->note ?? 'Notes'?></label>
+                                <textarea name="des[<?=$i?>]" id="des<?=$i?>" class="form-control" placeholder="Additional notes for this item..."><?= e($tp['type_des'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php $i++; endforeach; } ?>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" id="addRow" class="btn-add-row"><i class="fa fa-plus"></i> <?=$xml->addproduct ?? 'Add Product'?></button>
+                <button type="button" id="removeRow" class="btn-remove-row"><i class="fa fa-minus"></i> <?=$xml->removelast ?? 'Remove Last'?></button>
+                
+                <input type="hidden" id="countloop" name="countloop" value="<?=$i?>">
+                <input type="hidden" name="method" value="A">
+                <input type="hidden" name="ref" value="<?= $pr['id'] ?>">
+                
+                <button type="submit" class="btn-submit"><i class="fa fa-check"></i> <?=$xml->save ?? 'Create Order'?></button>
+            </div>
+        </div>
+    </form>
+
+<?php else: ?>
+    <!-- Error State -->
+    <div class="page-header-po">
+        <div>
+            <h2><i class="fa fa-file-text-o"></i> <?=$xml->quotation ?? 'Create Quotation'?></h2>
+        </div>
+        <a href="index.php?page=pr_list" class="btn-back"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
+    </div>
+    <div class="form-card error-page">
+        <i class="fa fa-exclamation-circle"></i>
+        <h3><?=$xml->prnotfound ?? 'Purchase Request Not Found'?></h3>
+        <p>The requested PR does not exist, has already been processed, or you don't have permission to access it.</p>
+        <a href="index.php?page=pr_list" class="btn-back" style="display:inline-block; margin-top:20px; background:#667eea; color:white; padding:12px 24px; border-radius:8px; text-decoration:none;">
+            <i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back to PR List'?>
+        </a>
+    </div>
+<?php endif; ?>
+</div>
