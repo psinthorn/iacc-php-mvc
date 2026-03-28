@@ -140,6 +140,7 @@ $customers_list = $customers ?? [];
             <span class="toggle-label"><i class="fa fa-columns"></i> Columns</span>
             <div class="toggle-chips">
                 <span class="col-chip active" data-col="col-select" onclick="toggleColumn(this)"><i class="fa fa-check"></i> Select</span>
+                <span class="col-chip active" data-col="col-invno" onclick="toggleColumn(this)"><i class="fa fa-check"></i> Invoice No.</span>
                 <span class="col-chip active" data-col="col-customer" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->customer ?? 'Customer'?></span>
                 <span class="col-chip active" data-col="col-desc" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->description ?? 'Description'?></span>
                 <span class="col-chip active" data-col="col-date" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->datecreate ?? 'Date'?></span>
@@ -160,6 +161,7 @@ $customers_list = $customers ?? [];
                     <thead>
                         <tr>
                             <th class="col-select" style="width:40px"><input type="checkbox" class="invoice-checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                            <th class="col-invno">Invoice No.</th>
                             <th class="col-customer"><?=$xml->customer ?? 'Customer'?></th>
                             <th class="col-desc"><?=$xml->description ?? 'Description'?></th>
                             <th class="col-date"><?=$xml->datecreate ?? 'Date'?></th>
@@ -177,11 +179,12 @@ $customers_list = $customers ?? [];
                             $after_disc = $subtotal * (1 - $dis_pct / 100);
                             $vat_amt = $after_disc * ($vat_pct / 100);
                             $wh_amt = $after_disc * ($wh_pct / 100);
-                            $inv_total = $after_disc + $vat_amt - $wh_amt;
+                            $inv_total = $after_disc + $vat_amt;
                             $is_preselected = ($inv_id_param && $inv_id_param == $inv['id']);
                         ?>
                         <tr class="<?=$is_preselected ? 'selected-row' : ''?>">
                             <td class="col-select"><input type="checkbox" name="invoices[]" value="<?=e($inv['id'])?>" class="invoice-checkbox inv-check" data-amount="<?=$inv_total?>" <?=$is_preselected ? 'checked' : ''?> onchange="toggleRow(this);calcTotal()"></td>
+                            <td class="col-invno" style="font-weight:600;color:#8b5cf6"><?=e($inv['inv_no'] ?? $inv['id'])?></td>
                             <td class="col-customer"><?=e($cust['name_en'] ?? '')?></td>
                             <td class="col-desc"><?=e($inv['des'] ?? '')?></td>
                             <td class="col-date"><?=e($inv['iv_date'] ?? '')?></td>
@@ -190,7 +193,7 @@ $customers_list = $customers ?? [];
                             <td class="col-grand amount-col" style="font-weight:700"><?=number_format($inv_total, 2)?></td>
                         </tr>
                         <?php endforeach; else: ?>
-                        <tr><td colspan="7" class="text-center" style="padding:40px;color:#9ca3af"><i class="fa fa-check-circle" style="font-size:28px;display:block;margin-bottom:8px"></i>All invoices are billed</td></tr>
+                        <tr><td colspan="8" class="text-center" style="padding:40px;color:#9ca3af"><i class="fa fa-check-circle" style="font-size:28px;display:block;margin-bottom:8px"></i>All invoices are billed</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
