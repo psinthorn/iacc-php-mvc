@@ -72,7 +72,7 @@ class Billing extends BaseModel
         return $cond;
     }
 
-    private function buildUnbilledWhere(int $customerId, string $dateFrom = '', string $dateTo = ''): string
+    private function buildUnbilledWhere(int $customerId, string $dateFrom = '', string $dateTo = '', string $search = ''): string
     {
         $where = "(CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)='" . \sql_int($customerId) . "'
             AND po.po_id_new='' AND pr.status>=3
@@ -83,21 +83,25 @@ class Billing extends BaseModel
         if ($dateTo !== '') {
             $where .= " AND iv.createdate <= '" . \sql_str($dateTo) . "'";
         }
+        if ($search !== '') {
+            $s = \sql_str($search);
+            $where .= " AND (pr.des LIKE '%$s%' OR iv.texiv_rw LIKE '%$s%' OR po.name LIKE '%$s%')";
+        }
         return $where;
     }
 
-    public function countUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = ''): int
+    public function countUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = '', string $search = ''): int
     {
-        $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo);
+        $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo, $search);
         $r = mysqli_query($this->conn, "SELECT COUNT(*) as cnt
             FROM iv JOIN po ON iv.tex=po.id JOIN pr ON po.ref=pr.id
             WHERE $where");
         return ($r && $row = mysqli_fetch_assoc($r)) ? intval($row['cnt']) : 0;
     }
 
-    public function getUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = '', int $offset = 0, int $limit = 0): array
+    public function getUnbilledInvoices(int $customerId, int $comId, string $dateFrom = '', string $dateTo = '', string $search = '', int $offset = 0, int $limit = 0): array
     {
-        $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo);
+        $where = $this->buildUnbilledWhere($customerId, $dateFrom, $dateTo, $search);
         $sql = "SELECT iv.id, iv.texiv_rw as inv_no, po.id as po_id, po.tax, DATE_FORMAT(iv.createdate,'%d-%m-%Y') as iv_date,
             pr.des,
             (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
