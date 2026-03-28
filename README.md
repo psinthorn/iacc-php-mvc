@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 5.2-ui-modernization  
+**Version**: 5.3-payment-gateway  
 **Status**: Production Ready  
 **Last Updated**: March 28, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
@@ -23,11 +23,11 @@
 
 | Metric | Count |
 |--------|-------|
-| **Controllers** | 34 |
-| **Models** | 28 |
-| **Views** | 98 |
-| **Services** | 1 (ChannelService) |
-| **MVC Routes** | 139 |
+| **Controllers** | 37 (+3 Q2) |
+| **Models** | 30 (+2 Q2) |
+| **Views** | 109 (+11 Q2) |
+| **Services** | 3 (ChannelService, PromptPayService, CurrencyService) |
+| **MVC Routes** | 160 (+21 Q2) |
 | **Legacy Routes** | 0 |
 | **Test Cases** | 188 (42 E2E + 20 API + 126 MVC) |
 | **Active Root Files** | 12 |
@@ -43,7 +43,7 @@
 app/
 ├── Config/
 │   └── routes.php                 # 139 MVC routes (public, standalone, normal)
-├── Controllers/ (34)
+├── Controllers/ (37)
 │   ├── BaseController.php         # Base with auth, DB, CSRF
 │   ├── ChannelApiController.php   # Sales Channel REST API
 │   ├── AdminApiController.php     # API admin panel
@@ -51,21 +51,34 @@ app/
 │   ├── CompanyController.php
 │   ├── PurchaseOrderController.php
 │   ├── InvoiceController.php
+│   ├── TaxReportController.php    # Thai tax reports (PP30/WHT)
+│   ├── CurrencyController.php     # Multi-currency management
+│   ├── SlipReviewController.php   # Payment slip review workflow
+│   ├── InvoicePaymentController.php # PromptPay checkout flow
+│   ├── PaymentGatewayController.php # Gateway configuration
 │   ├── HealthController.php       # System health endpoint
 │   ├── AuthController.php         # Login/logout/forgot password
 │   └── ...
-├── Models/ (28)
+├── Models/ (30)
 │   ├── BaseModel.php              # Base with DB helpers
+│   ├── Currency.php               # Currency CRUD & exchange rates
+│   ├── TaxReport.php              # VAT/WHT report generation
+│   ├── SlipReview.php             # Slip approval/rejection
+│   ├── InvoicePayment.php         # Invoice payment processing
 │   ├── ApiKey.php                 # API key management
 │   ├── ChannelOrder.php           # Channel order processing
-│   ├── Webhook.php                # Webhook management
-│   ├── ApiUsageLog.php            # API usage tracking
-│   ├── ApiInvoice.php             # API invoice generation
 │   └── ...
-├── Services/ (1)
-│   └── ChannelService.php         # Business logic for channel API
-└── Views/ (98)
+├── Services/ (3)
+│   ├── ChannelService.php         # Business logic for channel API
+│   ├── PromptPayService.php       # QR code generation & payment
+│   └── CurrencyService.php        # Exchange rates (BOT API)
+└── Views/ (109)
     ├── api/                       # 11 API admin panel views
+    ├── tax/                       # 3 tax report views (dashboard, PP30, WHT)
+    ├── currency/                  # 2 currency views (list, rates)
+    ├── slip-review/               # 1 slip review admin view
+    ├── invoice-payment/           # 3 checkout flow views
+    ├── payment-gateway/           # 2 gateway config views
     ├── auth/                      # Login, forgot/reset password
     ├── dashboard/                 # Dashboard views
     ├── company/                   # Company management
@@ -290,6 +303,9 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Deliveries** — Delivery tracking with receipt confirmation
 - **Reports** — Business reporting with CSV/JSON export
 - **Sales Channel API** — REST API for OTA/PMS/channel manager integrations
+- **Payment Gateway** — PromptPay QR, slip upload & admin review workflow
+- **Multi-Currency** — 10 currencies, BOT exchange rates, toggle activation
+- **Thai Tax Reports** — PP30 (VAT Return), ภ.ง.ด.3/53 (WHT), CSV export, save/file
 - **Multi-language** — Thai and English support
 - **AI Chatbot** — 29 tools, OpenAI/Ollama, Thai/English, streaming
 - **Dashboard** — Statistics, charts, company selector
@@ -441,6 +457,17 @@ $config["dbname"]   = getenv('DB_NAME') ?: "iacc";
 | `api_notifications` | API notification queue |
 | `idempotency_keys` | Idempotency key storage |
 
+### Payment & Financial Tables (Q2 2026)
+
+| Table | Description |
+|-------|-------------|
+| `currencies` | Supported currencies (THB, USD, EUR, etc.) |
+| `exchange_rates` | Historical exchange rates (BOT API) |
+| `tax_reports` | Saved tax reports (PP30, PND3, PND53) |
+| `payment_gateway_config` | Gateway settings per company |
+| `payment_log` | Payment transaction logs |
+| `payment_method` | Payment method registry (PromptPay, etc.) |
+
 ### Security Tables
 
 | Table | Description |
@@ -481,6 +508,23 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.3-payment-gateway (March 28, 2026) — Q2 Payment & Tax
+
+**Payment Gateway & Multi-Currency** — Complete payment infrastructure:
+
+- **PromptPay Integration**: QR code generation, slip upload, admin review workflow (approve/reject with reason)
+- **Multi-Currency**: 10 currencies (THB, USD, EUR, GBP, JPY, CNY, SGD, MYR, KRW, AUD), Bank of Thailand API exchange rates, toggle activation
+- **Thai Tax Reports**: PP30 (ภ.พ.30) monthly VAT return, ภ.ง.ด.3/53 WHT reports, annual dashboard, CSV/JSON export, save & file
+- **Payment Gateway Config**: Admin panel for gateway settings per company
+- **Slip Review**: Admin workflow for reviewing payment slips (approve/reject with audit trail)
+- **Modern UI**: All Q2 views use master-data.css design system (gradient headers, stats cards, card grids, client-side search)
+
+**Technical Details**:
+- 5 new controllers, 4 new models, 2 new services, 11 new views
+- 21 new routes (160 total MVC routes)
+- 6 new database tables + 4 table alterations
+- Migration: `database/migrations/q2_2026_payment_gateway.sql`
 
 ### v5.2-ui-modernization (March 28, 2026) — MVC View Upgrade
 
