@@ -86,6 +86,27 @@ class Billing extends BaseModel
             ORDER BY iv.createdate DESC");
     }
 
+    public function getCustomersWithUnbilledInvoices(int $comId): array
+    {
+        return $this->fetchAll("SELECT DISTINCT 
+            CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END as id,
+            company.name_en, company.name_sh
+            FROM iv 
+            JOIN po ON iv.tex=po.id 
+            JOIN pr ON po.ref=pr.id
+            JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
+            WHERE pr.status>=3 AND po.po_id_new='' 
+            AND (pr.ven_id='$comId' OR pr.cus_id='$comId')
+            AND iv.id NOT IN (SELECT inv_id FROM billing_items)
+            ORDER BY company.name_en");
+    }
+
+    public function getCustomerById(int $customerId): ?array
+    {
+        $r = mysqli_query($this->conn, "SELECT id, name_en, name_sh, tax, phone, email FROM company WHERE id='" . \sql_int($customerId) . "'");
+        return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
+    }
+
     public function getCustomerFromInvoice(int $invId): ?array
     {
         $r = mysqli_query($this->conn, "SELECT CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END as customer_id
