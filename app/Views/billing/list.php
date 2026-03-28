@@ -136,7 +136,7 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                         <th style="width:30px">#</th>
                         <th>No. / <?=$xml->invoice ?? 'Invoice'?>#</th>
                         <th><?=$xml->customer ?? 'Customer'?></th>
-                        <th style="width:82px;white-space:nowrap"><?=$xml->datecreate ?? 'Date'?></th>
+                        <th style="width:110px;white-space:nowrap;min-width:110px"><?=$xml->datecreate ?? 'Date'?></th>
                         <th style="text-align:right;width:110px;white-space:nowrap"><?=$xml->grandtotal ?? 'Amount'?></th>
                         <th style="width:68px;white-space:nowrap">Status</th>
                         <th style="width:120px;text-align:center;white-space:nowrap"><?=$xml->action ?? 'Actions'?></th>
