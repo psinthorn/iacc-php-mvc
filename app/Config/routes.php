@@ -203,6 +203,44 @@ return [
     'reset_password'         => ['AuthController', 'resetPassword', 'public'],
     'lang_switch'            => ['AuthController', 'switchLanguage', 'public'],
 
+    // ========== Phase 8: Q2 2026 – Payment Gateway & Multi-Currency (MVC) ==========
+
+    // ========== Q3 2026 – Expense Module ==========
+    'expense_list'           => ['ExpenseController', 'index'],
+    'expense_form'           => ['ExpenseController', 'form'],
+    'expense_store'          => ['ExpenseController', 'store'],
+    'expense_view'           => ['ExpenseController', 'view'],
+    'expense_delete'         => ['ExpenseController', 'delete'],
+    'expense_status'         => ['ExpenseController', 'status'],
+    'expense_summary'        => ['ExpenseController', 'summary'],
+    'expense_cat_list'       => ['ExpenseController', 'categories'],
+    'expense_cat_store'      => ['ExpenseController', 'categoryStore'],
+    'expense_cat_toggle'     => ['ExpenseController', 'categoryToggle'],
+    'expense_cat_delete'     => ['ExpenseController', 'categoryDelete'],
+
+    // Tax Reports
+
+    'tax_reports'            => ['TaxReportController', 'index'],
+    'tax_report_pp30'        => ['TaxReportController', 'pp30'],
+    'tax_report_wht'         => ['TaxReportController', 'wht'],
+    'tax_report_save'        => ['TaxReportController', 'save'],
+    'tax_report_export'      => ['TaxReportController', 'export', 'standalone'],
+
+    // Currency Management
+    'currency_list'          => ['CurrencyController', 'index'],
+    'currency_rates'         => ['CurrencyController', 'rates'],
+    'currency_refresh'       => ['CurrencyController', 'refresh'],
+    'currency_toggle'        => ['CurrencyController', 'toggle'],
+
+    // PromptPay Payment
+    'promptpay_checkout'     => ['InvoicePaymentController', 'promptpayCheckout'],
+    'promptpay_confirm'      => ['InvoicePaymentController', 'promptpayConfirm'],
+
+    // Slip Review (Admin)
+    'slip_review'            => ['SlipReviewController', 'index'],
+    'slip_review_approve'    => ['SlipReviewController', 'approve'],
+    'slip_review_reject'     => ['SlipReviewController', 'reject'],
+
     // ========== Standalone Routes (auth required, no admin shell) ==========
 
     // PDF / Print Generators

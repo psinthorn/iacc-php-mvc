@@ -381,68 +381,78 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
-            <!-- Planned Q2 -->
-            <div class="timeline-item planned">
+            <!-- Completed Q2 - Payment Gateway -->
+            <div class="timeline-item completed">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q2 2026</span>
-                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'Payment Gateway และ Multi-Currency' : 'Payment Gateway & Multi-Currency' ?></h3>
-                <p><?= $lang === 'th' ? 'เชื่อมต่อ Payment Gateway และรองรับหลายสกุลเงิน' : 'Integrate payment gateways and multi-currency support.' ?></p>
+                <h3><?= $lang === 'th' ? 'v5.3 - Payment Gateway และ Multi-Currency' : 'v5.3 - Payment Gateway & Multi-Currency' ?></h3>
+                <p><?= $lang === 'th' ? 'เชื่อมต่อ PromptPay, รองรับหลายสกุลเงิน, รายงานภาษีไทย และ Admin Slip Review' : 'PromptPay integration, multi-currency support, Thai tax reports, and admin slip review workflow.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Stripe Integration' : 'Stripe integration' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'QR PromptPay' : 'QR PromptPay' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับหลายสกุลเงิน' : 'Multi-currency support' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานภาษีอัตโนมัติ' : 'Automated tax reports' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'QR PromptPay + อัปโหลดสลิป' : 'QR PromptPay + slip upload' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Admin ตรวจสอบสลิป (อนุมัติ/ปฏิเสธ)' : 'Admin slip review (approve/reject)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'รองรับ 10 สกุลเงิน (BOT API)' : '10 currencies with BOT exchange rates' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ภ.พ.30 — VAT รายเดือน' : 'PP30 — Monthly VAT Return' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ภ.ง.ด.3/53 — หัก ณ ที่จ่าย' : 'PND3/53 — Withholding Tax' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'แดชบอร์ดภาษีรายปี' : 'Annual tax dashboard' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Export CSV/JSON' : 'CSV/JSON export' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'UI ทันสมัย (master-data.css)' : 'Modern UI (master-data.css)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '21 Routes ใหม่ (160 ทั้งหมด)' : '21 new routes (160 total)' ?></li>
                 </ul>
             </div>
-            
-            <!-- Planned v5.3 - Journal Module -->
-            <div class="timeline-item planned">
-                <div class="timeline-header">
-                    <span class="timeline-quarter">Q2 2026</span>
-                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
-                </div>
-                <h3><?= $lang === 'th' ? 'v5.3 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.3 - Journal Module & Voucher Classification' ?></h3>
-                <p><?= $lang === 'th' ? 'เพิ่มโมดูลสมุดรายวัน (Journal Voucher) และระบบจำแนกประเภทใบสำคัญ (Payment/Receipt/Journal)' : 'Add Journal Voucher module and voucher type classification system (Payment/Receipt/Journal).' ?></p>
-                <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'คอลัมน์ voucher_type (payment/receipt/journal)' : 'voucher_type column (payment/receipt/journal)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Debit/Credit บันทึกบัญชีคู่' : 'Debit/credit double-entry recording' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานตามประเภทใบสำคัญ' : 'Reports filtered by voucher type' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts integration' ?></li>
-                </ul>
-            </div>
-            
-            <!-- Planned Q3 -->
+
+            <!-- Planned Q3 - Expense Module -->
             <div class="timeline-item planned">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q3 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'แอปมือถือ' : 'Mobile App' ?></h3>
-                <p><?= $lang === 'th' ? 'เปิดตัวแอปมือถือ iOS และ Android สำหรับการจัดการระหว่างเดินทาง' : 'Launch iOS and Android apps for on-the-go management.' ?></p>
+                <h3><?= $lang === 'th' ? 'v5.4 - ระบบค่าใช้จ่าย (Expense Module)' : 'v5.4 - Expense Tracking Module' ?></h3>
+                <p><?= $lang === 'th' ? 'บันทึกค่าใช้จ่ายรายวัน เชื่อมโยงกับโปรเจกต์/ใบแจ้งหนี้ รายงานต้นทุน และ P&L' : 'Daily expense recording, project/invoice linking, cost reporting, and profit & loss analysis.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'React Native App' : 'React Native app' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนแบบพุช' : 'Push notifications' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สแกนใบเสร็จ' : 'Receipt scanning' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Offline Mode' : 'Offline mode' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'CRUD ค่าใช้จ่าย (สร้าง/แก้ไข/ลบ)' : 'Expense CRUD (create/edit/delete)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'หมวดหมู่ค่าใช้จ่าย (ค่าเช่า, เดินทาง, เงินเดือน)' : 'Expense categories (rent, travel, salary)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมโยง PO/PR/Invoice' : 'Link to PO/PR/Invoice' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'มุมมองค่าใช้จ่ายรายวัน' : 'Daily expense view' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานต้นทุนตามโปรเจกต์' : 'Project cost report' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Workflow อนุมัติ (draft → approved → paid)' : 'Approval workflow (draft → approved → paid)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับ VAT/WHT ในค่าใช้จ่าย' : 'VAT/WHT support on expenses' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'อัปโหลดใบเสร็จ/เอกสาร' : 'Receipt/document upload' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned Q3 - Journal Module -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2026</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.5 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.5 - Journal Module & Voucher Classification' ?></h3>
+                <p><?= $lang === 'th' ? 'เพิ่มโมดูลสมุดรายวัน (Journal Voucher) และระบบจำแนกประเภทใบสำคัญ' : 'Add Journal Voucher module and voucher type classification system.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'คอลัมน์ voucher_type (payment/receipt/journal)' : 'voucher_type column (payment/receipt/journal)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Debit/Credit บันทึกบัญชีคู่' : 'Debit/credit double-entry recording' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts integration' ?></li>
                 </ul>
             </div>
             
-            <!-- Planned Q4 -->
+            <!-- Planned Q4 - Mobile & Integrations -->
             <div class="timeline-item planned">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q4 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'การผสานรวมขั้นสูง' : 'Advanced Integrations' ?></h3>
-                <p><?= $lang === 'th' ? 'เชื่อมต่อกับเครื่องมือธุรกิจยอดนิยมและบริการทางการเงิน' : 'Connect with popular business tools and financial services.' ?></p>
+                <h3><?= $lang === 'th' ? 'แอปมือถือและการผสานรวมขั้นสูง' : 'Mobile App & Advanced Integrations' ?></h3>
+                <p><?= $lang === 'th' ? 'แอป React Native, เชื่อมต่อธนาคาร, E-commerce และ Zapier' : 'React Native app, bank connections, e-commerce and Zapier integrations.' ?></p>
                 <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'React Native App (iOS/Android)' : 'React Native app (iOS/Android)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนแบบพุช' : 'Push notifications' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมต่อธนาคาร' : 'Bank connections' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผสานรวม E-commerce' : 'E-commerce integrations' ?></li>
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Public Developer API' : 'Public developer API' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมต่อ Zapier' : 'Zapier integration' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สแกนใบเสร็จ (OCR)' : 'Receipt scanning (OCR)' ?></li>
                 </ul>
             </div>
         </div>
