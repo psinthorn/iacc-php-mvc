@@ -1294,9 +1294,25 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <div class="feature-icon" style="background: linear-gradient(135deg, #e74c3c, #f39c12);">
                         <i class="fa fa-plug"></i>
                     </div>
-                    <h3><?= __('feature_7_title') ?> <span class="badge-new">NEW</span></h3>
+                    <h3><?= __('feature_7_title') ?></h3>
                     <p><?= __('feature_7_desc') ?></p>
-                    <a href="#integrations" class="feature-link">Learn more →</a>
+                    <a href="#integrations" class="feature-link"><?= $lang === 'th' ? 'ดูเพิ่มเติม →' : 'Learn more →' ?></a>
+                </div>
+                
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fa fa-money"></i>
+                    </div>
+                    <h3><?= __('feature_8_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_8_desc') ?></p>
+                </div>
+                
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fa fa-calculator"></i>
+                    </div>
+                    <h3><?= __('feature_9_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_9_desc') ?></p>
                 </div>
             </div>
         </div>

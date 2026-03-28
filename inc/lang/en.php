@@ -28,7 +28,7 @@ return [
     'feature_1_desc' => 'Create, send, and track invoices with automated payment reminders and status updates.',
     
     'feature_2_title' => 'Payment Gateway',
-    'feature_2_desc' => 'Accept payments via PayPal and Stripe with secure, real-time transaction processing.',
+    'feature_2_desc' => 'Accept payments via PromptPay QR, bank transfer, and more with secure slip review workflow.',
     
     'feature_3_title' => 'Financial Reports',
     'feature_3_desc' => 'Generate comprehensive reports with insights for better business decisions.',
@@ -44,6 +44,12 @@ return [
     
     'feature_7_title' => 'Sales Channel API',
     'feature_7_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
+    
+    'feature_8_title' => 'Expense Tracking',
+    'feature_8_desc' => 'Record daily expenses with categories, VAT/WHT calculation, approval workflow, and monthly summary reports.',
+    
+    'feature_9_title' => 'Tax & Multi-Currency',
+    'feature_9_desc' => 'Thai tax reports (PP30, WHT), PromptPay QR payments, slip review, and 10 currencies with BOT exchange rates.',
     
     // Integration Section
     'nav_integrations' => 'Integrations',
