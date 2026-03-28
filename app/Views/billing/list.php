@@ -1,6 +1,6 @@
 <?php
 /**
- * Billing List View — Legacy Modern Design
+ * Billing List View — Grouped Billing Notes + Unbilled Invoices
  * Variables: $items, $stats, $total_records, $pagination, $filters, $per_page
  */
 require_once __DIR__ . '/../../../inc/pagination.php';
@@ -45,7 +45,30 @@ require_once __DIR__ . '/../../../inc/pagination.php';
     .action-delete { background: rgba(239,68,68,0.1); color: #ef4444; }
     .action-delete:hover { background: #ef4444; color: white; text-decoration: none; }
     .amount-col { font-family: 'Courier New', monospace; font-weight: 600; }
-    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } }
+
+    /* Grouped billing row */
+    .billing-group-row { cursor: pointer; background: #faf5ff; }
+    .billing-group-row:hover { background: #f3e8ff !important; }
+    .billing-group-row td { border-bottom: 1px solid #e9d5ff; }
+    .billing-group-row .toggle-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; background: rgba(139,92,246,0.15); color: #7c3aed; font-size: 12px; margin-right: 8px; transition: transform 0.2s; }
+    .billing-group-row.expanded .toggle-icon { transform: rotate(90deg); }
+    .billing-group-row .bn-label { font-weight: 700; color: #7c3aed; }
+    .inv-count-badge { display: inline-block; background: #8b5cf6; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+
+    /* Sub-invoice rows (hidden by default) */
+    .billing-sub-row { display: none; }
+    .billing-sub-row td { padding-left: 48px !important; background: #fefbff; font-size: 12px; border-bottom: 1px solid #f5f0ff; }
+    .billing-sub-loading td { text-align: center; padding: 20px !important; color: #8b5cf6; }
+
+    /* Pagination footer with per-page selector inline */
+    .pagination-footer { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .pagination-footer .pagination-info { font-size: 13px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+    .pagination-footer .per-page-inline { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+    .pagination-footer .per-page-inline select { border: 1px solid #e5e7eb; border-radius: 8px; padding: 4px 8px; font-size: 13px; background: white; cursor: pointer; }
+    .pagination-footer .per-page-inline select:focus { border-color: #8b5cf6; outline: none; box-shadow: 0 0 0 2px rgba(139,92,246,0.15); }
+    .pagination-footer .pagination { margin: 0; }
+
+    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } .pagination-footer { flex-direction: column; gap: 8px; } }
 </style>
 
 <?php
@@ -56,7 +79,7 @@ $date_from = $filters['date_from'] ?? '';
 $date_to = $filters['date_to'] ?? '';
 $date_preset = $date_preset ?? ($filters['date_preset'] ?? '');
 $stats = $stats ?? ['total' => 0, 'with_billing' => 0, 'without_billing' => 0, 'total_amount' => 0];
-$per_page = $per_page ?? 25;
+$per_page = $per_page ?? 20;
 $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' => $date_from, 'date_to' => $date_to, 'date_preset' => $date_preset, 'per_page' => $per_page];
 ?>
 
@@ -82,7 +105,7 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                 <input type="hidden" name="page" value="billing">
                 <div class="date-presets"><?= render_date_presets($date_preset, 'billing') ?></div>
                 <div class="row">
-                    <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
+                    <div class="col-xs-12 col-sm-4" style="margin-bottom:12px;">
                         <input type="text" class="form-control" name="search" placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Name..." value="<?=htmlspecialchars($search)?>">
                     </div>
                     <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;">
@@ -94,10 +117,9 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                     </div>
                     <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($date_from)?>"></div>
                     <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($date_to)?>"></div>
-                    <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
+                    <div class="col-xs-12 col-sm-2" style="margin-bottom:12px;">
                         <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
                         <a href="?page=billing" class="btn btn-default"><i class="fa fa-refresh"></i></a>
-                        <?= render_per_page_selector($per_page) ?>
                     </div>
                 </div>
             </form>
@@ -105,63 +127,78 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
     </div>
 
     <div class="data-card">
-        <div class="card-header"><i class="fa fa-list" style="color:#8b5cf6;margin-right:8px"></i> Invoices & Billing (<?=number_format($total_records ?? 0)?>)</div>
+        <div class="card-header"><i class="fa fa-list" style="color:#8b5cf6;margin-right:8px"></i> Billing Notes & Invoices (<?=number_format($total_records ?? 0)?>)</div>
         <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th><?=$xml->invoice ?? 'Invoice'?>#</th>
+                        <th style="width:40px">#</th>
+                        <th>No. / <?=$xml->invoice ?? 'Invoice'?>#</th>
                         <th><?=$xml->customer ?? 'Customer'?></th>
                         <th><?=$xml->datecreate ?? 'Date'?></th>
-                        <th><?=$xml->total ?? 'Subtotal'?></th>
-                        <th>VAT</th>
-                        <th><?=$xml->grandtotal ?? 'Total'?></th>
-                        <th>Billing</th>
-                        <th><?=$xml->action ?? 'Actions'?></th>
+                        <th style="text-align:right"><?=$xml->grandtotal ?? 'Amount'?></th>
+                        <th>Status</th>
+                        <th style="width:140px"><?=$xml->action ?? 'Actions'?></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if(!empty($items)): foreach($items as $i => $b):
-                        $subtotal = floatval($b['subtotal'] ?? 0);
-                        $vat_pct = floatval($b['vat'] ?? 0);
-                        $dis_pct = floatval($b['discount'] ?? 0);
-                        $wh_pct = floatval($b['withholding'] ?? 0);
-                        $after_disc = $subtotal * (1 - $dis_pct / 100);
-                        $vat_amt = $after_disc * ($vat_pct / 100);
-                        $total_amt = $after_disc + $vat_amt - ($after_disc * $wh_pct / 100);
-                        $has_billing = !empty($b['bil_id']);
+                    <?php if(!empty($items)): $rowNum = ($pagination['offset'] ?? 0) + 1; foreach($items as $b):
+                        $isBilling = ($b['row_type'] === 'billing');
                     ?>
-                    <tr>
-                        <td><?=$i+1?></td>
-                        <td><strong><?=e($b['tex'] ?? $b['id'])?></strong></td>
-                        <td><?=e($b['name_en'] ?? $b['name'] ?? '')?></td>
-                        <td><?=e($b['createdate'] ?? '')?></td>
-                        <td class="amount-col"><?=number_format($subtotal, 2)?></td>
-                        <td><?=$vat_pct ? $vat_pct.'%' : '-'?></td>
-                        <td class="amount-col" style="font-weight:700"><?=number_format($total_amt, 2)?></td>
+                    <?php if($isBilling): ?>
+                    <!-- Billing Note Group Row (expandable) -->
+                    <tr class="billing-group-row" data-bil-id="<?=e($b['bil_id'])?>" onclick="toggleBillingGroup(this, <?=e($b['bil_id'])?>)">
+                        <td><?=$rowNum++?></td>
                         <td>
-                            <?php if($has_billing): ?>
-                            <span class="billing-badge billing-yes"><i class="fa fa-check"></i> <?=e($b['bil_id'])?></span>
-                            <?php else: ?>
-                            <span class="billing-badge billing-no">Unbilled</span>
-                            <?php endif; ?>
+                            <span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>
+                            <span class="bn-label"><?=e($b['display_id'])?></span>
+                            <span class="inv-count-badge"><?=e($b['inv_count'])?> invoice<?=$b['inv_count'] > 1 ? 's' : ''?></span>
                         </td>
-                        <td>
-                            <?php if(!$has_billing): ?>
-                            <a href="index.php?page=billing_make&inv_id=<?=e($b['id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
-                            <?php else: ?>                            <a href="index.php?page=billing_view&id=<?=e($b['bil_id'])?>" class="action-btn action-view" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
-                            <a href="index.php?page=billing_print&id=<?=e($b['bil_id'])?>" class="action-btn action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>                            <form method="post" action="index.php?page=billing_store" style="display:inline" onsubmit="return confirm('<?=$xml->confirmdelete ?? 'Delete this billing?'?>')">
+                        <td><?=e($b['customer_name'] ?? '')?></td>
+                        <td><?=e($b['display_date'] ?? '')?></td>
+                        <td class="amount-col" style="text-align:right;font-weight:700;color:#7c3aed">฿<?=number_format(floatval($b['total_amount']), 2)?></td>
+                        <td><span class="billing-badge billing-yes"><i class="fa fa-check"></i> Billed</span></td>
+                        <td onclick="event.stopPropagation()">
+                            <a href="index.php?page=billing_view&id=<?=e($b['bil_id'])?>" class="action-btn action-view" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
+                            <a href="index.php?page=billing_print&id=<?=e($b['bil_id'])?>" class="action-btn action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>
+                            <form method="post" action="index.php?page=billing_store" style="display:inline" onsubmit="return confirm('<?=$xml->confirmdelete ?? 'Delete this billing note and unlink all invoices?'?>')">
                                 <input type="hidden" name="method" value="D">
                                 <input type="hidden" name="bil_id" value="<?=e($b['bil_id'])?>">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="action-btn action-delete" title="<?=$xml->delete ?? 'Delete'?>"><i class="fa fa-trash"></i></button>
                             </form>
-                            <?php endif; ?>
                         </td>
                     </tr>
+                    <!-- Sub-invoice placeholder (loaded via AJAX on expand) -->
+                    <tr class="billing-sub-row billing-sub-loading" data-parent="<?=e($b['bil_id'])?>">
+                        <td colspan="7"><i class="fa fa-spinner fa-spin"></i> Loading invoices...</td>
+                    </tr>
+                    <?php else: ?>
+                    <!-- Unbilled Invoice Row -->
+                    <tr>
+                        <td><?=$rowNum++?></td>
+                        <td><strong><?=e($b['display_id'] ?? $b['tex'] ?? '')?></strong></td>
+                        <td><?=e($b['customer_name'] ?? '')?></td>
+                        <td><?=e($b['display_date'] ?? '')?></td>
+                        <td class="amount-col" style="text-align:right">
+                            <?php
+                            $sub = floatval($b['subtotal'] ?? 0);
+                            $dpct = floatval($b['discount_pct'] ?? 0);
+                            $after = $sub * (1 - $dpct / 100);
+                            $vatAmt = $after * (floatval($b['vat'] ?? 0) / 100);
+                            $whAmt = $after * (floatval($b['withholding'] ?? 0) / 100);
+                            $tot = $after + $vatAmt - $whAmt;
+                            ?>
+                            ฿<?=number_format($tot, 2)?>
+                        </td>
+                        <td><span class="billing-badge billing-no">Unbilled</span></td>
+                        <td>
+                            <a href="index.php?page=billing_make&inv_id=<?=e($b['display_id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
                     <?php endforeach; else: ?>
-                    <tr><td colspan="9" class="text-center" style="padding:40px;color:#9ca3af"><i class="fa fa-inbox" style="font-size:28px;display:block;margin-bottom:8px"></i><?=$xml->nodata ?? 'No invoices found'?></td></tr>
+                    <tr><td colspan="7" class="text-center" style="padding:40px;color:#9ca3af"><i class="fa fa-inbox" style="font-size:28px;display:block;margin-bottom:8px"></i><?=$xml->nodata ?? 'No data found'?></td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -169,11 +206,98 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
     </div>
 
     <?php if(!empty($pagination) && $pagination['total_pages'] > 0): ?>
-    <div style="text-align:center;margin-bottom:24px">
-        <div style="font-size:13px;color:#6b7280;font-weight:500;margin-bottom:8px">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
+    <div class="pagination-footer">
+        <div class="pagination-info">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
         <?php if($pagination['total_pages'] > 1): ?>
         <?= render_pagination($pagination, '?page=billing', $query_params) ?>
         <?php endif; ?>
+        <div class="per-page-inline">
+            <span>Show</span>
+            <select onchange="changePerPage(this.value)">
+                <?php foreach([10, 20, 50, 100] as $opt): ?>
+                <option value="<?=$opt?>" <?=$per_page==$opt?'selected':''?>><?=$opt?></option>
+                <?php endforeach; ?>
+            </select>
+            <span>per page</span>
+        </div>
     </div>
     <?php endif; ?>
 </div>
+
+<script>
+var billingInvoiceCache = {};
+
+function toggleBillingGroup(row, bilId) {
+    var isExpanded = row.classList.contains('expanded');
+    var subRows = document.querySelectorAll('.billing-sub-row[data-parent="' + bilId + '"]');
+
+    if (isExpanded) {
+        row.classList.remove('expanded');
+        for (var i = 0; i < subRows.length; i++) subRows[i].style.display = 'none';
+    } else {
+        row.classList.add('expanded');
+        if (billingInvoiceCache[bilId]) {
+            renderSubRows(row, bilId, billingInvoiceCache[bilId]);
+        } else {
+            var loadingRow = document.querySelector('.billing-sub-loading[data-parent="' + bilId + '"]');
+            if (loadingRow) loadingRow.style.display = '';
+            fetch('index.php?page=billing_invoices_json&bil_id=' + bilId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    billingInvoiceCache[bilId] = data;
+                    renderSubRows(row, bilId, data);
+                })
+                .catch(function() {
+                    if (loadingRow) loadingRow.querySelector('td').innerHTML = '<span style="color:#ef4444"><i class="fa fa-exclamation-triangle"></i> Failed to load</span>';
+                });
+        }
+    }
+}
+
+function renderSubRows(parentRow, bilId, invoices) {
+    var existing = document.querySelectorAll('.billing-sub-row[data-parent="' + bilId + '"]');
+    for (var i = 0; i < existing.length; i++) existing[i].remove();
+
+    var ref = parentRow;
+    for (var j = 0; j < invoices.length; j++) {
+        var inv = invoices[j];
+        var amt = inv.amount ? parseFloat(inv.amount) : 0;
+        var amtStr = amt.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+        var tr = document.createElement('tr');
+        tr.className = 'billing-sub-row';
+        tr.setAttribute('data-parent', bilId);
+        tr.style.display = '';
+        tr.innerHTML = '<td style="color:#9ca3af;text-align:center">' + (j+1) + '</td>'
+            + '<td style="padding-left:48px !important"><i class="fa fa-file-text-o" style="color:#8b5cf6;margin-right:6px"></i>' + escHtml(inv.po_number || inv.inv_no || '') + '</td>'
+            + '<td>' + escHtml(inv.pr_description || inv.po_name || '') + '</td>'
+            + '<td>' + escHtml(inv.invoice_date || '') + '</td>'
+            + '<td class="amount-col" style="text-align:right">฿' + amtStr + '</td>'
+            + '<td><span style="color:#8b5cf6;font-size:11px"><i class="fa fa-link"></i> Linked</span></td>'
+            + '<td></td>';
+        ref.parentNode.insertBefore(tr, ref.nextSibling);
+        ref = tr;
+    }
+    if (invoices.length === 0) {
+        var tr = document.createElement('tr');
+        tr.className = 'billing-sub-row';
+        tr.setAttribute('data-parent', bilId);
+        tr.style.display = '';
+        tr.innerHTML = '<td colspan="7" style="text-align:center;padding:16px;color:#9ca3af">No invoices linked</td>';
+        ref.parentNode.insertBefore(tr, ref.nextSibling);
+    }
+}
+
+function escHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function changePerPage(val) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('per_page', val);
+    url.searchParams.delete('pg');
+    window.location.href = url.toString();
+}
+</script>
