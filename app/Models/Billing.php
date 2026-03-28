@@ -90,7 +90,8 @@ class Billing extends BaseModel
             JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
             LEFT JOIN billing_items bi ON bi.inv_id=iv.id
             LEFT JOIN billing b ON bi.bil_id=b.bil_id
-            WHERE pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond";
+            WHERE iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
+            AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond";
 
         $status = $filters['status'] ?? '';
         if ($status === 'billed') {
@@ -129,7 +130,8 @@ class Billing extends BaseModel
         if ($status !== 'unbilled') {
             $parts[] = "(SELECT 'billing' as row_type, b.bil_id, CONCAT('BN-', LPAD(b.bil_id, 6, '0')) as display_id,
                 MAX(b.des) as description, DATE_FORMAT(MAX(b.created_at), '%d-%m-%Y') as display_date,
-                MAX(b.price) as total_amount, MAX(b.customer_id) as customer_id,
+                CASE WHEN MAX(b.price) > 0 THEN MAX(b.price) ELSE SUM(bi.amount) END as total_amount,
+                MAX(b.customer_id) as customer_id,
                 COUNT(DISTINCT bi.id) as inv_count,
                 MAX(company.name_en) as customer_name,
                 MAX(b.created_at) as sort_date,
@@ -137,6 +139,7 @@ class Billing extends BaseModel
                 FROM billing b
                 JOIN billing_items bi ON bi.bil_id=b.bil_id
                 JOIN iv ON bi.inv_id=iv.id
+                    AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
                 JOIN po ON iv.tex=po.id
                 JOIN pr ON po.ref=pr.id
                 JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
@@ -184,6 +187,7 @@ class Billing extends BaseModel
             po.vat, po.dis as discount_pct, po.over as withholding
             FROM billing_items bi
             JOIN iv ON bi.inv_id = iv.id
+                AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
             JOIN po ON iv.tex = po.id
             JOIN pr ON po.ref = pr.id
             WHERE bi.bil_id = '" . \sql_int($bilId) . "'
