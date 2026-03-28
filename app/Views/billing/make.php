@@ -144,7 +144,7 @@ $customers_list = $customers ?? [];
                 <span class="col-chip active" data-col="col-customer" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->customer ?? 'Customer'?></span>
                 <span class="col-chip active" data-col="col-desc" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->description ?? 'Description'?></span>
                 <span class="col-chip active" data-col="col-date" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->datecreate ?? 'Date'?></span>
-                <span class="col-chip active" data-col="col-total" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->total ?? 'Total'?></span>
+                <span class="col-chip active" data-col="col-total" onclick="toggleColumn(this)"><i class="fa fa-check"></i> Total</span>
                 <span class="col-chip active" data-col="col-vat" onclick="toggleColumn(this)"><i class="fa fa-check"></i> VAT</span>
                 <span class="col-chip active" data-col="col-grand" onclick="toggleColumn(this)"><i class="fa fa-check"></i> <?=$xml->grandtotal ?? 'Grand Total'?></span>
             </div>
@@ -165,7 +165,7 @@ $customers_list = $customers ?? [];
                             <th class="col-customer"><?=$xml->customer ?? 'Customer'?></th>
                             <th class="col-desc"><?=$xml->description ?? 'Description'?></th>
                             <th class="col-date"><?=$xml->datecreate ?? 'Date'?></th>
-                            <th class="col-total"><?=$xml->total ?? 'Total'?></th>
+                            <th class="col-total">Total</th>
                             <th class="col-vat">VAT</th>
                             <th class="col-grand"><?=$xml->grandtotal ?? 'Grand Total'?></th>
                         </tr>
