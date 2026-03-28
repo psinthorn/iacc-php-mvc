@@ -222,6 +222,11 @@ return [
     'promptpay_checkout'     => ['InvoicePaymentController', 'promptpayCheckout'],
     'promptpay_confirm'      => ['InvoicePaymentController', 'promptpayConfirm'],
 
+    // Slip Review (Admin)
+    'slip_review'            => ['SlipReviewController', 'index'],
+    'slip_review_approve'    => ['SlipReviewController', 'approve'],
+    'slip_review_reject'     => ['SlipReviewController', 'reject'],
+
     // ========== Standalone Routes (auth required, no admin shell) ==========
 
     // PDF / Print Generators

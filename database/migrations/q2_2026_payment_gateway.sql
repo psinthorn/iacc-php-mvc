@@ -128,6 +128,21 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- =============================================
+-- 9. Seed PromptPay in payment_method (gateway config table)
+-- =============================================
+-- This is the gateway-level payment_method table (singular) used by payment_gateway_config
+INSERT INTO `payment_method` (`company_id`, `code`, `name`, `name_th`, `icon`, `description`, `is_gateway`, `is_active`, `sort_order`)
+SELECT 95, 'promptpay', 'PromptPay', 'พร้อมเพย์', 'fa-qrcode', 'Thai PromptPay QR Payment', 1, 1, 10
+FROM dual WHERE NOT EXISTS (SELECT 1 FROM `payment_method` WHERE `code` = 'promptpay');
+
+-- Seed default PromptPay config keys (demo values — admin should update)
+SET @pm_id = (SELECT `id` FROM `payment_method` WHERE `code` = 'promptpay' LIMIT 1);
+INSERT IGNORE INTO `payment_gateway_config` (`company_id`, `payment_method_id`, `config_key`, `config_value`, `is_encrypted`) VALUES
+(95, @pm_id, 'promptpay_id', '0812345678', 0),
+(95, @pm_id, 'promptpay_name', 'Demo Company', 0),
+(95, @pm_id, 'promptpay_auto_confirm', '0', 0);
+
 -- =============================================================================
 -- End of Q2 2026 Migration
 -- =============================================================================
