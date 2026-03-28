@@ -35,7 +35,8 @@ require_once __DIR__ . '/../../../inc/pagination.php';
     .billing-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .billing-yes { background: #d1fae5; color: #059669; }
     .billing-no { background: #fef3c7; color: #d97706; }
-    .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; text-decoration: none; margin: 0 2px; border: none; cursor: pointer; }
+    .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; text-decoration: none; margin: 0 1px; border: none; cursor: pointer; font-size: 12px; }
+    .action-col { white-space: nowrap; text-align: center; }
     .action-view { background: rgba(59,130,246,0.1); color: #3b82f6; }
     .action-view:hover { background: #3b82f6; color: white; text-decoration: none; }
     .action-print { background: rgba(16,185,129,0.1); color: #10b981; }
@@ -132,13 +133,13 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
             <table>
                 <thead>
                     <tr>
-                        <th style="width:40px">#</th>
-                        <th>No. / <?=$xml->invoice ?? 'Invoice'?>#</th>
+                        <th style="width:36px">#</th>
+                        <th style="width:22%">No. / <?=$xml->invoice ?? 'Invoice'?>#</th>
                         <th><?=$xml->customer ?? 'Customer'?></th>
-                        <th><?=$xml->datecreate ?? 'Date'?></th>
-                        <th style="text-align:right"><?=$xml->grandtotal ?? 'Amount'?></th>
-                        <th>Status</th>
-                        <th style="width:140px"><?=$xml->action ?? 'Actions'?></th>
+                        <th style="width:90px"><?=$xml->datecreate ?? 'Date'?></th>
+                        <th style="text-align:right;width:120px"><?=$xml->grandtotal ?? 'Amount'?></th>
+                        <th style="width:75px">Status</th>
+                        <th style="width:130px;text-align:center"><?=$xml->action ?? 'Actions'?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -158,7 +159,7 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                         <td><?=e($b['display_date'] ?? '')?></td>
                         <td class="amount-col" style="text-align:right;font-weight:700;color:#7c3aed">฿<?=number_format(floatval($b['total_amount']), 2)?></td>
                         <td><span class="billing-badge billing-yes"><i class="fa fa-check"></i> Billed</span></td>
-                        <td onclick="event.stopPropagation()">
+                        <td class="action-col" onclick="event.stopPropagation()">
                             <a href="index.php?page=billing_view&id=<?=e($b['bil_id'])?>" class="action-btn action-view" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
                             <a href="index.php?page=billing_print&id=<?=e($b['bil_id'])?>" class="action-btn action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>
                             <form method="post" action="index.php?page=billing_store" style="display:inline" onsubmit="return confirm('<?=$xml->confirmdelete ?? 'Delete this billing note and unlink all invoices?'?>')">
@@ -192,7 +193,7 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                             ฿<?=number_format($tot, 2)?>
                         </td>
                         <td><span class="billing-badge billing-no">Unbilled</span></td>
-                        <td>
+                        <td class="action-col">
                             <a href="index.php?page=billing_make&inv_id=<?=e($b['tex'] ?? $b['display_id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
                         </td>
                     </tr>
