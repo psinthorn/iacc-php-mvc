@@ -1,7 +1,12 @@
 -- =============================================================================
 -- Q2 2026: Payment Gateway & Multi-Currency Migration
--- Version: 8.0 (Phase 8)
+-- Version: 8.1 (Phase 8) - Updated for multi-environment support
 -- Date: 2026-04-01
+-- Updated: 2026-03-28 - Fix hardcoded schema, add DATABASE() for portability
+-- =============================================================================
+-- NOTE: This migration auto-detects the current database name.
+-- Run it while connected to the target database:
+--   mysql -u<user> -p <dbname> < q2_2026_payment_gateway.sql
 -- =============================================================================
 
 -- =============================================
@@ -84,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `tax_reports` (
 -- 4. Add WHT fields to pay table
 -- =============================================
 -- Use IF NOT EXISTS pattern via procedure for safe re-runs
-SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='pay' AND COLUMN_NAME='wht_rate');
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='pay' AND COLUMN_NAME='wht_rate');
 SET @sql = IF(@col_exists = 0, 'ALTER TABLE `pay` ADD COLUMN `wht_rate` DECIMAL(5,2) DEFAULT NULL COMMENT ''Withholding tax rate (%)'', ADD COLUMN `wht_amount` DECIMAL(15,2) DEFAULT NULL COMMENT ''Withholding tax amount'', ADD COLUMN `wht_type` ENUM(''PND3'',''PND53'') DEFAULT NULL COMMENT ''WHT form type''', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
@@ -93,7 +98,7 @@ DEALLOCATE PREPARE stmt;
 -- =============================================
 -- 5. Add default_currency to company table
 -- =============================================
-SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='company' AND COLUMN_NAME='default_currency');
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='company' AND COLUMN_NAME='default_currency');
 SET @sql = IF(@col_exists = 0, 'ALTER TABLE `company` ADD COLUMN `default_currency` VARCHAR(3) NOT NULL DEFAULT ''THB'' COMMENT ''Default currency code'' AFTER `email`', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
@@ -102,7 +107,7 @@ DEALLOCATE PREPARE stmt;
 -- =============================================
 -- 6. Add currency to invoice (iv) table
 -- =============================================
-SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='iv' AND COLUMN_NAME='currency_code');
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='iv' AND COLUMN_NAME='currency_code');
 SET @sql = IF(@col_exists = 0, 'ALTER TABLE `iv` ADD COLUMN `currency_code` VARCHAR(3) DEFAULT ''THB'' COMMENT ''Invoice currency'', ADD COLUMN `exchange_rate` DECIMAL(16,6) DEFAULT NULL COMMENT ''Exchange rate to THB at time of creation''', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
@@ -122,7 +127,7 @@ AND NOT EXISTS (SELECT 1 FROM `payment_methods` pm3 WHERE pm3.method_name = 'Pro
 -- 8. Add currency to payment_log for multi-currency payments
 -- =============================================
 -- payment_log already has 'currency' column; add exchange_rate and slip_image if missing
-SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='iacc' AND TABLE_NAME='payment_log' AND COLUMN_NAME='exchange_rate');
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='payment_log' AND COLUMN_NAME='exchange_rate');
 SET @sql = IF(@col_exists = 0, 'ALTER TABLE `payment_log` ADD COLUMN `exchange_rate` DECIMAL(16,6) DEFAULT NULL COMMENT ''Exchange rate to THB'' AFTER `currency`, ADD COLUMN `slip_image` VARCHAR(255) DEFAULT NULL COMMENT ''PromptPay slip upload path''', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
