@@ -25,9 +25,9 @@
 |--------|-------|
 | **Controllers** | 38 (+1 Q3) |
 | **Models** | 32 (+2 Q3) |
-| **Views** | 114 (+5 Q3) |
+| **Views** | 115 (+6 Q3) |
 | **Services** | 3 (ChannelService, PromptPayService, CurrencyService) |
-| **MVC Routes** | 171 (+11 Q3) |
+| **MVC Routes** | 173 (+13 Q3) |
 | **Legacy Routes** | 0 |
 | **Test Cases** | 188 (42 E2E + 20 API + 126 MVC) |
 | **Active Root Files** | 12 |
@@ -76,7 +76,7 @@ app/
 │   ├── PromptPayService.php       # QR code generation & payment
 │   └── CurrencyService.php        # Exchange rates (BOT API)
 └── Views/ (109)
-    ├── expense/                   # 5 expense views (list, form, view, categories, summary)
+    ├── expense/                   # 6 expense views (list, form, view, categories, summary, project-report)
     ├── api/                       # 11 API admin panel views
     ├── tax/                       # 3 tax report views (dashboard, PP30, WHT)
     ├── currency/                  # 2 currency views (list, rates)
@@ -535,11 +535,13 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - **Vendor/Project Tracking**: Autocomplete with linkage to PO/PR
 
 **Technical Details**:
-- 1 new controller (ExpenseController — 11 methods), 2 new models, 5 new views
-- 11 new routes (171 total MVC routes)
+- 1 new controller (ExpenseController — 13 methods), 2 new models, 6 new views
+- 13 new routes (173 total MVC routes)
 - 2 new database tables with FK constraint
 - Migration: `database/migrations/004_expense_tables.sql`
-- Sidebar: Expenses menu with 4 sub-items (List, New, Categories, Summary)
+- Sidebar: Expenses menu with 5 sub-items (List, New, Categories, Summary, Project Costs)
+- Project cost report with drill-down detail and progress bars
+- CSV/JSON export (standalone route) with full filter support
 
 ### v5.3-payment-gateway (March 28, 2026) — Q2 Payment & Tax
 
