@@ -128,11 +128,11 @@ class Billing extends BaseModel
         // Part 1: Billing notes (grouped)
         if ($status !== 'unbilled') {
             $parts[] = "(SELECT 'billing' as row_type, b.bil_id, CONCAT('BN-', LPAD(b.bil_id, 6, '0')) as display_id,
-                b.des as description, DATE_FORMAT(b.created_at, '%d-%m-%Y') as display_date,
-                b.price as total_amount, b.customer_id,
-                (SELECT COUNT(*) FROM billing_items bi2 WHERE bi2.bil_id=b.bil_id) as inv_count,
-                company.name_en as customer_name,
-                b.created_at as sort_date,
+                MAX(b.des) as description, DATE_FORMAT(MAX(b.created_at), '%d-%m-%Y') as display_date,
+                MAX(b.price) as total_amount, MAX(b.customer_id) as customer_id,
+                COUNT(DISTINCT bi.id) as inv_count,
+                MAX(company.name_en) as customer_name,
+                MAX(b.created_at) as sort_date,
                 '' as tex, 0 as subtotal, 0 as vat, 0 as discount_pct, 0 as withholding
                 FROM billing b
                 JOIN billing_items bi ON bi.bil_id=b.bil_id
