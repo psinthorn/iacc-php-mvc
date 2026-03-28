@@ -47,11 +47,20 @@ class BillingController extends BaseController
     {
         $comId = $this->getCompanyId();
         $invId = $this->inputInt('inv_id', 0);
-        $customer = $invId > 0 ? $this->billing->getCustomerFromInvoice($invId) : null;
+        $customerId = $this->inputInt('customer_id', 0);
+
+        // Determine customer: from inv_id param, customer_id param, or null
+        $customer = null;
+        if ($invId > 0) {
+            $customer = $this->billing->getCustomerFromInvoice($invId);
+        } elseif ($customerId > 0) {
+            $customer = $this->billing->getCustomerById($customerId);
+        }
 
         $this->render('billing/make', [
             'customer' => $customer,
             'inv_id' => $invId,
+            'customers' => $this->billing->getCustomersWithUnbilledInvoices($comId),
             'unbilled' => $customer ? $this->billing->getUnbilledInvoices(intval($customer['id']), $comId) : [],
         ]);
     }
