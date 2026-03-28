@@ -69,16 +69,17 @@
     .error-card { background: white; border-radius: 12px; padding: 60px 20px; text-align: center; border: 1px solid #e5e7eb; }
     .invoice-count-badge { background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
 
-    /* Date Range Filter */
-    .filter-bar { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px 20px; margin-bottom: 16px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-    .filter-bar .filter-field { display: flex; flex-direction: column; gap: 4px; }
-    .filter-bar .filter-field label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
-    .filter-bar .filter-field input[type="date"] { border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 13px; min-height: 38px; }
-    .filter-bar .filter-field input[type="date"]:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.1); outline: none; }
-    .filter-bar .btn-filter { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; min-height: 38px; display: inline-flex; align-items: center; gap: 5px; }
-    .filter-bar .btn-filter:hover { box-shadow: 0 4px 12px rgba(139,92,246,0.35); }
-    .filter-bar .btn-clear { background: white; color: #6b7280; border: 1px solid #e5e7eb; padding: 8px 16px; border-radius: 8px; font-weight: 500; font-size: 13px; cursor: pointer; min-height: 38px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-    .filter-bar .btn-clear:hover { border-color: #d1d5db; color: #374151; text-decoration: none; }
+    /* Filter Card (compl_list style) */
+    .filter-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
+    .filter-card .filter-header { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 10px; }
+    .filter-card .filter-body { padding: 20px; }
+    .filter-card .form-control { border-radius: 10px; border: 1px solid #e5e7eb; height: 44px; }
+    .filter-card .form-control:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.1); outline: none; }
+    .filter-card .btn-primary { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+    .filter-card .btn-primary:hover { box-shadow: 0 4px 12px rgba(139,92,246,0.35); }
+    .date-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .date-presets .btn { border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; }
+    .date-presets .btn.active { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border-color: #7c3aed; }
 
     /* Per-Page & Pagination */
     .pagination-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
@@ -99,6 +100,8 @@ $total_rec = $total_records ?? 0;
 $pp = $per_page ?? 20;
 $df = $date_from ?? '';
 $dt = $date_to ?? '';
+$date_preset = $date_preset ?? '';
+$search = $search ?? '';
 ?>
 
 <div class="billing-wrapper">
@@ -141,20 +144,29 @@ $dt = $date_to ?? '';
         <input type="hidden" name="customer_id" value="<?=e($cust['id'] ?? '')?>">
         <?= csrf_field() ?>
 
-        <!-- Date Range Filter -->
-        <div class="filter-bar">
-            <div class="filter-field">
-                <label><i class="fa fa-calendar"></i> From</label>
-                <input type="date" id="filter_date_from" value="<?=e($df)?>">
+        <!-- Search & Date Range Filter (compl_list style) -->
+        <div class="filter-card">
+            <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?></div>
+            <div class="filter-body">
+                <form method="get" action="" id="filterForm">
+                    <input type="hidden" name="page" value="billing_make">
+                    <input type="hidden" name="customer_id" value="<?=e($cust['id'] ?? '')?>">
+                    <input type="hidden" name="per_page" value="<?=$pp?>">
+                    <div class="date-presets"><?= render_date_presets($date_preset, 'billing_make') ?></div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-3" style="margin-bottom:12px;">
+                            <input type="text" class="form-control" name="search" placeholder="<?=$xml->search ?? 'Search'?> Invoice#, Description..." value="<?=htmlspecialchars($search)?>">
+                        </div>
+                        <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_from" value="<?=htmlspecialchars($df)?>" placeholder="From"></div>
+                        <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_to" value="<?=htmlspecialchars($dt)?>" placeholder="To"></div>
+                        <div class="col-xs-12 col-sm-5" style="margin-bottom:12px;">
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+                            <a href="?page=billing_make&customer_id=<?=e($cust['id'] ?? '')?>" class="btn btn-default"><i class="fa fa-refresh"></i></a>
+                            <?= render_per_page_selector($pp) ?>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="filter-field">
-                <label><i class="fa fa-calendar"></i> To</label>
-                <input type="date" id="filter_date_to" value="<?=e($dt)?>">
-            </div>
-            <button type="button" class="btn-filter" onclick="applyDateFilter()"><i class="fa fa-filter"></i> Filter</button>
-            <?php if($df || $dt): ?>
-            <a href="index.php?page=billing_make&customer_id=<?=e($cust['id'] ?? '')?>" class="btn-clear"><i class="fa fa-times"></i> Clear</a>
-            <?php endif; ?>
         </div>
 
         <!-- Billing Details -->
@@ -193,7 +205,7 @@ $dt = $date_to ?? '';
         <div class="data-card">
             <div class="card-header">
                 <span><i class="fa fa-file-text-o" style="color:#8b5cf6;margin-right:8px"></i> Unbilled Invoices</span>
-                <span class="invoice-count-badge"><?=$total_rec?> invoice<?=$total_rec != 1 ? 's' : ''?><?php if($df || $dt) echo ' (filtered)'; ?></span>
+                <span class="invoice-count-badge"><?=$total_rec?> invoice<?=$total_rec != 1 ? 's' : ''?><?php if($df || $dt || $search) echo ' (filtered)'; ?></span>
             </div>
             <div class="table-responsive">
                 <table id="invoiceTable">
@@ -242,19 +254,10 @@ $dt = $date_to ?? '';
         <!-- Pagination Bar -->
         <?php if($pg && $pg['total_pages'] > 0): ?>
         <div class="pagination-bar">
-            <div class="per-page-select">
-                <span>Show</span>
-                <select onchange="changePerPage(this.value)">
-                    <?php foreach([10,20,50,100] as $pp_opt): ?>
-                    <option value="<?=$pp_opt?>" <?=$pp == $pp_opt ? 'selected' : ''?>><?=$pp_opt?></option>
-                    <?php endforeach; ?>
-                </select>
-                <span>per page</span>
-                <span class="pagination-info-text" style="margin-left:12px">Showing <?=$pg['start_record']?>-<?=$pg['end_record']?> of <?=$pg['total_records']?></span>
-            </div>
+            <div class="pagination-info-text">Showing <?=$pg['start_record']?>-<?=$pg['end_record']?> of <?=$pg['total_records']?> invoices</div>
             <?php if($pg['total_pages'] > 1): ?>
             <div>
-                <?= render_pagination($pg, 'index.php?page=billing_make', ['customer_id' => $cust['id'] ?? '', 'date_from' => $df, 'date_to' => $dt, 'per_page' => $pp]) ?>
+                <?= render_pagination($pg, 'index.php?page=billing_make', ['customer_id' => $cust['id'] ?? '', 'date_from' => $df, 'date_to' => $dt, 'search' => $search, 'per_page' => $pp]) ?>
             </div>
             <?php endif; ?>
         </div>
@@ -291,34 +294,17 @@ function loadCustomerInvoices() {
     var customerId = sel.value;
     if (!customerId) { alert('Please select a customer'); return; }
     var url = 'index.php?page=billing_make&customer_id=' + customerId;
-    var df = document.getElementById('filter_date_from');
-    var dt = document.getElementById('filter_date_to');
-    if (df && df.value) url += '&date_from=' + df.value;
-    if (dt && dt.value) url += '&date_to=' + dt.value;
     window.location.href = url;
 }
 
-/* Date range filter */
-function applyDateFilter() {
-    var customerId = '<?=e($cust['id'] ?? '')?>';
-    if (!customerId) return;
-    var df = document.getElementById('filter_date_from').value;
-    var dt = document.getElementById('filter_date_to').value;
-    var url = 'index.php?page=billing_make&customer_id=' + customerId;
-    if (df) url += '&date_from=' + df;
-    if (dt) url += '&date_to=' + dt;
-    window.location.href = url;
-}
-
-/* Per-page selector */
+/* Per-page selector - update hidden field and submit form */
 function changePerPage(val) {
-    var customerId = '<?=e($cust['id'] ?? '')?>';
-    var url = 'index.php?page=billing_make&customer_id=' + customerId + '&per_page=' + val;
-    var df = document.getElementById('filter_date_from');
-    var dt = document.getElementById('filter_date_to');
-    if (df && df.value) url += '&date_from=' + df.value;
-    if (dt && dt.value) url += '&date_to=' + dt.value;
-    window.location.href = url;
+    var form = document.getElementById('filterForm');
+    if (form) {
+        var ppField = form.querySelector('input[name="per_page"]');
+        if (ppField) ppField.value = val;
+        form.submit();
+    }
 }
 
 /* Also load on select change */
