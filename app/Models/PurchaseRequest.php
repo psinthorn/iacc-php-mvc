@@ -127,10 +127,16 @@ class PurchaseRequest extends BaseModel
                 $query_type = mysqli_query($this->conn, "SELECT * FROM type WHERE cat_id='" . intval($cat['id']) . "' AND deleted_at IS NULL" . $companyCondition);
                 if ($query_type) {
                     while ($type = mysqli_fetch_assoc($query_type)) {
-                        $sql = "SELECT COALESCE(SUM(p.price)/NULLIF(SUM(p.quantity),0), 0) as net 
-                                FROM product p WHERE p.type='" . intval($type['id']) . "'";
-                        $netResult = mysqli_fetch_assoc(mysqli_query($this->conn, $sql));
-                        $type['price'] = floor($netResult['net'] ?? 0);
+                        // Use the latest non-zero unit price for this company
+                        // instead of broken SUM(price)/SUM(quantity) average
+                        $typeId = intval($type['id']);
+                        $sql = "SELECT p.price FROM product p 
+                                WHERE p.type='$typeId' AND p.price > 0 AND p.deleted_at IS NULL" 
+                                . ($comId > 0 ? " AND p.company_id = " . intval($comId) : '')
+                                . " ORDER BY p.pro_id DESC LIMIT 1";
+                        $netResult = mysqli_query($this->conn, $sql);
+                        $row = $netResult ? mysqli_fetch_assoc($netResult) : null;
+                        $type['price'] = $row ? floor(floatval($row['price'])) : 0;
                         $cat['types'][] = $type;
                     }
                 }
