@@ -50,9 +50,17 @@ class BillingController extends BaseController
         $invId = $this->inputInt('inv_id', 0);
         $customerId = $this->inputInt('customer_id', 0);
 
-        // Date range filters
+        // Search & date range filters
+        $search   = $this->input('search', '');
         $dateFrom = $this->input('date_from', '');
         $dateTo   = $this->input('date_to', '');
+
+        // Date presets override manual date range
+        $datePreset = $this->input('date_preset', '');
+        if (!empty($datePreset)) {
+            if ($datePreset === 'all') { $dateFrom = ''; $dateTo = ''; }
+            else { $dr = get_date_range($datePreset); $dateFrom = $dr['from']; $dateTo = $dr['to']; }
+        }
 
         // Pagination
         $page    = max(1, $this->inputInt('pg', 1));
@@ -72,9 +80,9 @@ class BillingController extends BaseController
         $pagination = null;
         if ($customer) {
             $custId = intval($customer['id']);
-            $totalRecords = $this->billing->countUnbilledInvoices($custId, $comId, $dateFrom, $dateTo);
+            $totalRecords = $this->billing->countUnbilledInvoices($custId, $comId, $dateFrom, $dateTo, $search);
             $pagination = paginate($totalRecords, $perPage, $page);
-            $unbilled = $this->billing->getUnbilledInvoices($custId, $comId, $dateFrom, $dateTo, $pagination['offset'], $perPage);
+            $unbilled = $this->billing->getUnbilledInvoices($custId, $comId, $dateFrom, $dateTo, $search, $pagination['offset'], $perPage);
         }
 
         $this->render('billing/make', [
@@ -87,6 +95,8 @@ class BillingController extends BaseController
             'per_page' => $perPage,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
+            'date_preset' => $datePreset,
+            'search' => $search,
         ]);
     }
 
