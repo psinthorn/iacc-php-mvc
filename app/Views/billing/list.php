@@ -36,6 +36,10 @@ require_once __DIR__ . '/../../../inc/pagination.php';
     .billing-yes { background: #d1fae5; color: #059669; }
     .billing-no { background: #fef3c7; color: #d97706; }
     .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; text-decoration: none; margin: 0 2px; border: none; cursor: pointer; }
+    .action-view { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .action-view:hover { background: #3b82f6; color: white; text-decoration: none; }
+    .action-print { background: rgba(16,185,129,0.1); color: #10b981; }
+    .action-print:hover { background: #10b981; color: white; text-decoration: none; }
     .action-create { background: rgba(139,92,246,0.1); color: #8b5cf6; }
     .action-create:hover { background: #8b5cf6; color: white; text-decoration: none; }
     .action-delete { background: rgba(239,68,68,0.1); color: #ef4444; }
@@ -145,9 +149,9 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
                         </td>
                         <td>
                             <?php if(!$has_billing): ?>
-                            <a href="index.php?page=billing_make&po_id=<?=e($b['tex'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
-                            <?php else: ?>
-                            <form method="post" action="index.php?page=billing_store" style="display:inline" onsubmit="return confirm('<?=$xml->confirmdelete ?? 'Delete this billing?'?>')">
+                            <a href="index.php?page=billing_make&inv_id=<?=e($b['id'])?>" class="action-btn action-create" title="Create Billing"><i class="fa fa-plus"></i></a>
+                            <?php else: ?>                            <a href="index.php?page=billing_view&id=<?=e($b['bil_id'])?>" class="action-btn action-view" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
+                            <a href="index.php?page=billing_print&id=<?=e($b['bil_id'])?>" class="action-btn action-print" title="<?=$xml->print ?? 'Print'?>" target="_blank"><i class="fa fa-print"></i></a>                            <form method="post" action="index.php?page=billing_store" style="display:inline" onsubmit="return confirm('<?=$xml->confirmdelete ?? 'Delete this billing?'?>')">
                                 <input type="hidden" name="method" value="D">
                                 <input type="hidden" name="bil_id" value="<?=e($b['bil_id'])?>">
                                 <?= csrf_field() ?>
