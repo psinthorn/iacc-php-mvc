@@ -45,9 +45,19 @@ class BillingController extends BaseController
 
     public function make(): void
     {
+        require_once __DIR__ . '/../../inc/pagination.php';
         $comId = $this->getCompanyId();
         $invId = $this->inputInt('inv_id', 0);
         $customerId = $this->inputInt('customer_id', 0);
+
+        // Date range filters
+        $dateFrom = $this->input('date_from', '');
+        $dateTo   = $this->input('date_to', '');
+
+        // Pagination
+        $page    = max(1, $this->inputInt('pg', 1));
+        $perPage = $this->inputInt('per_page', 20);
+        if (!in_array($perPage, [10, 20, 50, 100])) $perPage = 20;
 
         // Determine customer: from inv_id param, customer_id param, or null
         $customer = null;
@@ -57,11 +67,26 @@ class BillingController extends BaseController
             $customer = $this->billing->getCustomerById($customerId);
         }
 
+        $totalRecords = 0;
+        $unbilled = [];
+        $pagination = null;
+        if ($customer) {
+            $custId = intval($customer['id']);
+            $totalRecords = $this->billing->countUnbilledInvoices($custId, $comId, $dateFrom, $dateTo);
+            $pagination = paginate($totalRecords, $perPage, $page);
+            $unbilled = $this->billing->getUnbilledInvoices($custId, $comId, $dateFrom, $dateTo, $pagination['offset'], $perPage);
+        }
+
         $this->render('billing/make', [
             'customer' => $customer,
             'inv_id' => $invId,
             'customers' => $this->billing->getCustomersWithUnbilledInvoices($comId),
-            'unbilled' => $customer ? $this->billing->getUnbilledInvoices(intval($customer['id']), $comId) : [],
+            'unbilled' => $unbilled,
+            'pagination' => $pagination,
+            'total_records' => $totalRecords,
+            'per_page' => $perPage,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ]);
     }
 
