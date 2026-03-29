@@ -1,0 +1,18 @@
+# Protect sensitive files from direct access
+<FilesMatch "^config\.php$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+# Protect data directory (SQLite database)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^data/ - [F,L]
+    RewriteRule ^includes/ - [F,L]
+</IfModule>
+
+# Default handler for PHP
+DirectoryIndex index.php index.html
+
+# Prevent directory listing
+Options -Indexes

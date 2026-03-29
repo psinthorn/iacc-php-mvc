@@ -273,6 +273,7 @@
                 <button type="submit" class="btn btn-primary btn-lg btn-block">
                     <i class="fa-solid fa-paper-plane"></i> Request Quotation
                 </button>
+                <div id="bookingResult" style="display:none;"></div>
                 <p class="form-note">We'll send a detailed quotation to your email within 1 hour.</p>
             </form>
         </div>
@@ -375,59 +376,106 @@
 <script>
 // ================================================================
 // iACC Sales Channel API Integration
-// Replace YOUR_API_KEY and YOUR_API_SECRET with your real keys
-// API Docs: https://iacc.f2.co.th/api-docs
+// This template connects to the iACC Booking API endpoint
+// API creates a real PO (quotation) in iACC database
 // ================================================================
 const IACC_API = {
-    endpoint: 'https://iacc.f2.co.th/api/v1',
-    apiKey: 'YOUR_API_KEY',
-    apiSecret: 'YOUR_API_SECRET',
+    // For local development, use relative path
+    // For production, use: 'https://iacc.f2.co.th/api/booking.php'
+    endpoint: '/api/booking.php',
+    companyId: 244,  // Tour Company Demo
     
-    async createOrder(data) {
-        const response = await fetch(`${this.endpoint}/orders`, {
+    async createBooking(data) {
+        const response = await fetch(this.endpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-API-Key': this.apiKey,
-                'X-API-Secret': this.apiSecret
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                channel: 'website',
+                company_id: this.companyId,
                 customer_name: data.name,
                 customer_email: data.email,
                 customer_phone: data.phone,
-                room_type: data.tour,
-                check_in: data.date,
-                guests: data.guests,
+                tour: data.tour,
+                guests: parseInt(data.guests),
+                date: data.date,
                 notes: data.notes,
-                total_amount: data.total,
-                currency: 'THB'
+                channel: 'website'
             })
         });
         return response.json();
     }
 };
 
-// Booking form handler
+// Booking form handler — calls real iACC API
 document.getElementById('bookingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const fd = new FormData(this);
     const btn = this.querySelector('button[type=submit]');
+    const resultDiv = document.getElementById('bookingResult');
     
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
     btn.disabled = true;
+    if (resultDiv) resultDiv.style.display = 'none';
     
-    // In production, this would call IACC_API.createOrder()
-    // For demo, simulate success
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Quotation Sent!';
-        btn.style.background = '#10b981';
+    try {
+        const data = {
+            name: fd.get('name'),
+            email: fd.get('email'),
+            phone: fd.get('phone'),
+            tour: fd.get('tour'),
+            guests: fd.get('guests'),
+            date: fd.get('date'),
+            notes: fd.get('notes')
+        };
+        
+        const result = await IACC_API.createBooking(data);
+        
+        if (result.success) {
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Booking Created!';
+            btn.style.background = '#10b981';
+            
+            // Show success details
+            if (resultDiv) {
+                resultDiv.innerHTML = `
+                    <div style="background:#ecfdf5;border:1px solid #10b981;border-radius:12px;padding:20px;margin-top:16px;">
+                        <h4 style="color:#059669;margin:0 0 8px;"><i class="fa-solid fa-circle-check"></i> Booking Confirmed!</h4>
+                        <p style="margin:4px 0;font-size:14px;color:#334155;"><strong>Quotation:</strong> ${result.po_ref}</p>
+                        <p style="margin:4px 0;font-size:14px;color:#334155;"><strong>Tour:</strong> ${result.tour}</p>
+                        <p style="margin:4px 0;font-size:14px;color:#334155;"><strong>Guests:</strong> ${result.guests} × ฿${result.price_per_person.toLocaleString()}</p>
+                        <p style="margin:4px 0;font-size:14px;color:#334155;"><strong>Total:</strong> ฿${result.total.toLocaleString()}</p>
+                        <p style="margin:4px 0;font-size:14px;color:#334155;"><strong>Date:</strong> ${result.tour_date}</p>
+                        <p style="margin:8px 0 0;font-size:12px;color:#64748b;">${result.message}</p>
+                    </div>`;
+                resultDiv.style.display = 'block';
+            }
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Request Quotation';
+                btn.style.background = '';
+                btn.disabled = false;
+            }, 5000);
+        } else {
+            throw new Error(result.error || 'Booking failed');
+        }
+    } catch (err) {
+        btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Error';
+        btn.style.background = '#ef4444';
+        
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <div style="background:#fef2f2;border:1px solid #ef4444;border-radius:12px;padding:16px;margin-top:16px;">
+                    <p style="color:#dc2626;margin:0;font-size:14px;"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</p>
+                </div>`;
+            resultDiv.style.display = 'block';
+        }
+        
         setTimeout(() => {
             btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Request Quotation';
             btn.style.background = '';
             btn.disabled = false;
         }, 3000);
-    }, 1500);
+    }
 });
 
 // "Book" button → scroll to booking form & select tour
