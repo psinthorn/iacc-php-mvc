@@ -92,9 +92,8 @@ products/
 # Keep Docker configuration
 !docker/
 !docker/**
-*.sql
-*.sql.gz
 
 # But DO track migration SQL files
 !database/migrations/*.sql
+!migrations/**/*.sql
 templates/tour-company-demo/data/template.db
