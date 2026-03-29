@@ -1,0 +1,185 @@
+---
+name: web-app-dev
+description: 'Web application development for iACC PHP MVC project. USE FOR: creating controllers, models, views, routes, migrations, API endpoints, form handling, PDF templates, CRUD operations, database queries, MVC refactoring, adding new modules/pages. Use when: building features, adding pages, creating forms, writing SQL, designing REST APIs, fixing MVC routing, generating PDF views, implementing RBAC permissions.'
+argument-hint: 'Describe the feature, page, or module you want to build'
+---
+
+# Web Application Development — iACC PHP MVC
+
+## When to Use
+
+- Building new features, modules, or pages
+- Creating/editing Controllers, Models, Views
+- Adding routes to the routing system
+- Writing database migrations
+- Building REST API endpoints
+- Creating forms with CSRF protection
+- Generating PDF templates
+- Implementing RBAC permission checks
+- Adding CRUD operations
+
+## Architecture Overview
+
+```
+app/
+├── Config/routes.php         # All route definitions
+├── Controllers/              # Request handlers (extend BaseController)
+├── Models/                   # Business logic & DB access (extend BaseModel)
+├── Services/                 # Business services (ChannelService, etc.)
+└── Views/                    # Blade-style PHP templates by module
+```
+
+### Request Flow
+
+```
+Browser → index.php → routes.php → Controller → Model → View
+API      → api.php  → Controller → Service    → JSON Response
+```
+
+## Procedures
+
+### 1. Create a New Module (Controller + Model + Views + Routes)
+
+**Step 1: Create the Controller** in `app/Controllers/`
+
+```php
+<?php
+namespace App\Controllers;
+
+class NewModuleController extends BaseController
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->requireAuth();  // Enforce login
+    }
+
+    public function index()
+    {
+        // Use company filter for multi-tenant
+        $companyFilter = $this->getCompanyFilter();
+        $model = new \App\Models\NewModule();
+        $data = $model->getAll($companyFilter);
+        $this->render('new-module/list', ['items' => $data]);
+    }
+
+    public function create()
+    {
+        if ($this->isPost()) {
+            $this->validateCsrf();
+            // Handle form submission
+            $model = new \App\Models\NewModule();
+            $model->create($_POST);
+            $this->redirect('?page=new_module');
+        }
+        $this->render('new-module/form');
+    }
+}
+```
+
+**Step 2: Create the Model** in `app/Models/`
+
+```php
+<?php
+namespace App\Models;
+
+class NewModule extends BaseModel
+{
+    protected $table = 'new_module';
+
+    public function getAll($companyFilter = '')
+    {
+        $where = $companyFilter ? "WHERE company_id = " . intval($companyFilter) : '';
+        $sql = "SELECT * FROM {$this->table} {$where} AND deleted_at IS NULL ORDER BY id DESC";
+        return $this->query($sql);
+    }
+
+    public function create($data)
+    {
+        // Always use prepared statements or sql_escape()
+        $sql = "INSERT INTO {$this->table} (name, company_id, created_at)
+                VALUES ('" . sql_escape($data['name']) . "', " . intval($data['company_id']) . ", NOW())";
+        return $this->execute($sql);
+    }
+}
+```
+
+**Step 3: Create Views** in `app/Views/new-module/`
+
+See [View Templates Reference](./references/view-templates.md)
+
+**Step 4: Register Routes** in `app/Config/routes.php`
+
+```php
+'new_module'        => ['controller' => 'NewModuleController', 'action' => 'index'],
+'new_module_create' => ['controller' => 'NewModuleController', 'action' => 'create'],
+'new_module_edit'   => ['controller' => 'NewModuleController', 'action' => 'edit'],
+'new_module_view'   => ['controller' => 'NewModuleController', 'action' => 'view'],
+```
+
+**Step 5: Create Migration** in `database/migrations/`
+
+```sql
+-- Migration: XXX_new_module.sql
+CREATE TABLE IF NOT EXISTS new_module (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    company_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME DEFAULT NULL,
+    INDEX idx_company (company_id),
+    FOREIGN KEY (company_id) REFERENCES company(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### 2. Add Menu Item
+
+Edit `app/Views/layouts/sidebar.php` and add:
+
+```php
+<li class="nav-item">
+    <a class="nav-link" href="?page=new_module">
+        <i class="fas fa-icon-name"></i>
+        <span><?= $lang['new_module'] ?? 'New Module' ?></span>
+    </a>
+</li>
+```
+
+### 3. Add RBAC Permission Check
+
+```php
+// In controller method
+require_permission('manage_new_module');
+// or check inline
+if (!has_permission('view_new_module')) {
+    $this->redirect('?page=dashboard');
+}
+```
+
+## Critical Rules
+
+1. **Multi-tenant isolation**: Always filter by `company_id` from `$_SESSION['com_id']`
+2. **CSRF on all forms**: Use `csrf_field()` in forms, `$this->validateCsrf()` in controllers
+3. **SQL injection prevention**: Use `sql_escape()` or prepared statements — NEVER raw `$_REQUEST` in queries
+4. **Isolated $args arrays**: Use separate arrays per DB operation (see [DB Patterns](./references/db-patterns.md))
+5. **Soft delete**: Use `deleted_at` column, filter with `WHERE deleted_at IS NULL`
+6. **Security headers**: BaseController handles these automatically
+7. **Rate limiting**: Login uses 5 attempts/15 min; API uses 60/min
+
+## Testing
+
+```bash
+# Run all tests
+docker exec iacc_php php /var/www/html/tests/test-e2e-crud.php
+docker exec iacc_php php /var/www/html/tests/test-api-phase3.php
+docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
+
+# PHP syntax check
+php -l app/Controllers/NewController.php
+```
+
+## Deployment
+
+- **Staging**: Push to `develop` → GitHub Actions auto-deploys to dev.iacc.f2.co.th
+- **Production**: Push to `main` → GitHub Actions auto-deploys to iacc.f2.co.th
