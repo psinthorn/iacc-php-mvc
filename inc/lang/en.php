@@ -215,4 +215,27 @@ return [
     'login_feature_2' => 'PayPal & Stripe Integration',
     'login_feature_3' => 'Multi-User Access Control',
     'login_feature_4' => 'Comprehensive Reports',
+
+    // Templates Section (Landing Page)
+    'nav_templates' => 'Templates',
+    'template_section_label' => 'Templates',
+    'template_title' => 'Ready-to-Use Website Templates',
+    'template_subtitle' => 'Download free templates with built-in iACC API integration. Launch your business website in minutes.',
+    'template_tour_title' => 'Tour Company Demo',
+    'template_tour_desc' => 'Speedboat tour operator website with booking form, tour packages, and payment integration via iACC Sales Channel API.',
+    'template_tour_tags' => 'Tour Operator, Booking, Payments',
+    'template_btn_preview' => 'Live Preview',
+    'template_btn_download' => 'Download Free',
+    'template_coming_soon' => 'More Templates Coming Soon',
+    'template_coming_soon_desc' => 'Restaurant, Hotel, Retail, and E-Commerce templates are in development.',
+    'template_feature_responsive' => 'Fully Responsive',
+    'template_feature_api' => 'iACC API Ready',
+    'template_feature_free' => '100% Free',
+    'template_feature_nocode' => 'No Build Tools',
+
+    // Footer — Developers
+    'footer_developers' => 'Developers',
+    'footer_api_docs' => 'API Documentation',
+    'footer_template_demo' => 'Template Setup Demo',
+    'footer_howto' => 'Hosting Guide',
 ];
