@@ -1418,6 +1418,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             </div>
             
             <div class="features-grid">
+                <!-- Row 1: Core Accounting -->
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-file-text-o"></i>
@@ -1427,51 +1428,69 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-credit-card"></i>
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                        <i class="fa fa-shopping-cart"></i>
                     </div>
                     <h3><?= __('feature_2_title') ?></h3>
                     <p><?= __('feature_2_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
                         <i class="fa fa-bar-chart"></i>
                     </div>
                     <h3><?= __('feature_3_title') ?></h3>
                     <p><?= __('feature_3_desc') ?></p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-users"></i>
+                <!-- Row 2: Financial & Operations -->
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #e67e22, #f39c12);">
+                        <i class="fa fa-book"></i>
                     </div>
-                    <h3><?= __('feature_4_title') ?></h3>
+                    <h3><?= __('feature_4_title') ?> <span class="badge-new">NEW</span></h3>
                     <p><?= __('feature_4_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fa fa-building"></i>
+                        <i class="fa fa-credit-card"></i>
                     </div>
                     <h3><?= __('feature_5_title') ?></h3>
                     <p><?= __('feature_5_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-globe"></i>
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
+                        <i class="fa fa-truck"></i>
                     </div>
                     <h3><?= __('feature_6_title') ?></h3>
                     <p><?= __('feature_6_desc') ?></p>
+                </div>
+                
+                <!-- Row 3: Platform & Integration -->
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <h3><?= __('feature_7_title') ?></h3>
+                    <p><?= __('feature_7_desc') ?></p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-globe"></i>
+                    </div>
+                    <h3><?= __('feature_8_title') ?></h3>
+                    <p><?= __('feature_8_desc') ?></p>
                 </div>
                 
                 <div class="feature-card featured-card">
                     <div class="feature-icon" style="background: linear-gradient(135deg, #e74c3c, #f39c12);">
                         <i class="fa fa-plug"></i>
                     </div>
-                    <h3><?= __('feature_7_title') ?> <span class="badge-new">NEW</span></h3>
-                    <p><?= __('feature_7_desc') ?></p>
+                    <h3><?= __('feature_9_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_9_desc') ?></p>
                     <a href="#integrations" class="feature-link">Learn more →</a>
                 </div>
             </div>

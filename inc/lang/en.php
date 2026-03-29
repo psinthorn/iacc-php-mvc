@@ -24,26 +24,32 @@ return [
     'features_title' => 'Powerful Features',
     'features_subtitle' => 'Everything you need to manage your business finances efficiently',
     
-    'feature_1_title' => 'Invoice Management',
-    'feature_1_desc' => 'Create, send, and track invoices with automated payment reminders and status updates.',
+    'feature_1_title' => 'Invoice & Billing',
+    'feature_1_desc' => 'Create, send, and track invoices with automated billing cycles, payment reminders, and real-time status updates.',
     
-    'feature_2_title' => 'Payment Gateway',
-    'feature_2_desc' => 'Accept payments via PayPal and Stripe with secure, real-time transaction processing.',
+    'feature_2_title' => 'Purchase Orders',
+    'feature_2_desc' => 'Complete PO and quotation workflow with versioning, product management, and approval tracking.',
     
-    'feature_3_title' => 'Financial Reports',
-    'feature_3_desc' => 'Generate comprehensive reports with insights for better business decisions.',
+    'feature_3_title' => 'Dashboard & Reports',
+    'feature_3_desc' => 'Real-time revenue charts, financial insights, and comprehensive analytics to drive better business decisions.',
     
-    'feature_4_title' => 'Multi-User Access',
-    'feature_4_desc' => 'Role-based access control with Super Admin, Admin, and User permission levels.',
+    'feature_4_title' => 'Journal & Voucher',
+    'feature_4_desc' => 'Double-entry bookkeeping with voucher classification — receipt, payment, journal, and petty cash.',
     
-    'feature_5_title' => 'Multi-Company',
-    'feature_5_desc' => 'Manage multiple companies from a single dashboard with easy switching.',
+    'feature_5_title' => 'Payment Gateway',
+    'feature_5_desc' => 'Accept payments via PayPal, Stripe, and custom payment methods with secure real-time processing.',
     
-    'feature_6_title' => 'Bilingual Support',
-    'feature_6_desc' => 'Full English and Thai language support for international businesses.',
+    'feature_6_title' => 'Delivery Management',
+    'feature_6_desc' => 'Track deliveries linked to purchase orders and invoices with full delivery notes and audit trail.',
     
-    'feature_7_title' => 'Sales Channel API',
-    'feature_7_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
+    'feature_7_title' => 'Multi-User & Multi-Company',
+    'feature_7_desc' => 'Role-based access control with Super Admin, Admin, and User levels. Manage multiple companies from one dashboard.',
+    
+    'feature_8_title' => 'Bilingual Support',
+    'feature_8_desc' => 'Full English and Thai language support for international businesses.',
+    
+    'feature_9_title' => 'Sales Channel API',
+    'feature_9_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
     
     // Integration Section
     'nav_integrations' => 'Integrations',
