@@ -110,6 +110,12 @@ class InvoiceController extends BaseController
             $refpo = $this->invoice->getPoRef($id);
             $paymentMethods = $this->invoice->getPaymentMethods($comId);
 
+            // Split group sibling invoices
+            $splitSiblings = [];
+            if (!empty($data['split_group_id'])) {
+                $splitSiblings = $this->invoice->getSplitGroupInvoices(intval($data['split_group_id']));
+            }
+
             $viewData = array_merge($viewData, [
                 'hasData' => true, 'data' => $data,
                 'vendor' => $vendor, 'customer' => $customer,
@@ -118,6 +124,7 @@ class InvoiceController extends BaseController
                 'overh' => $overh, 'vat' => $vat, 'totalnet' => $totalnet,
                 'payments' => $payments, 'accu' => $accu, 'refpo' => $refpo,
                 'payment_methods' => $paymentMethods, 'com_id' => $comId,
+                'split_siblings' => $splitSiblings,
             ]);
         }
         $this->render('invoice/view', $viewData);
@@ -254,5 +261,20 @@ class InvoiceController extends BaseController
                 break;
         }
         $this->redirect('index.php?page=compl_list');
+    }
+
+    /**
+     * AJAX endpoint: return invoices in a split group as JSON
+     */
+    public function splitGroupJson(): void
+    {
+        header('Content-Type: application/json');
+        $splitGroupId = $this->inputInt('split_group_id', 0);
+        if ($splitGroupId <= 0) {
+            echo json_encode([]);
+            return;
+        }
+        $invoices = $this->invoice->getSplitGroupInvoices($splitGroupId);
+        echo json_encode($invoices);
     }
 }

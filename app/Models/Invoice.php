@@ -14,6 +14,7 @@ class Invoice extends BaseModel
 
     // =====================================================
     // Invoice List (compl_list) — status >= 4
+    // With split invoice group support
     // =====================================================
 
     public function countInvoices(int $comId, string $direction, array $filters): int
@@ -48,11 +49,31 @@ class Invoice extends BaseModel
 
         $sql = "SELECT po.id as id, $extraCols po.name as name, taxrw as tax,
             DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,
-            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status, iv.payment_status
+            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status, iv.payment_status,
+            po.split_group_id, po.split_type, po.tax as po_tax
             FROM po JOIN pr ON po.ref=pr.id $companyJoin JOIN iv ON po.id=iv.tex
             WHERE po_id_new='' AND $companyWhere AND status>='4'
             {$conds['search']} {$conds['date']} {$conds['status']}
             ORDER BY iv.id DESC LIMIT $offset, $limit";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Get all invoices in a split group (for AJAX expand)
+     */
+    public function getSplitGroupInvoices(int $splitGroupId): array
+    {
+        $sql = "SELECT po.id, po.tax as po_tax, po.name, po.split_type, po.over,
+            iv.texrw as inv_no, DATE_FORMAT(iv.createdate, '%d-%m-%Y') as invoice_date,
+            iv.payment_status,
+            (SELECT SUM((product.price * product.quantity) - (product.discount * product.quantity)
+             + (product.valuelabour * product.activelabour * product.quantity))
+             FROM product WHERE product.po_id=po.id AND product.deleted_at IS NULL) as subtotal
+            FROM po
+            JOIN iv ON po.id = iv.tex
+            WHERE po.split_group_id = '" . \sql_int($splitGroupId) . "'
+            AND po.po_id_new = ''
+            ORDER BY po.split_type ASC";
         return $this->fetchAll($sql);
     }
 
@@ -80,7 +101,8 @@ class Invoice extends BaseModel
     {
         $sql = "SELECT po.name as name, ven_id, vat, cus_id, des, payby, `over`,
             DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, dis,
-            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, status
+            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, status,
+            po.split_group_id, po.split_type, po.tax as po_tax
             FROM pr JOIN po ON pr.id=po.ref
             WHERE po.id='" . \sql_int($id) . "' AND status='4'
             AND (cus_id='$comId' OR ven_id='$comId') AND po_id_new=''";

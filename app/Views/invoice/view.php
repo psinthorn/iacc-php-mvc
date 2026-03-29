@@ -37,6 +37,16 @@
 .btn-print-inv:hover { color: white; }
 .btn-pay { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
 .error-card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 60px 40px; text-align: center; border: 1px solid #e5e7eb; }
+/* Split Invoice Styles */
+.split-info-card { background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border: 2px solid #e9d5ff; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; }
+.split-info-card h4 { margin: 0 0 16px; color: #7c3aed; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.split-sibling-list { display: flex; flex-direction: column; gap: 10px; }
+.split-sibling-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; }
+.split-sibling-item.current { border: 2px solid #8b5cf6; background: #faf5ff; }
+.split-type-tag { display: inline-flex; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.split-type-tag.material { background: #dbeafe; color: #1e40af; }
+.split-type-tag.labour { background: #fef3c7; color: #92400e; }
+.split-type-tag.full { background: #f3f4f6; color: #374151; }
 </style>
 
 <script>
@@ -62,6 +72,35 @@ function paymentcheck() {
         <a href="index.php?page=compl_list" class="btn-back"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
     </div>
 </div>
+
+<?php if (!empty($data['split_group_id']) && !empty($split_siblings) && count($split_siblings) > 1): ?>
+<div class="split-info-card">
+    <h4><i class="fa fa-clone"></i> <?=$xml->splitinvoicegroup ?? 'Split Invoice Group'?>
+        <span class="split-type-tag <?=htmlspecialchars($data['split_type'] ?? 'full')?>"><?= ($data['split_type'] ?? 'full') === 'material' ? ($xml->materials ?? 'Materials') : (($data['split_type'] ?? 'full') === 'labour' ? ($xml->labour ?? 'Labour') : ($xml->full ?? 'Full')) ?></span>
+    </h4>
+    <div class="split-sibling-list">
+    <?php foreach ($split_siblings as $sib):
+        $isCurrent = intval($sib['id']) === $id;
+        $sibType = $sib['split_type'] ?? 'full';
+        $sibLabel = $sibType === 'material' ? ($xml->materials ?? 'Materials') : ($sibType === 'labour' ? ($xml->labour ?? 'Labour') : ($xml->full ?? 'Full'));
+        $sibAmount = floatval($sib['subtotal'] ?? 0);
+    ?>
+        <div class="split-sibling-item <?=$isCurrent ? 'current' : ''?>">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-weight:600; color:#8b5cf6;">INV-<?=htmlspecialchars($sib['po_tax'] ?? '')?></span>
+                <span class="split-type-tag <?=$sibType?>"><?=$sibLabel?></span>
+                <?php if ($isCurrent): ?><span style="background:#dcfce7; color:#059669; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600;"><?=$xml->current ?? 'Current'?></span><?php endif; ?>
+                <?php if (floatval($sib['over'] ?? 0) > 0): ?><span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600;">WHT <?=$sib['over']?>%</span><?php endif; ?>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-weight:600; color:#1f2937;">฿<?=number_format($sibAmount, 2)?></span>
+                <?php if (!$isCurrent): ?><a href="index.php?page=compl_view&id=<?=intval($sib['id'])?>" style="color:#8b5cf6; font-size:13px;"><i class="fa fa-external-link"></i> <?=$xml->view ?? 'View'?></a><?php endif; ?>
+            </div>
+        </div>
+    <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="content-card">
     <div class="card-hdr"><i class="fa fa-info-circle"></i> <?=$xml->details ?? 'Invoice Details'?></div>

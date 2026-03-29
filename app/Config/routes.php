@@ -57,6 +57,7 @@ return [
     'compl_list2'   => ['InvoiceController', 'taxList'],
     'qa_list'       => ['InvoiceController', 'quotations'],
     'invoice_store' => ['InvoiceController', 'store'],
+    'invoice_split_group_json' => ['InvoiceController', 'splitGroupJson', 'standalone'],
 
     // Purchase Requisition (Phase 3B)
     'pr_list'       => ['PurchaseRequestController', 'index'],

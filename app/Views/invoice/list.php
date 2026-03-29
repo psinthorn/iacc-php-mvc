@@ -55,6 +55,17 @@ $date_to = $filters['date_to'] ?? '';
 .empty-state i { font-size: 48px; margin-bottom: 16px; color: #d1d5db; }
 .date-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .date-presets .btn { border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; }
+/* Split Invoice Group Styles */
+.split-group-row { cursor: pointer; background: #faf5ff; }
+.split-group-row:hover { background: #f3e8ff !important; }
+.split-group-row .toggle-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 4px; background: #ede9fe; color: #7c3aed; font-size: 10px; margin-right: 8px; transition: transform 0.2s; }
+.split-group-row.expanded .toggle-icon { transform: rotate(90deg); }
+.split-group-badge { display: inline-flex; align-items: center; gap: 4px; background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+.split-sub-row { background: #fefce8; }
+.split-sub-row td { border-left: 3px solid #8b5cf6 !important; padding-left: 20px !important; }
+.split-type-badge { display: inline-flex; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.split-type-badge.material { background: #dbeafe; color: #1e40af; }
+.split-type-badge.labour { background: #fef3c7; color: #92400e; }
 </style>
 
 <div class="invoice-container">
@@ -106,7 +117,53 @@ $date_to = $filters['date_to'] ?? '';
     </tr></thead><tbody>
     <?php if(empty($items_out)): ?>
     <tr><td colspan="6"><div class="empty-state"><i class="fa fa-inbox"></i><h4><?=$xml->nodata ?? 'No data found'?></h4></div></td></tr>
-    <?php else: foreach($items_out as $row):
+    <?php else:
+        $renderedGroups = [];
+        foreach($items_out as $row):
+        // Split group handling: render group row for first occurrence, skip siblings
+        $splitGroupId = $row['split_group_id'] ?? null;
+        if ($splitGroupId) {
+            if (isset($renderedGroups[$splitGroupId])) continue; // skip, already rendered as sub-row
+            $renderedGroups[$splitGroupId] = true;
+            // Find all siblings in this group
+            $siblings = array_filter($items_out, function($r) use ($splitGroupId) { return ($r['split_group_id'] ?? null) == $splitGroupId; });
+            $sibCount = count($siblings);
+    ?>
+    <tr class="split-group-row" onclick="toggleSplitGroup(this, <?=intval($splitGroupId)?>)">
+        <td class="inv-number"><span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>INV-<?=e(explode('/', $row['po_tax'] ?? $row['tax'])[0])?><span class="split-group-badge"><i class="fa fa-clone"></i> <?=$sibCount?></span></td>
+        <td class="customer-name"><?=e($row['name_en'])?></td>
+        <td class="hidden-xs"><?=e($row['name'])?></td>
+        <td><?=e($row['valid_pay'])?></td>
+        <td class="hidden-xs"><span class="status-badge pending"><?=$xml->split ?? 'Split'?></span></td>
+        <td>
+            <a href="index.php?page=pdf_invoice&id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
+        </td>
+    </tr>
+    <?php foreach ($siblings as $sib):
+        if(($sib['status_iv'] ?? '')=="2" && $sib['status']=="4"){ $statusiv="void"; $sc="cancelled"; }
+        elseif($sib['status']=="4" && ($sib['valid_pay'] ?? '') < date("d-m-Y")){ $statusiv="overdue"; $sc="overdue"; }
+        else { $statusiv=decodenum($sib['status']); $sc=$sib['status']=='5'?'completed':'pending'; }
+        $splitLabel = ($sib['split_type'] ?? 'full') === 'material' ? 'Material' : 'Labour';
+        $splitClass = ($sib['split_type'] ?? 'full') === 'material' ? 'material' : 'labour';
+    ?>
+    <tr class="split-sub-row" data-split-parent="<?=intval($splitGroupId)?>" style="display:none;">
+        <td class="inv-number" style="padding-left:40px !important;">INV-<?=e($sib['po_tax'] ?? $sib['tax'])?> <span class="split-type-badge <?=$splitClass?>"><?=$splitLabel?></span></td>
+        <td class="customer-name"><?=e($sib['name_en'])?></td>
+        <td class="hidden-xs"><?=e($sib['name'])?></td>
+        <td><?=e($sib['valid_pay'])?></td>
+        <td class="hidden-xs"><span class="status-badge <?=$sc?>"><?=$xml->$statusiv?></span></td>
+        <td>
+            <?php if($sib['status']!="5"): ?><a href="index.php?page=compl_view&id=<?=e($sib['id'])?>" class="btn-action btn-action-view" title="View"><i class="fa fa-eye"></i></a><?php endif; ?>
+            <a href="index.php?page=pdf_invoice&id=<?=e($sib['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
+            <?php if(($sib['payment_status'] ?? 'pending')!=='paid'): ?>
+            <a href="index.php?page=inv_checkout&id=<?=e($sib['id'])?>" target="_blank" class="btn-action btn-action-pay"><i class="fa fa-credit-card"></i></a>
+            <?php else: ?><span class="btn-action btn-action-pay" style="cursor:default;"><i class="fa fa-check"></i></span><?php endif; ?>
+            <a data-toggle="modal" href="index.php?page=ajax_mail&type=inv&id=<?=e($sib['id'])?>" data-target=".bs-example-modal-lg" class="btn-action btn-action-email"><i class="fa fa-envelope"></i></a>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+    <?php } else {
+        // Normal (non-split) invoice row
         if(($row['status_iv'] ?? '')=="2" && $row['status']=="4"){ $statusiv="void"; $sc="cancelled"; }
         elseif($row['status']=="4" && ($row['valid_pay'] ?? '') < date("d-m-Y")){ $statusiv="overdue"; $sc="overdue"; }
         else { $statusiv=decodenum($row['status']); $sc=$row['status']=='5'?'completed':'pending'; }
@@ -126,7 +183,7 @@ $date_to = $filters['date_to'] ?? '';
             <a data-toggle="modal" href="index.php?page=ajax_mail&type=inv&id=<?=e($row['id'])?>" data-target=".bs-example-modal-lg" class="btn-action btn-action-email"><i class="fa fa-envelope"></i></a>
         </td>
     </tr>
-    <?php endforeach; endif; ?>
+    <?php } endforeach; endif; ?>
     </tbody></table></div>
 </div>
 
@@ -140,7 +197,45 @@ $date_to = $filters['date_to'] ?? '';
     </tr></thead><tbody>
     <?php if(empty($items_in)): ?>
     <tr><td colspan="6"><div class="empty-state"><i class="fa fa-inbox"></i><h4><?=$xml->nodata ?? 'No data found'?></h4></div></td></tr>
-    <?php else: foreach($items_in as $row):
+    <?php else:
+        $renderedGroupsIn = [];
+        foreach($items_in as $row):
+        $splitGroupId = $row['split_group_id'] ?? null;
+        if ($splitGroupId) {
+            if (isset($renderedGroupsIn[$splitGroupId])) continue;
+            $renderedGroupsIn[$splitGroupId] = true;
+            $siblings = array_filter($items_in, function($r) use ($splitGroupId) { return ($r['split_group_id'] ?? null) == $splitGroupId; });
+            $sibCount = count($siblings);
+    ?>
+    <tr class="split-group-row" onclick="toggleSplitGroup(this, <?=intval($splitGroupId)?>)">
+        <td class="inv-number"><span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>INV-<?=e(explode('/', $row['po_tax'] ?? $row['tax'])[0])?><span class="split-group-badge"><i class="fa fa-clone"></i> <?=$sibCount?></span></td>
+        <td class="customer-name"><?=e($row['name_en'])?></td>
+        <td class="hidden-xs"><?=e($row['name'])?></td>
+        <td><?=e($row['valid_pay'])?></td>
+        <td class="hidden-xs"><span class="status-badge pending"><?=$xml->split ?? 'Split'?></span></td>
+        <td></td>
+    </tr>
+    <?php foreach ($siblings as $sib):
+        $var=decodenum($sib['status']); $sc=$sib['status']=='5'?'completed':'pending';
+        $splitLabel = ($sib['split_type'] ?? 'full') === 'material' ? 'Material' : 'Labour';
+        $splitClass = ($sib['split_type'] ?? 'full') === 'material' ? 'material' : 'labour';
+    ?>
+    <tr class="split-sub-row" data-split-parent="<?=intval($splitGroupId)?>" style="display:none;">
+        <td class="inv-number" style="padding-left:40px !important;">INV-<?=e($sib['po_tax'] ?? $sib['tax'])?> <span class="split-type-badge <?=$splitClass?>"><?=$splitLabel?></span></td>
+        <td class="customer-name"><?=e($sib['name_en'])?></td>
+        <td class="hidden-xs"><?=e($sib['name'])?></td>
+        <td><?=e($sib['valid_pay'])?></td>
+        <td class="hidden-xs"><span class="status-badge <?=$sc?>"><?=$xml->$var?></span></td>
+        <td>
+            <?php if($sib['status']!="5"): ?><a href="index.php?page=compl_view&id=<?=e($sib['id'])?>" class="btn-action btn-action-view"><i class="fa fa-eye"></i></a><?php endif; ?>
+            <a href="index.php?page=pdf_invoice&id=<?=e($sib['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
+            <?php if(($sib['payment_status'] ?? 'pending')!=='paid'): ?>
+            <a href="index.php?page=inv_checkout&id=<?=e($sib['id'])?>" target="_blank" class="btn-action btn-action-pay"><i class="fa fa-credit-card"></i></a>
+            <?php else: ?><span class="btn-action btn-action-pay" style="cursor:default;"><i class="fa fa-check"></i></span><?php endif; ?>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+    <?php } else {
         $var=decodenum($row['status']); $sc=$row['status']=='5'?'completed':'pending';
     ?>
     <tr>
@@ -157,9 +252,23 @@ $date_to = $filters['date_to'] ?? '';
             <?php else: ?><span class="btn-action btn-action-pay" style="cursor:default;"><i class="fa fa-check"></i></span><?php endif; ?>
         </td>
     </tr>
-    <?php endforeach; endif; ?>
+    <?php } endforeach; endif; ?>
     </tbody></table></div>
 </div>
 
 <?= render_pagination($pagination, '?page=compl_list', $query_params) ?>
 </div>
+
+<script>
+function toggleSplitGroup(row, groupId) {
+    var isExpanded = row.classList.contains('expanded');
+    var subRows = document.querySelectorAll('.split-sub-row[data-split-parent="' + groupId + '"]');
+    if (isExpanded) {
+        row.classList.remove('expanded');
+        for (var i = 0; i < subRows.length; i++) subRows[i].style.display = 'none';
+    } else {
+        row.classList.add('expanded');
+        for (var i = 0; i < subRows.length; i++) subRows[i].style.display = 'table-row';
+    }
+}
+</script>
