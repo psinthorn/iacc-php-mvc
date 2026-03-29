@@ -444,19 +444,39 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
 
-            <!-- Planned Q3 - Journal Module -->
-            <div class="timeline-item planned">
+            <!-- Completed Q3 - Journal Module -->
+            <div class="timeline-item completed">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q3 2026</span>
-                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
                 </div>
                 <h3><?= $lang === 'th' ? 'v5.6 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.6 - Journal Module & Voucher Classification' ?></h3>
                 <p><?= $lang === 'th' ? 'เพิ่มโมดูลสมุดรายวัน (Journal Voucher) และระบบจำแนกประเภทใบสำคัญ' : 'Add Journal Voucher module and voucher type classification system.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'คอลัมน์ voucher_type (payment/receipt/journal)' : 'voucher_type column (payment/receipt/journal)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Debit/Credit บันทึกบัญชีคู่' : 'Debit/credit double-entry recording' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts integration' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'คอลัมน์ voucher_type (payment/receipt/journal)' : 'voucher_type column (payment/receipt/journal)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Debit/Credit บันทึกบัญชีคู่' : 'Debit/credit double-entry recording' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts integration' ?></li>
+                </ul>
+            </div>
+
+            <!-- Completed Q3 - Website Templates -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.7 - เทมเพลตเว็บไซต์ + Admin Panel' : 'v5.7 - Website Templates & Admin Panel' ?></h3>
+                <p><?= $lang === 'th' ? 'เทมเพลตเว็บไซต์สำเร็จรูปเชื่อมต่อ iACC API พร้อม Admin Panel จัดการสินค้า, API, และการจอง' : 'Self-hosted website templates powered by iACC API with Admin Panel for products, API, and booking management.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Tour Company Demo Template' : 'Tour Company Demo template' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Setup Wizard 3 ขั้นตอน' : '3-step Setup Wizard' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Admin Panel (4 แท็บ)' : 'Admin Panel (4 tabs)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ระบบ Login (bcrypt)' : 'Admin login system (bcrypt)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'เปิด/ปิดสินค้า + Sync' : 'Product toggle + sync' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'API Docs + Demo + How-to' : 'API docs + demo + how-to pages' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'SQLite Cache + Booking Tracking' : 'SQLite cache + booking tracking' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Admin Bar + Login/Logout' : 'Admin bar + login/logout flow' ?></li>
                 </ul>
             </div>
             

@@ -97,3 +97,4 @@ products/
 
 # But DO track migration SQL files
 !database/migrations/*.sql
+templates/tour-company-demo/data/template.db

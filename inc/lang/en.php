@@ -24,32 +24,41 @@ return [
     'features_title' => 'Powerful Features',
     'features_subtitle' => 'Everything you need to manage your business finances efficiently',
     
-    'feature_1_title' => 'Invoice Management',
-    'feature_1_desc' => 'Create, send, and track invoices with automated payment reminders and status updates.',
+    'feature_1_title' => 'Invoice & Billing',
+    'feature_1_desc' => 'Create, send, and track invoices with automated billing cycles, payment reminders, and real-time status updates.',
     
-    'feature_2_title' => 'Payment Gateway',
-    'feature_2_desc' => 'Accept payments via PromptPay QR, bank transfer, and more with secure slip review workflow.',
+    'feature_2_title' => 'Purchase Orders',
+    'feature_2_desc' => 'Complete PO and quotation workflow with versioning, product management, and approval tracking.',
     
-    'feature_3_title' => 'Financial Reports',
-    'feature_3_desc' => 'Generate comprehensive reports with insights for better business decisions.',
+    'feature_3_title' => 'Dashboard & Reports',
+    'feature_3_desc' => 'Real-time revenue charts, financial insights, and comprehensive analytics to drive better business decisions.',
     
-    'feature_4_title' => 'Multi-User Access',
-    'feature_4_desc' => 'Role-based access control with Super Admin, Admin, and User permission levels.',
+    'feature_4_title' => 'Journal & Voucher',
+    'feature_4_desc' => 'Double-entry bookkeeping with voucher classification — receipt, payment, journal, and petty cash.',
     
-    'feature_5_title' => 'Multi-Company',
-    'feature_5_desc' => 'Manage multiple companies from a single dashboard with easy switching.',
+    'feature_5_title' => 'Payment Gateway',
+    'feature_5_desc' => 'Accept payments via PromptPay QR, PayPal, Stripe, and bank transfer with secure slip review workflow.',
     
-    'feature_6_title' => 'Bilingual Support',
-    'feature_6_desc' => 'Full English and Thai language support for international businesses.',
+    'feature_6_title' => 'Delivery Management',
+    'feature_6_desc' => 'Track deliveries linked to purchase orders and invoices with full delivery notes and audit trail.',
     
-    'feature_7_title' => 'Sales Channel API',
-    'feature_7_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
+    'feature_7_title' => 'Expense Tracking',
+    'feature_7_desc' => 'Record daily expenses with categories, VAT/WHT calculation, approval workflow, and monthly summary reports.',
     
-    'feature_8_title' => 'Expense Tracking',
-    'feature_8_desc' => 'Record daily expenses with categories, VAT/WHT calculation, approval workflow, and monthly summary reports.',
+    'feature_8_title' => 'Tax & Multi-Currency',
+    'feature_8_desc' => 'Thai tax reports (PP30, WHT), PromptPay QR payments, slip review, and 10 currencies with BOT exchange rates.',
     
-    'feature_9_title' => 'Tax & Multi-Currency',
-    'feature_9_desc' => 'Thai tax reports (PP30, WHT), PromptPay QR payments, slip review, and 10 currencies with BOT exchange rates.',
+    'feature_9_title' => 'Multi-User Access',
+    'feature_9_desc' => 'Role-based access control with Super Admin, Admin, and User permission levels.',
+    
+    'feature_10_title' => 'Multi-Company',
+    'feature_10_desc' => 'Manage multiple companies from a single dashboard with easy switching.',
+    
+    'feature_11_title' => 'Bilingual Support',
+    'feature_11_desc' => 'Full English and Thai language support for international businesses.',
+    
+    'feature_12_title' => 'Sales Channel API',
+    'feature_12_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
     
     // Integration Section
     'nav_integrations' => 'Integrations',
@@ -221,4 +230,27 @@ return [
     'login_feature_2' => 'PayPal & Stripe Integration',
     'login_feature_3' => 'Multi-User Access Control',
     'login_feature_4' => 'Comprehensive Reports',
+
+    // Templates Section (Landing Page)
+    'nav_templates' => 'Templates',
+    'template_section_label' => 'Templates',
+    'template_title' => 'Ready-to-Use Website Templates',
+    'template_subtitle' => 'Download free templates with built-in iACC API integration. Launch your business website in minutes.',
+    'template_tour_title' => 'Tour Company Demo',
+    'template_tour_desc' => 'Speedboat tour operator website with booking form, tour packages, and payment integration via iACC Sales Channel API.',
+    'template_tour_tags' => 'Tour Operator, Booking, Payments',
+    'template_btn_preview' => 'Live Preview',
+    'template_btn_download' => 'Download Free',
+    'template_coming_soon' => 'More Templates Coming Soon',
+    'template_coming_soon_desc' => 'Restaurant, Hotel, Retail, and E-Commerce templates are in development.',
+    'template_feature_responsive' => 'Fully Responsive',
+    'template_feature_api' => 'iACC API Ready',
+    'template_feature_free' => '100% Free',
+    'template_feature_nocode' => 'No Build Tools',
+
+    // Footer — Developers
+    'footer_developers' => 'Developers',
+    'footer_api_docs' => 'API Documentation',
+    'footer_template_demo' => 'Template Setup Demo',
+    'footer_howto' => 'Hosting Guide',
 ];

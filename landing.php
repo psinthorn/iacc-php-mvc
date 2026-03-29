@@ -922,7 +922,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
             gap: 40px;
         }
         
@@ -1054,7 +1054,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             }
             
             .footer-container {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 1fr 1fr;
             }
         }
         
@@ -1135,6 +1135,181 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 transform: rotate(90deg);
             }
         }
+
+        /* Templates Section */
+        .templates-section {
+            padding: 100px 20px;
+            background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto 50px;
+        }
+
+        .template-preview {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        .template-preview:hover {
+            transform: translateY(-6px);
+        }
+
+        .template-preview img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .template-preview-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 6px 14px;
+            background: rgba(142, 68, 173, 0.9);
+            color: white;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .template-info h3 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
+
+        .template-info p {
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .template-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .template-tag {
+            padding: 4px 12px;
+            background: rgba(142, 68, 173, 0.08);
+            color: #8e44ad;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .template-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .template-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .template-feature i {
+            color: #10b981;
+            font-size: 14px;
+        }
+
+        .template-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .template-buttons .btn {
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .template-buttons .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .template-buttons .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .template-buttons .btn-outline {
+            border: 2px solid #e2e8f0;
+            color: #475569;
+            background: white;
+        }
+        .template-buttons .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .coming-soon-card {
+            text-align: center;
+            padding: 50px 30px;
+            background: white;
+            border: 2px dashed #e2e8f0;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .coming-soon-card i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .coming-soon-card h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .coming-soon-card p {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 768px) {
+            .template-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .template-preview img {
+                height: 220px;
+            }
+            .template-features {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1148,6 +1323,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             <ul class="nav-menu">
                 <li><a href="#features"><?= __('nav_features') ?></a></li>
                 <li><a href="#integrations"><?= __('nav_integrations') ?></a></li>
+                <li><a href="#templates"><?= __('nav_templates') ?></a></li>
                 <li><a href="#pricing"><?= __('nav_pricing') ?></a></li>
                 <li><a href="#about"><?= __('nav_about') ?></a></li>
                 <li><a href="#contact"><?= __('nav_contact') ?></a></li>
@@ -1242,6 +1418,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             </div>
             
             <div class="features-grid">
+                <!-- Row 1: Core Accounting -->
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-file-text-o"></i>
@@ -1251,68 +1428,95 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-credit-card"></i>
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                        <i class="fa fa-shopping-cart"></i>
                     </div>
                     <h3><?= __('feature_2_title') ?></h3>
                     <p><?= __('feature_2_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
                         <i class="fa fa-bar-chart"></i>
                     </div>
                     <h3><?= __('feature_3_title') ?></h3>
                     <p><?= __('feature_3_desc') ?></p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-users"></i>
+                <!-- Row 2: Financial & Operations -->
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #e67e22, #f39c12);">
+                        <i class="fa fa-book"></i>
                     </div>
-                    <h3><?= __('feature_4_title') ?></h3>
+                    <h3><?= __('feature_4_title') ?> <span class="badge-new">NEW</span></h3>
                     <p><?= __('feature_4_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fa fa-building"></i>
+                        <i class="fa fa-credit-card"></i>
                     </div>
                     <h3><?= __('feature_5_title') ?></h3>
                     <p><?= __('feature_5_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa fa-globe"></i>
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">
+                        <i class="fa fa-truck"></i>
                     </div>
                     <h3><?= __('feature_6_title') ?></h3>
                     <p><?= __('feature_6_desc') ?></p>
+                </div>
+                
+                <!-- Row 3: Expense & Tax -->
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                        <i class="fa fa-calculator"></i>
+                    </div>
+                    <h3><?= __('feature_7_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_7_desc') ?></p>
+                </div>
+                
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">
+                        <i class="fa fa-percent"></i>
+                    </div>
+                    <h3><?= __('feature_8_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_8_desc') ?></p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <h3><?= __('feature_9_title') ?></h3>
+                    <p><?= __('feature_9_desc') ?></p>
+                </div>
+                
+                <!-- Row 4: Platform & Integration -->
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-building"></i>
+                    </div>
+                    <h3><?= __('feature_10_title') ?></h3>
+                    <p><?= __('feature_10_desc') ?></p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-globe"></i>
+                    </div>
+                    <h3><?= __('feature_11_title') ?></h3>
+                    <p><?= __('feature_11_desc') ?></p>
                 </div>
                 
                 <div class="feature-card featured-card">
                     <div class="feature-icon" style="background: linear-gradient(135deg, #e74c3c, #f39c12);">
                         <i class="fa fa-plug"></i>
                     </div>
-                    <h3><?= __('feature_7_title') ?></h3>
-                    <p><?= __('feature_7_desc') ?></p>
-                    <a href="#integrations" class="feature-link"><?= $lang === 'th' ? 'ดูเพิ่มเติม →' : 'Learn more →' ?></a>
-                </div>
-                
-                <div class="feature-card featured-card">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                        <i class="fa fa-money"></i>
-                    </div>
-                    <h3><?= __('feature_8_title') ?> <span class="badge-new">NEW</span></h3>
-                    <p><?= __('feature_8_desc') ?></p>
-                </div>
-                
-                <div class="feature-card featured-card">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="fa fa-calculator"></i>
-                    </div>
-                    <h3><?= __('feature_9_title') ?> <span class="badge-new">NEW</span></h3>
-                    <p><?= __('feature_9_desc') ?></p>
+                    <h3><?= __('feature_12_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_12_desc') ?></p>
+                    <a href="#integrations" class="feature-link">Learn more →</a>
                 </div>
             </div>
         </div>
@@ -1420,6 +1624,51 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                         <p><?= __('integration_step_4') ?></p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Templates Section -->
+    <section class="templates-section" id="templates">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-label" style="background: rgba(6, 182, 212, 0.1); color: #0891b2;"><?= __('template_section_label') ?></span>
+                <h2 class="section-title"><?= __('template_title') ?></h2>
+                <p class="section-subtitle"><?= __('template_subtitle') ?></p>
+            </div>
+
+            <!-- Tour Company Template -->
+            <div class="template-grid">
+                <div class="template-preview">
+                    <img src="https://www.mysamuiisland.com/wp-content/uploads/2024/03/angthong-nation-marine-park.jpg" alt="Tour Company Demo Template">
+                    <span class="template-preview-badge"><i class="fa fa-star"></i> Free Template</span>
+                </div>
+                <div class="template-info">
+                    <h3><?= __('template_tour_title') ?></h3>
+                    <p><?= __('template_tour_desc') ?></p>
+                    <div class="template-tags">
+                        <?php foreach (explode(',', __('template_tour_tags')) as $tag): ?>
+                            <span class="template-tag"><?= trim($tag) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="template-features">
+                        <div class="template-feature"><i class="fa fa-check-circle"></i> <?= __('template_feature_responsive') ?></div>
+                        <div class="template-feature"><i class="fa fa-check-circle"></i> <?= __('template_feature_api') ?></div>
+                        <div class="template-feature"><i class="fa fa-check-circle"></i> <?= __('template_feature_free') ?></div>
+                        <div class="template-feature"><i class="fa fa-check-circle"></i> <?= __('template_feature_nocode') ?></div>
+                    </div>
+                    <div class="template-buttons">
+                        <a href="templates/tour-company-demo/index.html" target="_blank" class="btn btn-primary"><i class="fa fa-eye"></i> <?= __('template_btn_preview') ?></a>
+                        <a href="template-download.php?template=tour-company-demo" class="btn btn-outline"><i class="fa fa-download"></i> <?= __('template_btn_download') ?></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coming Soon -->
+            <div class="coming-soon-card">
+                <i class="fa fa-th-large"></i>
+                <h4><?= __('template_coming_soon') ?></h4>
+                <p><?= __('template_coming_soon_desc') ?></p>
             </div>
         </div>
     </section>
@@ -1683,6 +1932,15 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <li><a href="contact.php?lang=<?= $lang ?>"><?= __('footer_contact') ?></a></li>
                     <li><a href="privacy.php?lang=<?= $lang ?>"><?= __('footer_privacy') ?></a></li>
                     <li><a href="terms.php?lang=<?= $lang ?>"><?= __('footer_terms') ?></a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h4><?= __('footer_developers') ?></h4>
+                <ul>
+                    <li><a href="api-docs.php?lang=<?= $lang ?>"><?= __('footer_api_docs') ?></a></li>
+                    <li><a href="template-demo.php?lang=<?= $lang ?>"><?= __('footer_template_demo') ?></a></li>
+                    <li><a href="template-howto.php?lang=<?= $lang ?>"><?= __('footer_howto') ?></a></li>
                 </ul>
             </div>
         </div>

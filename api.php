@@ -105,6 +105,8 @@ if (empty($resource)) {
                 'PUT /api.php/v1/orders/{id}'           => 'Update an order',
                 'DELETE /api.php/v1/orders/{id}'        => 'Cancel an order',
                 'POST /api.php/v1/orders/{id}/retry'    => 'Retry failed order',
+                'GET /api.php/v1/products'               => 'List products (models) with categories',
+                'GET /api.php/v1/categories'             => 'List categories with types',
                 'GET /api.php/v1/subscription'            => 'Subscription info & usage',
                 'POST /api.php/v1/webhooks'              => 'Register a webhook',
                 'GET /api.php/v1/webhooks'               => 'List webhooks (pagination: ?page=1&per_page=20)',

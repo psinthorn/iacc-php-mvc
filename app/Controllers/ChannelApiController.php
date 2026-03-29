@@ -86,6 +86,15 @@ class ChannelApiController
                     $this->getSubscription();
                     break;
 
+                // Product catalog endpoints
+                case $method === 'GET' && $path === 'products':
+                    $this->listProducts();
+                    break;
+
+                case $method === 'GET' && $path === 'categories':
+                    $this->listCategories();
+                    break;
+
                 // Webhook endpoints
                 case $method === 'POST' && $path === 'webhooks':
                     $this->registerWebhook();
@@ -420,6 +429,136 @@ class ChannelApiController
             'trial_end'       => $subscription['trial_end'],
             'expires_at'      => $subscription['expires_at'],
             'stats'           => $stats,
+        ]);
+    }
+
+    // =========================================================
+    // Product Catalog Endpoints
+    // =========================================================
+
+    /**
+     * GET /api/v1/products — List all products (models) for the authenticated company
+     * Query params: ?category_id=X&type_id=X
+     */
+    private function listProducts(): void
+    {
+        $companyId = intval($this->authData['company_id']);
+
+        $sql = "SELECT m.id, m.model_name, m.price, m.des as description,
+                       t.id as type_id, t.name as type_name,
+                       c.id as category_id, c.cat_name as category_name,
+                       b.id as brand_id, b.brand_name
+                FROM model m
+                LEFT JOIN type t ON m.type_id = t.id
+                LEFT JOIN category c ON t.cat_id = c.id
+                LEFT JOIN brand b ON m.brand_id = b.id
+                WHERE m.company_id = ? AND m.deleted_at IS NULL
+                ORDER BY c.cat_name, t.name, m.model_name";
+
+        // Optional filters
+        $params = [$companyId];
+        $types = 'i';
+
+        if (!empty($_GET['category_id'])) {
+            $sql = str_replace('ORDER BY', 'AND c.id = ? ORDER BY', $sql);
+            $params[] = intval($_GET['category_id']);
+            $types .= 'i';
+        }
+        if (!empty($_GET['type_id'])) {
+            $sql = str_replace('ORDER BY', 'AND t.id = ? ORDER BY', $sql);
+            $params[] = intval($_GET['type_id']);
+            $types .= 'i';
+        }
+
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        $products = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $products[] = [
+                'id'            => intval($row['id']),
+                'name'          => $row['model_name'],
+                'price'         => floatval($row['price']),
+                'description'   => $row['description'],
+                'type_id'       => intval($row['type_id']),
+                'type_name'     => $row['type_name'],
+                'category_id'   => intval($row['category_id']),
+                'category_name' => $row['category_name'],
+                'brand_id'      => intval($row['brand_id']),
+                'brand_name'    => $row['brand_name'],
+            ];
+        }
+        mysqli_stmt_close($stmt);
+
+        $this->logRequest('GET /api/v1/products', '', 200);
+        $this->jsonSuccess([
+            'products' => $products,
+            'total'    => count($products),
+        ]);
+    }
+
+    /**
+     * GET /api/v1/categories — List all categories with types for the authenticated company
+     */
+    private function listCategories(): void
+    {
+        $companyId = intval($this->authData['company_id']);
+
+        // Get categories
+        $sql = "SELECT c.id, c.cat_name as name, c.des as description
+                FROM category c
+                WHERE c.company_id = ? AND c.deleted_at IS NULL
+                ORDER BY c.cat_name";
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $companyId);
+        mysqli_stmt_execute($stmt);
+        $catResult = mysqli_stmt_get_result($stmt);
+
+        $categories = [];
+        while ($row = mysqli_fetch_assoc($catResult)) {
+            $categories[] = [
+                'id'          => intval($row['id']),
+                'name'        => $row['name'],
+                'description' => $row['description'],
+                'types'       => [],
+            ];
+        }
+        mysqli_stmt_close($stmt);
+
+        // Get types for each category
+        $sql = "SELECT t.id, t.name, t.des as description, t.cat_id,
+                       (SELECT COUNT(*) FROM model m WHERE m.type_id = t.id AND m.company_id = ? AND m.deleted_at IS NULL) as product_count
+                FROM type t
+                WHERE t.company_id = ? AND t.deleted_at IS NULL
+                ORDER BY t.name";
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'ii', $companyId, $companyId);
+        mysqli_stmt_execute($stmt);
+        $typeResult = mysqli_stmt_get_result($stmt);
+
+        $typesByCategory = [];
+        while ($row = mysqli_fetch_assoc($typeResult)) {
+            $catId = intval($row['cat_id']);
+            $typesByCategory[$catId][] = [
+                'id'            => intval($row['id']),
+                'name'          => $row['name'],
+                'description'   => $row['description'],
+                'product_count' => intval($row['product_count']),
+            ];
+        }
+        mysqli_stmt_close($stmt);
+
+        // Merge types into categories
+        foreach ($categories as &$cat) {
+            $cat['types'] = $typesByCategory[$cat['id']] ?? [];
+        }
+
+        $this->logRequest('GET /api/v1/categories', '', 200);
+        $this->jsonSuccess([
+            'categories' => $categories,
+            'total'      => count($categories),
         ]);
     }
 
