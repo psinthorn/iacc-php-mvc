@@ -178,15 +178,16 @@ class Delivery extends BaseModel
 
         $poId = \sql_int($data['po_id']);
 
-        // Check if this PO has both material and labour items (needs split)
-        $hasMaterial = false;
-        $hasLabour = false;
+        // Check if any product has labour charges (activelabour=1 with valuelabour > 0)
+        // A single product can include both material (price) and labour (valuelabour)
+        $needsSplit = false;
         $products = $this->fetchAll("SELECT pro_id, type, model, quantity, pack_quantity, price, discount, des, activelabour, valuelabour, ban_id, company_id FROM product WHERE po_id='$poId' AND deleted_at IS NULL");
         foreach ($products as $p) {
-            if (intval($p['activelabour']) === 1) $hasLabour = true;
-            else $hasMaterial = true;
+            if (intval($p['activelabour']) === 1 && floatval($p['valuelabour']) > 0) {
+                $needsSplit = true;
+                break;
+            }
         }
-        $needsSplit = $hasMaterial && $hasLabour;
 
         // Get original PO data
         $poData = mysqli_fetch_assoc(mysqli_query($this->conn,
@@ -222,8 +223,10 @@ class Delivery extends BaseModel
     }
 
     /**
-     * Create split invoices: one for materials (no WHT) and one for labour (with WHT)
-     * Creates two new PO records linked via split_group_id, each with its own products and IV record.
+     * Create split invoices: one for materials (no WHT) and one for labour (with WHT).
+     * A single product line can have both material (price) and labour (valuelabour) components.
+     * Material invoice: all products using their 'price' field, activelabour=0
+     * Labour invoice: only products with activelabour=1, using 'valuelabour' as the price
      */
     private function createSplitInvoices(array $poData, array $products, int $comId, string $venId): void
     {
@@ -232,7 +235,7 @@ class Delivery extends BaseModel
         $originalRef = intval($poData['ref']);
         $originalOver = floatval($poData['over'] ?? 0);
 
-        // --- Create Material PO (split_type=material, over=0) ---
+        // --- Create Material PO (split_type=material, over=0 — no WHT on materials) ---
         $argsMat = ['table' => 'po'];
         $matPoId = $this->hard->Maxid('po');
         $matTax = $originalTax . '/1';
@@ -245,9 +248,8 @@ class Delivery extends BaseModel
             floatval($poData['vat'] ?? 0) . "', '0', '$matPoId', 'material', NULL";
         $createdMatId = $this->hard->insertDbMax($argsMat);
 
-        // Insert material products into new PO
+        // Material PO gets ALL products with their material price, labour stripped
         foreach ($products as $p) {
-            if (intval($p['activelabour']) === 1) continue;
             $argsP = ['table' => 'product'];
             $argsP['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
             $argsP['value'] = "'" . intval($p['company_id'] ?: $comId) . "', '$createdMatId', '" . floatval($p['price']) . "', '" .
@@ -281,20 +283,16 @@ class Delivery extends BaseModel
             floatval($poData['vat'] ?? 0) . "', '" . $originalOver . "', '$createdMatId', 'labour', NULL";
         $createdLabId = $this->hard->insertDbMax($argsLab);
 
-        // Update material PO's split_group_id to point to itself (the first in the group)
-        // Both POs share the same split_group_id = createdMatId
-        // (already set for material PO above)
-
-        // Insert labour products into new PO
+        // Labour PO gets only products that have labour, using valuelabour as price
         foreach ($products as $p) {
-            if (intval($p['activelabour']) !== 1) continue;
+            if (intval($p['activelabour']) !== 1 || floatval($p['valuelabour']) <= 0) continue;
             $argsP = ['table' => 'product'];
             $argsP['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
-            $argsP['value'] = "'" . intval($p['company_id'] ?: $comId) . "', '$createdLabId', '" . floatval($p['price']) . "', '" .
+            $argsP['value'] = "'" . intval($p['company_id'] ?: $comId) . "', '$createdLabId', '" . floatval($p['valuelabour']) . "', '" .
                 floatval($p['discount'] ?? 0) . "', '" . intval($p['ban_id'] ?? 0) . "', '" . intval($p['model'] ?? 0) . "', '" .
                 intval($p['type']) . "', '" . floatval($p['quantity']) . "', '" . floatval($p['pack_quantity'] ?? 1) .
-                "', '0', '" . \sql_escape($p['des'] ?? '') . "', '" . intval($p['activelabour']) . "', '" .
-                floatval($p['valuelabour'] ?? 0) . "', '0', '1970-01-01', '0', NULL";
+                "', '0', '" . \sql_escape($p['des'] ?? '') . " (Labour)', '1', '" .
+                floatval($p['valuelabour']) . "', '0', '1970-01-01', '0', NULL";
             $this->hard->insertDB($argsP);
         }
 
