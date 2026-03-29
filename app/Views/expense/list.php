@@ -34,6 +34,17 @@ $messages = [
 <link rel="stylesheet" href="css/master-data.css">
 
 <style>
+/* Header layout — extends master-data-header */
+.master-data-header .header-content { display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:12px; }
+.master-data-header .header-text h2 { margin:0; }
+.master-data-header .header-text p { margin:4px 0 0; font-size:14px; opacity:0.85; }
+.master-data-header .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.btn-header { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all 0.2s; border:none; cursor:pointer; }
+.btn-header-primary { background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3); }
+.btn-header-primary:hover { background:rgba(255,255,255,0.3); color:white; text-decoration:none; }
+.btn-header-outline { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.2); }
+.btn-header-outline:hover { background:rgba(255,255,255,0.2); color:white; text-decoration:none; }
+
 .filter-bar {
     display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
     background: white; padding: 16px 20px; border-radius: 12px;
