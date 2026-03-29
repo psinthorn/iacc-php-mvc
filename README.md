@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 5.8-phase2-timestamps  
+**Version**: 5.9-split-invoice-wht  
 **Status**: Production Ready  
-**Last Updated**: March 29, 2026  
+**Last Updated**: March 30, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 8.0 | **Nginx**: Alpine
 
@@ -29,7 +29,7 @@
 | **Services** | 3 (ChannelService, PromptPayService, CurrencyService) |
 | **MVC Routes** | 175 (+2 reports) |
 | **Legacy Routes** | 0 |
-| **Test Cases** | 188 (42 E2E + 20 API + 126 MVC) |
+| **Test Cases** | 192 (42 E2E + 20 API + 126 MVC + 4 Split Invoice) |
 | **Active Root Files** | 12 |
 | **Archived Legacy Files** | 95 |
 
@@ -368,7 +368,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Company Management** — Vendors, suppliers, customers with soft delete
 - **Product Catalog** — Brands, categories, types, models with pricing
 - **Purchase Workflow** — PR → PO → Delivery → Invoice → Payment → Tax Invoice
-- **Invoicing** — Invoice generation with PDF export
+- **Invoicing** — Invoice generation with PDF export, split invoices (material/labour WHT separation)
 - **Tax Invoices** — Thai tax invoice support (VAT 7%)
 - **Quotations** — Quote generation with PDF export
 - **Payments** — Payment recording, gateway integration, tracking
@@ -583,11 +583,36 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 | **E2E CRUD** | 42 | Company, Category, Type, Brand, Model, PR→PO workflow, Payment, HardClass |
 | **Sales Channel API** | 20 | API auth, CRUD orders, rate limiting, webhooks, key rotation, idempotency |
 | **MVC Comprehensive** | 126 | Routes, Controllers, Models, Views, Config, Security, RBAC |
-| **Total** | **188** | **All passing ✅** |
+| **Split Invoice** | 4 | Split PDF logic, labour/material detection, quotation reference |
+| **Total** | **192** | **All passing ✅** |
 
 ---
 
 ## 📋 Changelog
+
+### v5.9-split-invoice-wht (March 30, 2026) — Split Invoice & WHT Separation
+
+**Split Invoice System** — Quotations with labour charges automatically split into separate material and labour invoices for WHT (withholding tax) separation:
+
+- **Automatic Split Detection**: Quotations with `activelabour=1 AND valuelabour > 0` on any product trigger invoice splitting
+- **Material Invoice**: Contains all products with equipment prices, no labour columns
+- **Labour Invoice**: Contains products with labour rates only, "Labour Rate" column header
+- **Split Group UI**: Collapsible group rows on invoice list with quotation reference (QO-prefix) and expandable sub-rows showing actual invoice numbers (INV-prefix)
+- **PDF Support**: Split-aware PDF generation — correct titles ("INVOICE (LABOUR)" / "INVOICE (MATERIALS)"), conditional columns, original quotation reference
+- **VOID Watermark**: Voided invoices display diagonal "VOID" watermark at 15% opacity on PDF
+- **Void Invoice Fix**: Fixed void function that was targeting wrong PO when multiple POs share the same PR (now uses PO id directly)
+- **Void Redirect**: Void action redirects back to invoice list instead of tax invoice list
+- **Split Group Subtotals**: Corrected subtotal calculation for split siblings to prevent double-counting labour values
+
+**Database Migration** (`migrations/015_split_invoice_wht.sql`):
+- Added `split_group_id` INT column to `po` table
+- Added `split_type` ENUM('full','material','labour') to `po` table
+- Index on `split_group_id` for group queries
+
+**Technical Details**:
+- Modified: InvoiceController (split type detection, void/complete fix), Invoice model (void by PO id, split subtotals), invoice list/view/PDF views
+- 4 new split invoice tests (test-pdf-invoice-split.php)
+- Split logic in Delivery model's `createSplitInvoices()` method
 
 ### v5.8-phase2-timestamps (March 29, 2026) — Phase 2 Database Hardening
 

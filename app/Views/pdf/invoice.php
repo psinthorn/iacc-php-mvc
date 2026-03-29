@@ -23,7 +23,7 @@ $session_com_id = mysqli_real_escape_string($db->conn, $_SESSION['com_id'] ?? 0)
 $sql = "
     SELECT 
         po.name as name, po.over, pr.ven_id, po.dis, po.vat, 
-        iv.taxrw as tax2, po.tax, pr.cus_id as cus_id, pr.payby, pr.des, po.bandven, po.valid_pay,
+        iv.taxrw as tax2, iv.status_iv, po.tax, pr.cus_id as cus_id, pr.payby, pr.des, po.bandven, po.valid_pay,
         DATE_FORMAT(iv.createdate,'%d/%m/%Y') as date,
         DATE_FORMAT(po.deliver_date,'%d/%m/%Y') as deliver_date,
         po.ref, po.pic, po.po_ref, pr.status 
@@ -133,6 +133,23 @@ $cklabour = mysqli_fetch_array(mysqli_query($db->conn, "
     WHERE po_id = '{$id_safe}'
 "));
 $hasLabour = ($cklabour['cklabour'] == 1);
+
+// Detect split invoice type and find original quotation reference
+$splitType = null;
+$originalQuotationTax = '';
+$splitTypeRow = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT split_type, split_group_id FROM po WHERE id = '{$id_safe}'"));
+if ($splitTypeRow && !empty($splitTypeRow['split_group_id'])) {
+    $splitType = $splitTypeRow['split_type'];
+    // Find original PO (the one whose po_id_new points to the split_group_id)
+    $origRow = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT tax FROM po WHERE po_id_new = '" . mysqli_real_escape_string($db->conn, $splitTypeRow['split_group_id']) . "'"));
+    if ($origRow) {
+        $originalQuotationTax = $origRow['tax'];
+    }
+}
+$isLabourInvoice = ($splitType === 'labour');
+$isMaterialInvoice = ($splitType === 'material');
+// For labour invoice, don't show material columns; for material invoice, don't show labour columns
+if ($isLabourInvoice) $hasLabour = false;
 
 // Fetch products
 $que_pro = mysqli_query($db->conn, "
@@ -262,7 +279,7 @@ $html = '
 </div>
 
 <!-- Title -->
-<div class="title">INVOICE</div>
+<div class="title">INVOICE' . ($isLabourInvoice ? ' (LABOUR)' : ($isMaterialInvoice ? ' (MATERIALS)' : '')) . '</div>
 
 <!-- Info Section -->
 <table class="info-table">
@@ -270,7 +287,7 @@ $html = '
         <td class="info-left">
             <div class="inv-box">
                 <div class="inv-num">INV-' . e($data['tax2']) . '</div>
-                <div class="inv-meta">Date: ' . e($data['date']) . ' &nbsp;|&nbsp; PO: PO-' . e($data['tax']) . (!empty($data['po_ref']) ? ' &nbsp;|&nbsp; PO Ref: ' . e($data['po_ref']) : '') . '</div>
+                <div class="inv-meta">Date: ' . e($data['date']) . ' &nbsp;|&nbsp; PO: PO-' . e($data['tax']) . (!empty($data['po_ref']) ? ' &nbsp;|&nbsp; PO Ref: ' . e($data['po_ref']) : '') . (!empty($originalQuotationTax) ? ' &nbsp;|&nbsp; Ref Quotation: QO-' . e($originalQuotationTax) : '') . '</div>
             </div>
             <table>
                 <tr><td class="lbl">Customer</td><td class="cust-name">' . e($customer['name_en'] ?? '') . '</td></tr>
@@ -295,7 +312,7 @@ $html = '
         <th style="width:14%">Model</th>
         <th style="width:' . ($hasLabour ? '28%' : '52%') . '">Description</th>
         <th class="c" style="width:6%">Qty</th>
-        <th class="r" style="width:10%">Price</th>';
+        <th class="r" style="width:10%">' . ($isLabourInvoice ? 'Labour Rate' : 'Price') . '</th>';
 
 if ($hasLabour) {
     $html .= '
@@ -328,6 +345,8 @@ foreach ($products as $prod) {
         <td class="r">' . number_format($prod['labour1'], 2) . '</td>
         <td class="r">' . number_format($prod['labour'], 2) . '</td>';
     }
+    
+    // For labour invoice, Amount = price (which is valuelabour), already correct
     
     $html .= '
         <td class="r">' . number_format($prod['total'], 2) . '</td>
@@ -419,6 +438,12 @@ $html .= '
 // Generate PDF
 $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'garuda', 'margin_left' => 12, 'margin_right' => 12, 'margin_top' => 12, 'margin_bottom' => 12, 'margin_header' => 0, 'margin_footer' => 0, 'autoScriptToLang' => true, 'autoLangToFont' => true]);
 $mpdf->SetDisplayMode('fullpage');
+if (($data['status_iv'] ?? '') == '2') {
+    $mpdf->SetWatermarkText('VOID');
+    $mpdf->showWatermarkText = true;
+    $mpdf->watermarkTextAlpha = 0.15;
+    $mpdf->watermark_font = 'dejavusans';
+}
 $mpdf->WriteHTML($html);
 $mpdf->Output("INV-" . $data['tax2'] . "-" . ($customer['name_sh'] ?? 'invoice') . ".pdf", "I");
 exit;

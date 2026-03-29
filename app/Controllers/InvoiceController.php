@@ -80,6 +80,13 @@ class InvoiceController extends BaseController
             $hasLabour = $this->invoice->hasLabour($id);
             $rawProducts = $this->invoice->getProducts($id);
 
+            // For labour-only split invoices, suppress labour columns
+            // (the product's price already contains valuelabour)
+            $isLabourInvoice = (($data['split_type'] ?? '') === 'labour');
+            if ($isLabourInvoice) {
+                $hasLabour = false;
+            }
+
             $products = [];
             $summary = 0;
             foreach ($rawProducts as $p) {
@@ -110,14 +117,22 @@ class InvoiceController extends BaseController
             $refpo = $this->invoice->getPoRef($id);
             $paymentMethods = $this->invoice->getPaymentMethods($comId);
 
+            // Split group sibling invoices
+            $splitSiblings = [];
+            if (!empty($data['split_group_id'])) {
+                $splitSiblings = $this->invoice->getSplitGroupInvoices(intval($data['split_group_id']));
+            }
+
             $viewData = array_merge($viewData, [
                 'hasData' => true, 'data' => $data,
                 'vendor' => $vendor, 'customer' => $customer,
                 'hasLabour' => $hasLabour, 'products' => $products,
+                'isLabourInvoice' => $isLabourInvoice,
                 'summary' => $summary, 'disc' => $disc, 'subt' => $subt,
                 'overh' => $overh, 'vat' => $vat, 'totalnet' => $totalnet,
                 'payments' => $payments, 'accu' => $accu, 'refpo' => $refpo,
                 'payment_methods' => $paymentMethods, 'com_id' => $comId,
+                'split_siblings' => $splitSiblings,
             ]);
         }
         $this->render('invoice/view', $viewData);
@@ -245,14 +260,33 @@ class InvoiceController extends BaseController
                 break;
 
             case 'compl_list2':
+                $poId = $this->inputInt('po_id', 0);
+                $prId = $this->inputInt('pr_id', $this->inputInt('id', 0));
                 if ($method === 'V') {
-                    $this->invoice->voidInvoice($this->inputInt('id', 0));
+                    $this->invoice->voidInvoice($poId);
+                    $this->redirect('index.php?page=compl_list');
                 } elseif ($method === 'C') {
-                    $this->invoice->completeTaxInvoice($this->inputInt('id', 0));
+                    $this->invoice->completeTaxInvoice($poId, $prId);
+                    $this->redirect('index.php?page=compl_list2');
                 }
                 $this->redirect('index.php?page=compl_list2');
                 break;
         }
         $this->redirect('index.php?page=compl_list');
+    }
+
+    /**
+     * AJAX endpoint: return invoices in a split group as JSON
+     */
+    public function splitGroupJson(): void
+    {
+        header('Content-Type: application/json');
+        $splitGroupId = $this->inputInt('split_group_id', 0);
+        if ($splitGroupId <= 0) {
+            echo json_encode([]);
+            return;
+        }
+        $invoices = $this->invoice->getSplitGroupInvoices($splitGroupId);
+        echo json_encode($invoices);
     }
 }

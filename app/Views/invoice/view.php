@@ -37,6 +37,16 @@
 .btn-print-inv:hover { color: white; }
 .btn-pay { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
 .error-card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 60px 40px; text-align: center; border: 1px solid #e5e7eb; }
+/* Split Invoice Styles */
+.split-info-card { background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border: 2px solid #e9d5ff; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; }
+.split-info-card h4 { margin: 0 0 16px; color: #7c3aed; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.split-sibling-list { display: flex; flex-direction: column; gap: 10px; }
+.split-sibling-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; }
+.split-sibling-item.current { border: 2px solid #8b5cf6; background: #faf5ff; }
+.split-type-tag { display: inline-flex; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.split-type-tag.material { background: #dbeafe; color: #1e40af; }
+.split-type-tag.labour { background: #fef3c7; color: #92400e; }
+.split-type-tag.full { background: #f3f4f6; color: #374151; }
 </style>
 
 <script>
@@ -63,6 +73,35 @@ function paymentcheck() {
     </div>
 </div>
 
+<?php if (!empty($data['split_group_id']) && !empty($split_siblings) && count($split_siblings) > 1): ?>
+<div class="split-info-card">
+    <h4><i class="fa fa-clone"></i> <?=$xml->splitinvoicegroup ?? 'Split Invoice Group'?>
+        <span class="split-type-tag <?=htmlspecialchars($data['split_type'] ?? 'full')?>"><?= ($data['split_type'] ?? 'full') === 'material' ? ($xml->materials ?? 'Materials') : (($data['split_type'] ?? 'full') === 'labour' ? ($xml->labour ?? 'Labour') : ($xml->full ?? 'Full')) ?></span>
+    </h4>
+    <div class="split-sibling-list">
+    <?php foreach ($split_siblings as $sib):
+        $isCurrent = intval($sib['id']) === $id;
+        $sibType = $sib['split_type'] ?? 'full';
+        $sibLabel = $sibType === 'material' ? ($xml->materials ?? 'Materials') : ($sibType === 'labour' ? ($xml->labour ?? 'Labour') : ($xml->full ?? 'Full'));
+        $sibAmount = floatval($sib['subtotal'] ?? 0);
+    ?>
+        <div class="split-sibling-item <?=$isCurrent ? 'current' : ''?>">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-weight:600; color:#8b5cf6;">INV-<?=htmlspecialchars($sib['inv_no'] ?? $sib['po_tax'] ?? '')?></span>
+                <span class="split-type-tag <?=$sibType?>"><?=$sibLabel?></span>
+                <?php if ($isCurrent): ?><span style="background:#dcfce7; color:#059669; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600;"><?=$xml->current ?? 'Current'?></span><?php endif; ?>
+                <?php if (floatval($sib['over'] ?? 0) > 0): ?><span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600;">WHT <?=$sib['over']?>%</span><?php endif; ?>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-weight:600; color:#1f2937;">฿<?=number_format($sibAmount, 2)?></span>
+                <?php if (!$isCurrent): ?><a href="index.php?page=compl_view&id=<?=intval($sib['id'])?>" style="color:#8b5cf6; font-size:13px;"><i class="fa fa-external-link"></i> <?=$xml->view ?? 'View'?></a><?php endif; ?>
+            </div>
+        </div>
+    <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="content-card">
     <div class="card-hdr"><i class="fa fa-info-circle"></i> <?=$xml->details ?? 'Invoice Details'?></div>
     <div class="card-bdy">
@@ -84,7 +123,7 @@ function paymentcheck() {
     </div>
     <table class="products-table"><thead><tr>
         <th style="width:15%"><?=$xml->model ?? 'Model'?></th><th><?=$xml->product ?? 'Product'?></th>
-        <th class="text-center" style="width:8%"><?=$xml->unit ?? 'Qty'?></th><th class="text-right" style="width:10%"><?=$xml->price ?? 'Price'?></th>
+        <th class="text-center" style="width:8%"><?=$xml->unit ?? 'Qty'?></th><th class="text-right" style="width:10%"><?= ($isLabourInvoice ?? false) ? ($xml->labourrate ?? 'Labour Rate') : ($xml->price ?? 'Price') ?></th>
         <?php if($hasLabour): ?><th class="text-right" style="width:10%"><?=$xml->equipment ?? 'Equipment'?></th>
         <th class="text-right" style="width:8%"><?=$xml->labour ?? 'Labour'?></th><th class="text-right" style="width:10%"><?=$xml->labourtotal ?? 'L.Total'?></th><?php endif; ?>
         <th class="text-right" style="width:10%"><?=$xml->amount ?? 'Amount'?></th>
@@ -151,12 +190,12 @@ function paymentcheck() {
     <a href="index.php?page=pdf_invoice&id=<?=$id?>" target="_blank" class="btn-print-inv"><i class="fa fa-print"></i> <?=$xml->printinvoice ?? 'Print Invoice'?></a>
     <?php if($accu != 0): ?>
     <form action="index.php?page=invoice_store" method="post" style="display:inline;">
-        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="id" value="<?=$refpo['ref'] ?? ''?>">
+        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="po_id" value="<?=$id?>"><input type="hidden" name="pr_id" value="<?=$refpo['ref'] ?? ''?>">
         <button type="submit" name="method" value="V" class="btn-void"><i class="fa fa-ban"></i> <?=$xml->voidinv ?? 'Void Invoice'?></button>
     </form>
     <?php else: ?>
     <form action="index.php?page=invoice_store" method="post" style="display:inline;">
-        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="id" value="<?=$refpo['ref'] ?? ''?>">
+        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="po_id" value="<?=$id?>"><input type="hidden" name="pr_id" value="<?=$refpo['ref'] ?? ''?>">
         <button type="submit" name="method" value="V" class="btn-void"><i class="fa fa-ban"></i> <?=$xml->voidinv ?? 'Void Invoice'?></button>
         <button type="submit" name="method" value="C" class="btn-complete"><i class="fa fa-check-circle"></i> <?=$xml->taxinvoicem ?? 'Issue Tax Invoice'?></button>
     </form>

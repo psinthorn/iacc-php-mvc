@@ -85,6 +85,7 @@ class PurchaseRequest extends BaseModel
         // Use isolated array for PR insert (prevents state leakage)
         $argsPR = array();
         $argsPR['table'] = 'pr';
+        $argsPR['columns'] = "company_id, name, des, usr_id, cus_id, ven_id, date, status, cancel, mailcount, payby, deleted_at";
         $argsPR['value'] = "'$comId','" . \sql_escape($data['name']) . "','" . \sql_escape($data['des']) . "','" .
             intval($data['user_id']) . "','" . intval($data['cus_id']) . "','" . $venId . "','" .
             date('Y-m-d') . "','0','0','0','0',NULL";
@@ -100,7 +101,8 @@ class PurchaseRequest extends BaseModel
             if (!empty($typeId) && $typeId != '0' && $qty != '0') {
                 $argsProduct = array();
                 $argsProduct['table'] = 'tmp_product';
-                $argsProduct['value'] = "NULL,'$prId','" . intval($typeId) . "','" . floatval($qty) . "','" . floatval($price) . "'";
+                $argsProduct['columns'] = "pr_id, type, quantity, price";
+                $argsProduct['value'] = "'$prId','" . intval($typeId) . "','" . floatval($qty) . "','" . floatval($price) . "'";
                 $this->hard->insertDB($argsProduct);
             }
         }

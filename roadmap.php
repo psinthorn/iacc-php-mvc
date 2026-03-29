@@ -499,6 +499,26 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
             
+            <!-- Completed Q3 - Split Invoice & WHT -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.9 - แยกใบแจ้งหนี้ค่าแรง/ค่าวัสดุ' : 'v5.9 - Split Invoice & WHT Separation' ?></h3>
+                <p><?= $lang === 'th' ? 'แยกใบแจ้งหนี้อัตโนมัติสำหรับใบเสนอราคาที่มีค่าแรง เพื่อแยกหัก ณ ที่จ่าย (WHT) ตามกฎหมาย' : 'Automatic invoice splitting for quotations with labour charges, enabling proper WHT (withholding tax) separation.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'แยกใบแจ้งหนี้อัตโนมัติ (วัสดุ/ค่าแรง)' : 'Auto split invoices (material/labour)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'PDF แยกตามประเภท พร้อมอ้างอิงใบเสนอราคา' : 'Split-aware PDF with quotation reference' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'กลุ่มใบแจ้งหนี้แบบพับ/ขยายในรายการ' : 'Collapsible invoice groups in list view' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ลายน้ำ VOID สำหรับใบแจ้งหนี้ที่ยกเลิก' : 'VOID watermark on cancelled invoices' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'แก้ไขฟังก์ชัน Void Invoice' : 'Fixed void invoice function' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'คำนวณยอดรวมแยกกลุ่มถูกต้อง' : 'Correct split group subtotals' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Migration: split_group_id + split_type' : 'Migration: split_group_id + split_type' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '4 Tests ใหม่ (192 ทั้งหมด)' : '4 new tests (192 total)' ?></li>
+                </ul>
+            </div>
+
             <!-- Planned Q4 - Mobile & Integrations -->
             <div class="timeline-item planned">
                 <div class="timeline-header">

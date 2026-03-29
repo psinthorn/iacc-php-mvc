@@ -14,6 +14,7 @@ class Invoice extends BaseModel
 
     // =====================================================
     // Invoice List (compl_list) — status >= 4
+    // With split invoice group support
     // =====================================================
 
     public function countInvoices(int $comId, string $direction, array $filters): int
@@ -48,11 +49,35 @@ class Invoice extends BaseModel
 
         $sql = "SELECT po.id as id, $extraCols po.name as name, taxrw as tax,
             DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, name_en,
-            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status, iv.payment_status
+            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, status, iv.payment_status,
+            po.split_group_id, po.split_type, po.tax as po_tax
             FROM po JOIN pr ON po.ref=pr.id $companyJoin JOIN iv ON po.id=iv.tex
             WHERE po_id_new='' AND $companyWhere AND status>='4'
             {$conds['search']} {$conds['date']} {$conds['status']}
             ORDER BY iv.id DESC LIMIT $offset, $limit";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Get all invoices in a split group (for AJAX expand)
+     */
+    public function getSplitGroupInvoices(int $splitGroupId): array
+    {
+        $sql = "SELECT po.id, po.tax as po_tax, po.name, po.split_type, po.over,
+            iv.taxrw as inv_no, DATE_FORMAT(iv.createdate, '%d-%m-%Y') as invoice_date,
+            iv.payment_status,
+            (SELECT SUM(
+                CASE WHEN po.split_type IN ('material','labour')
+                    THEN (product.price * product.quantity) - (product.discount * product.quantity)
+                    ELSE (product.price * product.quantity) - (product.discount * product.quantity)
+                         + (product.valuelabour * product.activelabour * product.quantity)
+                END
+             ) FROM product WHERE product.po_id=po.id AND product.deleted_at IS NULL) as subtotal
+            FROM po
+            JOIN iv ON po.id = iv.tex
+            WHERE po.split_group_id = '" . \sql_int($splitGroupId) . "'
+            AND po.po_id_new = ''
+            ORDER BY po.split_type ASC";
         return $this->fetchAll($sql);
     }
 
@@ -80,7 +105,8 @@ class Invoice extends BaseModel
     {
         $sql = "SELECT po.name as name, ven_id, vat, cus_id, des, payby, `over`,
             DATE_FORMAT(valid_pay,'%d-%m-%Y') as valid_pay, dis,
-            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, status
+            DATE_FORMAT(deliver_date,'%d-%m-%Y') as deliver_date, ref, pic, status,
+            po.split_group_id, po.split_type, po.tax as po_tax
             FROM pr JOIN po ON pr.id=po.ref
             WHERE po.id='" . \sql_int($id) . "' AND status='4'
             AND (cus_id='$comId' OR ven_id='$comId') AND po_id_new=''";
@@ -142,7 +168,8 @@ class Invoice extends BaseModel
     {
         $args = [];
         $args['table'] = 'pay';
-        $args['value'] = "NULL,'$comId','" . \sql_int($poId) . "','" . \sql_escape($paymentMethodId) . "','" . \sql_escape($remark) . "','" . \sql_escape($amount) . "','" . date("Y-m-d") . "',NULL";
+        $args['columns'] = "company_id, po_id, method, value, volumn, date, deleted_at";
+        $args['value'] = "'$comId','" . \sql_int($poId) . "','" . \sql_escape($paymentMethodId) . "','" . \sql_escape($remark) . "','" . \sql_escape($amount) . "','" . date("Y-m-d") . "',NULL";
         $this->hard->insertDB($args);
     }
 
@@ -213,25 +240,25 @@ class Invoice extends BaseModel
     // Tax Invoice actions (core-function.php case compl_list2)
     // =====================================================
 
-    public function voidInvoice(int $prId): void
+    public function voidInvoice(int $poId): void
     {
-        $po = mysqli_fetch_assoc(mysqli_query($this->conn,
-            "SELECT po.id as po_id, ven_id FROM pr JOIN po ON pr.id=po.ref WHERE po_id_new='' AND pr.id='" . \sql_int($prId) . "'"));
-        if ($po) {
-            $args = ['table' => 'iv', 'value' => "status_iv='2'", 'condition' => "tex='" . \sql_int($po['po_id']) . "'"];
+        if ($poId > 0) {
+            $args = ['table' => 'iv', 'value' => "status_iv='2'", 'condition' => "tex='" . \sql_int($poId) . "'"];
             $this->hard->updateDb($args);
         }
     }
 
-    public function completeTaxInvoice(int $prId): void
+    public function completeTaxInvoice(int $poId, int $prId = 0): void
     {
         // Update PR status to 5
-        $args = ['table' => 'pr', 'value' => "status='5'", 'condition' => "id='" . \sql_int($prId) . "'"];
-        $this->hard->updateDb($args);
+        if ($prId > 0) {
+            $args = ['table' => 'pr', 'value' => "status='5'", 'condition' => "id='" . \sql_int($prId) . "'"];
+            $this->hard->updateDb($args);
+        }
 
-        // Get PO and vendor
+        // Get vendor from PO
         $po = mysqli_fetch_assoc(mysqli_query($this->conn,
-            "SELECT po.id as po_id, ven_id FROM pr JOIN po ON pr.id=po.ref WHERE po_id_new='' AND pr.id='" . \sql_int($prId) . "'"));
+            "SELECT ven_id FROM pr JOIN po ON pr.id=po.ref WHERE po.id='" . \sql_int($poId) . "'"));
         if (!$po) return;
 
         // Get max tax invoice number
@@ -242,7 +269,7 @@ class Invoice extends BaseModel
 
         $args2 = ['table' => 'iv',
             'value' => "texiv='$newNum', texiv_rw='$rw', texiv_create='" . date("Y-m-d") . "', status_iv='1'",
-            'condition' => "tex='" . $po['po_id'] . "'"];
+            'condition' => "tex='" . \sql_int($poId) . "'"];
         $this->hard->updateDb($args2);
     }
 

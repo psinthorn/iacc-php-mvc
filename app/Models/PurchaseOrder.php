@@ -178,7 +178,8 @@ class PurchaseOrder extends BaseModel
             $des = \sql_escape($data['des'][$key] ?? '');
             $a_labour = intval($data['a_labour'][$key] ?? 0);
             $v_labour = floatval($data['v_labour'][$key] ?? 0);
-            $argsP['value'] = "NULL, '$comId', '$poId', '$price', '$discount', '$ban_id', '$model', '" .
+            $argsP['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+            $argsP['value'] = "'$comId', '$poId', '$price', '$discount', '$ban_id', '$model', '" .
                 intval($typeValue) . "', '$qty', '$pack_qty', '0', '$des', '$a_labour', '$v_labour', '0', '1970-01-01', '0', NULL";
             $this->hard->insertDB($argsP);
         }

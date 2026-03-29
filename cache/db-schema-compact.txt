@@ -1,25 +1,25 @@
 DATABASE SCHEMA (key tables):
 
 • iv: Invoices - tex(PK, links to po.id), createdate, taxrw(invoice#), status_iv, payment_status, cus_id→company
-  Columns: id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date
+  Columns: id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date, currency_code, exchange_rate, created_at, updated_at
 
 • po: Purchase Orders - id(PK), ref→pr.id, name, date, status, vat, dis(discount)
-  Columns: id, company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, dis, bandven, vat, over, deleted_at
+  Columns: id, company_id, po_id_new, name, ref, tax, date, valid_pay, deliver_date, pic, po_ref, dis, bandven, vat, over, deleted_at, created_at, updated_at
 
 • pr: Purchase Requests/Quotations - id(PK), name, date, cus_id→company(customer), ven_id→company(vendor)
-  Columns: id, company_id, name, des, usr_id, cus_id, ven_id, date, status, cancel, mailcount, payby, deleted_at
+  Columns: id, company_id, name, des, usr_id, cus_id, ven_id, date, status, cancel, mailcount, payby, deleted_at, created_at, updated_at
 
 • product: Line items - po_id→po.id, price, quantity (total = SUM(price*quantity))
-  Columns: pro_id, company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at
+  Columns: pro_id, company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at, created_at, updated_at
 
 • pay: Payments - po_id→po.id, volumn(amount paid)
-  Columns: id, company_id, po_id, method, value, volumn, date, deleted_at
+  Columns: id, company_id, po_id, method, value, volumn, date, deleted_at, wht_rate, wht_amount, wht_type, created_at, updated_at
 
 • deliver: Deliveries - po_id→po.id, deliver_date
-  Columns: id, company_id, po_id, deliver_date, out_id, deleted_at
+  Columns: id, company_id, po_id, deliver_date, out_id, deleted_at, created_at, updated_at
 
 • company: Companies - id(PK), name_en, name_sh, email, phone, address
-  Columns: id, name_en, name_th, name_sh, contact, email, phone, fax, tax, customer, vender, logo, term, deleted_at, company_id
+  Columns: id, name_en, name_th, name_sh, contact, email, default_currency, phone, fax, tax, customer, vender, logo, term, deleted_at, company_id, created_at, updated_at
 
 KEY RELATIONSHIPS:
 • Invoice flow: pr(quote) → po(order) → iv(invoice) → pay(payment)

@@ -74,7 +74,8 @@ class Voucher extends BaseModel
         $invoice_id = !empty($data['invoice_id']) ? intval($data['invoice_id']) : 'NULL';
 
         $args = ['table' => 'voucher'];
-        $args['value'] = "'" . \sql_escape($data['name']) . "','" . \sql_escape($data['phone']) . "','" .
+        $args['columns'] = "company_id, name, phone, email, createdate, description, payment_method, status, invoice_id, vender, vou_no, vou_rw, brand, vat, discount, deleted_at";
+        $args['value'] = "'$comId', '" . \sql_escape($data['name']) . "','" . \sql_escape($data['phone']) . "','" .
             \sql_escape($data['email']) . "','" . date("Y-m-d") . "','" . \sql_escape($data['des']) . "','" .
             $payment_method . "','" . $status . "'," . $invoice_id . ",'" . $comId . "','" . $new_rw . "','" .
             (date("y") + 43) . str_pad($new_rw, 6, '0', STR_PAD_LEFT) . "','" . \sql_int($data['brandven'] ?? 0) .
@@ -113,11 +114,12 @@ class Voucher extends BaseModel
             $args = ['table' => 'product'];
             $voId = $idField === 'vo_id' ? $docId : '0';
             $reId = $idField === 're_id' ? $docId : '0';
-            $args['value'] = "'','0','" . floatval($data['price'][$i] ?? 0) . "','0','" . intval($data['ban_id'][$i] ?? 0) .
-                "','" . intval($data['model'][$i] ?? 0) . "','" . intval($type) . "','" . floatval($data['quantity'][$i] ?? 1) .
-                "','1','','" . \sql_escape($data['des'][$i] ?? '') . "','" . intval($data['a_labour'][$i] ?? 0) .
-                "','" . floatval($data['v_labour'][$i] ?? 0) . "','$voId','" .
-                date("Y-m-d", strtotime($data['warranty'][$i] ?? 'now')) . "','$reId'";
+            $args['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+            $args['value'] = "'0', '0', '" . floatval($data['price'][$i] ?? 0) . "', '0', '" . intval($data['ban_id'][$i] ?? 0) .
+                "', '" . intval($data['model'][$i] ?? 0) . "', '" . intval($type) . "', '" . floatval($data['quantity'][$i] ?? 1) .
+                "', '1', '', '" . \sql_escape($data['des'][$i] ?? '') . "', '" . intval($data['a_labour'][$i] ?? 0) .
+                "', '" . floatval($data['v_labour'][$i] ?? 0) . "', '$voId', '" .
+                date("Y-m-d", strtotime($data['warranty'][$i] ?? 'now')) . "', '$reId', NULL";
             $this->hard->insertDB($args);
             $i++;
         }
