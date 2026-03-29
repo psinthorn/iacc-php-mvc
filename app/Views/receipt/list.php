@@ -16,11 +16,16 @@ require_once __DIR__ . '/../../../inc/pagination.php';
     .summary-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px; text-align: center; }
     .summary-card .number { font-size: 28px; font-weight: 700; }
     .summary-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #6b7280; margin-top: 4px; }
-    .filter-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 16px 20px; margin-bottom: 24px; }
-    .filter-card form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .filter-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 8px 12px; font-size: 13px; }
+    .filter-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e5e7eb; overflow: hidden; }
+    .filter-card .filter-header { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 10px; }
+    .filter-card .filter-body { padding: 20px; }
+    .filter-card .form-control { border-radius: 10px; border: 1px solid #e5e7eb; height: 44px; }
     .filter-card .form-control:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.1); outline: none; }
-    .filter-card .btn { border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; }
+    .filter-card .btn-primary { background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+    .filter-card .btn-primary:hover { box-shadow: 0 4px 12px rgba(5,150,105,0.35); }
+    .date-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .date-presets .btn { border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; }
+    .date-presets .btn.active { background: linear-gradient(135deg, #059669, #10b981); color: white; border-color: #059669; }
     .data-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; }
     .data-card .card-header { background: #f9fafb; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; font-size: 14px; }
     .data-card table { width: 100%; border-collapse: collapse; }
@@ -39,11 +44,18 @@ require_once __DIR__ . '/../../../inc/pagination.php';
     .action-edit:hover { background: #10b981; color: white; }
     .action-print { background: rgba(139,92,246,0.1); color: #8b5cf6; }
     .action-print:hover { background: #8b5cf6; color: white; }
+    .action-col { white-space: nowrap; text-align: center; }
+    .pagination-footer { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .pagination-footer .pagination-info { font-size: 13px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+    .pagination-footer .per-page-inline { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+    .pagination-footer .per-page-inline select { border: 1px solid #e5e7eb; border-radius: 8px; padding: 4px 8px; font-size: 13px; background: white; cursor: pointer; }
+    .pagination-footer .per-page-inline select:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 2px rgba(5,150,105,0.15); }
+    .pagination-footer .pagination { margin: 0; }
     .source-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
     .source-invoice { background: #ede9fe; color: #7c3aed; }
     .source-quotation { background: #dbeafe; color: #2563eb; }
     .source-direct { background: #f3f4f6; color: #6b7280; }
-    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } .data-card { overflow-x: auto; } }
+    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } .data-card { overflow-x: auto; } .pagination-footer { flex-direction: column; gap: 8px; } }
 </style>
 
 <?php
@@ -74,23 +86,34 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
     </div>
 
     <div class="filter-card">
-        <form method="get">
-            <input type="hidden" name="page" value="receipt_list">
-            <input type="text" name="search" class="form-control" placeholder="<?=$xml->search ?? 'Search'?>..." value="<?=e($search)?>" style="min-width:180px">
-            <select name="status" class="form-control">
-                <option value="">-- <?=$xml->status ?? 'Status'?> --</option>
-                <option value="draft" <?=$status_filter=='draft'?'selected':''?>><?=$xml->draft ?? 'Draft'?></option>
-                <option value="confirmed" <?=$status_filter=='confirmed'?'selected':''?>><?=$xml->confirmed ?? 'Confirmed'?></option>
-                <option value="cancelled" <?=$status_filter=='cancelled'?'selected':''?>><?=$xml->cancelled ?? 'Cancelled'?></option>
-            </select>
-            <input type="date" name="date_from" class="form-control" value="<?=e($date_from)?>">
-            <input type="date" name="date_to" class="form-control" value="<?=e($date_to)?>">
-            <button type="submit" class="btn btn-success"><i class="fa fa-search"></i></button>
-            <a href="index.php?page=receipt_list" class="btn btn-default"><i class="fa fa-refresh"></i></a>
-        </form>
-        <?php if(function_exists('render_date_presets')): ?>
-        <div style="margin-top:10px"><?= render_date_presets($date_preset, 'receipt_list') ?></div>
-        <?php endif; ?>
+        <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->search ?? 'Search'?> & <?=$xml->filter ?? 'Filter'?></div>
+        <div class="filter-body">
+            <form method="get" action="">
+                <input type="hidden" name="page" value="receipt_list">
+                <?php if(function_exists('render_date_presets')): ?>
+                <div class="date-presets"><?= render_date_presets($date_preset, 'receipt_list') ?></div>
+                <?php endif; ?>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-4" style="margin-bottom:12px;">
+                        <input type="text" class="form-control" name="search" placeholder="<?=$xml->search ?? 'Search'?> Receipt#, Name..." value="<?=e($search)?>">
+                    </div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;">
+                        <select name="status" class="form-control">
+                            <option value=""><?=$xml->all ?? 'All'?> <?=$xml->status ?? 'Status'?></option>
+                            <option value="draft" <?=$status_filter=='draft'?'selected':''?>><?=$xml->draft ?? 'Draft'?></option>
+                            <option value="confirmed" <?=$status_filter=='confirmed'?'selected':''?>><?=$xml->confirmed ?? 'Confirmed'?></option>
+                            <option value="cancelled" <?=$status_filter=='cancelled'?'selected':''?>><?=$xml->cancelled ?? 'Cancelled'?></option>
+                        </select>
+                    </div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_from" value="<?=e($date_from)?>"></div>
+                    <div class="col-xs-6 col-sm-2" style="margin-bottom:12px;"><input type="date" class="form-control" name="date_to" value="<?=e($date_to)?>"></div>
+                    <div class="col-xs-12 col-sm-2" style="margin-bottom:12px;">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> <?=$xml->search ?? 'Search'?></button>
+                        <a href="?page=receipt_list" class="btn btn-default"><i class="fa fa-refresh"></i></a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="data-card">
@@ -143,7 +166,30 @@ $query_params = ['search' => $search, 'status' => $status_filter, 'date_from' =>
         </div>
     </div>
 
-    <?php if(!empty($pagination) && function_exists('render_pagination')): ?>
-    <div class="text-center"><?= render_pagination($pagination, '?page=receipt_list', $query_params) ?></div>
+    <?php if(!empty($pagination) && $pagination['total_pages'] > 0): ?>
+    <div class="pagination-footer">
+        <div class="pagination-info">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
+        <?php if($pagination['total_pages'] > 1): ?>
+        <?= render_pagination($pagination, '?page=receipt_list', $query_params) ?>
+        <?php endif; ?>
+        <div class="per-page-inline">
+            <span>Show</span>
+            <select onchange="changePerPage(this.value)">
+                <?php foreach([10, 20, 50, 100] as $opt): ?>
+                <option value="<?=$opt?>" <?=$per_page==$opt?'selected':''?>><?=$opt?></option>
+                <?php endforeach; ?>
+            </select>
+            <span>per page</span>
+        </div>
+    </div>
     <?php endif; ?>
 </div>
+
+<script>
+function changePerPage(val) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('per_page', val);
+    url.searchParams.delete('pg');
+    window.location.href = url.toString();
+}
+</script>

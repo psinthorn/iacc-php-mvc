@@ -22,13 +22,14 @@ function sortLink2($col, $label, $curSort, $curDir, $base) {
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-.report-container { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; max-width:1400px; margin:0 auto; }
+.report-container { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; max-width:1400px; margin:0 auto; padding:0 20px; }
 .page-header-rep { background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; padding:24px 28px; border-radius:16px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(99,102,241,.3); }
 .page-header-rep h2 { margin:0; font-size:24px; font-weight:700; display:flex; align-items:center; gap:12px; }
 .page-header-rep .header-actions { display:flex; gap:10px; }
 .page-header-rep .btn-export { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3); color:#fff; padding:10px 16px; border-radius:10px; text-decoration:none; font-weight:500; display:flex; align-items:center; gap:8px; transition:all .2s; }
 .page-header-rep .btn-export:hover { background:rgba(255,255,255,.3); color:#fff; }
 .filter-card { background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,.08); margin-bottom:24px; border:1px solid #e5e7eb; overflow:hidden; }
+.filter-card .filter-header { background:linear-gradient(135deg,#f8fafc,#f1f5f9); padding:16px 20px; border-bottom:1px solid #e5e7eb; font-weight:600; color:#374151; display:flex; align-items:center; gap:10px; }
 .filter-card .filter-body { padding:20px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
 .period-tabs { display:flex; gap:8px; }
 .period-tabs .btn { border-radius:20px; padding:8px 16px; font-size:13px; font-weight:500; border:1px solid #e5e7eb; background:#fff; color:#374151; }
@@ -37,7 +38,7 @@ function sortLink2($col, $label, $curSort, $curDir, $base) {
 .period-label { background:#eef2ff; color:#4338ca; padding:8px 16px; border-radius:20px; font-size:14px; font-weight:500; }
 .summary-cards { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:24px; }
 @media(max-width:992px){ .summary-cards{grid-template-columns:repeat(3,1fr);} }
-@media(max-width:576px){ .summary-cards{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:576px){ .summary-cards{grid-template-columns:repeat(2,1fr);} .report-container{padding:0 12px;} }
 .summary-card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,.06); border:1px solid #e5e7eb; text-align:center; }
 .summary-card .icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; margin:0 auto 12px; }
 .summary-card .icon.pr { background:#fef3c7; color:#d97706; }
@@ -71,6 +72,7 @@ function sortLink2($col, $label, $curSort, $curDir, $base) {
 </div>
 
 <div class="filter-card">
+    <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->filter ?? 'Filter'?></div>
     <div class="filter-body">
         <div class="period-tabs">
             <?php foreach (['today'=>'Today','week'=>'7 Days','month'=>'30 Days','year'=>'This Year','all'=>'All Time'] as $k=>$v): ?>

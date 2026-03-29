@@ -6,14 +6,16 @@
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .reports-wrapper { padding: 20px; max-width: 1200px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-    .reports-header { padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25); color: white; margin-bottom: 30px; }
-    .reports-header h2 { font-size: 28px; font-weight: 700; margin: 0; }
+    .reports-wrapper { max-width: 1400px; margin: 0 auto; padding: 0 20px; font-family: 'Inter', sans-serif; }
+    .reports-header { padding: 24px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25); color: white; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .reports-header h2 { font-size: 24px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 12px; }
     .reports-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }
     .report-section { margin-bottom: 30px; }
     .report-section h4 { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; }
     .report-section h4 i { color: #667eea; margin-right: 8px; }
-    .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 992px) { .report-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .report-grid { grid-template-columns: 1fr; } }
     .report-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.2s ease; text-decoration: none; color: inherit; display: block; }
     .report-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-color: #667eea; text-decoration: none; color: inherit; }
     .report-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; }

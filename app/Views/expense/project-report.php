@@ -16,6 +16,47 @@ $grandUnpaid = array_sum(array_column($projects, 'unpaid_amount'));
 
 <link rel="stylesheet" href="css/master-data.css">
 
+<style>
+/* Header layout — extends master-data-header */
+.master-data-header .header-content { display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:12px; }
+.master-data-header .header-text h2 { margin:0; }
+.master-data-header .header-text p { margin:4px 0 0; font-size:14px; opacity:0.85; }
+.master-data-header .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* Header buttons */
+.btn-header { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all 0.2s; border:none; cursor:pointer; }
+.btn-header-primary { background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3); }
+.btn-header-primary:hover { background:rgba(255,255,255,0.3); color:white; text-decoration:none; }
+.btn-header-outline { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.2); }
+.btn-header-outline:hover { background:rgba(255,255,255,0.2); color:white; text-decoration:none; }
+
+/* Filter bar */
+.filter-bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:white; padding:16px 20px; border-radius:12px; border:1px solid var(--md-border,#e2e8f0); margin-bottom:20px; }
+.filter-bar .filter-input,
+.filter-bar .filter-select { padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; outline:none; font-family:'Inter',sans-serif; }
+.filter-bar .filter-input:focus,
+.filter-bar .filter-select:focus { border-color:var(--md-primary,#4f46e5); box-shadow:0 0 0 3px rgba(79,70,229,0.1); }
+
+/* Data table — extends master-data-table pattern */
+.data-table-container { background:white; border-radius:var(--md-radius-md,12px); border:1px solid var(--md-border,#e2e8f0); box-shadow:var(--md-shadow-sm,0 1px 3px rgba(0,0,0,0.08)); overflow:hidden; margin-bottom:20px; }
+.data-table { width:100%; border-collapse:collapse; font-size:13px; }
+.data-table thead th { padding:12px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--md-text-secondary,#64748b); background:var(--md-bg-light,#f8fafc); border-bottom:2px solid var(--md-border,#e2e8f0); white-space:nowrap; }
+.data-table tbody td { padding:14px 16px; border-bottom:1px solid #f1f5f9; color:var(--md-text-primary,#1e293b); vertical-align:middle; }
+.data-table tbody tr { transition:background 0.15s; }
+.data-table tbody tr:hover { background:rgba(79,70,229,0.03); }
+.data-table tfoot td, .data-table tfoot tr td { padding:14px 16px; }
+
+/* Action button */
+.action-btn-sm { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; text-decoration:none; transition:all 0.2s; border:none; cursor:pointer; }
+.action-btn-sm:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+
+@media (max-width:768px) {
+    .master-data-header .header-content { flex-direction:column; align-items:flex-start; }
+    .filter-bar { flex-direction:column; align-items:stretch; }
+    .filter-bar .filter-input, .filter-bar .filter-select { width:100% !important; }
+}
+</style>
+
 <div class="master-data-container">
     <!-- Header -->
     <div class="master-data-header">
