@@ -121,6 +121,8 @@ return [
     'user_store'        => ['UserController', 'store'],
     
     // Reports & Invoice Payments
+    'report_hub'        => ['ReportController', 'hub'],
+    'report_ar_aging'   => ['ReportController', 'arAging'],
     'invoice_payments'  => ['ReportController', 'invoicePayments'],
     'report'            => ['ReportController', 'summary'],
     

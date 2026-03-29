@@ -233,4 +233,176 @@ class Dashboard
                 ORDER BY iv.texiv_create DESC LIMIT $limit";
         return mysqli_query($this->db->conn, $sql);
     }
+
+    // ========== Chart Data (Dashboard Charts) ==========
+
+    /**
+     * Monthly revenue for last N months (payments received).
+     */
+    public function getMonthlyRevenue(string $companyFilter, int $months = 12): array
+    {
+        $sql = "SELECT 
+                    DATE_FORMAT(pay.date, '%Y-%m') as month,
+                    IFNULL(SUM(pay.volumn), 0) as total
+                FROM pay 
+                JOIN po ON pay.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE pay.date >= DATE_SUB(CURDATE(), INTERVAL $months MONTH) $companyFilter
+                GROUP BY DATE_FORMAT(pay.date, '%Y-%m')
+                ORDER BY month ASC";
+        $result = mysqli_query($this->db->conn, $sql);
+        $data = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $data[$row['month']] = (float) $row['total'];
+            }
+        }
+
+        // Fill missing months with 0
+        $filled = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $m = date('Y-m', strtotime("-$i months"));
+            $filled[$m] = $data[$m] ?? 0;
+        }
+        return $filled;
+    }
+
+    /**
+     * Monthly expenses for last N months.
+     */
+    public function getMonthlyExpenses(string $companyFilter, int $months = 12): array
+    {
+        $comId = (int) ($_SESSION['com_id'] ?? 0);
+        $comFilter = $comId > 0 ? " AND com_id = $comId" : "";
+        $sql = "SELECT 
+                    DATE_FORMAT(expense_date, '%Y-%m') as month,
+                    IFNULL(SUM(amount), 0) as total
+                FROM expenses 
+                WHERE expense_date >= DATE_SUB(CURDATE(), INTERVAL $months MONTH)
+                  AND deleted_at IS NULL $comFilter
+                GROUP BY DATE_FORMAT(expense_date, '%Y-%m')
+                ORDER BY month ASC";
+        $result = @mysqli_query($this->db->conn, $sql);
+        $data = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $data[$row['month']] = (float) $row['total'];
+            }
+        }
+
+        $filled = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $m = date('Y-m', strtotime("-$i months"));
+            $filled[$m] = $data[$m] ?? 0;
+        }
+        return $filled;
+    }
+
+    /**
+     * Payment status distribution (paid / partial / unpaid invoices).
+     */
+    public function getPaymentStatusDistribution(string $companyFilter): array
+    {
+        $sql = "SELECT 
+                    SUM(CASE WHEN paid >= total AND total > 0 THEN 1 ELSE 0 END) as paid,
+                    SUM(CASE WHEN paid > 0 AND paid < total THEN 1 ELSE 0 END) as partial,
+                    SUM(CASE WHEN (paid = 0 OR paid IS NULL) AND total > 0 THEN 1 ELSE 0 END) as unpaid
+                FROM (
+                    SELECT iv.tex,
+                        COALESCE((SELECT SUM(price*quantity) FROM product WHERE po_id = po.id), 0) as total,
+                        COALESCE((SELECT SUM(volumn) FROM pay WHERE po_id = po.id), 0) as paid
+                    FROM iv
+                    JOIN po ON iv.tex = po.id
+                    JOIN pr ON po.ref = pr.id
+                    WHERE iv.createdate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) $companyFilter
+                    GROUP BY iv.tex
+                ) as invoice_summary";
+        $result = mysqli_query($this->db->conn, $sql);
+        if ($result && $row = mysqli_fetch_assoc($result)) {
+            return [
+                'paid'    => (int) ($row['paid'] ?? 0),
+                'partial' => (int) ($row['partial'] ?? 0),
+                'unpaid'  => (int) ($row['unpaid'] ?? 0),
+            ];
+        }
+        return ['paid' => 0, 'partial' => 0, 'unpaid' => 0];
+    }
+
+    /**
+     * Order status distribution (pending vs completed).
+     */
+    public function getOrderStatusDistribution(string $companyFilter): array
+    {
+        $sql = "SELECT 
+                    SUM(CASE WHEN po.over = 0 THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN po.over = 1 THEN 1 ELSE 0 END) as completed
+                FROM po 
+                JOIN pr ON po.ref = pr.id
+                WHERE po.date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) $companyFilter";
+        $result = mysqli_query($this->db->conn, $sql);
+        if ($result && $row = mysqli_fetch_assoc($result)) {
+            return [
+                'pending'   => (int) ($row['pending'] ?? 0),
+                'completed' => (int) ($row['completed'] ?? 0),
+            ];
+        }
+        return ['pending' => 0, 'completed' => 0];
+    }
+
+    // ========== AR Aging Report ==========
+
+    /**
+     * Accounts Receivable Aging — invoices bucketed by days outstanding.
+     */
+    public function getArAging(string $companyFilter): array
+    {
+        $sql = "SELECT 
+                    c.id as company_id,
+                    COALESCE(c.name_en, c.name_th) as company_name,
+                    iv.tex as po_id,
+                    po.tax as po_number,
+                    iv.createdate as invoice_date,
+                    DATEDIFF(CURDATE(), iv.createdate) as days_outstanding,
+                    COALESCE((SELECT SUM(price*quantity) FROM product WHERE po_id = po.id), 0) as total_amount,
+                    COALESCE((SELECT SUM(volumn) FROM pay WHERE po_id = po.id), 0) as paid_amount
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                LEFT JOIN company c ON pr.cus_id = c.id
+                WHERE 1=1 $companyFilter
+                  AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.tex = iv.tex)
+                GROUP BY iv.tex
+                HAVING (total_amount - paid_amount) > 0
+                ORDER BY days_outstanding DESC";
+        $result = mysqli_query($this->db->conn, $sql);
+        
+        $buckets = [
+            'current'  => ['label' => '0-30 days',  'min' => 0,   'max' => 30,  'items' => [], 'total' => 0],
+            'days31'   => ['label' => '31-60 days', 'min' => 31,  'max' => 60,  'items' => [], 'total' => 0],
+            'days61'   => ['label' => '61-90 days', 'min' => 61,  'max' => 90,  'items' => [], 'total' => 0],
+            'days91'   => ['label' => '91-120 days','min' => 91,  'max' => 120, 'items' => [], 'total' => 0],
+            'days121'  => ['label' => '120+ days',  'min' => 121, 'max' => 99999,'items' => [], 'total' => 0],
+        ];
+        $grandTotal = 0;
+
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $outstanding = (float) $row['total_amount'] - (float) $row['paid_amount'];
+                $days = (int) $row['days_outstanding'];
+                $row['outstanding'] = $outstanding;
+
+                foreach ($buckets as $key => &$bucket) {
+                    if ($days >= $bucket['min'] && $days <= $bucket['max']) {
+                        $bucket['items'][] = $row;
+                        $bucket['total'] += $outstanding;
+                        $grandTotal += $outstanding;
+                        break;
+                    }
+                }
+                unset($bucket);
+            }
+        }
+
+        return ['buckets' => $buckets, 'grand_total' => $grandTotal];
+    }
 }

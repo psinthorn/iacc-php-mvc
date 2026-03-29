@@ -280,7 +280,21 @@ include_once 'inc/top-navbar.php';
                     
                     <!-- Reports -->
                     <li>
-                        <a href="index.php?page=report"><i class="glyphicon glyphicon-book"></i> <?=$xml->report ?? 'Reports'?></a>
+                        <a href="#"><i class="glyphicon glyphicon-book"></i> <?=$xml->report ?? 'Reports'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=report_hub"><i class="fa fa-th-large"></i> <?=$xml->reporthub ?? 'Reports Center'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=report"><i class="fa fa-bar-chart-o"></i> <?=$xml->businesssummary ?? 'Business Summary'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=invoice_payments"><i class="fa fa-money"></i> <?=$xml->paymenttracking2 ?? 'Invoice Payments'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=report_ar_aging"><i class="fa fa-clock-o"></i> <?=$xml->araging ?? 'AR Aging'?></a>
+                            </li>
+                        </ul>
                     </li>  
                     
                     <!-- Expenses -->

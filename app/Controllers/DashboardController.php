@@ -78,6 +78,12 @@ class DashboardController extends BaseController
             $userData['total_tax_invoices'] = $this->model->getTaxInvoiceCount($companyFilterIv);
             $userData['recent_invoices']  = $this->model->getRecentInvoices($companyFilterIv, 5);
             $userData['recent_tax_invoices'] = $this->model->getRecentTaxInvoices($companyFilterIv, 5);
+
+            // Chart data
+            $userData['monthly_revenue']  = $this->model->getMonthlyRevenue($companyFilterPr, 12);
+            $userData['monthly_expenses'] = $this->model->getMonthlyExpenses($companyFilterPr, 12);
+            $userData['payment_status']   = $this->model->getPaymentStatusDistribution($companyFilterIv);
+            $userData['order_status']     = $this->model->getOrderStatusDistribution($companyFilterPr);
         }
 
         // Docker tools settings (for super admin display)

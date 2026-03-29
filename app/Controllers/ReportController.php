@@ -2,9 +2,10 @@
 namespace App\Controllers;
 
 use App\Models\Report;
+use App\Models\Dashboard;
 
 /**
- * ReportController - Invoice payments & business summary
+ * ReportController - Reports hub, invoice payments, business summary, AR aging
  * Replaces: invoice-payments.php, report.php
  */
 class ReportController extends BaseController
@@ -15,6 +16,37 @@ class ReportController extends BaseController
     {
         parent::__construct();
         $this->report = new Report();
+    }
+
+    /* ---- Reports Hub ---- */
+    public function hub(): void
+    {
+        $comId     = $this->getCompanyId();
+        $userLevel = intval($_SESSION['user_level'] ?? 0);
+
+        $this->render('report/hub', [
+            'com_id'     => $comId,
+            'user_level' => $userLevel,
+        ]);
+    }
+
+    /* ---- AR Aging Report ---- */
+    public function arAging(): void
+    {
+        $comId = $this->getCompanyId();
+        $companyFilter = '';
+        if ($comId > 0) {
+            $companyFilter = " AND (pr.ven_id = $comId OR pr.cus_id = $comId)";
+        }
+
+        $dashModel = new Dashboard();
+        $agingData = $dashModel->getArAging($companyFilter);
+
+        $this->render('report/ar-aging', [
+            'buckets'     => $agingData['buckets'],
+            'grand_total' => $agingData['grand_total'],
+            'com_id'      => $comId,
+        ]);
     }
 
     /* ---- Invoice Payments ---- */
