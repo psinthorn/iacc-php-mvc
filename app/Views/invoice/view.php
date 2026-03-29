@@ -87,7 +87,7 @@ function paymentcheck() {
     ?>
         <div class="split-sibling-item <?=$isCurrent ? 'current' : ''?>">
             <div style="display:flex; align-items:center; gap:12px;">
-                <span style="font-weight:600; color:#8b5cf6;">INV-<?=htmlspecialchars($sib['po_tax'] ?? '')?></span>
+                <span style="font-weight:600; color:#8b5cf6;">INV-<?=htmlspecialchars($sib['inv_no'] ?? $sib['po_tax'] ?? '')?></span>
                 <span class="split-type-tag <?=$sibType?>"><?=$sibLabel?></span>
                 <?php if ($isCurrent): ?><span style="background:#dcfce7; color:#059669; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600;"><?=$xml->current ?? 'Current'?></span><?php endif; ?>
                 <?php if (floatval($sib['over'] ?? 0) > 0): ?><span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600;">WHT <?=$sib['over']?>%</span><?php endif; ?>
@@ -123,7 +123,7 @@ function paymentcheck() {
     </div>
     <table class="products-table"><thead><tr>
         <th style="width:15%"><?=$xml->model ?? 'Model'?></th><th><?=$xml->product ?? 'Product'?></th>
-        <th class="text-center" style="width:8%"><?=$xml->unit ?? 'Qty'?></th><th class="text-right" style="width:10%"><?=$xml->price ?? 'Price'?></th>
+        <th class="text-center" style="width:8%"><?=$xml->unit ?? 'Qty'?></th><th class="text-right" style="width:10%"><?= ($isLabourInvoice ?? false) ? ($xml->labourrate ?? 'Labour Rate') : ($xml->price ?? 'Price') ?></th>
         <?php if($hasLabour): ?><th class="text-right" style="width:10%"><?=$xml->equipment ?? 'Equipment'?></th>
         <th class="text-right" style="width:8%"><?=$xml->labour ?? 'Labour'?></th><th class="text-right" style="width:10%"><?=$xml->labourtotal ?? 'L.Total'?></th><?php endif; ?>
         <th class="text-right" style="width:10%"><?=$xml->amount ?? 'Amount'?></th>
@@ -190,12 +190,12 @@ function paymentcheck() {
     <a href="index.php?page=pdf_invoice&id=<?=$id?>" target="_blank" class="btn-print-inv"><i class="fa fa-print"></i> <?=$xml->printinvoice ?? 'Print Invoice'?></a>
     <?php if($accu != 0): ?>
     <form action="index.php?page=invoice_store" method="post" style="display:inline;">
-        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="id" value="<?=$refpo['ref'] ?? ''?>">
+        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="po_id" value="<?=$id?>"><input type="hidden" name="pr_id" value="<?=$refpo['ref'] ?? ''?>">
         <button type="submit" name="method" value="V" class="btn-void"><i class="fa fa-ban"></i> <?=$xml->voidinv ?? 'Void Invoice'?></button>
     </form>
     <?php else: ?>
     <form action="index.php?page=invoice_store" method="post" style="display:inline;">
-        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="id" value="<?=$refpo['ref'] ?? ''?>">
+        <?= csrf_field() ?><input type="hidden" name="source_page" value="compl_list2"><input type="hidden" name="po_id" value="<?=$id?>"><input type="hidden" name="pr_id" value="<?=$refpo['ref'] ?? ''?>">
         <button type="submit" name="method" value="V" class="btn-void"><i class="fa fa-ban"></i> <?=$xml->voidinv ?? 'Void Invoice'?></button>
         <button type="submit" name="method" value="C" class="btn-complete"><i class="fa fa-check-circle"></i> <?=$xml->taxinvoicem ?? 'Issue Tax Invoice'?></button>
     </form>

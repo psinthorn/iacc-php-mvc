@@ -130,14 +130,12 @@ $date_to = $filters['date_to'] ?? '';
             $sibCount = count($siblings);
     ?>
     <tr class="split-group-row" onclick="toggleSplitGroup(this, <?=intval($splitGroupId)?>)">
-        <td class="inv-number"><span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>INV-<?=e(explode('/', $row['po_tax'] ?? $row['tax'])[0])?><span class="split-group-badge"><i class="fa fa-clone"></i> <?=$sibCount?></span></td>
+        <td class="inv-number"><span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>QO-<?=e(explode('/', $row['po_tax'] ?? $row['tax'])[0])?><span class="split-group-badge"><i class="fa fa-clone"></i> <?=$sibCount?></span></td>
         <td class="customer-name"><?=e($row['name_en'])?></td>
         <td class="hidden-xs"><?=e($row['name'])?></td>
         <td><?=e($row['valid_pay'])?></td>
         <td class="hidden-xs"><span class="status-badge pending"><?=$xml->split ?? 'Split'?></span></td>
-        <td>
-            <a href="index.php?page=pdf_invoice&id=<?=e($row['id'])?>" target="_blank" class="btn-action btn-action-inv">IV</a>
-        </td>
+        <td></td>
     </tr>
     <?php foreach ($siblings as $sib):
         if(($sib['status_iv'] ?? '')=="2" && $sib['status']=="4"){ $statusiv="void"; $sc="cancelled"; }
@@ -147,7 +145,7 @@ $date_to = $filters['date_to'] ?? '';
         $splitClass = ($sib['split_type'] ?? 'full') === 'material' ? 'material' : 'labour';
     ?>
     <tr class="split-sub-row" data-split-parent="<?=intval($splitGroupId)?>" style="display:none;">
-        <td class="inv-number" style="padding-left:40px !important;">INV-<?=e($sib['po_tax'] ?? $sib['tax'])?> <span class="split-type-badge <?=$splitClass?>"><?=$splitLabel?></span></td>
+        <td class="inv-number" style="padding-left:40px !important;">INV-<?=e($sib['tax'])?> <span class="split-type-badge <?=$splitClass?>"><?=$splitLabel?></span></td>
         <td class="customer-name"><?=e($sib['name_en'])?></td>
         <td class="hidden-xs"><?=e($sib['name'])?></td>
         <td><?=e($sib['valid_pay'])?></td>
@@ -208,7 +206,7 @@ $date_to = $filters['date_to'] ?? '';
             $sibCount = count($siblings);
     ?>
     <tr class="split-group-row" onclick="toggleSplitGroup(this, <?=intval($splitGroupId)?>)">
-        <td class="inv-number"><span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>INV-<?=e(explode('/', $row['po_tax'] ?? $row['tax'])[0])?><span class="split-group-badge"><i class="fa fa-clone"></i> <?=$sibCount?></span></td>
+        <td class="inv-number"><span class="toggle-icon"><i class="fa fa-chevron-right"></i></span>QO-<?=e(explode('/', $row['po_tax'] ?? $row['tax'])[0])?><span class="split-group-badge"><i class="fa fa-clone"></i> <?=$sibCount?></span></td>
         <td class="customer-name"><?=e($row['name_en'])?></td>
         <td class="hidden-xs"><?=e($row['name'])?></td>
         <td><?=e($row['valid_pay'])?></td>
@@ -221,7 +219,7 @@ $date_to = $filters['date_to'] ?? '';
         $splitClass = ($sib['split_type'] ?? 'full') === 'material' ? 'material' : 'labour';
     ?>
     <tr class="split-sub-row" data-split-parent="<?=intval($splitGroupId)?>" style="display:none;">
-        <td class="inv-number" style="padding-left:40px !important;">INV-<?=e($sib['po_tax'] ?? $sib['tax'])?> <span class="split-type-badge <?=$splitClass?>"><?=$splitLabel?></span></td>
+        <td class="inv-number" style="padding-left:40px !important;">INV-<?=e($sib['tax'])?> <span class="split-type-badge <?=$splitClass?>"><?=$splitLabel?></span></td>
         <td class="customer-name"><?=e($sib['name_en'])?></td>
         <td class="hidden-xs"><?=e($sib['name'])?></td>
         <td><?=e($sib['valid_pay'])?></td>

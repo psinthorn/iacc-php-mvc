@@ -80,6 +80,13 @@ class InvoiceController extends BaseController
             $hasLabour = $this->invoice->hasLabour($id);
             $rawProducts = $this->invoice->getProducts($id);
 
+            // For labour-only split invoices, suppress labour columns
+            // (the product's price already contains valuelabour)
+            $isLabourInvoice = (($data['split_type'] ?? '') === 'labour');
+            if ($isLabourInvoice) {
+                $hasLabour = false;
+            }
+
             $products = [];
             $summary = 0;
             foreach ($rawProducts as $p) {
@@ -120,6 +127,7 @@ class InvoiceController extends BaseController
                 'hasData' => true, 'data' => $data,
                 'vendor' => $vendor, 'customer' => $customer,
                 'hasLabour' => $hasLabour, 'products' => $products,
+                'isLabourInvoice' => $isLabourInvoice,
                 'summary' => $summary, 'disc' => $disc, 'subt' => $subt,
                 'overh' => $overh, 'vat' => $vat, 'totalnet' => $totalnet,
                 'payments' => $payments, 'accu' => $accu, 'refpo' => $refpo,
@@ -252,10 +260,14 @@ class InvoiceController extends BaseController
                 break;
 
             case 'compl_list2':
+                $poId = $this->inputInt('po_id', 0);
+                $prId = $this->inputInt('pr_id', $this->inputInt('id', 0));
                 if ($method === 'V') {
-                    $this->invoice->voidInvoice($this->inputInt('id', 0));
+                    $this->invoice->voidInvoice($poId);
+                    $this->redirect('index.php?page=compl_list');
                 } elseif ($method === 'C') {
-                    $this->invoice->completeTaxInvoice($this->inputInt('id', 0));
+                    $this->invoice->completeTaxInvoice($poId, $prId);
+                    $this->redirect('index.php?page=compl_list2');
                 }
                 $this->redirect('index.php?page=compl_list2');
                 break;
