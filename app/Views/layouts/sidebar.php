@@ -319,6 +319,25 @@ include_once 'inc/top-navbar.php';
                         </ul>
                     </li>
 
+                    <!-- Accounting / Journal -->
+                    <li>
+                        <a href="#"><i class="fa fa-book"></i> <?=$xml->accounting ?? 'Accounting'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=journal_list"><i class="fa fa-list-alt"></i> <?=$xml->journalvouchers ?? 'Journal Vouchers'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=journal_form"><i class="fa fa-plus-circle"></i> <?=$xml->newjournal ?? 'New Journal Entry'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=journal_accounts"><i class="fa fa-sitemap"></i> <?=$xml->chartofaccounts ?? 'Chart of Accounts'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=journal_trial_balance"><i class="fa fa-balance-scale"></i> <?=$xml->trialbalance ?? 'Trial Balance'?></a>
+                            </li>
+                        </ul>
+                    </li>
+
                     <?php } ?>
                     
                     <!-- Master Data / Settings -->

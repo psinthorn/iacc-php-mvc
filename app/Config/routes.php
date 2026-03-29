@@ -239,6 +239,19 @@ return [
     'currency_refresh'       => ['CurrencyController', 'refresh'],
     'currency_toggle'        => ['CurrencyController', 'toggle'],
 
+    // ========== Q3 2026 – Journal Module & Voucher Classification ==========
+    'journal_list'           => ['JournalController', 'index'],
+    'journal_form'           => ['JournalController', 'form'],
+    'journal_store'          => ['JournalController', 'store'],
+    'journal_view'           => ['JournalController', 'view'],
+    'journal_post'           => ['JournalController', 'post'],
+    'journal_cancel'         => ['JournalController', 'cancelVoucher'],
+    'journal_delete'         => ['JournalController', 'delete'],
+    'journal_accounts'       => ['JournalController', 'accounts'],
+    'journal_account_store'  => ['JournalController', 'accountStore'],
+    'journal_account_toggle' => ['JournalController', 'accountToggle'],
+    'journal_trial_balance'  => ['JournalController', 'trialBalance'],
+
     // PromptPay Payment
     'promptpay_checkout'     => ['InvoicePaymentController', 'promptpayCheckout'],
     'promptpay_confirm'      => ['InvoicePaymentController', 'promptpayConfirm'],
