@@ -127,6 +127,8 @@ CALL add_column_if_not_exists('pr',               'updated_at', 'TIMESTAMP NOT N
 CALL add_column_if_not_exists('product',          'created_at', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP');
 CALL add_column_if_not_exists('product',          'updated_at', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
 
+CALL add_column_if_not_exists('receipt',          'created_at', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP');
+
 CALL add_column_if_not_exists('type',             'created_at', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP');
 CALL add_column_if_not_exists('type',             'updated_at', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
 
