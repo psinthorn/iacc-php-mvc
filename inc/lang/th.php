@@ -232,4 +232,10 @@ return [
     'template_feature_api' => 'พร้อม iACC API',
     'template_feature_free' => 'ฟรี 100%',
     'template_feature_nocode' => 'ไม่ต้อง Build',
+
+    // Footer — Developers
+    'footer_developers' => 'นักพัฒนา',
+    'footer_api_docs' => 'เอกสาร API',
+    'footer_template_demo' => 'สาธิตการตั้งค่า',
+    'footer_howto' => 'คู่มือการติดตั้ง',
 ];

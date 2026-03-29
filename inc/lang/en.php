@@ -232,4 +232,10 @@ return [
     'template_feature_api' => 'iACC API Ready',
     'template_feature_free' => '100% Free',
     'template_feature_nocode' => 'No Build Tools',
+
+    // Footer — Developers
+    'footer_developers' => 'Developers',
+    'footer_api_docs' => 'API Documentation',
+    'footer_template_demo' => 'Template Setup Demo',
+    'footer_howto' => 'Hosting Guide',
 ];

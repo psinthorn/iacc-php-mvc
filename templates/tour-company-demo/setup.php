@@ -93,22 +93,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             $siteTitle = trim($_POST['site_title'] ?? 'My Website');
             $themeColor = trim($_POST['theme_color'] ?? '#0369a1');
+            $adminUser = trim($_POST['admin_username'] ?? 'admin');
+            $adminPass = $_POST['admin_password'] ?? '';
 
             // Get company name from subscription
             $client = new IaccApiClient($creds['apiUrl'], $creds['apiKey'], $creds['apiSecret']);
             $subResult = $client->getSubscription();
             $companyName = $subResult['data']['company_name'] ?? $siteTitle;
 
+            // Hash admin password (use default if empty)
+            if (empty($adminPass)) $adminPass = 'admin123';
+            $adminHash = password_hash($adminPass, PASSWORD_BCRYPT);
+
             $newConfig = [
-                'configured'   => true,
-                'api_url'      => $creds['apiUrl'],
-                'api_key'      => $creds['apiKey'],
-                'api_secret'   => $creds['apiSecret'],
-                'company_name' => $companyName,
-                'site_title'   => $siteTitle,
-                'theme_color'  => $themeColor,
-                'currency'     => trim($_POST['currency'] ?? 'THB'),
-                'timezone'     => trim($_POST['timezone'] ?? 'Asia/Bangkok'),
+                'configured'        => true,
+                'api_url'           => $creds['apiUrl'],
+                'api_key'           => $creds['apiKey'],
+                'api_secret'        => $creds['apiSecret'],
+                'company_name'      => $companyName,
+                'site_title'        => $siteTitle,
+                'theme_color'       => $themeColor,
+                'currency'          => trim($_POST['currency'] ?? 'THB'),
+                'timezone'          => trim($_POST['timezone'] ?? 'Asia/Bangkok'),
+                'admin_username'    => $adminUser ?: 'admin',
+                'admin_password_hash' => $adminHash,
             ];
 
             $content = "<?php\n/**\n * iACC Template Configuration — Auto-generated\n * Generated: " . date('Y-m-d H:i:s') . "\n */\nreturn " . var_export($newConfig, true) . ";\n";
@@ -294,6 +302,25 @@ $isConfigured = $config['configured'] ?? false;
             </select>
         </div>
 
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+        <div class="step-header" style="margin-bottom:16px;">
+            <div class="step-num" style="width:28px;height:28px;font-size:12px;"><i class="fa-solid fa-lock" style="font-size:11px;"></i></div>
+            <div>
+                <div class="step-title" style="font-size:15px;">Admin Login</div>
+                <div class="step-desc">Set credentials for the admin panel</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Admin Username</label>
+            <input type="text" id="adminUsername" placeholder="admin" value="<?= htmlspecialchars($config['admin_username'] ?? 'admin') ?>">
+            <small>Username to access the admin panel</small>
+        </div>
+        <div class="form-group">
+            <label>Admin Password</label>
+            <input type="password" id="adminPassword" placeholder="Set a password (default: admin123)">
+            <small>Leave blank to keep default password (admin123). <strong>Change this for production!</strong></small>
+        </div>
+
         <button class="btn btn-success btn-block" id="btnSaveConfig" onclick="saveConfig()">
             <i class="fa-solid fa-check"></i> Save & Launch Website
         </button>
@@ -374,6 +401,8 @@ async function saveConfig() {
         site_title: document.getElementById('siteTitle').value,
         theme_color: document.getElementById('themeColor').value,
         currency: document.getElementById('currency').value,
+        admin_username: document.getElementById('adminUsername').value,
+        admin_password: document.getElementById('adminPassword').value,
     });
 
     if (result.success) {

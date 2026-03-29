@@ -922,7 +922,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
             gap: 40px;
         }
         
@@ -1054,7 +1054,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             }
             
             .footer-container {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 1fr 1fr;
             }
         }
         
@@ -1138,6 +1138,7 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
 
         /* Templates Section */
         .templates-section {
+            padding: 100px 20px;
             background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
         }
 
@@ -1887,6 +1888,15 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <li><a href="contact.php?lang=<?= $lang ?>"><?= __('footer_contact') ?></a></li>
                     <li><a href="privacy.php?lang=<?= $lang ?>"><?= __('footer_privacy') ?></a></li>
                     <li><a href="terms.php?lang=<?= $lang ?>"><?= __('footer_terms') ?></a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h4><?= __('footer_developers') ?></h4>
+                <ul>
+                    <li><a href="api-docs.php?lang=<?= $lang ?>"><?= __('footer_api_docs') ?></a></li>
+                    <li><a href="template-demo.php?lang=<?= $lang ?>"><?= __('footer_template_demo') ?></a></li>
+                    <li><a href="template-howto.php?lang=<?= $lang ?>"><?= __('footer_howto') ?></a></li>
                 </ul>
             </div>
         </div>

@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 5.5-dashboard-reports  
+**Version**: 5.7-api-templates  
 **Status**: Production Ready  
 **Last Updated**: March 29, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
@@ -109,12 +109,13 @@ API Client → api.php → ChannelApiController → ChannelService → JSON Resp
                         Idempotency
 ```
 
-### Active Root PHP Files (12)
+### Active Root PHP Files (15)
 
 | Category | Files |
 |----------|-------|
 | **Core** | `index.php`, `login.php`, `api.php` |
 | **Public Pages** | `landing.php`, `about.php`, `contact.php`, `roadmap.php`, `blog.php`, `press.php`, `careers.php` |
+| **Developer Pages** | `api-docs.php`, `template-demo.php`, `template-howto.php` |
 | **Legal** | `privacy.php`, `terms.php` |
 
 > All admin/business pages routed through `index.php` via MVC controllers. Legacy files archived to `legacy/` (95 files).
@@ -171,6 +172,55 @@ Full REST API for external integrations (OTA, PMS, channel managers).
 
 ---
 
+## 🌐 Website Templates
+
+Self-hosted website templates powered by iACC Sales Channel API.
+
+### Tour Company Demo Template
+
+A complete tour booking website that syncs products from iACC and accepts bookings via API.
+
+| File | Purpose |
+|------|---------|
+| `index.php` | Public homepage — product grid, category filter, booking modal |
+| `setup.php` | 3-step setup wizard — API credentials, product sync, site config + admin password |
+| `admin-login.php` | Admin login page — bcrypt authentication, session-based |
+| `admin.php` | Admin panel — 4 tabs: Products, API Settings, Sync, Bookings |
+| `sync.php` | Quick product sync endpoint |
+| `book.php` | Booking handler — creates orders via iACC API |
+| `config.php` | Auto-generated configuration (API keys, admin hash, theme) |
+| `includes/api-client.php` | iACC API client (products, categories, orders, subscription) |
+| `includes/database.php` | SQLite database layer (products, categories, bookings, sync) |
+
+### Admin Panel Features
+
+| Tab | Description |
+|-----|-------------|
+| **Products** | Toggle enable/disable per product, filter by category/status |
+| **API Settings** | Update API URL/Key/Secret, test connection, view plan info |
+| **Sync** | Pull latest products from iACC API, preserves active/inactive states |
+| **Bookings** | View recent bookings with guest details, order status |
+
+### Admin Authentication
+
+| Setting | Value |
+|---------|-------|
+| **Default Username** | `admin` |
+| **Default Password** | `admin123` |
+| **Password Storage** | bcrypt hash in `config.php` |
+| **Session Key** | `template_admin_logged_in` |
+| **Change Password** | Re-run Setup Wizard → Step 3 (Admin Login section) |
+
+### Developer Pages (Public)
+
+| Page | Route | Description |
+|------|-------|-------------|
+| API Documentation | `api-docs.php` | Full REST API reference with examples |
+| Template Setup Demo | `template-demo.php` | 6-step visual walkthrough of setup process |
+| Hosting Guide | `template-howto.php` | cPanel/VPS/Docker installation guide |
+
+---
+
 ## 📂 Project Structure
 
 ```
@@ -215,6 +265,16 @@ iAcc-PHP-MVC/
 │   ├── test-e2e-crud.php         # 42 E2E integration tests
 │   ├── test-api-phase3.php       # 20 Sales Channel API tests
 │   └── test-mvc-comprehensive.php # 126 comprehensive MVC tests
+│
+├── templates/                    # Self-hosted website templates
+│   └── tour-company-demo/        # Tour booking template (API-powered)
+│       ├── admin.php             # Admin panel (4 tabs, auth-protected)
+│       ├── admin-login.php       # Admin login (bcrypt, session)
+│       ├── setup.php             # 3-step setup wizard
+│       ├── index.php             # Public homepage
+│       ├── book.php              # Booking handler
+│       ├── sync.php              # Product sync
+│       └── includes/             # API client, SQLite database
 │
 ├── legacy/                       # Archived pre-MVC files (95 files)
 ├── backups/                      # SQL backup files
@@ -521,6 +581,36 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.7-api-templates (March 29, 2026) — Website Templates & Admin Panel
+
+**Website Templates** — Self-hosted booking websites powered by iACC Sales Channel API:
+
+- **Tour Company Demo**: Full-featured tour booking website with product grid, category filters, booking modal, responsive design
+- **Setup Wizard**: 3-step guided setup — API credentials, product sync, site configuration with admin password
+- **Admin Panel**: 4-tab management interface — Products (toggle on/off), API Settings (update/test), Sync (pull from API), Bookings (view orders)
+- **Admin Authentication**: bcrypt login system with session-based auth, customizable username/password via Setup Wizard
+- **Admin Bar**: Quick-access toolbar on website with Admin Panel, Sync, Settings, Login/Logout links
+- **API Integration**: Full iACC API client for products, categories, orders, and subscription management
+- **Local SQLite Cache**: Products and categories cached locally for fast page loads, synced on demand
+- **Developer Pages**: API Documentation (api-docs.php), Template Setup Demo (template-demo.php), Hosting Guide (template-howto.php)
+- **Landing Page**: Templates section, Developer footer column with links to all developer pages
+
+**Technical Details**:
+- 9 new template files (admin.php, admin-login.php, setup.php, index.php, book.php, sync.php, config.php, api-client.php, database.php)
+- 3 new public pages (api-docs.php, template-demo.php, template-howto.php)
+- API endpoints added: GET /products, GET /categories
+- Admin auth: bcrypt password hash stored in config.php, session guard on admin.php
+- SQLite with is_active column, product toggle, booking tracking, migration support
+
+### v5.6-journal-module (March 29, 2026) — Journal Voucher System
+
+**Journal Module** — Double-entry journal voucher system:
+
+- **Journal Voucher CRUD**: Create, view, list journal entries with auto-generated JV numbers
+- **Double-Entry Bookkeeping**: Debit/credit entry pairs with balance validation
+- **Chart of Accounts**: Integration with existing chart_of_accounts table
+- **Voucher Types**: payment, receipt, journal classification on existing voucher system
 
 ### v5.5-dashboard-reports (March 29, 2026) — Dashboard Charts & Reports Hub
 

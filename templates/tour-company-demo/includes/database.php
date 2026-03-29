@@ -53,6 +53,7 @@ class LocalDatabase
                 brand_id INTEGER,
                 brand_name TEXT,
                 image_url TEXT,
+                is_active INTEGER DEFAULT 1,
                 synced_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (type_id) REFERENCES types(id),
                 FOREIGN KEY (category_id) REFERENCES categories(id)
@@ -149,14 +150,16 @@ class LocalDatabase
 
     /**
      * Get all products, optionally by category
+     * @param bool $activeOnly When true, only returns is_active=1 products
      */
-    public function getProducts(?int $categoryId = null): array
+    public function getProducts(?int $categoryId = null, bool $activeOnly = true): array
     {
+        $where = $activeOnly ? " WHERE is_active = 1" : "";
         if ($categoryId) {
-            $stmt = $this->db->prepare("SELECT * FROM products WHERE category_id = ? ORDER BY name");
+            $stmt = $this->db->prepare("SELECT * FROM products WHERE category_id = ?" . ($activeOnly ? " AND is_active = 1" : "") . " ORDER BY name");
             $stmt->execute([$categoryId]);
         } else {
-            $stmt = $this->db->query("SELECT * FROM products ORDER BY category_name, type_name, name");
+            $stmt = $this->db->query("SELECT * FROM products" . $where . " ORDER BY category_name, type_name, name");
         }
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -225,6 +228,45 @@ class LocalDatabase
     public function getCategoryCount(): int
     {
         return (int) $this->db->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+    }
+
+    /**
+     * Toggle product active/inactive status
+     */
+    public function toggleProduct(int $id, bool $active): bool
+    {
+        $stmt = $this->db->prepare("UPDATE products SET is_active = ? WHERE id = ?");
+        return $stmt->execute([$active ? 1 : 0, $id]);
+    }
+
+    /**
+     * Get recent bookings
+     */
+    public function getBookings(int $limit = 20): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM bookings ORDER BY created_at DESC LIMIT ?");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get booking count
+     */
+    public function getBookingCount(): int
+    {
+        return (int) $this->db->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
+    }
+
+    /**
+     * Ensure is_active column exists (migration for existing databases)
+     */
+    public function migrateAddIsActive(): void
+    {
+        try {
+            $this->db->query("SELECT is_active FROM products LIMIT 1");
+        } catch (\PDOException $e) {
+            $this->db->exec("ALTER TABLE products ADD COLUMN is_active INTEGER DEFAULT 1");
+        }
     }
 
     private function logSync(string $type, int $count, string $status, string $message = ''): void
