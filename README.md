@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 5.7-api-templates  
+**Version**: 5.8-phase2-timestamps  
 **Status**: Production Ready  
 **Last Updated**: March 29, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
@@ -280,8 +280,15 @@ iAcc-PHP-MVC/
 ├── backups/                      # SQL backup files
 ├── logs/                         # Application logs
 │
+├── docs/
+│   └── phase2/                   # Phase 2 DB hardening plans (7 docs)
+│
+├── migrations/
+│   └── phase2_timestamps/         # Timestamp migration & rollback scripts
+│
 ├── .github/
 │   ├── copilot-instructions.md   # AI assistant context
+│   ├── skills/                   # 6 Copilot skill definitions
 │   └── workflows/
 │       ├── deploy-production.yml # 4-job CI/CD pipeline
 │       ├── deploy-staging.yml    # Staging deploy (with Composer)
@@ -558,7 +565,7 @@ $config["dbname"]   = getenv('DB_NAME') ?: "iacc";
 - **Foreign Keys**: 13 constraints on critical tables
 - **Indexes**: 40+ custom indexes for query performance
 - **Soft Delete**: 16 tables with `deleted_at` column
-- **Timestamps**: 11 tables with `created_at` column
+- **Timestamps**: All 59 tables with `created_at` and `updated_at`
 
 ---
 
@@ -581,6 +588,23 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.8-phase2-timestamps (March 29, 2026) — Phase 2 Database Hardening
+
+**Timestamps Migration** — All 59 database tables now have `created_at` and `updated_at` columns:
+
+- **Full Coverage**: Added `created_at` and `updated_at` to all 41 tables that were missing them (16 needed both, 15 needed created_at, 10 needed updated_at)
+- **Backfill**: 5,962 rows backfilled from legacy date columns (deliver.deliver_date, iv.createdate, pay.date, po.date, pr.date, receive.date, receipt.createdate, voucher.createdate)
+- **Idempotent Migration**: Stored procedure `add_column_if_not_exists` with BINARY comparison for cross-collation compatibility (utf8_general_ci ↔ utf8_unicode_ci)
+- **Date Bounds**: Handles MySQL edge cases — `0000-00-00` dates, TIMESTAMP range limits (1970–2038)
+- **Rollback Script**: Full rollback with `DROP COLUMN IF EXISTS` for all added columns
+
+**Infrastructure Cleanup**:
+
+- Moved 7 Phase 2 planning docs from root to `docs/phase2/`
+- Branch cleanup: 25 → 4 branches (main, develop, 2 unmerged feature branches)
+- Added 6 Copilot skill definitions in `.github/skills/`
+- Migration files in `migrations/phase2_timestamps/` (000_add_columns.sql, 010_backfill.sql, rollback/)
 
 ### v5.7-api-templates (March 29, 2026) — Website Templates & Admin Panel
 

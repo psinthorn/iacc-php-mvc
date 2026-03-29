@@ -479,6 +479,25 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                     <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Admin Bar + Login/Logout' : 'Admin bar + login/logout flow' ?></li>
                 </ul>
             </div>
+
+            <!-- Completed Q3 - Phase 2 Database Hardening -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.8 - Phase 2 ปรับปรุงฐานข้อมูล' : 'v5.8 - Phase 2 Database Hardening' ?></h3>
+                <p><?= $lang === 'th' ? 'เพิ่ม Timestamps ครบทุก 59 ตาราง พร้อม Backfill ข้อมูลจากคอลัมน์วันที่เดิม และล้างสาขาที่ไม่ใช้' : 'Added timestamps to all 59 tables with legacy date backfill and infrastructure cleanup.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'created_at + updated_at ครบ 59 ตาราง' : 'created_at + updated_at on all 59 tables' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Backfill 5,962 แถวจากวันที่เดิม' : 'Backfilled 5,962 rows from legacy dates' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Migration แบบ Idempotent' : 'Idempotent migration scripts' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Rollback Script พร้อม' : 'Rollback script included' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ล้างสาขา 25 → 4 สาขา' : 'Branch cleanup 25 → 4 branches' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '6 Copilot Skills' : '6 Copilot skill definitions' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'เอกสาร Phase 2 (7 ไฟล์)' : 'Phase 2 docs (7 planning files)' ?></li>
+                </ul>
+            </div>
             
             <!-- Planned Q4 - Mobile & Integrations -->
             <div class="timeline-item planned">
