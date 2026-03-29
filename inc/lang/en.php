@@ -37,19 +37,28 @@ return [
     'feature_4_desc' => 'Double-entry bookkeeping with voucher classification — receipt, payment, journal, and petty cash.',
     
     'feature_5_title' => 'Payment Gateway',
-    'feature_5_desc' => 'Accept payments via PayPal, Stripe, and custom payment methods with secure real-time processing.',
+    'feature_5_desc' => 'Accept payments via PromptPay QR, PayPal, Stripe, and bank transfer with secure slip review workflow.',
     
     'feature_6_title' => 'Delivery Management',
     'feature_6_desc' => 'Track deliveries linked to purchase orders and invoices with full delivery notes and audit trail.',
     
-    'feature_7_title' => 'Multi-User & Multi-Company',
-    'feature_7_desc' => 'Role-based access control with Super Admin, Admin, and User levels. Manage multiple companies from one dashboard.',
+    'feature_7_title' => 'Expense Tracking',
+    'feature_7_desc' => 'Record daily expenses with categories, VAT/WHT calculation, approval workflow, and monthly summary reports.',
     
-    'feature_8_title' => 'Bilingual Support',
-    'feature_8_desc' => 'Full English and Thai language support for international businesses.',
+    'feature_8_title' => 'Tax & Multi-Currency',
+    'feature_8_desc' => 'Thai tax reports (PP30, WHT), PromptPay QR payments, slip review, and 10 currencies with BOT exchange rates.',
     
-    'feature_9_title' => 'Sales Channel API',
-    'feature_9_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
+    'feature_9_title' => 'Multi-User Access',
+    'feature_9_desc' => 'Role-based access control with Super Admin, Admin, and User permission levels.',
+    
+    'feature_10_title' => 'Multi-Company',
+    'feature_10_desc' => 'Manage multiple companies from a single dashboard with easy switching.',
+    
+    'feature_11_title' => 'Bilingual Support',
+    'feature_11_desc' => 'Full English and Thai language support for international businesses.',
+    
+    'feature_12_title' => 'Sales Channel API',
+    'feature_12_desc' => 'Connect any online sales channel — websites, LINE, Facebook, or email — and sync every order into your accounting automatically.',
     
     // Integration Section
     'nav_integrations' => 'Integrations',

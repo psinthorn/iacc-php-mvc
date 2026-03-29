@@ -1468,29 +1468,54 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
                     <p><?= __('feature_6_desc') ?></p>
                 </div>
                 
-                <!-- Row 3: Platform & Integration -->
+                <!-- Row 3: Expense & Tax -->
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                        <i class="fa fa-calculator"></i>
+                    </div>
+                    <h3><?= __('feature_7_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_7_desc') ?></p>
+                </div>
+                
+                <div class="feature-card featured-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">
+                        <i class="fa fa-percent"></i>
+                    </div>
+                    <h3><?= __('feature_8_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_8_desc') ?></p>
+                </div>
+                
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-users"></i>
                     </div>
-                    <h3><?= __('feature_7_title') ?></h3>
-                    <p><?= __('feature_7_desc') ?></p>
+                    <h3><?= __('feature_9_title') ?></h3>
+                    <p><?= __('feature_9_desc') ?></p>
+                </div>
+                
+                <!-- Row 4: Platform & Integration -->
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fa fa-building"></i>
+                    </div>
+                    <h3><?= __('feature_10_title') ?></h3>
+                    <p><?= __('feature_10_desc') ?></p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fa fa-globe"></i>
                     </div>
-                    <h3><?= __('feature_8_title') ?></h3>
-                    <p><?= __('feature_8_desc') ?></p>
+                    <h3><?= __('feature_11_title') ?></h3>
+                    <p><?= __('feature_11_desc') ?></p>
                 </div>
                 
                 <div class="feature-card featured-card">
                     <div class="feature-icon" style="background: linear-gradient(135deg, #e74c3c, #f39c12);">
                         <i class="fa fa-plug"></i>
                     </div>
-                    <h3><?= __('feature_9_title') ?> <span class="badge-new">NEW</span></h3>
-                    <p><?= __('feature_9_desc') ?></p>
+                    <h3><?= __('feature_12_title') ?> <span class="badge-new">NEW</span></h3>
+                    <p><?= __('feature_12_desc') ?></p>
                     <a href="#integrations" class="feature-link">Learn more →</a>
                 </div>
             </div>
