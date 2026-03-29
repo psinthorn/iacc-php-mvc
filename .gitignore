@@ -58,6 +58,10 @@ Thumbs.db
 *.backup
 *.sql.bak
 *.tar.gz
+backups/*.sql
+backups/*.sql.gz
+backups/*.bak
+backups/v*
 
 # SQL dumps (keep in database/ folder if needed, but don't track)
 *.sql
