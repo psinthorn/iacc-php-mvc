@@ -215,4 +215,21 @@ return [
     'login_feature_2' => 'รองรับ PayPal และ Stripe',
     'login_feature_3' => 'ควบคุมการเข้าถึงหลายผู้ใช้',
     'login_feature_4' => 'รายงานที่ครอบคลุม',
+
+    // Templates Section (Landing Page)
+    'nav_templates' => 'เทมเพลต',
+    'template_section_label' => 'เทมเพลต',
+    'template_title' => 'เทมเพลตเว็บไซต์พร้อมใช้งาน',
+    'template_subtitle' => 'ดาวน์โหลดเทมเพลตฟรีพร้อมการเชื่อมต่อ iACC API ในตัว เปิดตัวเว็บไซต์ธุรกิจของคุณได้ในไม่กี่นาที',
+    'template_tour_title' => 'Tour Company Demo',
+    'template_tour_desc' => 'เว็บไซต์บริษัททัวร์สปีดโบ๊ท พร้อมฟอร์มจอง แพ็กเกจทัวร์ และระบบชำระเงินผ่าน iACC Sales Channel API',
+    'template_tour_tags' => 'ทัวร์, จองทัวร์, ชำระเงิน',
+    'template_btn_preview' => 'ดูตัวอย่าง',
+    'template_btn_download' => 'ดาวน์โหลดฟรี',
+    'template_coming_soon' => 'เทมเพลตเพิ่มเติมเร็วๆ นี้',
+    'template_coming_soon_desc' => 'เทมเพลตร้านอาหาร, โรงแรม, ค้าปลีก และ E-Commerce กำลังพัฒนา',
+    'template_feature_responsive' => 'รองรับทุกหน้าจอ',
+    'template_feature_api' => 'พร้อม iACC API',
+    'template_feature_free' => 'ฟรี 100%',
+    'template_feature_nocode' => 'ไม่ต้อง Build',
 ];
