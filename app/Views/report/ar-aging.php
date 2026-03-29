@@ -18,7 +18,7 @@ function aging_badge($days) {
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .aging-wrapper { max-width: 1400px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+    .aging-wrapper { max-width: 1400px; margin: 0 auto; padding: 0 20px; font-family: 'Inter', sans-serif; }
     .aging-header { padding: 24px 28px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(239, 68, 68, 0.25); color: white; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .aging-header h2 { font-size: 24px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 12px; }
     .aging-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }

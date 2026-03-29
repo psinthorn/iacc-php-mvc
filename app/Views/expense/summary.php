@@ -19,6 +19,7 @@ $displayYear = $isThai ? ($year + 543) : $year;
 
 <style>
 .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+@media (max-width: 768px) { .summary-grid { grid-template-columns: 1fr; } }
 .summary-card { background: white; border-radius: 14px; padding: 24px; border: 1px solid var(--md-border, #e2e8f0); }
 .summary-card h3 { margin: 0 0 16px; font-size: 15px; color: #374151; }
 .cat-bar { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
