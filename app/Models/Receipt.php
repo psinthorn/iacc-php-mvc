@@ -155,11 +155,12 @@ class Receipt extends BaseModel
         $i = 0;
         foreach ($data['type'] as $type) {
             $args = ['table' => 'product'];
-            $args['value'] = "NULL,'$comId','0','" . floatval($data['price'][$i] ?? 0) . "','0','" .
-                intval($data['ban_id'][$i] ?? 0) . "','" . intval($data['model'][$i] ?? 0) . "','" . intval($type) .
-                "','" . floatval($data['quantity'][$i] ?? 1) . "','1','0','" . \sql_escape($data['des'][$i] ?? '') .
-                "','" . intval($data['a_labour'][$i] ?? 0) . "','" . floatval($data['v_labour'][$i] ?? 0) .
-                "','0','" . date("Y-m-d", strtotime($data['warranty'][$i] ?? 'now')) . "','$repId',NULL";
+            $args['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+            $args['value'] = "'$comId', '0', '" . floatval($data['price'][$i] ?? 0) . "', '0', '" .
+                intval($data['ban_id'][$i] ?? 0) . "', '" . intval($data['model'][$i] ?? 0) . "', '" . intval($type) .
+                "', '" . floatval($data['quantity'][$i] ?? 1) . "', '1', '0', '" . \sql_escape($data['des'][$i] ?? '') .
+                "', '" . intval($data['a_labour'][$i] ?? 0) . "', '" . floatval($data['v_labour'][$i] ?? 0) .
+                "', '0', '" . date("Y-m-d", strtotime($data['warranty'][$i] ?? 'now')) . "', '$repId', NULL";
             $this->hard->insertDB($args);
             $i++;
         }

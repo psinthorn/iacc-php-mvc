@@ -35,7 +35,8 @@ class Payment extends BaseModel
     public function createPayment(int $comId, string $name, string $des): void
     {
         $args = ['table' => 'payment'];
-        $args['value'] = "NULL,'" . \sql_escape($name) . "','" . \sql_escape($des) . "','$comId',NULL";
+        $args['columns'] = "payment_name, payment_des, com_id, deleted_at";
+        $args['value'] = "'" . \sql_escape($name) . "','" . \sql_escape($des) . "','$comId',NULL";
         $this->hard->insertDB($args);
     }
 

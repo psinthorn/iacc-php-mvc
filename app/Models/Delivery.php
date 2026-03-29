@@ -145,17 +145,20 @@ class Delivery extends BaseModel
                  AND p.model IN (SELECT model FROM product WHERE pro_id='" . \sql_int($data['pro_id'][$ci]) . "')"));
 
             $argsS = ['table' => 'store'];
+            $argsS['columns'] = "company_id, pro_id, s_n, no";
             $argsS['value'] = "'$comId','" . \sql_int($data['pro_id'][$ci]) . "','$sn','" . (intval($maxno['maxno'] ?? 0) + 1) . "'";
             $stId = $this->hard->insertDbMax($argsS);
 
             $argsSS = ['table' => 'store_sale'];
-            $argsSS['value'] = "NULL,'$stId','" . date("Y-m-d", strtotime($data['exp'][$ci])) . "','0','$comId'";
+            $argsSS['columns'] = "st_id, warranty, sale, own_id";
+            $argsSS['value'] = "'$stId','" . date("Y-m-d", strtotime($data['exp'][$ci])) . "','0','$comId'";
             $this->hard->insertDB($argsSS);
             $ci++;
         }
 
         $argsD = ['table' => 'deliver'];
-        $argsD['value'] = "NULL,'$comId','" . \sql_int($data['po_id']) . "','" .
+        $argsD['columns'] = "company_id, po_id, deliver_date, out_id, deleted_at";
+        $argsD['value'] = "'$comId','" . \sql_int($data['po_id']) . "','" .
             date("Y-m-d", strtotime($data['deliver_date'])) . "','0',NULL";
         $this->hard->insertDB($argsD);
 
@@ -169,7 +172,8 @@ class Delivery extends BaseModel
     public function receiveDelivery(array $data, int $comId): void
     {
         $argsR = ['table' => 'receive'];
-        $argsR['value'] = "NULL,'$comId','" . \sql_int($data['po_id']) . "','" . \sql_int($data['deliv_id']) . "','" . date('Y-m-d') . "'";
+        $argsR['columns'] = "company_id, po_id, deliver_id, date";
+        $argsR['value'] = "'$comId','" . \sql_int($data['po_id']) . "','" . \sql_int($data['deliv_id']) . "','" . date('Y-m-d') . "'";
         $this->hard->insertDB($argsR);
 
         $poId = \sql_int($data['po_id']);
@@ -210,6 +214,7 @@ class Delivery extends BaseModel
         $newId = intval($maxiv['max_id'] ?? 0) + 1;
 
         $argsIV = ['table' => 'iv'];
+        $argsIV['columns'] = "id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date";
         $argsIV['value'] = "'$newId','$comId','$poId','$venId','" .
             date("Y-m-d") . "','" . (date("y") + 43) . str_pad($newId, 6, '0', STR_PAD_LEFT) .
             "','0','0','" . date("Y-m-d") . "','0','0','0',NULL,'pending',NULL,NULL,'0.00',NULL";
@@ -244,7 +249,8 @@ class Delivery extends BaseModel
         foreach ($products as $p) {
             if (intval($p['activelabour']) === 1) continue;
             $argsP = ['table' => 'product'];
-            $argsP['value'] = "NULL, '" . intval($p['company_id'] ?: $comId) . "', '$createdMatId', '" . floatval($p['price']) . "', '" .
+            $argsP['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+            $argsP['value'] = "'" . intval($p['company_id'] ?: $comId) . "', '$createdMatId', '" . floatval($p['price']) . "', '" .
                 floatval($p['discount'] ?? 0) . "', '" . intval($p['ban_id'] ?? 0) . "', '" . intval($p['model'] ?? 0) . "', '" .
                 intval($p['type']) . "', '" . floatval($p['quantity']) . "', '" . floatval($p['pack_quantity'] ?? 1) .
                 "', '0', '" . \sql_escape($p['des'] ?? '') . "', '0', '0', '0', '1970-01-01', '0', NULL";
@@ -256,6 +262,7 @@ class Delivery extends BaseModel
             "SELECT max(id) as max_id FROM iv WHERE cus_id='$venId'"));
         $matIvId = intval($maxiv1['max_id'] ?? 0) + 1;
         $argsIV1 = ['table' => 'iv'];
+        $argsIV1['columns'] = "id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date";
         $argsIV1['value'] = "'$matIvId','$comId','$createdMatId','$venId','" .
             date("Y-m-d") . "','" . (date("y") + 43) . str_pad($matIvId, 6, '0', STR_PAD_LEFT) .
             "','0','0','" . date("Y-m-d") . "','0','0','0',NULL,'pending',NULL,NULL,'0.00',NULL";
@@ -282,7 +289,8 @@ class Delivery extends BaseModel
         foreach ($products as $p) {
             if (intval($p['activelabour']) !== 1) continue;
             $argsP = ['table' => 'product'];
-            $argsP['value'] = "NULL, '" . intval($p['company_id'] ?: $comId) . "', '$createdLabId', '" . floatval($p['price']) . "', '" .
+            $argsP['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+            $argsP['value'] = "'" . intval($p['company_id'] ?: $comId) . "', '$createdLabId', '" . floatval($p['price']) . "', '" .
                 floatval($p['discount'] ?? 0) . "', '" . intval($p['ban_id'] ?? 0) . "', '" . intval($p['model'] ?? 0) . "', '" .
                 intval($p['type']) . "', '" . floatval($p['quantity']) . "', '" . floatval($p['pack_quantity'] ?? 1) .
                 "', '0', '" . \sql_escape($p['des'] ?? '') . "', '" . intval($p['activelabour']) . "', '" .
@@ -295,6 +303,7 @@ class Delivery extends BaseModel
             "SELECT max(id) as max_id FROM iv WHERE cus_id='$venId'"));
         $labIvId = intval($maxiv2['max_id'] ?? 0) + 1;
         $argsIV2 = ['table' => 'iv'];
+        $argsIV2['columns'] = "id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date";
         $argsIV2['value'] = "'$labIvId','$comId','$createdLabId','$venId','" .
             date("Y-m-d") . "','" . (date("y") + 43) . str_pad($labIvId, 6, '0', STR_PAD_LEFT) .
             "','0','0','" . date("Y-m-d") . "','0','0','0',NULL,'pending',NULL,NULL,'0.00',NULL";
@@ -309,7 +318,8 @@ class Delivery extends BaseModel
     public function receiveStandalone(array $data, int $comId): void
     {
         $argsR = ['table' => 'receive'];
-        $argsR['value'] = "NULL,'$comId','ou" . \sql_int($data['po_id']) . "','" . \sql_int($data['deliv_id']) . "','" . date('Y-m-d') . "'";
+        $argsR['columns'] = "company_id, po_id, deliver_id, date";
+        $argsR['value'] = "'$comId','ou" . \sql_int($data['po_id']) . "','" . \sql_int($data['deliv_id']) . "','" . date('Y-m-d') . "'";
         $this->hard->insertDB($argsR);
     }
 
@@ -317,7 +327,8 @@ class Delivery extends BaseModel
     public function createSendout(array $data, int $comId): void
     {
         $argsSO = ['table' => 'sendoutitem'];
-        $argsSO['value'] = "'$comId','" . \sql_int($data['cus_id']) . "','" . \sql_escape($data['des'] ?? '') . "'";
+        $argsSO['columns'] = "company_id, ven_id, cus_id, tmp";
+        $argsSO['value'] = "'$comId', '$comId', '" . \sql_int($data['cus_id']) . "', '" . \sql_escape($data['des'] ?? '') . "'";
         $opId = $this->hard->insertDbMax($argsSO);
 
         if (isset($data['type']) && is_array($data['type'])) {
@@ -327,25 +338,29 @@ class Delivery extends BaseModel
                 $max_pro = intval($m_pro['pro_id'] ?? 0) + 1;
 
                 $argsP = ['table' => 'product'];
-                $argsP['value'] = "'$max_pro','','" . floatval($data['price'][$i] ?? 0) . "','" . floatval($data['discount'][$i] ?? 0) .
-                    "','" . intval($data['ban_id'][$i] ?? 0) . "','" . intval($data['model'][$i] ?? 0) . "','" . intval($type) .
-                    "','" . floatval($data['quantity'][$i] ?? 1) . "','" . floatval($data['pack_quantity'][$i] ?? 1) .
-                    "','$opId','" . \sql_escape($data['des'][$i] ?? '') . "','0','0','0','0000-00-00',''";
+                $argsP['columns'] = "pro_id, company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+                $argsP['value'] = "'$max_pro', '$comId', '0', '" . floatval($data['price'][$i] ?? 0) . "', '" . floatval($data['discount'][$i] ?? 0) .
+                    "', '" . intval($data['ban_id'][$i] ?? 0) . "', '" . intval($data['model'][$i] ?? 0) . "', '" . intval($type) .
+                    "', '" . floatval($data['quantity'][$i] ?? 1) . "', '" . floatval($data['pack_quantity'][$i] ?? 1) .
+                    "', '$opId', '" . \sql_escape($data['des'][$i] ?? '') . "', '0', '0', '0', '1970-01-01', '0', NULL";
                 $this->hard->insertDB($argsP);
 
                 $argsS = ['table' => 'store'];
-                $argsS['value'] = "'$max_pro','" . \sql_escape($data['s_n'][$i] ?? '') . "',''";
+                $argsS['columns'] = "company_id, pro_id, s_n, no";
+                $argsS['value'] = "'$comId', '$max_pro', '" . \sql_escape($data['s_n'][$i] ?? '') . "', '0'";
                 $stId = $this->hard->insertDbMax($argsS);
 
                 $argsSS = ['table' => 'store_sale'];
-                $argsSS['value'] = "'','$stId','" . date("Y-m-d", strtotime($data['warranty'][$i] ?? 'now')) . "','0','$comId'";
+                $argsSS['columns'] = "st_id, warranty, sale, own_id";
+                $argsSS['value'] = "'$stId', '" . date("Y-m-d", strtotime($data['warranty'][$i] ?? 'now')) . "', '0', '$comId'";
                 $this->hard->insertDB($argsSS);
                 $i++;
             }
         }
 
         $argsD = ['table' => 'deliver'];
-        $argsD['value'] = "'','','" . date("Y-m-d", strtotime($data['deliver_date'])) . "','$opId'";
+        $argsD['columns'] = "company_id, po_id, deliver_date, out_id, deleted_at";
+        $argsD['value'] = "'$comId', '0', '" . date("Y-m-d", strtotime($data['deliver_date'])) . "', '$opId', NULL";
         $this->hard->insertDB($argsD);
     }
 
@@ -386,18 +401,21 @@ class Delivery extends BaseModel
                 $max_pro = intval($m_pro['pro_id'] ?? 0) + 1;
 
                 $argsP = ['table' => 'product'];
-                $argsP['value'] = "'$max_pro','','" . floatval($data['price'][$i] ?? 0) . "','" . floatval($data['discount'][$i] ?? 0) .
-                    "','" . intval($data['ban_id'][$i] ?? 0) . "','" . intval($data['model'][$i] ?? 0) . "','" . intval($type) .
-                    "','" . floatval($data['quantity'][$i] ?? 1) . "','" . floatval($data['pack_quantity'][$i] ?? 1) .
-                    "','$outId','" . \sql_escape($data['des'][$i] ?? '') . "','0','0000-00-00',''";
+                $argsP['columns'] = "pro_id, company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+                $argsP['value'] = "'$max_pro', '$comId', '0', '" . floatval($data['price'][$i] ?? 0) . "', '" . floatval($data['discount'][$i] ?? 0) .
+                    "', '" . intval($data['ban_id'][$i] ?? 0) . "', '" . intval($data['model'][$i] ?? 0) . "', '" . intval($type) .
+                    "', '" . floatval($data['quantity'][$i] ?? 1) . "', '" . floatval($data['pack_quantity'][$i] ?? 1) .
+                    "', '$outId', '" . \sql_escape($data['des'][$i] ?? '') . "', '0', '0', '0', '1970-01-01', '0', NULL";
                 $this->hard->insertDB($argsP);
 
                 $argsS = ['table' => 'store'];
-                $argsS['value'] = "'$max_pro','" . \sql_escape($data['s_n'][$i] ?? '') . "'";
+                $argsS['columns'] = "company_id, pro_id, s_n, no";
+                $argsS['value'] = "'$comId', '$max_pro', '" . \sql_escape($data['s_n'][$i] ?? '') . "', '0'";
                 $stId = $this->hard->insertDbMax($argsS);
 
                 $argsSS = ['table' => 'store_sale'];
-                $argsSS['value'] = "'','$stId','" . date("Y-m-d", strtotime($data['exp'][$i] ?? 'now')) . "','0','$comId'";
+                $argsSS['columns'] = "st_id, warranty, sale, own_id";
+                $argsSS['value'] = "'$stId', '" . date("Y-m-d", strtotime($data['exp'][$i] ?? 'now')) . "', '0', '$comId'";
                 $this->hard->insertDB($argsSS);
                 $i++;
             }

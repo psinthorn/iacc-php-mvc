@@ -164,7 +164,8 @@ class Invoice extends BaseModel
     {
         $args = [];
         $args['table'] = 'pay';
-        $args['value'] = "NULL,'$comId','" . \sql_int($poId) . "','" . \sql_escape($paymentMethodId) . "','" . \sql_escape($remark) . "','" . \sql_escape($amount) . "','" . date("Y-m-d") . "',NULL";
+        $args['columns'] = "company_id, po_id, method, value, volumn, date, deleted_at";
+        $args['value'] = "'$comId','" . \sql_int($poId) . "','" . \sql_escape($paymentMethodId) . "','" . \sql_escape($remark) . "','" . \sql_escape($amount) . "','" . date("Y-m-d") . "',NULL";
         $this->hard->insertDB($args);
     }
 
