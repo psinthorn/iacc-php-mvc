@@ -1,6 +1,6 @@
 # iACC Database Schema
 Database: iacc
-Discovered: 2026-01-05 10:01:21
+Discovered: 2026-03-30 00:40:41
 
 ## Other
 
@@ -12,8 +12,124 @@ Discovered: 2026-01-05 10:01:21
 | executed_at | timestamp | - | NO |
 | status | enum('success','failed','rolled_back') | - | YES |
 | notes | text | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `audit_logs` (37 rows)
+### `api_invoices` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | bigint(20) | PRI | NO |
+| company_id | int(11) | MUL | NO |
+| subscription_id | int(11) | - | NO |
+| invoice_number | varchar(50) | UNI | NO |
+| plan | enum('trial','starter','professional','enterprise') | - | NO |
+| period_start | date | - | NO |
+| period_end | date | MUL | NO |
+| orders_limit | int(11) | - | NO |
+| orders_used | int(11) | - | NO |
+| overage_orders | int(11) | - | NO |
+| base_amount | decimal(12,2) | - | NO |
+| overage_amount | decimal(12,2) | - | NO |
+| total_amount | decimal(12,2) | - | NO |
+| currency | varchar(10) | - | NO |
+| status | enum('issued','paid','overdue','cancelled') | MUL | NO |
+| issued_at | datetime | - | YES |
+| due_at | datetime | - | YES |
+| paid_at | datetime | - | YES |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+### `api_keys` (2 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| company_id | int(11) | MUL | NO |
+| subscription_id | int(11) | MUL | NO |
+| key_name | varchar(100) | - | NO |
+| api_key | varchar(64) | UNI | NO |
+| api_secret | varchar(64) | - | NO |
+| previous_key | varchar(64) | - | YES |
+| previous_secret | varchar(64) | - | YES |
+| grace_expires_at | datetime | - | YES |
+| is_active | tinyint(1) | - | NO |
+| last_used_at | datetime | - | YES |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+**Relationships:**
+- `company_id` → `company.id`
+- `subscription_id` → `api_subscriptions.id`
+
+### `api_subscriptions` (2 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| company_id | int(11) | UNI | NO |
+| plan | enum('trial','starter','professional','enterprise') | MUL | NO |
+| status | enum('active','expired','cancelled','suspended') | MUL | NO |
+| orders_limit | int(11) | - | NO |
+| keys_limit | int(11) | - | NO |
+| channels | varchar(255) | - | NO |
+| ai_providers | varchar(255) | - | NO |
+| trial_start | date | - | YES |
+| trial_end | date | - | YES |
+| started_at | datetime | - | YES |
+| expires_at | datetime | - | YES |
+| enabled | tinyint(1) | - | NO |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+**Relationships:**
+- `company_id` → `company.id`
+
+### `api_usage_logs` (91 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | bigint(20) | PRI | NO |
+| company_id | int(11) | MUL | YES |
+| api_key_id | int(11) | MUL | YES |
+| endpoint | varchar(100) | - | NO |
+| channel | varchar(20) | MUL | YES |
+| status_code | int(3) | - | NO |
+| request_ip | varchar(45) | - | YES |
+| request_body | text | - | YES |
+| response_body | text | - | YES |
+| processing_ms | int(11) | - | YES |
+| created_at | datetime | - | NO |
+| updated_at | timestamp | - | NO |
+
+### `api_webhook_deliveries` (130 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | bigint(20) | PRI | NO |
+| webhook_id | int(11) | MUL | NO |
+| event | varchar(50) | - | NO |
+| payload | text | - | NO |
+| response_code | int(3) | - | YES |
+| response_body | text | - | YES |
+| duration_ms | int(11) | - | YES |
+| success | tinyint(1) | - | NO |
+| error | text | - | YES |
+| created_at | datetime | MUL | NO |
+| updated_at | timestamp | - | NO |
+
+### `api_webhooks` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| company_id | int(11) | MUL | NO |
+| url | varchar(500) | - | NO |
+| secret | varchar(64) | - | NO |
+| events | varchar(255) | - | NO |
+| is_active | tinyint(1) | MUL | NO |
+| failure_count | int(11) | - | NO |
+| last_triggered | datetime | - | YES |
+| last_status | int(3) | - | YES |
+| last_error | text | - | YES |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+### `audit_logs` (91 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -26,8 +142,9 @@ Discovered: 2026-01-05 10:01:21
 | ip_address | varchar(45) | - | YES |
 | user_agent | varchar(255) | - | YES |
 | created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `authorize` (7 rows)
+### `authorize` (10 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -41,16 +158,83 @@ Discovered: 2026-01-05 10:01:21
 | password_migrated | tinyint(1) | - | YES |
 | locked_until | datetime | - | YES |
 | failed_attempts | int(11) | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `billing` (0 rows)
+### `billing` (3 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | bil_id | int(11) | PRI | NO |
-| des | mediumtext | - | NO |
+| des | mediumtext | - | YES |
 | inv_id | int(11) | - | NO |
-| price | varchar(10) | - | NO |
+| customer_id | int(11) | - | YES |
+| price | decimal(15,2) | - | YES |
+| created_at | datetime | - | YES |
+| updated_at | timestamp | - | NO |
 
-### `company_addr` (343 rows)
+### `billing_items` (7 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| bil_id | int(11) | MUL | NO |
+| inv_id | int(11) | MUL | NO |
+| amount | decimal(15,2) | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
+
+### `channel_orders` (16 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | bigint(20) | PRI | NO |
+| company_id | int(11) | MUL | NO |
+| api_key_id | int(11) | - | YES |
+| channel | varchar(20) | MUL | NO |
+| status | enum('pending','processing','completed','failed','cancelled') | - | NO |
+| guest_name | varchar(255) | - | NO |
+| guest_email | varchar(255) | - | YES |
+| guest_phone | varchar(50) | - | YES |
+| check_in | date | MUL | YES |
+| check_out | date | - | YES |
+| room_type | varchar(100) | - | YES |
+| guests | int(11) | - | YES |
+| total_amount | decimal(12,2) | - | YES |
+| currency | varchar(3) | - | NO |
+| notes | text | - | YES |
+| raw_data | json | - | YES |
+| idempotency_key | varchar(64) | - | YES |
+| linked_company_id | int(11) | - | YES |
+| linked_pr_id | int(11) | - | YES |
+| linked_po_id | int(11) | - | YES |
+| ai_parsed | tinyint(1) | - | NO |
+| ai_provider | varchar(20) | - | YES |
+| ai_confidence | decimal(5,2) | - | YES |
+| error_message | text | - | YES |
+| processed_at | datetime | - | YES |
+| created_at | datetime | MUL | NO |
+| updated_at | datetime | - | NO |
+
+**Relationships:**
+- `company_id` → `company.id`
+
+### `chart_of_accounts` (84 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| com_id | int(11) | MUL | NO |
+| account_code | varchar(20) | MUL | NO |
+| account_name | varchar(150) | - | NO |
+| account_name_th | varchar(150) | - | YES |
+| account_type | enum('asset','liability','equity','revenue','expense') | MUL | NO |
+| parent_id | int(11) | MUL | YES |
+| level | tinyint(1) | - | NO |
+| is_active | tinyint(1) | - | NO |
+| description | varchar(255) | - | YES |
+| normal_balance | enum('debit','credit') | - | NO |
+| created_at | datetime | - | YES |
+| updated_at | datetime | - | YES |
+| deleted_at | datetime | - | YES |
+
+### `company_addr` (353 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -68,6 +252,8 @@ Discovered: 2026-01-05 10:01:21
 | valid_start | date | - | NO |
 | valid_end | date | - | NO |
 | deleted_at | datetime | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 ### `company_credit` (0 rows)
 | Column | Type | Key | Nullable |
@@ -80,13 +266,149 @@ Discovered: 2026-01-05 10:01:21
 | valid_start | date | - | NO |
 | valid_end | date | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
+
+### `currencies` (10 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| code | varchar(3) | UNI | NO |
+| name | varchar(100) | - | NO |
+| name_th | varchar(100) | - | YES |
+| symbol | varchar(10) | - | NO |
+| decimal_places | tinyint(1) | - | NO |
+| symbol_position | enum('before','after') | - | NO |
+| is_active | tinyint(1) | - | NO |
+| sort_order | int(11) | - | NO |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+### `exchange_rates` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| from_currency | varchar(3) | MUL | NO |
+| to_currency | varchar(3) | - | NO |
+| rate | decimal(16,6) | - | NO |
+| rate_date | date | MUL | NO |
+| source | varchar(50) | - | NO |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+### `expense_categories` (10 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| com_id | int(11) | MUL | NO |
+| name | varchar(100) | - | NO |
+| name_th | varchar(100) | - | YES |
+| code | varchar(20) | - | YES |
+| icon | varchar(50) | - | YES |
+| color | varchar(7) | - | YES |
+| description | text | - | YES |
+| is_active | tinyint(1) | MUL | NO |
+| sort_order | int(11) | - | NO |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+| deleted_at | datetime | - | YES |
+
+### `expenses` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| com_id | int(11) | MUL | NO |
+| expense_number | varchar(30) | UNI | YES |
+| category_id | int(11) | MUL | YES |
+| title | varchar(255) | - | NO |
+| description | text | - | YES |
+| amount | decimal(15,2) | - | NO |
+| vat_rate | decimal(5,2) | - | YES |
+| vat_amount | decimal(15,2) | - | YES |
+| wht_rate | decimal(5,2) | - | YES |
+| wht_amount | decimal(15,2) | - | YES |
+| net_amount | decimal(15,2) | - | NO |
+| currency_code | varchar(3) | - | YES |
+| exchange_rate | decimal(16,6) | - | YES |
+| expense_date | date | MUL | NO |
+| due_date | date | - | YES |
+| paid_date | date | - | YES |
+| payment_method | varchar(50) | - | YES |
+| reference_no | varchar(100) | - | YES |
+| vendor_name | varchar(255) | MUL | YES |
+| vendor_tax_id | varchar(20) | - | YES |
+| po_id | int(11) | MUL | YES |
+| pr_id | int(11) | MUL | YES |
+| project_name | varchar(255) | MUL | YES |
+| receipt_file | varchar(255) | - | YES |
+| status | enum('draft','pending','approved','paid','rejected','cancelled') | MUL | NO |
+| approved_by | int(11) | - | YES |
+| approved_at | datetime | - | YES |
+| created_by | int(11) | - | YES |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+| deleted_at | datetime | - | YES |
+
+**Relationships:**
+- `category_id` → `expense_categories.id`
 
 ### `gen_serial` (0 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `login_attempts` (48 rows)
+### `journal_entries` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| journal_voucher_id | int(11) | MUL | NO |
+| account_id | int(11) | MUL | NO |
+| description | varchar(255) | - | YES |
+| debit | decimal(15,2) | - | NO |
+| credit | decimal(15,2) | - | NO |
+| sort_order | int(11) | - | NO |
+| created_at | datetime | - | YES |
+| updated_at | timestamp | - | NO |
+
+**Relationships:**
+- `account_id` → `chart_of_accounts.id`
+- `journal_voucher_id` → `journal_vouchers.id`
+
+### `journal_vouchers` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| com_id | int(11) | MUL | NO |
+| jv_number | varchar(20) | MUL | NO |
+| voucher_type | enum('general','payment','receipt','adjustment','opening','closing') | MUL | NO |
+| transaction_date | date | MUL | NO |
+| description | text | - | YES |
+| reference | varchar(100) | - | YES |
+| reference_type | enum('po','invoice','receipt','voucher','expense','other') | MUL | YES |
+| reference_id | int(11) | - | YES |
+| total_debit | decimal(15,2) | - | NO |
+| total_credit | decimal(15,2) | - | NO |
+| status | enum('draft','posted','cancelled') | MUL | NO |
+| posted_at | datetime | - | YES |
+| posted_by | int(11) | - | YES |
+| cancelled_at | datetime | - | YES |
+| cancelled_by | int(11) | - | YES |
+| cancel_reason | varchar(255) | - | YES |
+| created_by | int(11) | - | YES |
+| created_at | datetime | - | YES |
+| updated_at | datetime | - | YES |
+| deleted_at | datetime | - | YES |
+
+### `keep_log` (85 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| log_data | text | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
+
+### `login_attempts` (87 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -94,20 +416,24 @@ Discovered: 2026-01-05 10:01:21
 | username | varchar(50) | MUL | YES |
 | attempted_at | datetime | - | YES |
 | successful | tinyint(1) | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `map_type_to_brand` (265 rows)
+### `map_type_to_brand` (277 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
 | company_id | int(11) | MUL | YES |
 | type_id | int(11) | MUL | NO |
 | brand_id | int(11) | MUL | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `brand_id` → `brand.id`
 - `type_id` → `type.id`
 
-### `model` (359 rows)
+### `model` (390 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -118,6 +444,8 @@ Discovered: 2026-01-05 10:01:21
 | des | mediumtext | - | NO |
 | price | double | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `brand_id` → `brand.id`
@@ -132,8 +460,9 @@ Discovered: 2026-01-05 10:01:21
 | created_at | datetime | - | YES |
 | expires_at | datetime | MUL | NO |
 | used | tinyint(1) | - | YES |
+| updated_at | timestamp | - | NO |
 
-### `payment` (5 rows)
+### `payment` (9 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -141,8 +470,10 @@ Discovered: 2026-01-05 10:01:21
 | payment_des | varchar(100) | - | NO |
 | com_id | int(11) | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `payment_gateway_config` (11 rows)
+### `payment_gateway_config` (14 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -166,13 +497,15 @@ Discovered: 2026-01-05 10:01:21
 | reference_id | varchar(100) | MUL | YES |
 | amount | decimal(12,2) | - | NO |
 | currency | varchar(3) | - | YES |
+| exchange_rate | decimal(16,6) | - | YES |
 | status | varchar(50) | MUL | YES |
 | request_data | text | - | YES |
 | response_data | text | - | YES |
 | created_at | datetime | - | YES |
 | updated_at | datetime | - | YES |
+| slip_image | varchar(255) | - | YES |
 
-### `payment_methods` (1 rows)
+### `payment_methods` (171 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -194,23 +527,26 @@ Discovered: 2026-01-05 10:01:21
 **Relationships:**
 - `com_id` → `company.id`
 
-### `permissions` (7 rows)
+### `permissions` (8 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
 | key | varchar(255) | UNI | NO |
 | name | varchar(255) | - | NO |
 | description | text | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `receipt` (5 rows)
+### `receipt` (7 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
-| id | int(11) | - | NO |
+| id | int(11) | PRI | NO |
 | company_id | int(11) | MUL | YES |
 | name | varchar(50) | - | NO |
 | phone | varchar(50) | - | NO |
 | email | varchar(50) | - | NO |
 | createdate | date | - | NO |
+| created_at | timestamp | - | NO |
 | updated_at | datetime | - | YES |
 | description | mediumtext | - | NO |
 | payment_method | varchar(50) | - | YES |
@@ -243,19 +579,22 @@ Discovered: 2026-01-05 10:01:21
 | token_hash | varchar(64) | MUL | NO |
 | expires_at | datetime | MUL | NO |
 | created_at | datetime | - | YES |
+| updated_at | timestamp | - | NO |
 
-### `role_permissions` (7 rows)
+### `role_permissions` (29 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
 | role_id | int(11) | MUL | NO |
 | permission_id | int(11) | MUL | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `permission_id` → `permissions.id`
 - `role_id` → `roles.id`
 
-### `roles` (5 rows)
+### `roles` (6 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -272,8 +611,10 @@ Discovered: 2026-01-05 10:01:21
 | ven_id | int(11) | - | NO |
 | cus_id | int(11) | - | NO |
 | tmp | varchar(100) | - | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `store` (1773 rows)
+### `store` (1820 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -281,8 +622,10 @@ Discovered: 2026-01-05 10:01:21
 | pro_id | int(11) | - | NO |
 | s_n | mediumtext | - | NO |
 | no | int(11) | - | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `store_sale` (1792 rows)
+### `store_sale` (1837 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -290,8 +633,29 @@ Discovered: 2026-01-05 10:01:21
 | warranty | date | - | NO |
 | sale | varchar(2) | - | NO |
 | own_id | int(11) | - | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `tmp_product` (2221 rows)
+### `tax_reports` (0 rows)
+| Column | Type | Key | Nullable |
+|--------|------|-----|----------|
+| id | int(11) | PRI | NO |
+| com_id | int(11) | MUL | NO |
+| report_type | enum('PP30','PND3','PND53') | - | NO |
+| tax_year | int(4) | MUL | NO |
+| tax_month | int(2) | - | NO |
+| output_vat | decimal(15,2) | - | NO |
+| input_vat | decimal(15,2) | - | NO |
+| net_vat | decimal(15,2) | - | NO |
+| total_wht | decimal(15,2) | - | NO |
+| report_data | json | - | YES |
+| status | enum('draft','submitted','filed') | - | NO |
+| notes | text | - | YES |
+| created_by | int(11) | - | YES |
+| created_at | datetime | - | NO |
+| updated_at | datetime | - | NO |
+
+### `tmp_product` (2308 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -299,6 +663,8 @@ Discovered: 2026-01-05 10:01:21
 | type | int(11) | - | NO |
 | quantity | int(11) | - | NO |
 | price | varchar(10) | - | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 ### `user` (4 rows)
 | Column | Type | Key | Nullable |
@@ -311,13 +677,17 @@ Discovered: 2026-01-05 10:01:21
 | phone | varchar(30) | - | NO |
 | fax | varchar(30) | - | NO |
 | mobile | varchar(30) | - | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `user_roles` (4 rows)
+### `user_roles` (10 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
 | user_id | int(11) | MUL | NO |
 | role_id | int(11) | MUL | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `role_id` → `roles.id`
@@ -342,10 +712,12 @@ Discovered: 2026-01-05 10:01:21
 | vat | int(11) | - | NO |
 | discount | int(11) | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 ## AI System
 
-### `ai_action_log` (8 rows)
+### `ai_action_log` (69 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -365,8 +737,9 @@ Discovered: 2026-01-05 10:01:21
 | created_at | timestamp | MUL | NO |
 | confirmed_at | timestamp | - | YES |
 | executed_at | timestamp | - | YES |
+| updated_at | timestamp | - | NO |
 
-### `ai_conversations` (42 rows)
+### `ai_conversations` (61 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -380,8 +753,9 @@ Discovered: 2026-01-05 10:01:21
 | tokens_used | int(11) | - | YES |
 | model | varchar(50) | - | YES |
 | created_at | timestamp | MUL | NO |
+| updated_at | timestamp | - | NO |
 
-### `ai_sessions` (21 rows)
+### `ai_sessions` (25 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -393,10 +767,11 @@ Discovered: 2026-01-05 10:01:21
 | last_activity | timestamp | MUL | NO |
 | created_at | timestamp | - | NO |
 | closed_at | timestamp | - | YES |
+| updated_at | timestamp | - | NO |
 
 ## Master Data
 
-### `brand` (67 rows)
+### `brand` (70 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -406,11 +781,13 @@ Discovered: 2026-01-05 10:01:21
 | logo | varchar(100) | - | NO |
 | ven_id | int(11) | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `company_id` → `company.id`
 
-### `category` (41 rows)
+### `category` (56 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -418,11 +795,13 @@ Discovered: 2026-01-05 10:01:21
 | cat_name | varchar(30) | - | NO |
 | des | mediumtext | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `company_id` → `company.id`
 
-### `payment_method` (6 rows)
+### `payment_method` (7 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -438,7 +817,7 @@ Discovered: 2026-01-05 10:01:21
 | created_at | timestamp | - | NO |
 | updated_at | timestamp | - | NO |
 
-### `type` (390 rows)
+### `type` (413 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -447,6 +826,8 @@ Discovered: 2026-01-05 10:01:21
 | des | mediumtext | - | NO |
 | cat_id | int(11) | MUL | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 **Relationships:**
 - `cat_id` → `category.id`
@@ -454,7 +835,7 @@ Discovered: 2026-01-05 10:01:21
 
 ## Companies & Contacts
 
-### `company` (155 rows)
+### `company` (172 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -463,6 +844,7 @@ Discovered: 2026-01-05 10:01:21
 | name_sh | varchar(30) | - | NO |
 | contact | varchar(50) | - | NO |
 | email | varchar(50) | - | NO |
+| default_currency | varchar(3) | - | NO |
 | phone | varchar(100) | - | NO |
 | fax | varchar(100) | - | NO |
 | tax | varchar(20) | - | NO |
@@ -472,10 +854,12 @@ Discovered: 2026-01-05 10:01:21
 | term | mediumtext | - | NO |
 | deleted_at | datetime | MUL | YES |
 | company_id | int(11) | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
 ## Core Business
 
-### `deliver` (747 rows)
+### `deliver` (769 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -484,8 +868,10 @@ Discovered: 2026-01-05 10:01:21
 | deliver_date | date | - | NO |
 | out_id | int(11) | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `iv` (702 rows)
+### `iv` (723 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | - | NO |
@@ -506,8 +892,12 @@ Discovered: 2026-01-05 10:01:21
 | payment_order_id | varchar(100) | - | YES |
 | paid_amount | decimal(12,2) | - | YES |
 | paid_date | datetime | - | YES |
+| currency_code | varchar(3) | - | YES |
+| exchange_rate | decimal(16,6) | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `pay` (494 rows)
+### `pay` (512 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
@@ -518,32 +908,40 @@ Discovered: 2026-01-05 10:01:21
 | volumn | double | - | NO |
 | date | date | MUL | NO |
 | deleted_at | datetime | MUL | YES |
+| wht_rate | decimal(5,2) | - | YES |
+| wht_amount | decimal(15,2) | - | YES |
+| wht_type | enum('PND3','PND53') | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `po` (1903 rows)
+### `po` (2051 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
 | company_id | int(11) | MUL | YES |
 | po_id_new | varchar(11) | - | YES |
-| name | varchar(30) | - | NO |
+| name | varchar(255) | - | NO |
 | ref | int(11) | MUL | NO |
 | tax | varchar(15) | - | NO |
 | date | date | MUL | NO |
 | valid_pay | date | - | NO |
 | deliver_date | date | - | NO |
 | pic | varchar(50) | - | NO |
+| po_ref | varchar(100) | - | YES |
 | dis | float | - | NO |
 | bandven | int(11) | - | NO |
 | vat | double | - | NO |
 | over | int(11) | - | NO |
 | deleted_at | datetime | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `pr` (1036 rows)
+### `pr` (1146 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | id | int(11) | PRI | NO |
 | company_id | int(11) | MUL | YES |
-| name | varchar(30) | - | NO |
+| name | varchar(255) | - | NO |
 | des | mediumtext | - | NO |
 | usr_id | int(11) | - | NO |
 | cus_id | int(11) | MUL | NO |
@@ -554,8 +952,10 @@ Discovered: 2026-01-05 10:01:21
 | mailcount | int(11) | - | NO |
 | payby | int(11) | - | NO |
 | deleted_at | datetime | MUL | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `product` (5920 rows)
+### `product` (6152 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | pro_id | int(11) | PRI | NO |
@@ -576,8 +976,10 @@ Discovered: 2026-01-05 10:01:21
 | vo_warranty | date | - | NO |
 | re_id | int(11) | - | NO |
 | deleted_at | datetime | - | YES |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
-### `receive` (716 rows)
+### `receive` (738 rows)
 | Column | Type | Key | Nullable |
 |--------|------|-----|----------|
 | rec_id | int(11) | PRI | NO |
@@ -585,4 +987,6 @@ Discovered: 2026-01-05 10:01:21
 | po_id | int(11) | - | NO |
 | deliver_id | int(11) | - | NO |
 | date | date | - | NO |
+| created_at | timestamp | - | NO |
+| updated_at | timestamp | - | NO |
 
