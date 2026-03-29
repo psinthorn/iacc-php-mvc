@@ -18,8 +18,8 @@ BEGIN
     SELECT COUNT(*) INTO col_count
     FROM INFORMATION_SCHEMA.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = p_table
-      AND COLUMN_NAME = p_column;
+      AND BINARY TABLE_NAME = BINARY p_table
+      AND BINARY COLUMN_NAME = BINARY p_column;
     IF col_count = 0 THEN
         SET @sql = CONCAT('ALTER TABLE `', p_table, '` ADD COLUMN `', p_column, '` ', p_definition);
         PREPARE stmt FROM @sql;
