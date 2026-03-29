@@ -62,6 +62,13 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
 .empty-state i { font-size:48px; margin-bottom:16px; color:#d1d5db; }
 .progress { height:6px; border-radius:3px; background:#e5e7eb; margin-top:6px; }
 .progress-bar { border-radius:3px; }
+.pagination-footer { display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.pagination-footer .pagination-info { font-size:13px; color:#6b7280; font-weight:500; white-space:nowrap; }
+.pagination-footer .per-page-inline { display:flex; align-items:center; gap:6px; font-size:13px; color:#6b7280; font-weight:500; white-space:nowrap; }
+.pagination-footer .per-page-inline select { border:1px solid #e5e7eb; border-radius:8px; padding:4px 8px; font-size:13px; background:white; cursor:pointer; }
+.pagination-footer .per-page-inline select:focus { border-color:#0ea5e9; outline:none; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
+.pagination-footer .pagination { margin:0; }
+@media(max-width:768px) { .pagination-footer { flex-direction:column; gap:8px; } }
 </style>
 <link rel="stylesheet" href="css/master-data.css">
 
@@ -146,7 +153,33 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
 <?php endif; ?>
             </tbody>
         </table>
-        <?= render_pagination($pagination, '?page=invoice_payments', $queryParams) ?>
     </div>
 </div>
+
+<?php if(!empty($pagination) && $pagination['total_pages'] > 0): ?>
+<div class="pagination-footer">
+    <div class="pagination-info">Showing <?=$pagination['start_record']?>-<?=$pagination['end_record']?> of <?=$pagination['total_records']?> records</div>
+    <?php if($pagination['total_pages'] > 1): ?>
+    <?= render_pagination($pagination, '?page=invoice_payments', $queryParams) ?>
+    <?php endif; ?>
+    <div class="per-page-inline">
+        <span>Show</span>
+        <select onchange="changePerPage(this.value)">
+            <?php foreach([10, 20, 50, 100] as $opt): ?>
+            <option value="<?=$opt?>" <?=($pagination['per_page'] ?? 20)==$opt?'selected':''?>><?=$opt?></option>
+            <?php endforeach; ?>
+        </select>
+        <span>per page</span>
+    </div>
 </div>
+<?php endif; ?>
+</div>
+
+<script>
+function changePerPage(val) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('per_page', val);
+    url.searchParams.delete('pg');
+    window.location.href = url.toString();
+}
+</script>

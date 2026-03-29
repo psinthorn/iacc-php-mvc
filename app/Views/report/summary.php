@@ -29,6 +29,7 @@ function sortLink2($col, $label, $curSort, $curDir, $base) {
 .page-header-rep .btn-export { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3); color:#fff; padding:10px 16px; border-radius:10px; text-decoration:none; font-weight:500; display:flex; align-items:center; gap:8px; transition:all .2s; }
 .page-header-rep .btn-export:hover { background:rgba(255,255,255,.3); color:#fff; }
 .filter-card { background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,.08); margin-bottom:24px; border:1px solid #e5e7eb; overflow:hidden; }
+.filter-card .filter-header { background:linear-gradient(135deg,#f8fafc,#f1f5f9); padding:16px 20px; border-bottom:1px solid #e5e7eb; font-weight:600; color:#374151; display:flex; align-items:center; gap:10px; }
 .filter-card .filter-body { padding:20px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
 .period-tabs { display:flex; gap:8px; }
 .period-tabs .btn { border-radius:20px; padding:8px 16px; font-size:13px; font-weight:500; border:1px solid #e5e7eb; background:#fff; color:#374151; }
@@ -71,6 +72,7 @@ function sortLink2($col, $label, $curSort, $curDir, $base) {
 </div>
 
 <div class="filter-card">
+    <div class="filter-header"><i class="fa fa-filter"></i> <?=$xml->filter ?? 'Filter'?></div>
     <div class="filter-body">
         <div class="period-tabs">
             <?php foreach (['today'=>'Today','week'=>'7 Days','month'=>'30 Days','year'=>'This Year','all'=>'All Time'] as $k=>$v): ?>

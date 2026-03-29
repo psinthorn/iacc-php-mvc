@@ -6,9 +6,9 @@
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .reports-wrapper { padding: 20px; max-width: 1200px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-    .reports-header { padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25); color: white; margin-bottom: 30px; }
-    .reports-header h2 { font-size: 28px; font-weight: 700; margin: 0; }
+    .reports-wrapper { max-width: 1400px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+    .reports-header { padding: 24px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25); color: white; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .reports-header h2 { font-size: 24px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 12px; }
     .reports-header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0; }
     .report-section { margin-bottom: 30px; }
     .report-section h4 { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; }

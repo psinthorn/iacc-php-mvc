@@ -56,7 +56,8 @@ class ReportController extends BaseController
 
         $comId   = $this->getCompanyId();
         $page    = max(1, $this->inputInt('pg', 1));
-        $perPage = 20;
+        $perPage = $this->inputInt('per_page', 20);
+        if (!in_array($perPage, [10, 20, 50, 100])) $perPage = 20;
         $status  = $this->input('status', '');
         $search  = trim($this->input('search', ''));
 
