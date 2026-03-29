@@ -8,7 +8,7 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-.payments-container { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; max-width:1400px; margin:0 auto; }
+.payments-container { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; max-width:1400px; margin:0 auto; padding:0 20px; }
 .page-header-pay { background:linear-gradient(135deg,#0ea5e9,#0284c7); color:#fff; padding:24px 28px; border-radius:16px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(14,165,233,.3); }
 .page-header-pay h2 { margin:0; font-size:24px; font-weight:700; display:flex; align-items:center; gap:12px; }
 .page-header-pay .header-actions { display:flex; gap:10px; }
@@ -68,7 +68,9 @@ $outstanding = ($summary['total_amount'] ?? 0) - ($summary['total_paid'] ?? 0);
 .pagination-footer .per-page-inline select { border:1px solid #e5e7eb; border-radius:8px; padding:4px 8px; font-size:13px; background:white; cursor:pointer; }
 .pagination-footer .per-page-inline select:focus { border-color:#0ea5e9; outline:none; box-shadow:0 0 0 2px rgba(14,165,233,.15); }
 .pagination-footer .pagination { margin:0; }
-@media(max-width:768px) { .pagination-footer { flex-direction:column; gap:8px; } }
+.pagination-footer .pagination-wrapper { margin:0; text-align:center; }
+.pagination-footer .pagination-wrapper .pagination-info { display:none; }
+@media(max-width:768px) { .pagination-footer { flex-direction:column; gap:8px; } .payments-container { padding:0 12px; } }
 </style>
 <link rel="stylesheet" href="css/master-data.css">
 
