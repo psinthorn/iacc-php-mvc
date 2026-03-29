@@ -424,13 +424,33 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
 
+            <!-- Completed Q3 - Dashboard Charts & Reports -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.5 - แดชบอร์ดกราฟและศูนย์รายงาน' : 'v5.5 - Dashboard Charts & Reports Hub' ?></h3>
+                <p><?= $lang === 'th' ? 'กราฟ Chart.js บนแดชบอร์ด, ศูนย์รวมรายงาน และรายงาน AR Aging' : 'Chart.js dashboard visualizations, centralized reports hub, and AR aging analysis.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'กราฟรายได้ vs ค่าใช้จ่าย (12 เดือน)' : 'Revenue vs Expenses chart (12 months)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'กราฟสถานะการชำระเงิน (Doughnut)' : 'Payment status doughnut chart' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'กราฟสถานะคำสั่งซื้อ (Doughnut)' : 'Order status doughnut chart' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ศูนย์รวมรายงาน (Reports Hub)' : 'Reports Center hub page' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'รายงาน AR Aging (5 ช่วงอายุ)' : 'AR Aging report (5 buckets)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'เมนู Reports แบบ Submenu' : 'Reports sidebar submenu' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'Chart.js 4.4.7 (CDN)' : 'Chart.js 4.4.7 via CDN' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '2 Routes ใหม่ (175 ทั้งหมด)' : '2 new routes (175 total)' ?></li>
+                </ul>
+            </div>
+
             <!-- Planned Q3 - Journal Module -->
             <div class="timeline-item planned">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q3 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'v5.5 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.5 - Journal Module & Voucher Classification' ?></h3>
+                <h3><?= $lang === 'th' ? 'v5.6 - สมุดรายวันและประเภทใบสำคัญ' : 'v5.6 - Journal Module & Voucher Classification' ?></h3>
                 <p><?= $lang === 'th' ? 'เพิ่มโมดูลสมุดรายวัน (Journal Voucher) และระบบจำแนกประเภทใบสำคัญ' : 'Add Journal Voucher module and voucher type classification system.' ?></p>
                 <ul class="feature-list">
                     <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'โมดูล Journal Voucher (สร้าง/ดู/รายการ)' : 'Journal Voucher module (create/view/list)' ?></li>

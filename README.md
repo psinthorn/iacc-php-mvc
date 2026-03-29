@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 5.4-expense-module  
+**Version**: 5.5-dashboard-reports  
 **Status**: Production Ready  
-**Last Updated**: March 28, 2026  
+**Last Updated**: March 29, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 8.0 | **Nginx**: Alpine
 
@@ -25,9 +25,9 @@
 |--------|-------|
 | **Controllers** | 38 (+1 Q3) |
 | **Models** | 32 (+2 Q3) |
-| **Views** | 115 (+6 Q3) |
+| **Views** | 117 (+2 reports) |
 | **Services** | 3 (ChannelService, PromptPayService, CurrencyService) |
-| **MVC Routes** | 173 (+13 Q3) |
+| **MVC Routes** | 175 (+2 reports) |
 | **Legacy Routes** | 0 |
 | **Test Cases** | 188 (42 E2E + 20 API + 126 MVC) |
 | **Active Root Files** | 12 |
@@ -77,6 +77,7 @@ app/
 │   └── CurrencyService.php        # Exchange rates (BOT API)
 └── Views/ (109)
     ├── expense/                   # 6 expense views (list, form, view, categories, summary, project-report)
+    ├── report/                    # 2 report views (hub, ar-aging)
     ├── api/                       # 11 API admin panel views
     ├── tax/                       # 3 tax report views (dashboard, PP30, WHT)
     ├── currency/                  # 2 currency views (list, rates)
@@ -305,7 +306,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Quotations** — Quote generation with PDF export
 - **Payments** — Payment recording, gateway integration, tracking
 - **Deliveries** — Delivery tracking with receipt confirmation
-- **Reports** — Business reporting with CSV/JSON export
+- **Reports** — Reports Hub, AR Aging analysis, business reporting with CSV/JSON export
 - **Expense Tracking** — Expense CRUD with categories, VAT/WHT, approval workflow, monthly summary
 - **Sales Channel API** — REST API for OTA/PMS/channel manager integrations
 - **Payment Gateway** — PromptPay QR, slip upload & admin review workflow
@@ -313,7 +314,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Thai Tax Reports** — PP30 (VAT Return), ภ.ง.ด.3/53 (WHT), CSV export, save/file
 - **Multi-language** — Thai and English support
 - **AI Chatbot** — 29 tools, OpenAI/Ollama, Thai/English, streaming
-- **Dashboard** — Statistics, charts, company selector
+- **Dashboard** — KPI cards, Chart.js charts (revenue/expenses, payment status, order status), company selector
 
 ---
 
@@ -520,6 +521,29 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.5-dashboard-reports (March 29, 2026) — Dashboard Charts & Reports Hub
+
+**Dashboard Charts** — Interactive Chart.js visualizations on the user dashboard:
+
+- **Revenue vs Expenses**: Bar + line combo chart showing 12-month revenue and expense trends with ฿ formatting
+- **Payment Status**: Doughnut chart showing paid/partial/unpaid invoice distribution
+- **Order Status**: Doughnut chart showing pending/completed order distribution
+- **Chart.js 4.4.7**: CDN-loaded, responsive, with custom tooltips and legends
+
+**Reports Hub** — Centralized reports navigation with card-based UI:
+
+- **Reports Center**: Card grid linking to all report modules (Financial, Expense, Tax, Data Exports)
+- **AR Aging Report**: 5-bucket aging analysis (0-30, 31-60, 61-90, 91-120, 120+ days) with customer detail tables
+- **Sidebar Menu**: Reports upgraded from single link to submenu with 4 items
+
+**Technical Details**:
+- 5 new model methods (getMonthlyRevenue, getMonthlyExpenses, getPaymentStatusDistribution, getOrderStatusDistribution, getArAging)
+- 2 new controller methods (ReportController::hub, ReportController::arAging)
+- 2 new views (report/hub.php, report/ar-aging.php)
+- 2 new routes (175 total MVC routes)
+- Dashboard model: fills missing months with zero values, company-filtered queries
+- AR Aging: calculates outstanding = total - paid per invoice, groups by aging bucket
 
 ### v5.4-expense-module (March 28, 2026) — Q3 Expense Tracking
 
