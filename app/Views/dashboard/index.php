@@ -638,6 +638,51 @@ function get_status_badge($status) {
         </div>
     </div>
 
+    <!-- ============ CHARTS SECTION ============ -->
+    <div class="row kpi-row">
+        <div class="col-md-8">
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-line-chart"></i> Revenue vs Expenses (12 Months)
+                </h5>
+                <div style="position: relative; height: 320px;">
+                    <canvas id="revenueExpenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-pie-chart"></i> Payment Status
+                </h5>
+                <div style="position: relative; height: 200px;">
+                    <canvas id="paymentStatusChart"></canvas>
+                </div>
+                <div style="margin-top: 12px; font-size: 12px;">
+                    <?php $ps = $u['payment_status'] ?? ['paid'=>0,'partial'=>0,'unpaid'=>0]; ?>
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span>Paid: <strong><?php echo $ps['paid']; ?></strong></div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span>Partial: <strong><?php echo $ps['partial']; ?></strong></div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 4px;"></span>Unpaid: <strong><?php echo $ps['unpaid']; ?></strong></div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-card">
+                <h5 class="card-title">
+                    <i class="fa fa-tasks"></i> Order Status
+                </h5>
+                <div style="position: relative; height: 160px;">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+                <?php $os = $u['order_status'] ?? ['pending'=>0,'completed'=>0]; ?>
+                <div style="margin-top: 12px; font-size: 12px; display: flex; justify-content: space-around; text-align: center;">
+                    <div><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span>Pending: <strong><?php echo $os['pending']; ?></strong></div>
+                    <div><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span>Completed: <strong><?php echo $os['completed']; ?></strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Row -->
     <div class="row">
         <!-- Left Column -->
@@ -824,3 +869,139 @@ function get_status_badge($status) {
     <?php endif; ?>
 
 </div>
+
+<?php if ($show_user_dashboard): ?>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    // ---- Revenue vs Expense Bar/Line Chart ----
+    <?php
+    $rev = $dashboard['monthly_revenue'] ?? [];
+    $exp = $dashboard['monthly_expenses'] ?? [];
+    $chartLabels = [];
+    $chartRevenue = [];
+    $chartExpenses = [];
+    foreach ($rev as $month => $val) {
+        $chartLabels[] = date('M Y', strtotime($month . '-01'));
+        $chartRevenue[] = $val;
+        $chartExpenses[] = $exp[$month] ?? 0;
+    }
+    ?>
+    var labels = <?php echo json_encode($chartLabels); ?>;
+    var revenueData = <?php echo json_encode($chartRevenue); ?>;
+    var expenseData = <?php echo json_encode($chartExpenses); ?>;
+
+    var ctx1 = document.getElementById('revenueExpenseChart');
+    if (ctx1) {
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Revenue (฿)',
+                        data: revenueData,
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: '#667eea',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        order: 2
+                    },
+                    {
+                        label: 'Expenses (฿)',
+                        data: expenseData,
+                        type: 'line',
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#ef4444',
+                        fill: true,
+                        tension: 0.3,
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, padding: 15 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ฿' + ctx.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(v) { return '฿' + (v >= 1000 ? (v/1000).toFixed(0) + 'K' : v); }
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // ---- Payment Status Doughnut ----
+    <?php $ps = $dashboard['payment_status'] ?? ['paid'=>0,'partial'=>0,'unpaid'=>0]; ?>
+    var ctx2 = document.getElementById('paymentStatusChart');
+    if (ctx2) {
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Partial', 'Unpaid'],
+                datasets: [{
+                    data: [<?php echo $ps['paid']; ?>, <?php echo $ps['partial']; ?>, <?php echo $ps['unpaid']; ?>],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // ---- Order Status Doughnut ----
+    <?php $os = $dashboard['order_status'] ?? ['pending'=>0,'completed'=>0]; ?>
+    var ctx3 = document.getElementById('orderStatusChart');
+    if (ctx3) {
+        new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Completed'],
+                datasets: [{
+                    data: [<?php echo $os['pending']; ?>, <?php echo $os['completed']; ?>],
+                    backgroundColor: ['#f59e0b', '#10b981'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+})();
+</script>
+<?php endif; ?>
