@@ -160,17 +160,85 @@ jobs:
           echo "✅ Staging config generated"
           head -5 deploy/inc/sys.configs.php
           
-      - name: 📤 Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: 📤 Deploy via FTP (attempt 1)
+        id: ftp-deploy-1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         timeout-minutes: 30
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME_STAGING }}
           password: ${{ secrets.FTP_PASSWORD_STAGING }}
           protocol: ftps
+          security: loose
+          port: 21
           local-dir: ./deploy/
           server-dir: ${{ env.DEPLOY_PATH }}/
-          timeout: 300000
+          timeout: 600000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/logs/*.log
+            **/cache/*
+            **/backups/*
+
+      - name: ⏳ Wait before retry
+        if: steps.ftp-deploy-1.outcome == 'failure'
+        run: |
+          echo "⚠️ FTP attempt 1 failed (passive mode timeout). Retrying in 30s..."
+          sleep 30
+
+      - name: 📤 Deploy via FTP (attempt 2)
+        if: steps.ftp-deploy-1.outcome == 'failure'
+        id: ftp-deploy-2
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        timeout-minutes: 30
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME_STAGING }}
+          password: ${{ secrets.FTP_PASSWORD_STAGING }}
+          protocol: ftps
+          security: loose
+          port: 21
+          local-dir: ./deploy/
+          server-dir: ${{ env.DEPLOY_PATH }}/
+          timeout: 600000
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/logs/*.log
+            **/cache/*
+            **/backups/*
+
+      - name: ⏳ Wait before final retry
+        if: steps.ftp-deploy-1.outcome == 'failure' && steps.ftp-deploy-2.outcome == 'failure'
+        run: |
+          echo "⚠️ FTP attempt 2 failed. Final retry in 60s..."
+          sleep 60
+
+      - name: 📤 Deploy via FTP (attempt 3 - final)
+        if: steps.ftp-deploy-1.outcome == 'failure' && steps.ftp-deploy-2.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        timeout-minutes: 30
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME_STAGING }}
+          password: ${{ secrets.FTP_PASSWORD_STAGING }}
+          protocol: ftps
+          security: loose
+          port: 21
+          local-dir: ./deploy/
+          server-dir: ${{ env.DEPLOY_PATH }}/
+          timeout: 600000
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
