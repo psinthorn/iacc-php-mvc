@@ -2,181 +2,124 @@
 
 ## Overview
 
-These scripts address critical database issues identified in the iAcc-PHP-MVC application:
+Sequential migration scripts for the iACC database. Run in order (001 → 020).  
+**MySQL Version**: 5.7 (matching cPanel production)
 
-1. **Mixed storage engines** (MyISAM → InnoDB)
-2. **Inconsistent character sets** (latin1/utf8 → utf8mb4)
-3. **Problematic primary key design** on `authorize` table
-4. **Missing indexes** for performance
-5. **No foreign key constraints**
+## SQL Migrations
 
-## Files
+### Phase 1: Database Hardening (Jan 3, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 001 | `001_critical_database_fixes.sql` | MyISAM → InnoDB, charset → utf8mb4, authorize PK fix, indexes |
+| 002 | `002_remaining_database_fixes.sql` | Additional table conversions and index fixes |
+| 003 | `003_rollback_foundation.sql` | SQL-only rollback for Phase 1 changes |
+
+### Phase 2: RBAC & Auth (Jan 2-4, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 004 | `004_rbac_setup.sql` | Create roles, permissions, user_roles tables |
+| 005 | `005_rbac_schema.sql` | Phase 2 authorization schema |
+| 006 | `006_add_company_id_to_authorize.sql` | Add company_id FK to authorize table |
+
+### Phase 3: Business Tables (Jan 2-4, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 007 | `007_create_payment_methods_table.sql` | Multi-channel payment methods table |
+| 008 | `008_create_receipt_table.sql` | Receipt table with quotation support |
+| 009 | `009_add_foreign_keys.sql` | FK constraints across all tables |
+
+### Phase 4: Multi-Tenant (Jan 4, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 010 | `010_add_company_id_multi_tenant.sql` | Add company_id to all business tables |
+| 011 | `011_fix_master_data_relationships.sql` | Fix master data FK relationships |
+| 012 | `012_add_company_id_to_company.sql` | Company self-reference for multi-tenant |
+
+### Phase 5: AI & Cleanup (Jan 4-5, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 013 | `013_ai_conversations.sql` | AI chatbot conversation & action log tables |
+| 014 | `014_ai_action_log_result.sql` | Add result column to ai_action_log |
+| 015 | `015_database_cleanup.sql` | Remove unused tables, merge duplicates |
+| 016 | `016_add_soft_delete.sql` | Add deleted_at columns for soft delete |
+
+### Phase 6: API & Sales Channel (Mar 27, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 017 | `017_api_tables.sql` | Complete API infrastructure tables |
+| 018 | `018_rename_booking_to_channel_order.sql` | Rename booking → channel_order |
+| 019 | `019_create_api_invoices.sql` | API billing table |
+
+### Phase 7: Split Invoice WHT (Mar 30, 2026)
+| # | File | Purpose |
+|---|------|---------|
+| 020 | `020_split_invoice_wht.sql` | Split invoice for WHT separation |
+
+### Timestamp Migrations (Mar 29, 2026)
+| File | Purpose |
+|------|---------|
+| `phase2_timestamps/000_add_columns.sql` | Add created_at/updated_at to all 59 tables |
+| `phase2_timestamps/010_backfill.sql` | Backfill timestamps with existing data |
+| `phase2_timestamps/rollback/000_drop_columns.sql` | Rollback timestamp columns |
+
+## Shell Scripts (`scripts/`)
 
 | File | Purpose |
 |------|---------|
-| `001_backup_before_migration.sh` | Creates full database backup before migration |
-| `002_critical_database_fixes.sql` | Main migration script with all fixes |
-| `003_rollback_migration.sh` | Restores database from backup if migration fails |
-| `004_run_migration.sh` | Complete migration runner (backup + migrate + verify) |
-| `005_rollback_migration.sql` | SQL-only partial rollback (structural changes only) |
+| `scripts/001_backup_before_migration.sh` | Creates full database backup before migration |
+| `scripts/003_rollback_migration.sh` | Restores database from backup if migration fails |
+| `scripts/004_run_migration.sh` | Complete migration runner (backup + migrate + verify) |
+| `scripts/docker_rollback.sh` | Docker-specific rollback helper |
+
+## Other
+| File | Purpose |
+|------|---------|
+| `phase2_naming/README.md` | Convention guide for future naming migrations |
 
 ## Quick Start
 
-### Option 1: Automated (Recommended)
-
+### Docker (Development)
 ```bash
-# Set your database credentials
-export DB_HOST=localhost
-export DB_USER=root
-export DB_PASS=your_password
-export DB_NAME=f2coth_iacc
+# Run a specific migration
+docker exec -i iacc_mysql mysql -uroot -proot iacc < migrations/001_critical_database_fixes.sql
 
-# Navigate to migrations directory
-cd migrations
+# Run all migrations in order
+for f in migrations/0*.sql; do
+  echo "Running $f..."
+  docker exec -i iacc_mysql mysql -uroot -proot iacc < "$f"
+done
+```
 
-# Make scripts executable
+### cPanel (Production)
+```bash
+# Via phpMyAdmin: Import tab → Upload file → Go
+# Via SSH:
+mysql -u<username> -p <database_name> < migrations/001_critical_database_fixes.sql
+```
+
+### Automated Runner
+```bash
+cd migrations/scripts
 chmod +x *.sh
-
-# Run the complete migration
+export DB_HOST=localhost DB_USER=root DB_PASS=root DB_NAME=iacc
 ./004_run_migration.sh
 ```
 
-### Option 2: Manual
+## Rollback
 
 ```bash
-# Step 1: Create backup
-./001_backup_before_migration.sh
+# Full rollback from backup
+./scripts/003_rollback_migration.sh
 
-# Step 2: Run migration
-mysql -u root -p f2coth_iacc < 002_critical_database_fixes.sql
+# SQL-only rollback (Phase 1 structural changes)
+docker exec -i iacc_mysql mysql -uroot -proot iacc < migrations/003_rollback_foundation.sql
 
-# If something goes wrong:
-./003_rollback_migration.sh
+# Timestamp rollback
+docker exec -i iacc_mysql mysql -uroot -proot iacc < migrations/phase2_timestamps/rollback/000_drop_columns.sql
 ```
-
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DB_HOST` | localhost | MySQL server hostname |
-| `DB_USER` | root | MySQL username |
-| `DB_PASS` | (empty) | MySQL password |
-| `DB_NAME` | f2coth_iacc | Database name |
-
-## What the Migration Does
-
-### Phase 1: Convert to InnoDB
-- Converts all MyISAM tables to InnoDB
-- Enables transaction support
-- Enables foreign key constraints
-
-### Phase 2: Standardize Character Set
-- Converts all tables to `utf8mb4_unicode_ci`
-- Fixes Thai character support
-- Enables emoji support
-
-### Phase 3: Fix `authorize` Table
-- Adds new `id` column (INT UNSIGNED AUTO_INCREMENT)
-- Changes primary key from `usr_name` to `id`
-- Adds unique constraint on `usr_name`
-- Expands `usr_name` from VARCHAR(10) to VARCHAR(50)
-
-### Phase 4: Add Indexes
-- Adds indexes on frequently queried columns
-- Improves query performance for dates, statuses, foreign keys
-
-### Phase 5: Data Cleanup
-- Removes orphan records before adding FK constraints
-- Validates data integrity
-
-### Phase 6: Migration Log
-- Creates `_migration_log` table to track migrations
-- Logs migration success/failure
-
-## Rollback Procedures
-
-### Full Rollback (Recommended)
-```bash
-./003_rollback_migration.sh
-```
-This restores the database from the pre-migration backup.
-
-### Partial Rollback (SQL Only)
-```bash
-mysql -u root -p f2coth_iacc < 005_rollback_migration.sql
-```
-This reverts structural changes but keeps InnoDB and utf8mb4 (recommended to keep these).
-
-### Manual Rollback from Specific Backup
-```bash
-./003_rollback_migration.sh /path/to/specific_backup.sql
-```
-
-## Post-Migration Checklist
-
-After running the migration, verify:
-
-- [ ] Application login works
-- [ ] User creation works
-- [ ] All CRUD operations function correctly
-- [ ] Thai characters display properly
-- [ ] Reports generate correctly
-- [ ] No error logs related to database
-
-## PHP Code Changes Required
-
-After migration, update any code that uses `usr_name` as a foreign key:
-
-```php
-// Before (using usr_name)
-$sql = "SELECT * FROM po WHERE usr_id = '$usr_name'";
-
-// After (using id from authorize table)
-$sql = "SELECT p.* FROM po p 
-        JOIN authorize a ON p.usr_id = a.id 
-        WHERE a.usr_name = '$usr_name'";
-```
-
-## Backup Location
-
-Backups are stored in: `../backups/`
-
-Files created:
-- `pre_migration_backup_YYYYMMDD_HHMMSS.sql` - Full backup before migration
-- `latest_pre_migration.sql` - Symlink to most recent backup
-- `pre_rollback_safety_YYYYMMDD_HHMMSS.sql` - Safety backup before rollback
-
-## Troubleshooting
-
-### Error: Cannot connect to database
-```bash
-# Check MySQL is running
-systemctl status mysql
-
-# Verify credentials
-mysql -u root -p -e "SELECT 1"
-```
-
-### Error: Foreign key constraint fails
-```bash
-# Check for orphan records
-mysql -u root -p f2coth_iacc -e "SELECT * FROM product WHERE po_id NOT IN (SELECT id FROM po) AND po_id != 0"
-```
-
-### Error: Table doesn't exist
-Some tables in the migration may not exist in your database. Edit the SQL file to comment out those tables.
-
-## Support
-
-If you encounter issues:
-
-1. Check the error message carefully
-2. Review the backup files in `../backups/`
-3. Run the rollback script
-4. Contact the database administrator
 
 ---
 
-**Created:** 2026-01-03  
-**Author:** Database Migration System  
-**Version:** 1.0.0
+**MySQL**: 5.7 (matching cPanel production)  
+**Created:** 2026-01-03 | **Updated:** 2026-03-30  
+**Version:** 2.0.0

@@ -4,7 +4,7 @@
 - **Type**: Docker Compose
 - **OS**: macOS
 - **PHP Version**: 8.2 (PHP-FPM)
-- **MySQL Version**: 8.0
+- **MySQL Version**: 5.7
 - **Nginx**: Alpine
 
 ## Services & URLs

@@ -94,7 +94,7 @@
 - Load balancing (if multiple instances)
 
 **3. Database** (`db` container)
-- MySQL 8.0 database
+- MySQL 5.7 database
 - Multiple tables (31 total)
 - Replication support (production)
 - Backup mechanisms
@@ -903,7 +903,7 @@ SET GLOBAL max_user_connections = 50;
 -- Buffer Pool (50-75% of RAM)
 SET GLOBAL innodb_buffer_pool_size = 4G;  -- For 8GB RAM server
 
--- Query Cache (deprecated in MySQL 8.0, use Redis instead)
+-- Query Cache (available in MySQL 5.7)
 -- Skip
 
 -- Thread Cache

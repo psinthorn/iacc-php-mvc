@@ -4,7 +4,7 @@
 **Status**: Production Ready  
 **Last Updated**: March 30, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
-**PHP**: 8.2+ | **MySQL**: 8.0 | **Nginx**: Alpine
+**PHP**: 8.2+ | **MySQL**: 5.7 | **Nginx**: Alpine
 
 ## 🚀 Deployment Status
 
@@ -391,7 +391,7 @@ Used by CI/CD pipeline for post-deployment verification.
 |---------|-----------|------|---------|
 | PHP-FPM 8.2 | iacc_php | 9000 | Application server |
 | Nginx | iacc_nginx | 80, 443 | Web server |
-| MySQL 8.0 | iacc_mysql | 3306 | Database |
+| MySQL 5.7 | iacc_mysql | 3306 | Database |
 | phpMyAdmin | iacc_phpmyadmin | 8083 | DB management |
 | Ollama | iacc_ollama | 11434 | AI models |
 | MailHog | iacc_mailhog_server | 1025, 8025 | Email testing |

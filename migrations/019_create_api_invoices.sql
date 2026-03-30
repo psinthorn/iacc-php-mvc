@@ -1,0 +1,30 @@
+-- Migration 014: Create api_invoices table for Sales Channel API billing
+
+CREATE TABLE IF NOT EXISTS `api_invoices` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `company_id` int(11) NOT NULL,
+  `subscription_id` int(11) NOT NULL,
+  `invoice_number` varchar(50) NOT NULL,
+  `plan` enum('trial','starter','professional','enterprise') NOT NULL,
+  `period_start` date NOT NULL,
+  `period_end` date NOT NULL,
+  `orders_limit` int(11) NOT NULL DEFAULT 0,
+  `orders_used` int(11) NOT NULL DEFAULT 0,
+  `overage_orders` int(11) NOT NULL DEFAULT 0,
+  `base_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `overage_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `currency` varchar(10) NOT NULL DEFAULT 'THB',
+  `status` enum('issued','paid','overdue','cancelled') NOT NULL DEFAULT 'issued',
+  `issued_at` datetime DEFAULT NULL,
+  `due_at` datetime DEFAULT NULL,
+  `paid_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_company_period` (`company_id`,`period_start`,`period_end`),
+  UNIQUE KEY `uniq_invoice_number` (`invoice_number`),
+  KEY `idx_company_id` (`company_id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_period_end` (`period_end`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
