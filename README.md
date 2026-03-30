@@ -589,7 +589,84 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 ---
 
-## 📋 Changelog
+## �️ Planned Roadmap (v6.0 – v6.7)
+
+| # | Version | Feature | Quarter | Dependencies |
+|---|---------|---------|---------|-------------|
+| 1 | **v6.0** | Self-Registration → Trial → Payment | Q4 2026 | None |
+| 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q4 2026 | v6.0 |
+| 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | v6.1 + Sales Channel API |
+| 4 | **v6.3** | Agent Automation Workers | Q1 2027 | v6.1 |
+| 5 | **v6.4** | AI Document Processing (OCR) | Q2 2027 | v6.1 |
+| 6 | **v6.5** | Conversational BI & Smart Insights | Q2 2027 | Existing AI (29 tools) |
+| 7 | **v6.6** | Native Sales Channel Connectors | Q3 2027 | v6.2 |
+| 8 | **v6.7** | Multi-LLM Router & AI Platform Strategy | Q3 2027 | v6.5 |
+
+### v6.0 — Self-Registration → Trial → Payment
+- Public signup form with email verification (MailHog in dev)
+- Auto company/user creation on registration
+- 14-day trial with 50 order limit (website channel only)
+- Plan comparison page with upgrade flow
+- PromptPay/bank transfer payment integration
+- New user onboarding wizard
+
+### v6.1 — Task Queue & Background Worker Infrastructure
+- `task_queue` + `task_results` database tables
+- PHP cron worker script (`scripts/worker.php`) — polls queue every minute
+- Dead-letter queue for permanently failed tasks
+- Priority system + retry with exponential backoff
+- Admin queue dashboard (view, retry, clear)
+- Task locking to prevent duplicate execution
+
+### v6.2 — AI-Powered Sales Channel Automation
+- **AI Order Parser**: LINE/Facebook/email messages → AI extracts guest name, dates, room type → structured `channel_orders`
+- **Smart Order Router**: AI classifies orders by channel + content → routes to correct handler
+- **AI Price Optimizer**: Historical data analysis → dynamic pricing per channel (weekend/season/margin)
+- **Inventory Sync Worker**: Background sync iACC products ↔ external channels
+- **Channel Health Monitor**: Periodic API health checks, webhook delivery rates, error alerts
+- **AI Response Generator**: AI-generated customer replies based on product catalog + availability
+
+### v6.3 — Agent Automation Workers
+- Overdue invoice reminders (daily 9am)
+- Trial expiry notifier (3/1/0 days before expiry)
+- Auto subscription renewal/suspension
+- Weekly AR Aging alert to admin
+- Monthly auto-generated reports (P&L, Revenue summary) as PDF
+- Webhook retry worker with exponential backoff
+- BOT exchange rate updater (daily)
+- Data cleanup worker (weekly — old task_results, expired sessions, orphaned uploads)
+
+### v6.4 — AI Document Processing (OCR)
+- Receipt photo upload → AI extracts vendor, amount, date, category → auto-create expense
+- Invoice email parser → AI parses PDF/image → creates expense or PO draft
+- Contract analyzer → extracts key terms, dates, obligations
+- Thai + English language support for document parsing
+
+### v6.5 — Conversational BI & Smart Insights
+- Chart generation from AI chat ("Show revenue trend this year" → inline Chart.js)
+- Predictive cash flow: AI forecasts 30/60/90 day cash position
+- Transaction anomaly detection (amount outliers, duplicates, missing receipts)
+- Smart automation suggestions based on user behavior patterns
+- Natural language → SQL query execution
+
+### v6.6 — Native Sales Channel Connectors
+- LINE Official Account (Messaging API — receive bookings, AI auto-reply, push status updates)
+- Facebook Messenger (Graph API — inquiry bot, auto-quote generation)
+- Shopee Open Platform (product sync, order import, inventory update, price sync)
+- Lazada Open Platform (unified e-commerce adapter with Shopee)
+- TikTok Shop API (product listing, order fulfillment sync)
+- Instagram Shopping (Graph API — catalog sync, DM inquiry handling)
+- WhatsApp Business (Cloud API — order confirmation, delivery notifications)
+
+### v6.7 — Multi-LLM Router & AI Platform Strategy
+- Smart Model Selector: route tasks to optimal provider (Ollama for simple, OpenAI for OCR, Claude for analysis)
+- Cost Optimizer: track token usage per provider → auto-route to cheapest model meeting quality threshold
+- Failover Chain: Ollama → OpenAI → Claude for high availability
+- AI Usage Dashboard: per-company usage, cost breakdown, model performance metrics
+
+---
+
+## �📋 Changelog
 
 ### v5.10-i18n-complete (March 30, 2026) — Complete Multi-Language Support
 

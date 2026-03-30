@@ -536,21 +536,147 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
 
-            <!-- Planned Q4 - Mobile & Integrations -->
+            <!-- Planned - v6.0 Self-Registration & Payment -->
             <div class="timeline-item planned">
                 <div class="timeline-header">
                     <span class="timeline-quarter">Q4 2026</span>
                     <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
                 </div>
-                <h3><?= $lang === 'th' ? 'แอปมือถือและการผสานรวมขั้นสูง' : 'Mobile App & Advanced Integrations' ?></h3>
-                <p><?= $lang === 'th' ? 'แอป React Native, เชื่อมต่อธนาคาร, E-commerce และ Zapier' : 'React Native app, bank connections, e-commerce and Zapier integrations.' ?></p>
+                <h3><?= $lang === 'th' ? 'v6.0 - สมัครสมาชิก → ทดลอง → ชำระเงิน' : 'v6.0 - Self-Registration → Trial → Payment' ?></h3>
+                <p><?= $lang === 'th' ? 'ระบบสมัครสมาชิกด้วยตนเอง ยืนยันอีเมล สร้างบริษัทอัตโนมัติ ทดลองใช้ 14 วัน แล้วอัพเกรดแผน' : 'Public signup with email verification, auto company creation, 14-day trial, and plan upgrade via PromptPay/bank transfer.' ?></p>
                 <ul class="feature-list">
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'React Native App (iOS/Android)' : 'React Native app (iOS/Android)' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนแบบพุช' : 'Push notifications' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'เชื่อมต่อธนาคาร' : 'Bank connections' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ผสานรวม E-commerce' : 'E-commerce integrations' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Public Developer API' : 'Public developer API' ?></li>
-                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สแกนใบเสร็จ (OCR)' : 'Receipt scanning (OCR)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ฟอร์มสมัครสมาชิก + ยืนยันอีเมล' : 'Signup form + email verification' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สร้างบริษัท/ผู้ใช้อัตโนมัติ' : 'Auto company/user creation' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ทดลองใช้ 14 วัน (50 orders)' : '14-day trial (50 orders)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'หน้าเปรียบเทียบแผน + อัพเกรด' : 'Plan comparison + upgrade page' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ชำระเงินผ่าน PromptPay/โอนเงิน' : 'PromptPay/bank transfer payment' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Onboarding Wizard สำหรับผู้ใช้ใหม่' : 'New user onboarding wizard' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.1 Task Queue & Cron Worker -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q4 2026</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.1 - ระบบ Task Queue และ Background Worker' : 'v6.1 - Task Queue & Background Worker Infrastructure' ?></h3>
+                <p><?= $lang === 'th' ? 'โครงสร้างพื้นฐานสำหรับงานอัตโนมัติทั้งหมด: ตาราง task_queue, PHP cron worker, Dead-letter queue' : 'Foundation for all automation: task_queue table, PHP cron worker, dead-letter queue, and admin queue dashboard.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ตาราง task_queue + task_results' : 'task_queue + task_results tables' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'PHP Cron Worker (ทุกนาที)' : 'PHP cron worker (every minute)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Dead-letter queue สำหรับงานล้มเหลว' : 'Dead-letter queue for failed tasks' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ระบบลำดับความสำคัญ + Retry' : 'Priority system + retry with backoff' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Admin Dashboard จัดการ Queue' : 'Admin queue dashboard' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Task Locking ป้องกันทำซ้ำ' : 'Task locking to prevent duplicates' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.2 AI Sales Channel Automation -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2027</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.2 - AI + Sales Channel อัตโนมัติ' : 'v6.2 - AI-Powered Sales Channel Automation' ?></h3>
+                <p><?= $lang === 'th' ? 'รวม AI กับ Sales Channel API: แปลงข้อความเป็นคำสั่งซื้อ, กำหนดราคาอัจฉริยะ, ซิงค์สินค้า, ตอบลูกค้าอัตโนมัติ' : 'Combine AI with Sales Channel API: parse messages to orders, smart pricing, inventory sync, and AI-powered customer replies.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'AI Order Parser (แปลงข้อความ → คำสั่งซื้อ)' : 'AI Order Parser (messages → orders)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Smart Order Router (จำแนกคำสั่งซื้อ)' : 'Smart Order Router (classify & route)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'AI Price Optimizer (ราคาตามช่องทาง)' : 'AI Price Optimizer (per-channel pricing)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Inventory Sync Worker (ซิงค์สินค้า)' : 'Inventory Sync Worker (product sync)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Channel Health Monitor (ตรวจสอบสถานะ)' : 'Channel Health Monitor (status checks)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'AI Response Generator (ตอบลูกค้าอัตโนมัติ)' : 'AI Response Generator (auto-replies)' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.3 Agent Automation Workers -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q1 2027</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.3 - Agent Automation Workers' : 'v6.3 - Agent Automation Workers' ?></h3>
+                <p><?= $lang === 'th' ? 'งานอัตโนมัติตามกำหนดเวลา: แจ้งเตือนใบแจ้งหนี้, ต่ออายุสมาชิก, รายงานรายเดือน, อัพเดตอัตราแลกเปลี่ยน' : 'Scheduled automation workers: invoice reminders, subscription renewal, monthly reports, exchange rate updates.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนใบแจ้งหนี้ค้างชำระ (ทุกวัน)' : 'Overdue invoice reminders (daily)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แจ้งเตือนหมดทดลอง (3/1/0 วัน)' : 'Trial expiry notifier (3/1/0 days)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ต่ออายุ/ระงับสมาชิกอัตโนมัติ' : 'Auto subscription renewal/suspend' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สรุป AR Aging ทุกสัปดาห์' : 'Weekly AR Aging alert' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รายงานรายเดือนอัตโนมัติ (P&L, Revenue)' : 'Monthly auto-reports (P&L, Revenue)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Webhook Retry Worker (Exponential Backoff)' : 'Webhook retry worker (exponential backoff)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'อัพเดตอัตราแลกเปลี่ยน BOT (ทุกวัน)' : 'BOT exchange rate updater (daily)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ล้างข้อมูลเก่าอัตโนมัติ (รายสัปดาห์)' : 'Data cleanup worker (weekly)' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.4 AI Document Processing -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q2 2027</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.4 - AI ประมวลผลเอกสาร (OCR)' : 'v6.4 - AI Document Processing (OCR)' ?></h3>
+                <p><?= $lang === 'th' ? 'ถ่ายรูปใบเสร็จ → AI ดึงข้อมูลอัตโนมัติ, แยกวิเคราะห์สัญญา, สแกนใบแจ้งหนี้จากอีเมล' : 'Upload receipt photos → AI extracts data, invoice email parsing, contract analysis.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สแกนใบเสร็จ → สร้างค่าใช้จ่ายอัตโนมัติ' : 'Receipt OCR → auto-create expense' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แยกวิเคราะห์ใบแจ้งหนี้จากอีเมล' : 'Invoice email parser → PO draft' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'วิเคราะห์สัญญา (เงื่อนไข/วันที่)' : 'Contract analyzer (terms/dates)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับรูปภาพ + PDF' : 'Image + PDF file support' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'รองรับภาษาไทย + อังกฤษ' : 'Thai + English language support' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.5 Conversational BI & Smart Insights -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q2 2027</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.5 - Conversational BI และ Smart Insights' : 'v6.5 - Conversational BI & Smart Insights' ?></h3>
+                <p><?= $lang === 'th' ? 'ถาม AI ให้สร้างกราฟ, พยากรณ์กระแสเงินสด, ตรวจจับความผิดปกติ, แนะนำงานอัตโนมัติ' : 'Ask AI to generate charts, predict cash flow, detect anomalies, and suggest task automation.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'สร้างกราฟจากแชท (Chart.js)' : 'Chart generation from chat (Chart.js)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'พยากรณ์กระแสเงินสด 30/60/90 วัน' : 'Predictive cash flow 30/60/90 days' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'ตรวจจับธุรกรรมผิดปกติ' : 'Transaction anomaly detection' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'แนะนำ Automation อัจฉริยะ' : 'Smart automation suggestions' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Natural Language → SQL Query' : 'Natural language → SQL queries' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.6 Native Sales Channel Connectors -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2027</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.6 - เชื่อมต่อช่องทางขายโดยตรง' : 'v6.6 - Native Sales Channel Connectors' ?></h3>
+                <p><?= $lang === 'th' ? 'เชื่อมต่อตรงกับ LINE, Facebook, Shopee, Lazada, TikTok Shop, Instagram, WhatsApp' : 'Direct integrations with LINE, Facebook, Shopee, Lazada, TikTok Shop, Instagram, WhatsApp.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'LINE Official Account (Messaging API)' : 'LINE Official Account (Messaging API)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Facebook Messenger (Graph API)' : 'Facebook Messenger (Graph API)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Shopee Open Platform (ซิงค์สินค้า/คำสั่งซื้อ)' : 'Shopee Open Platform (product/order sync)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Lazada Open Platform (ซิงค์สินค้า/คำสั่งซื้อ)' : 'Lazada Open Platform (product/order sync)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'TikTok Shop API' : 'TikTok Shop API' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Instagram Shopping (Graph API)' : 'Instagram Shopping (Graph API)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'WhatsApp Business (Cloud API)' : 'WhatsApp Business (Cloud API)' ?></li>
+                </ul>
+            </div>
+
+            <!-- Planned - v6.7 Multi-LLM Router & AI Strategy -->
+            <div class="timeline-item planned">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2027</span>
+                    <span class="status-badge planned"><?= $lang === 'th' ? 'วางแผน' : 'Planned' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v6.7 - Multi-LLM Router และกลยุทธ์ AI' : 'v6.7 - Multi-LLM Router & AI Platform Strategy' ?></h3>
+                <p><?= $lang === 'th' ? 'เลือก AI Model อัตโนมัติ, ลดต้นทุน Token, Failover Chain, Dashboard การใช้ AI' : 'Smart model selection, token cost optimization, failover chain, and AI usage dashboard.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Smart Model Selector (เลือก AI ที่เหมาะสม)' : 'Smart Model Selector (optimal AI routing)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Cost Optimizer (ลดค่าใช้จ่าย Token)' : 'Cost Optimizer (minimize token costs)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Failover Chain (Ollama → OpenAI → Claude)' : 'Failover Chain (Ollama → OpenAI → Claude)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'AI Usage Dashboard (ต่อบริษัท)' : 'AI Usage Dashboard (per company)' ?></li>
+                    <li><i class="fa fa-circle-o"></i> <?= $lang === 'th' ? 'Model Performance Metrics' : 'Model performance metrics' ?></li>
                 </ul>
             </div>
         </div>
