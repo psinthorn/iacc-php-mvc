@@ -519,6 +519,23 @@ function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
                 </ul>
             </div>
 
+            <!-- Completed Q3 - i18n Complete -->
+            <div class="timeline-item completed">
+                <div class="timeline-header">
+                    <span class="timeline-quarter">Q3 2026</span>
+                    <span class="status-badge completed"><?= $lang === 'th' ? 'เสร็จสิ้น' : 'Completed' ?></span>
+                </div>
+                <h3><?= $lang === 'th' ? 'v5.10 - ระบบหลายภาษาสมบูรณ์' : 'v5.10 - Complete Multi-Language Support' ?></h3>
+                <p><?= $lang === 'th' ? 'ขยายระบบแปลภาษาจาก ~110 เป็น 515 คีย์ ครอบคลุมทุกหน้า พร้อมจัดระเบียบ Migration' : 'Expanded translation system from ~110 to 515 keys covering all views, with migration file organization.' ?></p>
+                <ul class="feature-list">
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? '515 คีย์แปลภาษา EN/TH' : '515 EN/TH translation keys' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ลบข้อความ Hardcoded ใน Views' : 'Removed hardcoded strings in views' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'ระบบสลับภาษาทำงานสมบูรณ์' : 'Language switching fully functional' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'จัดระเบียบ Migration (001-020)' : 'Organized migrations (001-020)' ?></li>
+                    <li><i class="fa fa-check"></i> <?= $lang === 'th' ? 'MySQL 5.7 ทุก Environment' : 'MySQL 5.7 across all environments' ?></li>
+                </ul>
+            </div>
+
             <!-- Planned Q4 - Mobile & Integrations -->
             <div class="timeline-item planned">
                 <div class="timeline-header">

@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 5.9-split-invoice-wht  
+**Version**: 5.10-i18n-complete  
 **Status**: Production Ready  
 **Last Updated**: March 30, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
@@ -242,8 +242,8 @@ iAcc-PHP-MVC/
 │   ├── pagination.php            # Pagination helper
 │   ├── pdf-template.php          # Shared PDF template
 │   ├── lang/en.php, th.php       # Language files
-│   ├── string-th.xml             # Thai language strings
-│   └── string-us.xml             # English language strings
+│   ├── string-th.xml             # Thai language strings (515 keys)
+│   └── string-us.xml             # English language strings (515 keys)
 │
 ├── ai/                           # AI chatbot system
 │   ├── ai-engine.php             # Core AI engine
@@ -283,8 +283,9 @@ iAcc-PHP-MVC/
 ├── docs/
 │   └── phase2/                   # Phase 2 DB hardening plans (7 docs)
 │
-├── migrations/
-│   └── phase2_timestamps/         # Timestamp migration & rollback scripts
+├── migrations/                    # 20 SQL migrations (001-020) organized by phase
+│   ├── scripts/                   # Migration runner scripts
+│   └── README.md                  # Migration index & documentation
 │
 ├── .github/
 │   ├── copilot-instructions.md   # AI assistant context
@@ -379,7 +380,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Payment Gateway** — PromptPay QR, slip upload & admin review workflow
 - **Multi-Currency** — 10 currencies, BOT exchange rates, toggle activation
 - **Thai Tax Reports** — PP30 (VAT Return), ภ.ง.ด.3/53 (WHT), CSV export, save/file
-- **Multi-language** — Thai and English support
+- **Multi-language** — Thai and English support (515 translation keys, XML-based)
 - **AI Chatbot** — 29 tools, OpenAI/Ollama, Thai/English, streaming
 - **Dashboard** — KPI cards, Chart.js charts (revenue/expenses, payment status, order status), company selector
 
@@ -589,6 +590,20 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## 📋 Changelog
+
+### v5.10-i18n-complete (March 30, 2026) — Complete Multi-Language Support
+
+**i18n Translation System** — Expanded XML translation files from ~110 to 515 keys covering all application views:
+
+- **515 Translation Keys**: Complete EN/TH translations for all modules — payments (40+ keys), billing, receipts, vouchers, accounting, expenses, AI tools, sales channel API, user settings, admin panel, reports
+- **Hardcoded String Removal**: Replaced hardcoded English text in user/list.php, dashboard/index.php, company views, and sidebar dropdown with `$xml->` translation references
+- **Language Switching**: Sidebar EN/TH buttons → session-based language toggle → XML file loader → all views render in selected language
+- **Two i18n Systems**: XML-based (`string-us.xml` / `string-th.xml`) for main app, PHP array-based (`inc/lang/en.php` / `inc/lang/th.php`) for public landing pages
+
+**Infrastructure Cleanup**:
+- Organized 20 migration files into sequential numbering (001-020) grouped by phase
+- Moved migration shell scripts to `migrations/scripts/` subdirectory
+- Aligned MySQL version to 5.7 across all environments (docker-compose, docs)
 
 ### v5.9-split-invoice-wht (March 30, 2026) — Split Invoice & WHT Separation
 
