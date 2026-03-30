@@ -76,7 +76,7 @@ function get_status_badge($status) {
     <!-- Dashboard Header -->
     <div class="dashboard-header">
         <div>
-            <h2 class="dashboard-title"><i class="fa fa-tachometer"></i> Dashboard</h2>
+            <h2 class="dashboard-title"><i class="fa fa-tachometer"></i> <?=$xml->dashboard ?? 'Dashboard'?></h2>
             <div class="dashboard-subtitle">
                 <?php if ($is_admin && $com_id == 0): ?>
                     <i class="fa fa-globe"></i> System Administration - Global View
@@ -125,7 +125,7 @@ function get_status_badge($status) {
         <div class="col-md-12">
             <div class="content-card" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; margin-bottom: 20px;">
                 <h5 style="color: #fff; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">
-                    <i class="fa fa-shield"></i> Admin Control Panel
+                <i class="fa fa-shield"></i> <?=$xml->admin_management_panel ?? 'Admin Control Panel'?>
                 </h5>
                 <div class="row">
                     <div class="col-md-2 col-sm-4">
@@ -170,7 +170,7 @@ function get_status_badge($status) {
                             <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Quick Admin Actions</div>
                             <?php if ($is_super_admin): ?>
                             <a href="index.php?page=user" class="btn btn-sm" style="background: #667eea; color: white; margin: 2px;">
-                                <i class="fa fa-users"></i> Manage Users
+                                <i class="fa fa-users"></i> <?=$xml->manage_users ?? 'Manage Users'?>
                             </a>
                             <?php endif; ?>
                             <a href="index.php?page=company" class="btn btn-sm" style="background: #51cf66; color: white; margin: 2px;">
@@ -212,7 +212,7 @@ function get_status_badge($status) {
                 <div class="company-search-box">
                     <i class="fa fa-search search-icon"></i>
                     <input type="text" id="companySearchInput" class="company-search-input" 
-                           placeholder="Search companies by name, contact, email..." 
+                           placeholder="<?=$xml->search_companies_placeholder ?? 'Search companies by name, contact, email...'?>" 
                            autocomplete="off">
                     <div id="companySearchResults" class="company-search-results"></div>
                 </div>

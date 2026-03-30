@@ -197,7 +197,7 @@
             <div class="form-group">
                 <label for="name_en"><?=$xml->nameen ?? 'English Name'?></label>
                 <input id="name_en" name="name_en" class="form-control" required type="text" 
-                       placeholder="Enter English name" value="<?=htmlspecialchars($data['name_en'] ?? '')?>">
+                       placeholder="<?=$xml->enter_english_name ?? 'Enter English name'?>" value="<?=htmlspecialchars($data['name_en'] ?? '')?>">
             </div>
             <div class="form-group">
                 <label for="name_th"><?=$xml->nameth ?? 'Thai Name'?></label>

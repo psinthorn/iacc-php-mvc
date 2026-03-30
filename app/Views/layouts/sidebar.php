@@ -165,14 +165,14 @@ include_once 'inc/top-navbar.php';
                         <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-                        <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                        <li><a href="#"><i class="fa fa-user fa-fw"></i> <?=$xml->profile ?? 'User Profile'?></a>
                         </li>
-                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> <?=$xml->settings ?? 'Settings'?></a>
                         </li>
-                        <li><a href="index.php?page=remote&clear=1"><i class="fa fa-home fa-fw"></i> Home</a>
+                        <li><a href="index.php?page=remote&clear=1"><i class="fa fa-home fa-fw"></i> <?=$xml->dashboard ?? 'Home'?></a>
                         </li>
                         <li class="divider"></li>
-                        <li><a href="index.php?page=authorize&logout=1"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        <li><a href="index.php?page=authorize&logout=1"><i class="fa fa-sign-out fa-fw"></i> <?=$xml->logout ?? 'Logout'?></a>
                         </li>
                     </ul>
                     <!-- /.dropdown-user -->

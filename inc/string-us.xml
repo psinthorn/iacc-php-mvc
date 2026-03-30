@@ -2,128 +2,519 @@
 <note>
 
 <add>Add</add>
-<amount>Amount</amount>
+<addnew>Add New</addnew>
+<addproduct>Add Product</addproduct>
 <back>Back</back>
-<baht>Baht</baht>
-<brand>Brand</brand>
-<baddress>Address(bil)</baddress>
-<brandonthistype>Brand on this type (green to active)</brandonthistype>
-<bcity>City(bil)</bcity>
-<bdistrict>District(bil)</bdistrict>
-<bprovince>Province(bil)</bprovince>
-<bzip>Zip(bil)</bzip>
-<category>Category</category>
-<company>Company</company>
-<contact>Contact</contact>
-<contactperson>Contact Person</contactperson>
-<create>Create</create>
-<createdate>Create Date</createdate>
-<credit>Credit</credit>
-<customer>Customer</customer>
+<backlist>Back to List</backlist>
+<backtolist>Back to List</backtolist>
+<cancel>Cancel</cancel>
+<change>Change</change>
+<clear>Clear</clear>
 <close>Close</close>
 <confirm>Confirm</confirm>
-<date>Date</date>
+<confirm_delete>Confirm Delete</confirm_delete>
+<confirmdelete>Confirm Delete</confirmdelete>
+<create>Create</create>
 <delete>Delete</delete>
-<deliverynote>Delivery Note</deliverynote>
-<description>Description</description>
-<deliverydate>Delivery Date</deliverydate>
-<discount>Discount</discount>
-<dnno>Delivery No.</dnno>
-<duedate>Due Date</duedate>
 <edit>Edit</edit>
-<email>Email</email>
-<exitingaddress>Exiting Address</exitingaddress>
-<fax>Fax</fax>
+<editing>Editing</editing>
+<enter>Enter</enter>
 <filter>Filter</filter>
+<list>List</list>
+<manage>Manage</manage>
+<preview>Preview</preview>
+<print>Print</print>
+<removelast>Remove Last</removelast>
+<reset>Reset</reset>
+<save>Save</save>
+<search>Search</search>
+<search_help>Search Help</search_help>
+<searchbynameorcode>Search by name or code</searchbynameorcode>
+<select>Select</select>
+<send>Send</send>
+<start>Start</start>
+<togglestatus>Toggle Status</togglestatus>
+<update>Update</update>
+<view>View</view>
+<void>Void</void>
+<action>Action</action>
+<actions>Actions</actions>
+<active>Active</active>
+<all>All</all>
+<allstatus>All Status</allstatus>
+<alltypes>All Types</alltypes>
+<amount>Amount</amount>
+<areyousure>Are you sure?</areyousure>
+<attachment>Attachment</attachment>
+<baht>Baht</baht>
+<both>Both</both>
+<cancelled>Cancelled</cancelled>
+<cannot_delete>Cannot Delete</cannot_delete>
+<code>Code</code>
+<completed>Completed</completed>
+<configured>Configured</configured>
+<confirmed>Confirmed</confirmed>
+<contact>Contact</contact>
+<contactperson>Contact Person</contactperson>
+<current>Current</current>
+<date>Date</date>
+<datecreate>Date Created</datecreate>
+<createdate>Create Date</createdate>
+<credit>Credit</credit>
+<description>Description</description>
+<descriptions>Descriptions</descriptions>
+<detail>Detail</detail>
+<details>Details</details>
+<discount>Discount</discount>
+<draft>Draft</draft>
+<duedate>Due Date</duedate>
+<email>Email</email>
+<error>Error</error>
+<fax>Fax</fax>
+<file>File</file>
+<first>First</first>
+<from>From</from>
+<full>Full</full>
 <grandtotal>Grand Total</grandtotal>
-<generalinformation>General Information</generalinformation>
 <in>IN</in>
-<invoice>Invoice</invoice>
-<inno>Invoice No.</inno>
+<inactive>Inactive</inactive>
 <information>Information</information>
-<listpr>List PR</listpr>
-<limitcredit>Limit Credit</limitcredit>
+<items>Items</items>
+<method>Method</method>
+<name>Name</name>
+<nameen>Name (EN)</nameen>
+<nameth>Name (TH)</nameth>
+<namesh>Name (Short)</namesh>
+<englishname>English Name</englishname>
+<thainame>Thai Name</thainame>
+<net>Net</net>
+<no_data>No Data</no_data>
+<no_data_desc>No records found</no_data_desc>
+<nodata>No Data</nodata>
+<note>Note</note>
+<notes>Notes</notes>
+<optionaldescription>Optional Description</optionaldescription>
+<order>Order</order>
+<other>Other</other>
+<out>OUT</out>
+<owner>Owner</owner>
+<no_owner>No Owner</no_owner>
+<own_company>Own Company</own_company>
+<party>Party</party>
+<pending>Pending</pending>
+<phone>Phone</phone>
+<price>Price</price>
+<record>Record</record>
+<records>Records</records>
+<remaining>Remaining</remaining>
+<serialno>Serial No.</serialno>
+<showing>Showing</showing>
+<sn>S/N</sn>
+<sortorder>Sort Order</sortorder>
+<sortorderhelp>Lower numbers appear first</sortorderhelp>
+<split>Split</split>
+<standard>Standard</standard>
+<status>Status</status>
+<subtotal>Sub Total</subtotal>
+<success>Success</success>
+<summary>Summary</summary>
+<to>To</to>
+<total>Total</total>
+<type>Type</type>
+<unit>Unit</unit>
+<user>User</user>
+<volume>Volume</volume>
+<warranty>Expire Warranty</warranty>
+<company>Company</company>
+<companytype>Company Type</companytype>
+<contactinfo>Contact Info</contactinfo>
+<customer>Customer</customer>
+<customerinfo>Customer Info</customerinfo>
+<vender>Vendor</vender>
+<vendor>Vendor</vendor>
+<vendorinfo>Vendor Info</vendorinfo>
+<supplier>Supplier</supplier>
+<address>Address</address>
+<baddress>Address (Billing)</baddress>
+<bcity>City (Billing)</bcity>
+<bdistrict>District (Billing)</bdistrict>
+<bprovince>Province (Billing)</bprovince>
+<bzip>Zip (Billing)</bzip>
+<raddress>Address (Register)</raddress>
+<rcity>City (Register)</rcity>
+<rdistrict>District (Register)</rdistrict>
+<rprovince>Province (Register)</rprovince>
+<rzip>Zip (Register)</rzip>
+<exitingaddress>Existing Address</exitingaddress>
+<registeraddress>Register Address</registeraddress>
+<nullforsave>Leave blank to use register data</nullforsave>
+<generalinformation>General Information</generalinformation>
+<basicinformation>Basic Information</basicinformation>
+<requestinformation>Request Information</requestinformation>
+<limitcredit>Credit Limit</limitcredit>
 <limitday>Limit Day</limitday>
 <logo>Logo</logo>
-<labour>Labour</labour>
+<uploadlogo>Upload Logo</uploadlogo>
+<masterdata>Master Data</masterdata>
+<brand>Brand</brand>
+<brandonthistype>Brand on this type (green to active)</brandonthistype>
+<category>Category</category>
 <model>Model</model>
-<make>Make</make>
-<notes>Note</notes>
-<name>Name</name>
-<nameen>Name(EN)</nameen>
-<nameth>Name(TH)</nameth>
-<namesh>Name(SH)</namesh>
-<nullforsave>null for same register data</nullforsave>
-<other>Other</other>
-<owner>Owner</owner>
-<out>OUT</out>
-<overhead>Overhead</overhead>
-<overdue>Overdue</overdue>
-<pay>Pay</pay>
-<payby>Pay By</payby>
-<payment>Payment</payment>
-<phone>Phone</phone>
-<pono>PO No.</pono>
-<prforvender>PR for Vender</prforvender>
-<prforcustomer>PR for Customer</prforcustomer>
-<price>Price</price>
 <product>Product</product>
+<products>Products</products>
+<equipment>Equipment</equipment>
+<customicon>Custom Icon</customicon>
+<selecticon>Select Icon</selecticon>
+<codehelp>Unique identifier code</codehelp>
+<purchasingrequest>Purchasing Request</purchasingrequest>
+<purchasingorder>Purchase Order</purchasingorder>
+<pr>PR</pr>
+<prno>PR No.</prno>
+<pono>PO No.</pono>
+<prforcustomer>PR for Customer</prforcustomer>
+<prforvender>PR for Vendor</prforvender>
+<prnotfound>PR Not Found</prnotfound>
+<productfrompr>Product from PR</productfrompr>
+<listpr>List PR</listpr>
+<makepo>Make PO</makepo>
+<pleaseselectproduct>Please Select Product</pleaseselectproduct>
+<viewpo>View PO</viewpo>
+<invoice>Invoice</invoice>
+<inno>Invoice No.</inno>
+<createinvoice>Create Invoice</createinvoice>
+<printinvoice>Print Invoice</printinvoice>
+<invoicenotfound>Invoice Not Found</invoicenotfound>
+<quotation>Quotation</quotation>
+<quono>Quotation No.</quono>
+<uploadquo>Upload Quotation</uploadquo>
+<voidinv>Void Invoice</voidinv>
+<splitinvoicegroup>Split Invoice Group</splitinvoicegroup>
+<tax>Tax</tax>
+<taxinvoice>Tax Invoice - Receipt</taxinvoice>
+<taxinvoicem>Make Tax Invoice</taxinvoicem>
+<taxno>Tax Invoice No.</taxno>
+<taxreports>Tax Reports</taxreports>
+<vat>VAT</vat>
 <processpr>PR Process</processpr>
 <processpo>PO Process</processpo>
 <processquo>Quotation Process</processquo>
 <processdeli>Delivery Process</processdeli>
 <processpaid>Paid Process</processpaid>
 <processall>All Process</processall>
-<print>Print</print>
-<pleaseselectproduct>Please Select Product</pleaseselectproduct>
-<purchasingrequest>Purchasing Request</purchasingrequest>
-<purchasingorder>Purchase Order</purchasingorder>
-<quotation>Quotation</quotation>
-<report>Report</report>
-<request>Request</request>
-<registeraddress>Register Address</registeraddress>
+<deliverynote>Delivery Note</deliverynote>
+<deliverydate>Delivery Date</deliverydate>
+<dnno>Delivery No.</dnno>
+<deliver>Deliver</deliver>
+<confirmreceive>Confirm Receive</confirmreceive>
 <recieve>Confirm Receipt</recieve>
-<raddress>Address(register)</raddress>
-<rcity>City(register)</rcity>
-<rdistrict>District(register)</rdistrict>
-<rprovince>Province(register)</rprovince>
-<rzip>Zip(register)</rzip>
-<save>Save</save>
-<start>Start</start>
-<status>Status</status>
-<sn>S/N</sn>
-<subtotal>Sub Total</subtotal>
-<success>Success</success>
-<summary>Summary</summary>
-<quono>Quotation No.</quono>
-<tax>Tax</tax>
-<taxinvoice>Tax Invoice - Receipt</taxinvoice>
-<taxinvoicem>Make Tax-Invoice</taxinvoicem>
-<taxno>Tax-Invoice No.</taxno>
-<total>รวม</total>
-<term>Term</term>
-<type>Type</type>
-<vender>Vender</vender>
-<vat>Vat</vat>
+<receive>Receive</receive>
+<pay>Pay</pay>
+<payby>Pay By</payby>
+<payment>Payment</payment>
+<payments>Payments</payments>
+<paymentmethod>Payment Method</paymentmethod>
+<paymentmethods>Payment Methods</paymentmethods>
+<paymentmethodlist>Payment Method List</paymentmethodlist>
+<paymenthistory>Payment History</paymenthistory>
+<paymentterms>Payment Terms</paymentterms>
+<paymenttracking>Payment Tracking</paymenttracking>
+<paymentgateway>Payment Gateway</paymentgateway>
+<paymentgateways>Payment Gateways</paymentgateways>
+<paymentgatewayconfig>Payment Gateway Config</paymentgatewayconfig>
+<gatewayconfig>Gateway Config</gatewayconfig>
+<gateway>Gateway</gateway>
+<gatewayhelp>Configure your payment gateways</gatewayhelp>
+<managepaymentgateways>Manage Payment Gateways</managepaymentgateways>
+<managepaymentmethods>Manage Payment Methods</managepaymentmethods>
+<addpaymentmethod>Add Payment Method</addpaymentmethod>
+<editpaymentmethod>Edit Payment Method</editpaymentmethod>
+<enablethismethod>Enable This Method</enablethismethod>
+<isonlinepaymentgateway>Online Payment Gateway</isonlinepaymentgateway>
+<activemethods>Active Methods</activemethods>
+<inactivemethods>Inactive Methods</inactivemethods>
+<totalmethods>Total Methods</totalmethods>
+<nopaymentmethods>No payment methods configured</nopaymentmethods>
+<addyourfirstpaymentmethod>Add your first payment method</addyourfirstpaymentmethod>
+<addgatewaysfirst>Add gateways first</addgatewaysfirst>
+<nogatewaysfound>No gateways found</nogatewaysfound>
+<unsupportedgateway>Unsupported Gateway</unsupportedgateway>
+<filldetailsbelow>Fill in the details below</filldetailsbelow>
+<testconnection>Test Connection</testconnection>
+<saveconfig>Save Config</saveconfig>
+<slipreview>Slip Review</slipreview>
+<recordpayment>Record Payment</recordpayment>
+<fullypaid>Fully Paid</fullypaid>
+<validpay>Valid Pay</validpay>
+<overhead>Overhead</overhead>
+<overdue>Overdue</overdue>
+<labour>Labour</labour>
+<labourrate>Labour Rate</labourrate>
+<labourtotal>Labour Total</labourtotal>
+<materials>Materials</materials>
+<billing>Billing</billing>
+<billingnote>Billing Note</billingnote>
+<billinginvoices>Billing Invoices</billinginvoices>
+<notconfigured>Not Configured</notconfigured>
+<receipt>Receipt</receipt>
+<receiptno>Receipt No.</receiptno>
 <voucher>Voucher</voucher>
 <voucherno>Voucher No.</voucherno>
-<void>Void</void>
-<voidinv>Void-Invoice</voidinv>
-<validpay>Valid Pay</validpay>
-<volume>Volume</volume>
-<warranty>Expire Warranty</warranty>
-<user>User</user>
-<unit>Unit</unit>
-<uploadquo>Upload QUO</uploadquo>
-<viewpo>View PO</viewpo>
-<sendmail>Sendmail</sendmail>
-<to>To</to>
+<vouchersettings>Voucher Settings</vouchersettings>
+<report>Report</report>
+<reporthub>Report Hub</reporthub>
+<businesssummary>Business Summary</businesssummary>
+<araging>AR Aging</araging>
+<tracking>Tracking</tracking>
+<tryadjust>Try adjusting your filters</tryadjust>
+<accounting>Accounting</accounting>
+<chartofaccounts>Chart of Accounts</chartofaccounts>
+<journalvouchers>Journal Vouchers</journalvouchers>
+<newjournal>New Journal</newjournal>
+<trialbalance>Trial Balance</trialbalance>
+<expenses>Expenses</expenses>
+<expenselist>Expense List</expenselist>
+<expensecategories>Expense Categories</expensecategories>
+<expenseprojects>Expense Projects</expenseprojects>
+<expensesummary>Expense Summary</expensesummary>
+<newexpense>New Expense</newexpense>
+<newentry>New Entry</newentry>
+<currencymanage>Currency Management</currencymanage>
+<dashboard>Dashboard</dashboard>
+<sendmail>Send Mail</sendmail>
 <cc>CC</cc>
 <subject>Subject</subject>
 <body>Body</body>
-<send>Send</send>
-<method>Method</method>
-<billingnote>Billing Note</billingnote>
-<receipt>Receipt</receipt>
-<receiptno>Receipt No</receiptno>
+<account_id>Account ID</account_id>
+<account_info>Account Information</account_info>
+<personal_info>Personal Information</personal_info>
+<fullname>Full Name</fullname>
+<role>Role</role>
+<language>Language</language>
+<language_desc>Choose your preferred language</language_desc>
+<language_settings>Language and Region</language_settings>
+<display_language>Display Language</display_language>
+<settings>Settings</settings>
+<settings_desc>Manage your account settings and preferences</settings_desc>
+<change_password>Change Password</change_password>
+<current_password>Current Password</current_password>
+<new_password>New Password</new_password>
+<confirm_password>Confirm New Password</confirm_password>
+<update_password>Update Password</update_password>
+<password>Password</password>
+<password_desc>Change your account password</password_desc>
+<quick_links>Quick Links</quick_links>
+<notifications>Notifications</notifications>
+<email_notifications>Email Notifications</email_notifications>
+<email_notifications_desc>Receive email alerts for important updates</email_notifications_desc>
+<invoice_alerts>Invoice Alerts</invoice_alerts>
+<invoice_alerts_desc>Get notified when invoices are created or paid</invoice_alerts_desc>
+<payment_reminders>Payment Reminders</payment_reminders>
+<payment_reminders_desc>Receive reminders for upcoming payment due dates</payment_reminders_desc>
+<display_settings>Display</display_settings>
+<records_per_page>Records Per Page</records_per_page>
+<records_per_page_desc>Default number of records shown in list pages</records_per_page_desc>
+<date_format>Date Format</date_format>
+<date_format_desc>How dates are displayed throughout the application</date_format_desc>
+<compact_view>Compact View</compact_view>
+<compact_view_desc>Use a more compact display for tables and lists</compact_view_desc>
+<security>Security</security>
+<active_sessions>Active Sessions</active_sessions>
+<active_sessions_desc>You are currently logged in from 1 device</active_sessions_desc>
+<logout_all>Logout All</logout_all>
+<danger_zone>Danger Zone</danger_zone>
+<delete_account>Delete Account</delete_account>
+<delete_account_desc>Permanently delete your account and all data. This cannot be undone.</delete_account_desc>
+<help>Help and Support</help>
+<help_center>Help Center</help_center>
+<help_desc>Find answers and get support</help_desc>
+<getting_started>Getting Started</getting_started>
+<getting_started_desc>Learn the basics of using iACC</getting_started_desc>
+<documentation>Documentation</documentation>
+<documentation_desc>Detailed guides and references</documentation_desc>
+<faq>FAQ</faq>
+<faq_desc>Frequently asked questions</faq_desc>
+<frequently_asked>Frequently Asked Questions</frequently_asked>
+<contact_support>Contact Support</contact_support>
+<contact_support_desc>Get help from our team</contact_support_desc>
+<contact_us>Contact Us</contact_us>
+<guide>Guide</guide>
+<setupguide>Setup Guide</setupguide>
+<saleschannel>Sales Channel</saleschannel>
+<apidashboard>API Dashboard</apidashboard>
+<apidocs>API Docs</apidocs>
+<apikeys>API Keys</apikeys>
+<apisubscriptions>API Subscriptions</apisubscriptions>
+<apiwebhooks>API Webhooks</apiwebhooks>
+<apiusagelogs>API Usage Logs</apiusagelogs>
+<apiorders>API Orders</apiorders>
+<apiinvoices>API Invoices</apiinvoices>
+<apiupgrade>API Upgrade</apiupgrade>
+<salesorders>Sales Orders</salesorders>
+<aitools>AI Tools</aitools>
+<aichathistory>AI Chat History</aichathistory>
+<aischemabrowser>AI Schema Browser</aischemabrowser>
+<aischemarefresh>Refresh Schema</aischemarefresh>
+<aiactionlog>AI Action Log</aiactionlog>
+<aisettings>AI Settings</aisettings>
+<aidocumentation>AI Documentation</aidocumentation>
+<admin>Admin</admin>
+<auditlog>Audit Log</auditlog>
+<edits>Edits</edits>
+<monitoring>Monitoring</monitoring>
+<devtools>Dev Tools</devtools>
+<apilangdebug>Language Debug</apilangdebug>
+<debugphp>Debug PHP</debugphp>
+<debugsession>Debug Session</debugsession>
+<devroadmap>Roadmap</devroadmap>
+<containers>Containers</containers>
+<testcrud>Test CRUD</testcrud>
+<testcrudai>Test CRUD AI</testcrudai>
+<testrbac>Test RBAC</testrbac>
+<testcontainers>Test Containers</testcontainers>
+<make>Make</make>
+<request>Request</request>
+<term>Term</term>
+<Company>Company</Company>
+<Description>Description</Description>
+<Model>Model</Model>
+<Price>Price</Price>
+<Product>Product</Product>
+<Total>Total</Total>
+<Unit>Unit</Unit>
+<accountname>Account Name</accountname>
+<accountnumber>Account Number</accountnumber>
+<add_payment_subtitle>Add a new payment method to your account</add_payment_subtitle>
+<edit_payment_subtitle>Update payment method details</edit_payment_subtitle>
+<manage_payment_terms>Manage Payment Terms</manage_payment_terms>
+<no_payment_terms>No Payment Terms</no_payment_terms>
+<no_payment_terms_desc>No payment terms have been configured yet</no_payment_terms_desc>
+<payment_list>Payment List</payment_list>
+<enter_payment_name>Enter payment method name</enter_payment_name>
+<addnotes>Add Notes</addnotes>
+<addproductsquotation>Add Products to Quotation</addproductsquotation>
+<basicinfo>Basic Info</basicinfo>
+<branch>Branch</branch>
+<bankaccount>Bank Account</bankaccount>
+<customername>Customer Name</customername>
+<manual>Manual</manual>
+<of>of</of>
+<optional>Optional</optional>
+<parties>Parties</parties>
+<pdf>PDF</pdf>
+<quantity>Quantity</quantity>
+<sourcetype>Source Type</sourcetype>
+<taxid>Tax ID</taxid>
+<allinvoicesbilled>All Invoices Billed</allinvoicesbilled>
+<billingdescription>Billing Description</billingdescription>
+<billingdescriptionplaceholder>Enter billing description</billingdescriptionplaceholder>
+<billingnotedetails>Billing Note Details</billingnotedetails>
+<billingsubtitle>Manage billing notes and invoices</billingsubtitle>
+<createbilling>Create Billing</createbilling>
+<createbillingnote>Create Billing Note</createbillingnote>
+<invoiceandbillinglist>Invoice and Billing List</invoiceandbillinglist>
+<invoicesselected>Invoices Selected</invoicesselected>
+<invoiceswithbilling>Invoices with Billing</invoiceswithbilling>
+<invoiceswithoutbilling>Invoices without Billing</invoiceswithoutbilling>
+<multibillingsubtitle>Create billing note for multiple invoices</multibillingsubtitle>
+<nobilling>No Billing</nobilling>
+<nobillingsyet>No billing notes yet</nobillingsyet>
+<nounbilledinvoices>No unbilled invoices</nounbilledinvoices>
+<selectedtotal>Selected Total</selectedtotal>
+<totalbilledamount>Total Billed Amount</totalbilledamount>
+<totalbillingnotes>Total Billing Notes</totalbillingnotes>
+<unbilledinvoices>Unbilled Invoices</unbilledinvoices>
+<withbilling>With Billing</withbilling>
+<withoutbilling>Without Billing</withoutbilling>
+<deliverynotfound>Delivery Note Not Found</deliverynotfound>
+<invoicedate>Invoice Date</invoicedate>
+<invoiceno>Invoice No.</invoiceno>
+<invoices>Invoices</invoices>
+<editing_record>Editing Record</editing_record>
+<editquotation>Edit Quotation</editquotation>
+<editreceipt>Edit Receipt</editreceipt>
+<editvoucher>Edit Voucher</editvoucher>
+<viewinvoice>View Invoice</viewinvoice>
+<viewquotation>View Quotation</viewquotation>
+<excludevat>Exclude VAT</excludevat>
+<excludevathint>Price does not include VAT</excludevathint>
+<includevat>Include VAT</includevat>
+<includevathint>Price includes VAT</includevathint>
+<novat>No VAT</novat>
+<vatmode>VAT Mode</vatmode>
+<linkedinvoice>Linked Invoice</linkedinvoice>
+<linkedquotation>Linked Quotation</linkedquotation>
+<linkedsource>Linked Source</linkedsource>
+<linkedtoinvoice>Linked to Invoice</linkedtoinvoice>
+<linkedtoquotation>Linked to Quotation</linkedtoquotation>
+<logout>Logout</logout>
+<managereceipts>Manage Receipts</managereceipts>
+<newreceipt>New Receipt</newreceipt>
+<noreceipts>No Receipts</noreceipts>
+<receiptdetails>Receipt Details</receiptdetails>
+<receiptlist>Receipt List</receiptlist>
+<receiptnumber>Receipt Number</receiptnumber>
+<receiptsettings>Receipt Settings</receiptsettings>
+<totalreceipts>Total Receipts</totalreceipts>
+<newvoucher>New Voucher</newvoucher>
+<novouchers>No Vouchers</novouchers>
+<voucherdetails>Voucher Details</voucherdetails>
+<vouchernumber>Voucher Number</vouchernumber>
+<profile>Profile</profile>
+<profile_updated>Profile Updated</profile_updated>
+<password_changed>Password Changed</password_changed>
+<settings_saved>Settings Saved</settings_saved>
+<user_subtitle>Manage your account and preferences</user_subtitle>
+<switchcompany>Switch Company</switchcompany>
+<searchbyname>Search by Name</searchbyname>
+<selectinvoice>Select Invoice</selectinvoice>
+<selectinvoices>Select Invoices</selectinvoices>
+<selectitem>Select Item</selectitem>
+<selectmodel>Select Model</selectmodel>
+<selectproduct>Select Product</selectproduct>
+<selectquotation>Select Quotation</selectquotation>
+<quotationnotfound>Quotation Not Found</quotationnotfound>
+<poref>PO Reference</poref>
+<pricingdates>Pricing and Dates</pricingdates>
+<uploadpo>Upload PO</uploadpo>
+<enter_description>Enter description</enter_description>
+<overdue>Overdue</overdue>
+<user_management>User Management</user_management>
+<user_management_subtitle>Manage system users, roles and permissions</user_management_subtitle>
+<add_new_user>Add New User</add_new_user>
+<create_user>Create User</create_user>
+<reset_password>Reset Password</reset_password>
+<confirm_delete_user>Delete this user?</confirm_delete_user>
+<admin_management_panel>Admin Management Panel</admin_management_panel>
+<manage_users>Manage Users</manage_users>
+<manage_users_desc>Manage system users</manage_users_desc>
+<search_companies_placeholder>Search companies by name, contact, email...</search_companies_placeholder>
+<today>Today</today>
+<this_year>This Year</this_year>
+<all_time>All Time</all_time>
+<container_manager>Container Manager</container_manager>
+<docker_settings>Docker Settings</docker_settings>
+<manage_containers>Manage containers</manage_containers>
+<click_to_enable>Click to enable</click_to_enable>
+<customers_vendors>Customers &amp; Vendors</customers_vendors>
+<all_companies>All Companies</all_companies>
+<enter_english_name>Enter English name</enter_english_name>
+<payment_gateway_settings>Payment gateway settings</payment_gateway_settings>
+<addnew_entry>Add New Entry</addnew_entry>
+<username>Username</username>
+<login>Login</login>
+<remember_me>Remember Me</remember_me>
+<forgot_password>Forgot Password</forgot_password>
+<welcome>Welcome</welcome>
+<welcome_back>Welcome back</welcome_back>
+<loading>Loading...</loading>
+<processing>Processing...</processing>
+<no_results>No results found</no_results>
+<are_you_sure_delete>Are you sure you want to delete?</are_you_sure_delete>
+<yes>Yes</yes>
+<no>No</no>
+<enabled>Enabled</enabled>
+<disabled>Disabled</disabled>
+<version>Version</version>
+<copyright>Copyright</copyright>
+
 </note>

@@ -19,7 +19,7 @@ $total_customers = $stats['customers'];
 <div class="master-data-header">
     <h2><i class="fa fa-building"></i> <?=$xml->company ?? 'Company Management'?></h2>
     <div>
-        <span class="text-muted"><?=$com_id > 0 ? 'Customers & Vendors' : 'All Companies'?></span>
+        <span class="text-muted"><?=$com_id > 0 ? ($xml->customers_vendors ?? 'Customers & Vendors') : ($xml->all_companies ?? 'All Companies')?></span>
     </div>
 </div>
 

@@ -47,9 +47,9 @@ $currentUserId = intval($_SESSION['user_id'] ?? 0);
 <div class="page-header-user">
     <div class="header-content">
         <div class="header-icon"><i class="fa fa-users"></i></div>
-        <div><h2><?= isset($xml->user) ? $xml->user : 'User Management' ?></h2><p class="subtitle">Manage system users, roles and permissions</p></div>
+        <div><h2><?=$xml->user_management ?? 'User Management'?></h2><p class="subtitle"><?=$xml->user_management_subtitle ?? 'Manage system users, roles and permissions'?></p></div>
     </div>
-    <button type="button" class="btn-add-user" data-toggle="modal" data-target="#addUserModal"><i class="fa fa-plus"></i> Add New User</button>
+    <button type="button" class="btn-add-user" data-toggle="modal" data-target="#addUserModal"><i class="fa fa-plus"></i> <?=$xml->add_new_user ?? 'Add New User'?></button>
 </div>
 
 <div class="filter-card-user">
@@ -145,7 +145,7 @@ $currentUserId = intval($_SESSION['user_id'] ?? 0);
                         </select>
                     </form>
                     <button type="button" class="btn btn-xs btn-info" data-toggle="modal" data-target="#resetPasswordModal" data-userid="<?=$u['id']?>" data-email="<?=e($u['email'])?>" title="Reset Password"><i class="fa fa-key"></i></button>
-                    <form method="post" action="index.php?page=user_store" style="display:inline;" onsubmit="return confirm('Delete this user?');"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="user_id" value="<?=$u['id']?>"><button type="submit" class="btn btn-xs btn-danger" title="Delete"><i class="fa fa-trash"></i></button></form>
+                    <form method="post" action="index.php?page=user_store" style="display:inline;" onsubmit="return confirm('<?=$xml->confirm_delete_user ?? 'Delete this user?'?>');"><input type="hidden" name="csrf_token" value="<?=csrf_token()?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="user_id" value="<?=$u['id']?>"><button type="submit" class="btn btn-xs btn-danger" title="Delete"><i class="fa fa-trash"></i></button></form>
                     <?php else:?><span class="text-muted">-</span><?php endif;?>
                 </td>
             </tr>
@@ -162,35 +162,35 @@ $currentUserId = intval($_SESSION['user_id'] ?? 0);
 <!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
     <form method="post" action="index.php?page=user_store">
-        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><i class="fa fa-user-plus"></i> Add New User</h4></div>
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><i class="fa fa-user-plus"></i> <?=$xml->add_new_user ?? 'Add New User'?></h4></div>
         <div class="modal-body">
             <input type="hidden" name="csrf_token" value="<?=csrf_token()?>">
             <input type="hidden" name="action" value="add">
-            <div class="form-group"><label>Email</label><input type="email" class="form-control" name="email" required></div>
-            <div class="form-group"><label>Password</label><input type="password" class="form-control" name="password" required minlength="6"></div>
-            <div class="form-group"><label>Role</label><select class="form-control" id="level" name="level" onchange="toggleCompanyField()"><option value="0">User</option><option value="1">Admin</option><option value="2">Super Admin</option></select></div>
-            <div class="form-group" id="companyField"><label>Company <span class="text-danger">*</span></label>
+            <div class="form-group"><label><?=$xml->email ?? 'Email'?></label><input type="email" class="form-control" name="email" required></div>
+            <div class="form-group"><label><?=$xml->password ?? 'Password'?></label><input type="password" class="form-control" name="password" required minlength="6"></div>
+            <div class="form-group"><label><?=$xml->role ?? 'Role'?></label><select class="form-control" id="level" name="level" onchange="toggleCompanyField()"><option value="0">User</option><option value="1">Admin</option><option value="2">Super Admin</option></select></div>
+            <div class="form-group" id="companyField"><label><?=$xml->company ?? 'Company'?> <span class="text-danger">*</span></label>
                 <select class="form-control" id="company_id" name="company_id"><option value="">-- Select --</option>
                     <?php foreach($companies as $co):?><option value="<?=$co['id']?>"><?=e($co['name_en'])?></option><?php endforeach;?>
                 </select><p class="help-block">Normal users must be assigned to a company.</p>
             </div>
         </div>
-        <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success">Create User</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal"><?=$xml->cancel ?? 'Cancel'?></button><button type="submit" class="btn btn-success"><?=$xml->create_user ?? 'Create User'?></button></div>
     </form>
 </div></div></div>
 
 <!-- Reset Password Modal -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
     <form method="post" action="index.php?page=user_store">
-        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><i class="fa fa-key"></i> Reset Password</h4></div>
+        <div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h4 class="modal-title"><i class="fa fa-key"></i> <?=$xml->reset_password ?? 'Reset Password'?></h4></div>
         <div class="modal-body">
             <input type="hidden" name="csrf_token" value="<?=csrf_token()?>">
             <input type="hidden" name="action" value="reset_password">
             <input type="hidden" name="user_id" id="reset_user_id">
             <p>Reset password for: <strong id="reset_user_email"></strong></p>
-            <div class="form-group"><label>New Password</label><input type="password" class="form-control" name="new_password" required minlength="6"></div>
+            <div class="form-group"><label><?=$xml->new_password ?? 'New Password'?></label><input type="password" class="form-control" name="new_password" required minlength="6"></div>
         </div>
-        <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button><button type="submit" class="btn btn-info">Reset Password</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal"><?=$xml->cancel ?? 'Cancel'?></button><button type="submit" class="btn btn-info"><?=$xml->reset_password ?? 'Reset Password'?></button></div>
     </form>
 </div></div></div>
 </div>
