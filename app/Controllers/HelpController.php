@@ -14,4 +14,17 @@ class HelpController extends BaseController
         include __DIR__ . '/../Views/help/master-data-guide.php';
         exit;
     }
+
+    /** User Manual - step-by-step user guide */
+    public function userManual(): void
+    {
+        $this->render('help/user-manual');
+    }
+
+    /** Developer Summary - standalone technical reference */
+    public function devSummary(): void
+    {
+        include __DIR__ . '/../Views/help/dev-summary.php';
+        exit;
+    }
 }

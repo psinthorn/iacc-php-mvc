@@ -142,6 +142,7 @@
             <h4><?= $lang === 'th' ? 'สนับสนุน' : 'Support' ?></h4>
             <ul>
                 <li><a href="login.php"><?= $lang === 'th' ? 'ศูนย์ช่วยเหลือ' : 'Help Center' ?></a></li>
+                <li><a href="template-howto.php?lang=<?= $lang ?>"><?= $lang === 'th' ? 'คู่มือผู้ใช้' : 'User Manual' ?></a></li>
                 <li><a href="contact.php?lang=<?= $lang ?>"><?= $lang === 'th' ? 'ติดต่อเรา' : 'Contact' ?></a></li>
                 <li><a href="privacy.php?lang=<?= $lang ?>"><?= $lang === 'th' ? 'ความเป็นส่วนตัว' : 'Privacy' ?></a></li>
                 <li><a href="terms.php?lang=<?= $lang ?>"><?= $lang === 'th' ? 'ข้อกำหนด' : 'Terms' ?></a></li>

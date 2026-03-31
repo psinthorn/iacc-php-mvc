@@ -459,6 +459,16 @@
         </h2>
         
         <div class="doc-grid">
+            <a href="index.php?page=user_manual" class="doc-card" style="text-decoration:none; color:inherit;">
+                <div class="doc-icon" style="background: #8e44ad;">
+                    <i class="fa fa-book" style="color: white;"></i>
+                </div>
+                <div class="doc-content">
+                    <h4><?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'คู่มือผู้ใช้งาน' : 'User Manual' ?></h4>
+                    <p><?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'คู่มือทีละขั้นตอน ตั้งแต่การตั้งค่าไปจนถึงรายงาน' : 'Step-by-step guide from setup to reports' ?></p>
+                </div>
+            </a>
+            
             <div class="doc-card">
                 <div class="doc-icon">
                     <i class="fa fa-file-text-o"></i>

@@ -507,6 +507,28 @@ include_once 'inc/top-navbar.php';
                     </li>
                     <?php endif; // end Developer role check ?>
                     <?php endif; // end user_level >= 2 check ?>
+                    
+                    <!-- Help & Documentation (all users) -->
+                    <li>
+                        <a href="#"><i class="fa fa-question-circle"></i> <?=$xml->helpdocs ?? 'Help & Docs'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=help"><i class="fa fa-life-ring"></i> <?=$xml->helpcenter ?? 'Help Center'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=user_manual"><i class="fa fa-book"></i> <?=$xml->usermanual ?? 'User Manual'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=master_data_guide" target="_blank"><i class="fa fa-sitemap"></i> <?=$xml->masterdataguide ?? 'Master Data Guide'?></a>
+                            </li>
+                            <?php if (isset($has_developer_role) && $has_developer_role): ?>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=dev_summary" target="_blank"><i class="fa fa-cogs"></i> <?=$xml->devsummary ?? 'Developer Summary'?></a>
+                            </li>
+                            <?php endif; ?>
+                        </ul>
+                    </li>
                   
                 </ul>
                 <!-- /#side-menu -->

@@ -172,6 +172,8 @@ return [
     // User Account
     'help'                   => ['HelpController', 'index'],
     'master_data_guide'      => ['HelpController', 'masterDataGuide', 'standalone'],
+    'user_manual'            => ['HelpController', 'userManual'],
+    'dev_summary'            => ['HelpController', 'devSummary', 'standalone'],
 
     // ========== System / DevOps ==========
     'health'                 => ['HealthController', 'index', 'public'],
