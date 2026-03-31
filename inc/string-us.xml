@@ -516,5 +516,10 @@
 <disabled>Disabled</disabled>
 <version>Version</version>
 <copyright>Copyright</copyright>
+<helpdocs>Help &amp; Docs</helpdocs>
+<helpcenter>Help Center</helpcenter>
+<usermanual>User Manual</usermanual>
+<masterdataguide>Master Data Guide</masterdataguide>
+<devsummary>Developer Summary</devsummary>
 
 </note>

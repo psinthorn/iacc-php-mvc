@@ -516,5 +516,10 @@
 <disabled>ปิดใช้งาน</disabled>
 <version>เวอร์ชัน</version>
 <copyright>ลิขสิทธิ์</copyright>
+<helpdocs>ช่วยเหลือและเอกสาร</helpdocs>
+<helpcenter>ศูนย์ช่วยเหลือ</helpcenter>
+<usermanual>คู่มือการใช้งาน</usermanual>
+<masterdataguide>คู่มือข้อมูลหลัก</masterdataguide>
+<devsummary>สรุปสำหรับนักพัฒนา</devsummary>
 
 </note>
