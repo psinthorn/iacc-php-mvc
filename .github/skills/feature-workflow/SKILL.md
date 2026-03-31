@@ -120,6 +120,7 @@ Design conventions:
 - Include CSRF token in all forms: `<input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">`
 - Use Font Awesome 4.7 icons, Bootstrap 5.3 grid, Inter font
 - All output escaped: `<?= htmlspecialchars($var, ENT_QUOTES, 'UTF-8') ?>`
+- **All user-facing text MUST support multi-language** — see `multi-language` skill
 
 ### 6. Wire Routes
 
@@ -204,7 +205,7 @@ git push origin feature/v<version>-<feature-name>
 | 2 | Migration SQL | Files in both `database/migrations/` and `migrations/` |
 | 3 | Model | Prepared statements, transactions for multi-table |
 | 4 | Controller | CSRF, rate limiting, input validation |
-| 5 | Views | Escaped output, CSRF tokens, responsive design |
+| 5 | Views | Escaped output, CSRF tokens, responsive design, **multi-language** |
 | 6 | Routes | Added to `routes.php` with correct type |
 | 7 | Cross-links | Existing pages link to new feature |
 | 8 | Migration run | Schema verified in MySQL |
