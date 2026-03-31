@@ -418,7 +418,7 @@ body.has-top-nav .navbar-static-side {
     <ul class="top-nav-items">
         <!-- Language Switcher -->
         <li>
-            <form action="lang.php" method="post" id="langForm" style="margin: 0;">
+            <form action="index.php?page=lang_switch" method="post" id="langForm" style="margin: 0;">
                 <div class="lang-switcher">
                     <button type="submit" name="chlang" value="0" class="lang-btn <?= $current_lang == 0 ? 'active' : '' ?>">
                         <img src="images/us.jpg" alt="EN"> <span>EN</span>
