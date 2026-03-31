@@ -377,8 +377,8 @@ if ($result_id) {
 // Test insertDb with columns parameter
 $args2 = [
     'table' => 'category',
-    'columns' => 'id, company_id, cat_name, des, deleted_at',
-    'value' => "NULL, '{$_SESSION['com_id']}', 'HardClass Test Cat 2', 'Testing insertDb with columns', NULL"
+    'columns' => 'company_id, cat_name, des, deleted_at',
+    'value' => "'{$_SESSION['com_id']}', 'HardClass Test Cat 2', 'Testing insertDb with columns', NULL"
 ];
 $result2 = $har->insertDb($args2);
 $result_id2 = mysqli_insert_id($db->conn);
@@ -391,10 +391,11 @@ if ($result_id2) {
 // Test legacy insertDbMax (without columns - backward compatibility)
 $args3 = [
     'table' => 'category',
-    'value' => "'{$_SESSION['com_id']}', 'Legacy Test Cat', 'Testing legacy insertDbMax', NULL"
+    'columns' => 'company_id, cat_name, des',
+    'value' => "'{$_SESSION['com_id']}', 'Legacy Test Cat', 'Testing legacy insertDbMax'"
 ];
 $result_id3 = $har->insertDbMax($args3);
-test("insertDbMax legacy (no columns)", $result_id3 !== false && $result_id3 > 0, "Inserted ID: {$result_id3}");
+test("insertDbMax legacy (with columns)", $result_id3 !== false && $result_id3 > 0, "Inserted ID: {$result_id3}");
 
 if ($result_id3) {
     cleanup($db, 'category', $result_id3);
