@@ -2,7 +2,105 @@
 /**
  * Help & Support Page
  * Provides FAQs, documentation, and contact information
+ * Bilingual: English / Thai
  */
+$lang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'th' : 'en';
+$t = [
+    'en' => [
+        'help_center'    => 'Help Center',
+        'help_desc'      => 'Find answers to common questions and get support',
+        'search_help'    => 'Search for help...',
+        'faq'            => 'FAQs',
+        'faq_desc'       => 'Frequently asked questions',
+        'documentation'  => 'Documentation',
+        'doc_desc'       => 'User guides and manuals',
+        'contact_support'=> 'Contact Support',
+        'contact_desc'   => 'Get help from our team',
+        'getting_started'=> 'Getting Started',
+        'getting_desc'   => 'Quick start guide',
+        'faq_title'      => 'Frequently Asked Questions',
+        'faq1_q'         => 'How do I create a new invoice?',
+        'faq1_a'         => 'Navigate to the Invoice section from the sidebar menu. Click on "Create Invoice" or the "+ New" button. Fill in the customer details, add line items, set the due date, and click "Save". You can then print or email the invoice directly to your customer.',
+        'faq2_q'         => 'How do I set up payment gateway?',
+        'faq2_a'         => 'Payment gateways can be configured by administrators. Go to Admin Tools > Payment Gateway Config. Enter your PayPal or Stripe API credentials. Use Test Mode to verify the integration before going live. Once configured, customers can pay invoices online.',
+        'faq3_q'         => 'How do I change my password?',
+        'faq3_a'         => 'Click on your profile picture in the top right corner and select "My Profile". In the profile page, find the "Change Password" section. Enter your current password, then enter and confirm your new password. Click "Update Password" to save the changes.',
+        'faq4_q'         => 'How do I switch between companies?',
+        'faq4_a'         => 'Administrators and Super Admins can switch between companies from the dashboard. Click on the company name in the top navbar or go to Dashboard > Select a company from the list. Regular users are assigned to a specific company and cannot switch.',
+        'faq5_q'         => 'How do I change the language?',
+        'faq5_a'         => 'Go to Settings from your profile dropdown menu. In the Language & Region section, select your preferred language (English or Thai). The page will reload with your selected language. You can also use the language switcher in the top navbar.',
+        'faq6_q'         => 'How do I generate reports?',
+        'faq6_a'         => 'Navigate to Reports from the sidebar menu. Select the type of report you want to generate (Sales, Payments, etc.). Set your date range and filters, then click "Generate Report". Reports can be exported to PDF or Excel for further analysis.',
+        'user_manual'    => 'User Manual',
+        'user_manual_desc'=> 'Step-by-step guide from setup to reports',
+        'doc_invoice'    => 'Invoice Management',
+        'doc_invoice_desc'=> 'Learn how to create, edit, and manage invoices, quotations, and receipts.',
+        'doc_payment'    => 'Payment Processing',
+        'doc_payment_desc'=> 'Guide to accepting payments via PayPal, Stripe, and bank transfers.',
+        'doc_users'      => 'User Management',
+        'doc_users_desc' => 'Manage users, roles, and permissions for your organization.',
+        'doc_reports'    => 'Reports & Analytics',
+        'doc_reports_desc'=> 'Generate and export financial reports for your business.',
+        'contact_us'     => 'Contact Us',
+        'email_support'  => 'Email Support',
+        'email_desc'     => 'Get help via email within 24 hours',
+        'phone_support'  => 'Phone Support',
+        'phone_hours'    => 'Mon-Fri, 9:00 AM - 6:00 PM',
+        'live_chat'      => 'Live Chat',
+        'live_chat_desc' => 'Chat with our support team',
+        'start_chat'     => 'Start Chat',
+        'chat_soon'      => 'Live chat coming soon!',
+        'system_name'    => 'iACC Accounting System',
+        'system_desc'    => 'Professional accounting management for modern businesses',
+    ],
+    'th' => [
+        'help_center'    => 'ศูนย์ช่วยเหลือ',
+        'help_desc'      => 'ค้นหาคำตอบสำหรับคำถามทั่วไปและรับการสนับสนุน',
+        'search_help'    => 'ค้นหาความช่วยเหลือ...',
+        'faq'            => 'คำถามที่พบบ่อย',
+        'faq_desc'       => 'คำถามที่ถูกถามบ่อย',
+        'documentation'  => 'เอกสาร',
+        'doc_desc'       => 'คู่มือผู้ใช้และคำแนะนำ',
+        'contact_support'=> 'ติดต่อฝ่ายสนับสนุน',
+        'contact_desc'   => 'รับความช่วยเหลือจากทีมงาน',
+        'getting_started'=> 'เริ่มต้นใช้งาน',
+        'getting_desc'   => 'คู่มือเริ่มต้นอย่างรวดเร็ว',
+        'faq_title'      => 'คำถามที่พบบ่อย',
+        'faq1_q'         => 'ฉันจะสร้างใบแจ้งหนี้ใหม่ได้อย่างไร?',
+        'faq1_a'         => 'ไปที่หน้าใบแจ้งหนี้จากเมนูด้านข้าง คลิกที่ "สร้างใบแจ้งหนี้" หรือปุ่ม "+ ใหม่" กรอกรายละเอียดลูกค้า เพิ่มรายการสินค้า ตั้งวันครบกำหนด แล้วคลิก "บันทึก" จากนั้นคุณสามารถพิมพ์หรือส่งใบแจ้งหนี้ทางอีเมลให้ลูกค้าได้โดยตรง',
+        'faq2_q'         => 'ฉันจะตั้งค่าช่องทางชำระเงินได้อย่างไร?',
+        'faq2_a'         => 'ช่องทางชำระเงินสามารถตั้งค่าได้โดยผู้ดูแลระบบ ไปที่ Admin Tools > Payment Gateway Config กรอกข้อมูล API ของ PayPal หรือ Stripe ใช้โหมดทดสอบเพื่อตรวจสอบก่อนเปิดใช้งานจริง เมื่อตั้งค่าเรียบร้อย ลูกค้าสามารถชำระเงินออนไลน์ได้',
+        'faq3_q'         => 'ฉันจะเปลี่ยนรหัสผ่านได้อย่างไร?',
+        'faq3_a'         => 'คลิกที่รูปโปรไฟล์มุมขวาบนแล้วเลือก "โปรไฟล์ของฉัน" ในหน้าโปรไฟล์ ให้หาส่วน "เปลี่ยนรหัสผ่าน" กรอกรหัสผ่านปัจจุบัน แล้วกรอกและยืนยันรหัสผ่านใหม่ คลิก "อัปเดตรหัสผ่าน" เพื่อบันทึก',
+        'faq4_q'         => 'ฉันจะสลับบริษัทได้อย่างไร?',
+        'faq4_a'         => 'ผู้ดูแลระบบสามารถสลับบริษัทได้จากแดชบอร์ด คลิกที่ชื่อบริษัทในแถบด้านบนหรือไปที่แดชบอร์ด > เลือกบริษัทจากรายการ ผู้ใช้ทั่วไปจะถูกกำหนดให้อยู่ในบริษัทเดียวและไม่สามารถสลับได้',
+        'faq5_q'         => 'ฉันจะเปลี่ยนภาษาได้อย่างไร?',
+        'faq5_a'         => 'ไปที่การตั้งค่าจากเมนูโปรไฟล์ ในส่วนภาษาและภูมิภาค เลือกภาษาที่ต้องการ (อังกฤษ หรือ ไทย) หน้าจะโหลดใหม่ด้วยภาษาที่เลือก คุณยังสามารถใช้ตัวสลับภาษาในแถบด้านบนได้',
+        'faq6_q'         => 'ฉันจะสร้างรายงานได้อย่างไร?',
+        'faq6_a'         => 'ไปที่รายงานจากเมนูด้านข้าง เลือกประเภทรายงานที่ต้องการ (ยอดขาย, การชำระเงิน ฯลฯ) ตั้งช่วงวันที่และตัวกรอง แล้วคลิก "สร้างรายงาน" รายงานสามารถส่งออกเป็น PDF หรือ Excel ได้',
+        'user_manual'    => 'คู่มือผู้ใช้งาน',
+        'user_manual_desc'=> 'คู่มือทีละขั้นตอน ตั้งแต่การตั้งค่าไปจนถึงรายงาน',
+        'doc_invoice'    => 'จัดการใบแจ้งหนี้',
+        'doc_invoice_desc'=> 'เรียนรู้วิธีสร้าง แก้ไข และจัดการใบแจ้งหนี้ ใบเสนอราคา และใบเสร็จ',
+        'doc_payment'    => 'การรับชำระเงิน',
+        'doc_payment_desc'=> 'คู่มือการรับชำระเงินผ่าน PayPal, Stripe และโอนเงินผ่านธนาคาร',
+        'doc_users'      => 'จัดการผู้ใช้',
+        'doc_users_desc' => 'จัดการผู้ใช้ บทบาท และสิทธิ์สำหรับองค์กรของคุณ',
+        'doc_reports'    => 'รายงานและการวิเคราะห์',
+        'doc_reports_desc'=> 'สร้างและส่งออกรายงานทางการเงินสำหรับธุรกิจของคุณ',
+        'contact_us'     => 'ติดต่อเรา',
+        'email_support'  => 'สนับสนุนทางอีเมล',
+        'email_desc'     => 'รับความช่วยเหลือทางอีเมลภายใน 24 ชั่วโมง',
+        'phone_support'  => 'สนับสนุนทางโทรศัพท์',
+        'phone_hours'    => 'จันทร์-ศุกร์ 9:00 - 18:00 น.',
+        'live_chat'      => 'แชทสด',
+        'live_chat_desc' => 'แชทกับทีมสนับสนุนของเรา',
+        'start_chat'     => 'เริ่มแชท',
+        'chat_soon'      => 'แชทสดเร็วๆ นี้!',
+        'system_name'    => 'ระบบบัญชี iACC',
+        'system_desc'    => 'ระบบจัดการบัญชีอย่างมืออาชีพสำหรับธุรกิจยุคใหม่',
+    ]
+][$lang];
 ?>
 
 <style>
@@ -337,12 +435,12 @@
 
 <div class="help-container">
     <div class="help-header">
-        <h1><i class="fa fa-life-ring"></i> <?= isset($xml->help_center) ? $xml->help_center : 'Help Center' ?></h1>
-        <p><?= isset($xml->help_desc) ? $xml->help_desc : 'Find answers to common questions and get support' ?></p>
+        <h1><i class="fa fa-life-ring"></i> <?= $t['help_center'] ?></h1>
+        <p><?= $t['help_desc'] ?></p>
         
         <div class="help-search">
             <i class="fa fa-search"></i>
-            <input type="text" placeholder="<?= isset($xml->search_help) ? $xml->search_help : 'Search for help...' ?>" id="helpSearch">
+            <input type="text" placeholder="<?= $t['search_help'] ?>" id="helpSearch">
         </div>
     </div>
     
@@ -352,32 +450,32 @@
             <div class="quick-link-icon">
                 <i class="fa fa-question"></i>
             </div>
-            <h3><?= isset($xml->faq) ? $xml->faq : 'FAQs' ?></h3>
-            <p><?= isset($xml->faq_desc) ? $xml->faq_desc : 'Frequently asked questions' ?></p>
+            <h3><?= $t['faq'] ?></h3>
+            <p><?= $t['faq_desc'] ?></p>
         </a>
         
         <a href="#docs" class="quick-link-card">
             <div class="quick-link-icon">
                 <i class="fa fa-book"></i>
             </div>
-            <h3><?= isset($xml->documentation) ? $xml->documentation : 'Documentation' ?></h3>
-            <p><?= isset($xml->documentation_desc) ? $xml->documentation_desc : 'User guides and manuals' ?></p>
+            <h3><?= $t['documentation'] ?></h3>
+            <p><?= $t['doc_desc'] ?></p>
         </a>
         
         <a href="#contact" class="quick-link-card">
             <div class="quick-link-icon">
                 <i class="fa fa-envelope"></i>
             </div>
-            <h3><?= isset($xml->contact_support) ? $xml->contact_support : 'Contact Support' ?></h3>
-            <p><?= isset($xml->contact_support_desc) ? $xml->contact_support_desc : 'Get help from our team' ?></p>
+            <h3><?= $t['contact_support'] ?></h3>
+            <p><?= $t['contact_desc'] ?></p>
         </a>
         
         <a href="index.php?page=dashboard" class="quick-link-card">
             <div class="quick-link-icon">
                 <i class="fa fa-play-circle"></i>
             </div>
-            <h3><?= isset($xml->getting_started) ? $xml->getting_started : 'Getting Started' ?></h3>
-            <p><?= isset($xml->getting_started_desc) ? $xml->getting_started_desc : 'Quick start guide' ?></p>
+            <h3><?= $t['getting_started'] ?></h3>
+            <p><?= $t['getting_desc'] ?></p>
         </a>
     </div>
     
@@ -385,67 +483,67 @@
     <div class="help-section" id="faq">
         <h2 class="help-section-title">
             <i class="fa fa-question-circle"></i>
-            <?= isset($xml->frequently_asked) ? $xml->frequently_asked : 'Frequently Asked Questions' ?>
+            <?= $t['faq_title'] ?>
         </h2>
         
         <div class="faq-list">
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    <h4>How do I create a new invoice?</h4>
+                    <h4><?= $t['faq1_q'] ?></h4>
                     <i class="fa fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    To create a new invoice, navigate to the Invoice section from the sidebar menu. Click on "Create Invoice" or the "+ New" button. Fill in the customer details, add line items, set the due date, and click "Save". You can then print or email the invoice directly to your customer.
+                    <?= $t['faq1_a'] ?>
                 </div>
             </div>
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    <h4>How do I set up payment gateway?</h4>
+                    <h4><?= $t['faq2_q'] ?></h4>
                     <i class="fa fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Payment gateways can be configured by administrators. Go to Admin Tools > Payment Gateway Config. Enter your PayPal or Stripe API credentials. Use Test Mode to verify the integration before going live. Once configured, customers can pay invoices online.
+                    <?= $t['faq2_a'] ?>
                 </div>
             </div>
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    <h4>How do I change my password?</h4>
+                    <h4><?= $t['faq3_q'] ?></h4>
                     <i class="fa fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Click on your profile picture in the top right corner and select "My Profile". In the profile page, find the "Change Password" section. Enter your current password, then enter and confirm your new password. Click "Update Password" to save the changes.
+                    <?= $t['faq3_a'] ?>
                 </div>
             </div>
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    <h4>How do I switch between companies?</h4>
+                    <h4><?= $t['faq4_q'] ?></h4>
                     <i class="fa fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Administrators and Super Admins can switch between companies from the dashboard. Click on the company name in the top navbar or go to Dashboard > Select a company from the list. Regular users are assigned to a specific company and cannot switch.
+                    <?= $t['faq4_a'] ?>
                 </div>
             </div>
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    <h4>How do I change the language?</h4>
+                    <h4><?= $t['faq5_q'] ?></h4>
                     <i class="fa fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Go to Settings from your profile dropdown menu. In the Language & Region section, select your preferred language (English or Thai). The page will reload with your selected language. You can also use the language switcher in the top navbar.
+                    <?= $t['faq5_a'] ?>
                 </div>
             </div>
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
-                    <h4>How do I generate reports?</h4>
+                    <h4><?= $t['faq6_q'] ?></h4>
                     <i class="fa fa-chevron-down"></i>
                 </div>
                 <div class="faq-answer">
-                    Navigate to Reports from the sidebar menu. Select the type of report you want to generate (Sales, Payments, etc.). Set your date range and filters, then click "Generate Report". Reports can be exported to PDF or Excel for further analysis.
+                    <?= $t['faq6_a'] ?>
                 </div>
             </div>
         </div>
@@ -455,7 +553,7 @@
     <div class="help-section" id="docs">
         <h2 class="help-section-title">
             <i class="fa fa-book"></i>
-            <?= isset($xml->documentation) ? $xml->documentation : 'Documentation' ?>
+            <?= $t['documentation'] ?>
         </h2>
         
         <div class="doc-grid">
@@ -464,8 +562,8 @@
                     <i class="fa fa-book" style="color: white;"></i>
                 </div>
                 <div class="doc-content">
-                    <h4><?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'คู่มือผู้ใช้งาน' : 'User Manual' ?></h4>
-                    <p><?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'คู่มือทีละขั้นตอน ตั้งแต่การตั้งค่าไปจนถึงรายงาน' : 'Step-by-step guide from setup to reports' ?></p>
+                    <h4><?= $t['user_manual'] ?></h4>
+                    <p><?= $t['user_manual_desc'] ?></p>
                 </div>
             </a>
             
@@ -474,8 +572,8 @@
                     <i class="fa fa-file-text-o"></i>
                 </div>
                 <div class="doc-content">
-                    <h4>Invoice Management</h4>
-                    <p>Learn how to create, edit, and manage invoices, quotations, and receipts.</p>
+                    <h4><?= $t['doc_invoice'] ?></h4>
+                    <p><?= $t['doc_invoice_desc'] ?></p>
                 </div>
             </div>
             
@@ -484,8 +582,8 @@
                     <i class="fa fa-credit-card"></i>
                 </div>
                 <div class="doc-content">
-                    <h4>Payment Processing</h4>
-                    <p>Guide to accepting payments via PayPal, Stripe, and bank transfers.</p>
+                    <h4><?= $t['doc_payment'] ?></h4>
+                    <p><?= $t['doc_payment_desc'] ?></p>
                 </div>
             </div>
             
@@ -494,8 +592,8 @@
                     <i class="fa fa-users"></i>
                 </div>
                 <div class="doc-content">
-                    <h4>User Management</h4>
-                    <p>Manage users, roles, and permissions for your organization.</p>
+                    <h4><?= $t['doc_users'] ?></h4>
+                    <p><?= $t['doc_users_desc'] ?></p>
                 </div>
             </div>
             
@@ -504,8 +602,8 @@
                     <i class="fa fa-bar-chart"></i>
                 </div>
                 <div class="doc-content">
-                    <h4>Reports & Analytics</h4>
-                    <p>Generate and export financial reports for your business.</p>
+                    <h4><?= $t['doc_reports'] ?></h4>
+                    <p><?= $t['doc_reports_desc'] ?></p>
                 </div>
             </div>
         </div>
@@ -515,37 +613,37 @@
     <div class="help-section" id="contact">
         <h2 class="help-section-title">
             <i class="fa fa-headphones"></i>
-            <?= isset($xml->contact_us) ? $xml->contact_us : 'Contact Us' ?>
+            <?= $t['contact_us'] ?>
         </h2>
         
         <div class="contact-cards">
             <div class="contact-card">
                 <i class="fa fa-envelope"></i>
-                <h3>Email Support</h3>
-                <p>Get help via email within 24 hours</p>
+                <h3><?= $t['email_support'] ?></h3>
+                <p><?= $t['email_desc'] ?></p>
                 <a href="mailto:support@iacc.com">support@iacc.com</a>
             </div>
             
             <div class="contact-card">
                 <i class="fa fa-phone"></i>
-                <h3>Phone Support</h3>
-                <p>Mon-Fri, 9:00 AM - 6:00 PM</p>
+                <h3><?= $t['phone_support'] ?></h3>
+                <p><?= $t['phone_hours'] ?></p>
                 <a href="tel:+6621234567">+66 2 123 4567</a>
             </div>
             
             <div class="contact-card">
                 <i class="fa fa-comments"></i>
-                <h3>Live Chat</h3>
-                <p>Chat with our support team</p>
-                <a href="#" onclick="alert('Live chat coming soon!')">Start Chat</a>
+                <h3><?= $t['live_chat'] ?></h3>
+                <p><?= $t['live_chat_desc'] ?></p>
+                <a href="#" onclick="alert('<?= $t['chat_soon'] ?>')"><?= $t['start_chat'] ?></a>
             </div>
         </div>
     </div>
     
     <!-- Version Info -->
     <div class="version-info">
-        <h3>iACC Accounting System</h3>
-        <p>Professional accounting management for modern businesses</p>
+        <h3><?= $t['system_name'] ?></h3>
+        <p><?= $t['system_desc'] ?></p>
         <span class="version-badge">Version 2.8</span>
     </div>
 </div>

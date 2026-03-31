@@ -25,6 +25,127 @@ $t = [
         'sec_docker'    => 'Docker Environment',
         'sec_testing'   => 'Testing',
         'sec_conventions' => 'Coding Conventions',
+        // Card titles
+        'request_flow'  => 'Request Flow',
+        'dir_structure' => 'Directory Structure',
+        'backend'       => 'Backend',
+        'frontend'      => 'Frontend',
+        'core_tables'   => 'Core Tables',
+        'multi_tenant'  => 'Multi-Tenant Isolation',
+        'multi_tenant_desc' => 'Every data query is filtered by <code>com_id</code> (company ID) from <code>$_SESSION[\'com_id\']</code>. The <code>CompanyFilter</code> singleton handles this:',
+        'migrations'    => 'Migrations',
+        'migrations_desc' => 'Two mirror locations for MySQL 5.7 compatibility:',
+        'migrations_current' => '<strong>Current:</strong> 001–021. Run via:',
+        'prepared_stmt' => '<strong>Always use prepared statements.</strong> Legacy HardClass methods (insertDbMax, etc.) exist but use isolated <code>$args</code> arrays per operation to avoid state leakage.',
+        'route_types'   => 'Route Types',
+        'routes_count'  => '<strong>175+ routes</strong> currently defined. URL pattern:',
+        'api_endpoints' => 'API Endpoints',
+        'authentication'=> 'Authentication',
+        'perm_levels'   => 'Permission Levels',
+        'session_vars'  => 'Session Variables',
+        'self_reg_flow' => 'Self-Registration Flow (v6.0)',
+        'components'    => 'Components',
+        'containers'    => 'Containers',
+        'key_commands'  => 'Key Commands',
+        'test_suites'   => 'Test Suites',
+        'deploy_options'=> 'Deployment Options',
+        'naming'        => 'Naming',
+        'security_rules'=> 'Security Rules',
+        'multi_lang'    => 'Multi-Language (Mandatory)',
+        'multi_lang_desc'=> 'Every new module <strong>must</strong> support bilingual (EN/TH) from day one. Two systems:',
+        // Table headers
+        'th_table'      => 'Table',
+        'th_purpose'    => 'Purpose',
+        'th_key_cols'   => 'Key Columns',
+        'th_path'       => 'Path',
+        'th_style'      => 'Style',
+        'th_use'        => 'Use',
+        'th_type'       => 'Type',
+        'th_syntax'     => 'Syntax',
+        'th_auth'       => 'Auth',
+        'th_layout'     => 'Layout',
+        'th_method'     => 'Method',
+        'th_endpoint'   => 'Endpoint',
+        'th_description'=> 'Description',
+        'th_level'      => 'Level',
+        'th_role'       => 'Role',
+        'th_access'     => 'Access',
+        'th_key'        => 'Key',
+        'th_file'       => 'File',
+        'th_tests'      => 'Tests',
+        'th_covers'     => 'Covers',
+        'th_container'  => 'Container',
+        'th_service'    => 'Service',
+        'th_port'       => 'Port',
+        'th_target'     => 'Target',
+        'th_script'     => 'Script',
+        'th_context'    => 'Context',
+        'th_system'     => 'System',
+        'th_session'    => 'Session',
+        // Table values
+        'users_auth'    => 'Users & authentication',
+        'companies_mt'  => 'Companies (multi-tenant)',
+        'prod_categories'=> 'Product categories',
+        'brands_suppliers'=> 'Brands/suppliers',
+        'prod_types'    => 'Product types',
+        'prod_models'   => 'Product models (SKUs)',
+        'po_quotations' => 'Purchase Orders & Quotations',
+        'po_line_items' => 'PO line items',
+        'purchase_req'  => 'Purchase Requisitions',
+        'invoices'      => 'Invoices',
+        'delivery_track'=> 'Delivery tracking',
+        'pay_vouchers'  => 'Payment vouchers (money out)',
+        'receipts_in'   => 'Receipts (money in)',
+        'expense_records'=> 'Expense records',
+        'double_entry'  => 'Double-entry journal',
+        'reg_tokens'    => 'Registration tokens',
+        'user_tracking' => 'User action tracking',
+        'normal'        => 'Normal',
+        'required'      => 'Required',
+        'none'          => 'None',
+        'no_sidebar'    => 'No sidebar',
+        'sidebar_header'=> 'Sidebar + header',
+        'create_order'  => 'Create new order',
+        'list_orders'   => 'List orders',
+        'get_order'     => 'Get order details',
+        'update_order'  => 'Update order',
+        'create_customer'=> 'Create customer',
+        'list_products' => 'List products',
+        'manage_webhooks'=> 'Manage webhooks',
+        'user_role'     => 'User',
+        'admin_role'    => 'Admin',
+        'super_admin'   => 'Super Admin',
+        'access_user'   => 'Assigned company only, create/view documents',
+        'access_admin'  => 'All companies, master data, user management',
+        'access_super'  => 'Full access: gateway config, tax, audit, dev tools',
+        'current_user_id'=> 'Current user ID',
+        'current_com_id'=> 'Current company ID',
+        'perm_level'    => 'Permission level (0/1/2)',
+        'lang_session'  => 'Language (0=EN, 1=TH)',
+        'csrf_token'    => 'CSRF protection token',
+        'current_com_name'=> 'Current company name',
+        'ai_provider_desc'=> 'AIProvider wrapper — routes to Ollama or OpenAI',
+        'ollama_desc'   => 'Local Ollama API client (llama3.2, mistral)',
+        'openai_desc'   => 'OpenAI API client (GPT-4o turbo)',
+        'agent_desc'    => 'Agent tool execution with permission checks',
+        'chat_handler'  => 'Chat message processing',
+        'chat_stream'   => 'SSE streaming endpoint',
+        'schema_disc'   => 'Auto-discover DB schema for AI context',
+        'crud_tests'    => 'Core CRUD operations, HardClass methods',
+        'reg_tests'     => 'Self-registration, email verification, onboarding',
+        'api_tests'     => 'Sales Channel API endpoints',
+        'mvc_tests'     => 'MVC controllers, models, routes',
+        'security_1'    => 'Prepared statements for all queries',
+        'security_2'    => 'CSRF token on all POST forms',
+        'security_3'    => '<code>htmlspecialchars()</code> on all output',
+        'security_4'    => 'Company filter on all data queries',
+        'security_5'    => 'Rate limiting on auth endpoints',
+        'security_6'    => 'Isolated <code>$args</code> arrays per DB operation',
+        'security_7'    => 'Input validation at system boundaries',
+        'public_landing'=> 'Public/Landing pages',
+        'inapp_mvc'     => 'In-app MVC views',
+        'dev_ref_title' => 'iACC Developer Reference',
+        'dev_ref_stats' => '40+ Controllers • 30+ Models • 117+ Views • 175+ Routes • 192+ Tests',
     ],
     'th' => [
         'page_title'    => 'สรุประบบ — เอกสารสำหรับนักพัฒนา',
@@ -45,6 +166,127 @@ $t = [
         'sec_docker'    => 'สภาพแวดล้อม Docker',
         'sec_testing'   => 'การทดสอบ',
         'sec_conventions' => 'แบบแผนการเขียนโค้ด',
+        // Card titles
+        'request_flow'  => 'รูปแบบคำขอ',
+        'dir_structure' => 'โครงสร้างไดเรกทอรี',
+        'backend'       => 'แบ็กเอนด์',
+        'frontend'      => 'ฟรอนต์เอนด์',
+        'core_tables'   => 'ตารางหลัก',
+        'multi_tenant'  => 'การแยกข้อมูลหลายบริษัท',
+        'multi_tenant_desc' => 'ทุกคำสั่งค้นหาจะถูกกรองด้วย <code>com_id</code> (รหัสบริษัท) จาก <code>$_SESSION[\'com_id\']</code> โดย <code>CompanyFilter</code> singleton จัดการดังนี้:',
+        'migrations'    => 'ไมเกรชัน',
+        'migrations_desc' => 'สองตำแหน่งสำหรับความเข้ากันได้กับ MySQL 5.7:',
+        'migrations_current' => '<strong>ปัจจุบัน:</strong> 001–021 รันผ่าน:',
+        'prepared_stmt' => '<strong>ใช้ prepared statements เสมอ</strong> เมธอดดั้งเดิม HardClass (insertDbMax ฯลฯ) ใช้งานได้ แต่ต้องใช้อาร์เรย์ <code>$args</code> แยกต่างหากสำหรับแต่ละการดำเนินการ',
+        'route_types'   => 'ประเภทเส้นทาง',
+        'routes_count'  => '<strong>175+ เส้นทาง</strong>ที่กำหนดแล้ว รูปแบบ URL:',
+        'api_endpoints' => 'จุดปลาย API',
+        'authentication'=> 'การยืนยันตัวตน',
+        'perm_levels'   => 'ระดับสิทธิ์',
+        'session_vars'  => 'ตัวแปร Session',
+        'self_reg_flow' => 'ขั้นตอนการลงทะเบียนด้วยตนเอง (v6.0)',
+        'components'    => 'ส่วนประกอบ',
+        'containers'    => 'คอนเทนเนอร์',
+        'key_commands'  => 'คำสั่งที่สำคัญ',
+        'test_suites'   => 'ชุดทดสอบ',
+        'deploy_options'=> 'ตัวเลือกการปรับใช้',
+        'naming'        => 'การตั้งชื่อ',
+        'security_rules'=> 'กฎความปลอดภัย',
+        'multi_lang'    => 'หลายภาษา (บังคับ)',
+        'multi_lang_desc'=> 'ทุกโมดูลใหม่ <strong>ต้อง</strong> รองรับสองภาษา (EN/TH) ตั้งแต่วันแรก สองระบบ:',
+        // Table headers
+        'th_table'      => 'ตาราง',
+        'th_purpose'    => 'วัตถุประสงค์',
+        'th_key_cols'   => 'คอลัมน์สำคัญ',
+        'th_path'       => 'ที่อยู่',
+        'th_style'      => 'รูปแบบ',
+        'th_use'        => 'การใช้งาน',
+        'th_type'       => 'ประเภท',
+        'th_syntax'     => 'ไวยากรณ์',
+        'th_auth'       => 'การยืนยัน',
+        'th_layout'     => 'เลย์เอาต์',
+        'th_method'     => 'เมธอด',
+        'th_endpoint'   => 'จุดปลาย',
+        'th_description'=> 'คำอธิบาย',
+        'th_level'      => 'ระดับ',
+        'th_role'       => 'บทบาท',
+        'th_access'     => 'สิทธิ์เข้าถึง',
+        'th_key'        => 'คีย์',
+        'th_file'       => 'ไฟล์',
+        'th_tests'      => 'ทดสอบ',
+        'th_covers'     => 'ครอบคลุม',
+        'th_container'  => 'คอนเทนเนอร์',
+        'th_service'    => 'บริการ',
+        'th_port'       => 'พอร์ต',
+        'th_target'     => 'เป้าหมาย',
+        'th_script'     => 'สคริปต์',
+        'th_context'    => 'บริบท',
+        'th_system'     => 'ระบบ',
+        'th_session'    => 'เซสชัน',
+        // Table values
+        'users_auth'    => 'ผู้ใช้และการยืนยันตัวตน',
+        'companies_mt'  => 'บริษัท (หลายบริษัท)',
+        'prod_categories'=> 'หมวดหมู่สินค้า',
+        'brands_suppliers'=> 'แบรนด์/ซัพพลายเออร์',
+        'prod_types'    => 'ประเภทสินค้า',
+        'prod_models'   => 'รุ่นสินค้า (SKUs)',
+        'po_quotations' => 'ใบสั่งซื้อและใบเสนอราคา',
+        'po_line_items' => 'รายการสินค้าในใบสั่งซื้อ',
+        'purchase_req'  => 'ใบขอซื้อ',
+        'invoices'      => 'ใบแจ้งหนี้',
+        'delivery_track'=> 'ติดตามการจัดส่ง',
+        'pay_vouchers'  => 'ใบสำคัญจ่าย (เงินออก)',
+        'receipts_in'   => 'ใบเสร็จ (เงินเข้า)',
+        'expense_records'=> 'รายการค่าใช้จ่าย',
+        'double_entry'  => 'สมุดรายวันบัญชีคู่',
+        'reg_tokens'    => 'โทเค็นการลงทะเบียน',
+        'user_tracking' => 'การติดตามการกระทำของผู้ใช้',
+        'normal'        => 'ปกติ',
+        'required'      => 'จำเป็น',
+        'none'          => 'ไม่มี',
+        'no_sidebar'    => 'ไม่มีแถบด้านข้าง',
+        'sidebar_header'=> 'แถบด้านข้าง + ส่วนหัว',
+        'create_order'  => 'สร้างคำสั่งซื้อใหม่',
+        'list_orders'   => 'แสดงรายการคำสั่งซื้อ',
+        'get_order'     => 'รายละเอียดคำสั่งซื้อ',
+        'update_order'  => 'อัปเดตคำสั่งซื้อ',
+        'create_customer'=> 'สร้างลูกค้า',
+        'list_products' => 'แสดงรายการสินค้า',
+        'manage_webhooks'=> 'จัดการ Webhooks',
+        'user_role'     => 'ผู้ใช้',
+        'admin_role'    => 'ผู้ดูแลระบบ',
+        'super_admin'   => 'ผู้ดูแลระบบสูงสุด',
+        'access_user'   => 'เฉพาะบริษัทที่กำหนด สร้าง/ดูเอกสาร',
+        'access_admin'  => 'ทุกบริษัท ข้อมูลหลัก จัดการผู้ใช้',
+        'access_super'  => 'สิทธิ์เต็ม: ตั้งค่าชำระเงิน ภาษี ตรวจสอบ เครื่องมือนักพัฒนา',
+        'current_user_id'=> 'รหัสผู้ใช้ปัจจุบัน',
+        'current_com_id'=> 'รหัสบริษัทปัจจุบัน',
+        'perm_level'    => 'ระดับสิทธิ์ (0/1/2)',
+        'lang_session'  => 'ภาษา (0=EN, 1=TH)',
+        'csrf_token'    => 'โทเค็นป้องกัน CSRF',
+        'current_com_name'=> 'ชื่อบริษัทปัจจุบัน',
+        'ai_provider_desc'=> 'AIProvider wrapper — เส้นทางไป Ollama หรือ OpenAI',
+        'ollama_desc'   => 'ไคลเอนต์ Ollama API ในเครื่อง (llama3.2, mistral)',
+        'openai_desc'   => 'ไคลเอนต์ OpenAI API (GPT-4o turbo)',
+        'agent_desc'    => 'การทำงาน Agent tool พร้อมการตรวจสอบสิทธิ์',
+        'chat_handler'  => 'ประมวลผลข้อความแชท',
+        'chat_stream'   => 'จุดปลาย SSE streaming',
+        'schema_disc'   => 'ค้นพบ DB schema อัตโนมัติสำหรับ AI context',
+        'crud_tests'    => 'CRUD operations หลัก, เมธอด HardClass',
+        'reg_tests'     => 'การลงทะเบียน การยืนยันอีเมล การ onboarding',
+        'api_tests'     => 'จุดปลาย Sales Channel API',
+        'mvc_tests'     => 'MVC controllers, models, routes',
+        'security_1'    => 'ใช้ Prepared statements ทุกคำสั่ง',
+        'security_2'    => 'CSRF token ในทุกฟอร์ม POST',
+        'security_3'    => '<code>htmlspecialchars()</code> ในทุกเอาต์พุต',
+        'security_4'    => 'ตัวกรองบริษัทในทุกคำสั่งค้นหา',
+        'security_5'    => 'จำกัดอัตราการเรียกใช้จุดปลายยืนยันตัวตน',
+        'security_6'    => 'อาร์เรย์ <code>$args</code> แยกต่างหากต่อการดำเนินการ',
+        'security_7'    => 'ตรวจสอบข้อมูลที่ขอบเขตระบบ',
+        'public_landing'=> 'หน้าสาธารณะ/แลนดิ้ง',
+        'inapp_mvc'     => 'วิว MVC ในแอป',
+        'dev_ref_title' => 'เอกสารอ้างอิงนักพัฒนา iACC',
+        'dev_ref_stats' => '40+ Controllers • 30+ Models • 117+ Views • 175+ Routes • 192+ Tests',
     ]
 ][$lang];
 ?>
@@ -134,7 +376,7 @@ pre.dev-code .variable { color: #89b4fa; }
     <div class="dev-section" id="arch">
         <h2><i class="fa fa-sitemap"></i> 1. <?= $t['sec_arch'] ?></h2>
         <div class="dev-card">
-            <h3>Request Flow</h3>
+            <h3><?= $t['request_flow'] ?></h3>
 <pre class="dev-code"><span class="comment">// Web Application</span>
 Browser → index.php → routes.php → Controller → Model → View
 
@@ -145,7 +387,7 @@ Client → api.php → Controller → Service → JSON Response
 Browser → ai/chat-stream.php → AIProvider → Ollama/OpenAI → SSE Response</pre>
         </div>
         <div class="dev-card">
-            <h3>Directory Structure</h3>
+            <h3><?= $t['dir_structure'] ?></h3>
 <pre class="dev-code">app/
 ├── Config/routes.php         <span class="comment"># All route definitions</span>
 ├── Controllers/              <span class="comment"># 40+ controllers (extend BaseController)</span>
@@ -166,7 +408,7 @@ tests/                        <span class="comment"># E2E test suites</span></pr
         <h2><i class="fa fa-layer-group"></i> 2. <?= $t['sec_stack'] ?></h2>
         <div class="dev-grid">
             <div class="dev-card">
-                <h3>Backend</h3>
+                <h3><?= $t['backend'] ?></h3>
                 <table class="dev-table">
                     <tr><td><strong>PHP</strong></td><td>8.2 (PHP-FPM)</td></tr>
                     <tr><td><strong>MySQL</strong></td><td>5.7 (InnoDB, utf8mb4)</td></tr>
@@ -177,7 +419,7 @@ tests/                        <span class="comment"># E2E test suites</span></pr
                 </table>
             </div>
             <div class="dev-card">
-                <h3>Frontend</h3>
+                <h3><?= $t['frontend'] ?></h3>
                 <table class="dev-table">
                     <tr><td><strong>CSS</strong></td><td>Bootstrap 5.3.3</td></tr>
                     <tr><td><strong>Icons</strong></td><td>Font Awesome 4.7</td></tr>
@@ -193,31 +435,31 @@ tests/                        <span class="comment"># E2E test suites</span></pr
     <div class="dev-section" id="db">
         <h2><i class="fa fa-database"></i> 3. <?= $t['sec_db'] ?></h2>
         <div class="dev-card">
-            <h3>Core Tables</h3>
+            <h3><?= $t['core_tables'] ?></h3>
             <table class="dev-table">
-                <tr><th>Table</th><th>Purpose</th><th>Key Columns</th></tr>
-                <tr><td><code>authorize</code></td><td>Users & authentication</td><td>id, email, name, password, com_id, lang, user_level, registered_via</td></tr>
-                <tr><td><code>company</code></td><td>Companies (multi-tenant)</td><td>id, com_name, address, tax_id, registered_via, onboarding_completed</td></tr>
-                <tr><td><code>category</code></td><td>Product categories</td><td>id, name, com_id</td></tr>
-                <tr><td><code>brand</code></td><td>Brands/suppliers</td><td>id, name, category_id, com_id</td></tr>
-                <tr><td><code>type</code></td><td>Product types</td><td>id, name, brand_id, com_id</td></tr>
-                <tr><td><code>model</code></td><td>Product models (SKUs)</td><td>id, name, price, type_id, com_id</td></tr>
-                <tr><td><code>po</code></td><td>Purchase Orders & Quotations</td><td>id, po_no, com_id, total, status, po_id_new (versioning)</td></tr>
-                <tr><td><code>product</code></td><td>PO line items</td><td>id, po_id, type, model, price, quantity</td></tr>
-                <tr><td><code>pr</code></td><td>Purchase Requisitions</td><td>id, pr_no, com_id, status</td></tr>
-                <tr><td><code>compl</code></td><td>Invoices</td><td>id, inv_no, po_id, total, status</td></tr>
-                <tr><td><code>delivery_notes</code></td><td>Delivery tracking</td><td>id, dn_no, po_id, status</td></tr>
-                <tr><td><code>voucher</code></td><td>Payment vouchers (money out)</td><td>id, voucher_no, amount, payment_method</td></tr>
-                <tr><td><code>receipt</code></td><td>Receipts (money in)</td><td>id, receipt_no, amount, payment_method</td></tr>
-                <tr><td><code>expenses</code></td><td>Expense records</td><td>id, amount, category_id, project_id</td></tr>
-                <tr><td><code>journal_entries</code></td><td>Double-entry journal</td><td>id, entry_no, account_id, debit, credit</td></tr>
-                <tr><td><code>email_verifications</code></td><td>Registration tokens</td><td>id, email, token, payload, expires_at</td></tr>
-                <tr><td><code>audit_logs</code></td><td>User action tracking</td><td>id, user_id, action, table_name, record_id</td></tr>
+                <tr><th><?= $t['th_table'] ?></th><th><?= $t['th_purpose'] ?></th><th><?= $t['th_key_cols'] ?></th></tr>
+                <tr><td><code>authorize</code></td><td><?= $t['users_auth'] ?></td><td>id, email, name, password, com_id, lang, user_level, registered_via</td></tr>
+                <tr><td><code>company</code></td><td><?= $t['companies_mt'] ?></td><td>id, com_name, address, tax_id, registered_via, onboarding_completed</td></tr>
+                <tr><td><code>category</code></td><td><?= $t['prod_categories'] ?></td><td>id, name, com_id</td></tr>
+                <tr><td><code>brand</code></td><td><?= $t['brands_suppliers'] ?></td><td>id, name, category_id, com_id</td></tr>
+                <tr><td><code>type</code></td><td><?= $t['prod_types'] ?></td><td>id, name, brand_id, com_id</td></tr>
+                <tr><td><code>model</code></td><td><?= $t['prod_models'] ?></td><td>id, name, price, type_id, com_id</td></tr>
+                <tr><td><code>po</code></td><td><?= $t['po_quotations'] ?></td><td>id, po_no, com_id, total, status, po_id_new (versioning)</td></tr>
+                <tr><td><code>product</code></td><td><?= $t['po_line_items'] ?></td><td>id, po_id, type, model, price, quantity</td></tr>
+                <tr><td><code>pr</code></td><td><?= $t['purchase_req'] ?></td><td>id, pr_no, com_id, status</td></tr>
+                <tr><td><code>compl</code></td><td><?= $t['invoices'] ?></td><td>id, inv_no, po_id, total, status</td></tr>
+                <tr><td><code>delivery_notes</code></td><td><?= $t['delivery_track'] ?></td><td>id, dn_no, po_id, status</td></tr>
+                <tr><td><code>voucher</code></td><td><?= $t['pay_vouchers'] ?></td><td>id, voucher_no, amount, payment_method</td></tr>
+                <tr><td><code>receipt</code></td><td><?= $t['receipts_in'] ?></td><td>id, receipt_no, amount, payment_method</td></tr>
+                <tr><td><code>expenses</code></td><td><?= $t['expense_records'] ?></td><td>id, amount, category_id, project_id</td></tr>
+                <tr><td><code>journal_entries</code></td><td><?= $t['double_entry'] ?></td><td>id, entry_no, account_id, debit, credit</td></tr>
+                <tr><td><code>email_verifications</code></td><td><?= $t['reg_tokens'] ?></td><td>id, email, token, payload, expires_at</td></tr>
+                <tr><td><code>audit_logs</code></td><td><?= $t['user_tracking'] ?></td><td>id, user_id, action, table_name, record_id</td></tr>
             </table>
         </div>
         <div class="dev-card">
-            <h3>Multi-Tenant Isolation</h3>
-            <p>Every data query is filtered by <code>com_id</code> (company ID) from <code>$_SESSION['com_id']</code>. The <code>CompanyFilter</code> singleton handles this:</p>
+            <h3><?= $t['multi_tenant'] ?></h3>
+            <p><?= $t['multi_tenant_desc'] ?></p>
 <pre class="dev-code"><span class="comment">// 19 filtered tables (require company_id)</span>
 <span class="variable">$filter</span> = CompanyFilter::getInstance(<span class="variable">$com_id</span>);
 <span class="variable">$where</span>  = <span class="variable">$filter</span>->whereCompanyFilter(<span class="string">'po'</span>);
@@ -226,14 +468,14 @@ tests/                        <span class="comment"># E2E test suites</span></pr
 <span class="comment">// 6 global tables (no filtering): authorize, company, api_keys, ...</span></pre>
         </div>
         <div class="dev-card">
-            <h3>Migrations</h3>
-            <p>Two mirror locations for MySQL 5.7 compatibility:</p>
+            <h3><?= $t['migrations'] ?></h3>
+            <p><?= $t['migrations_desc'] ?></p>
             <table class="dev-table">
-                <tr><th>Path</th><th>Style</th><th>Use</th></tr>
+                <tr><th><?= $t['th_path'] ?></th><th><?= $t['th_style'] ?></th><th><?= $t['th_use'] ?></th></tr>
                 <tr><td><code>database/migrations/NNN_name.sql</code></td><td>Simple (IF NOT EXISTS)</td><td>MySQL 8+ or phpMyAdmin</td></tr>
                 <tr><td><code>migrations/NNN_name.sql</code></td><td>Stored procedure</td><td>MySQL 5.7 CLI (idempotent)</td></tr>
             </table>
-            <p><strong>Current:</strong> 001–021. Run via: <code>mysql -u root -p iacc &lt; migrations/NNN.sql</code></p>
+            <p><?= $t['migrations_current'] ?> <code>mysql -u root -p iacc &lt; migrations/NNN.sql</code></p>
         </div>
     </div>
 
@@ -261,7 +503,7 @@ tests/                        <span class="comment"># E2E test suites</span></pr
         <span class="keyword">return</span> <span class="variable">$stmt</span>->insert_id;
     }
 }</pre>
-            <p><strong>Always use prepared statements.</strong> Legacy HardClass methods (insertDbMax, etc.) exist but use isolated <code>$args</code> arrays per operation to avoid state leakage.</p>
+            <p><?= $t['prepared_stmt'] ?></p>
         </div>
     </div>
 
@@ -269,12 +511,12 @@ tests/                        <span class="comment"># E2E test suites</span></pr
     <div class="dev-section" id="routes">
         <h2><i class="fa fa-road"></i> 5. <?= $t['sec_routes'] ?></h2>
         <div class="dev-card">
-            <h3>Route Types</h3>
+            <h3><?= $t['route_types'] ?></h3>
             <table class="dev-table">
-                <tr><th>Type</th><th>Syntax</th><th>Auth</th><th>Layout</th></tr>
-                <tr><td>Normal</td><td><code>['Controller', 'method']</code></td><td>Required</td><td>Sidebar + header</td></tr>
-                <tr><td>Public</td><td><code>['Controller', 'method', 'public']</code></td><td>None</td><td>Standalone</td></tr>
-                <tr><td>Standalone</td><td><code>['Controller', 'method', 'standalone']</code></td><td>Required</td><td>No sidebar</td></tr>
+                <tr><th><?= $t['th_type'] ?></th><th><?= $t['th_syntax'] ?></th><th><?= $t['th_auth'] ?></th><th><?= $t['th_layout'] ?></th></tr>
+                <tr><td><?= $t['normal'] ?></td><td><code>['Controller', 'method']</code></td><td><?= $t['required'] ?></td><td><?= $t['sidebar_header'] ?></td></tr>
+                <tr><td>Public</td><td><code>['Controller', 'method', 'public']</code></td><td><?= $t['none'] ?></td><td>Standalone</td></tr>
+                <tr><td>Standalone</td><td><code>['Controller', 'method', 'standalone']</code></td><td><?= $t['required'] ?></td><td><?= $t['no_sidebar'] ?></td></tr>
             </table>
 <pre class="dev-code"><span class="comment">// app/Config/routes.php</span>
 <span class="keyword">return</span> [
@@ -282,7 +524,7 @@ tests/                        <span class="comment"># E2E test suites</span></pr
     <span class="string">'pdf_invoice'</span>  => [<span class="string">'PdfController'</span>, <span class="string">'invoice'</span>, <span class="string">'standalone'</span>],
     <span class="string">'register'</span>     => [<span class="string">'RegistrationController'</span>, <span class="string">'showForm'</span>, <span class="string">'public'</span>],
 ];</pre>
-            <p><strong>175+ routes</strong> currently defined. URL pattern: <code>index.php?page=route_name</code></p>
+            <p><?= $t['routes_count'] ?> <code>index.php?page=route_name</code></p>
         </div>
     </div>
 
@@ -290,20 +532,20 @@ tests/                        <span class="comment"># E2E test suites</span></pr
     <div class="dev-section" id="api">
         <h2><i class="fa fa-plug"></i> 6. <?= $t['sec_api'] ?></h2>
         <div class="dev-card">
-            <h3>API Endpoints</h3>
+            <h3><?= $t['api_endpoints'] ?></h3>
             <table class="dev-table">
-                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
-                <tr><td>POST</td><td><code>/api.php?action=orders</code></td><td>Create new order</td></tr>
-                <tr><td>GET</td><td><code>/api.php?action=orders</code></td><td>List orders</td></tr>
-                <tr><td>GET</td><td><code>/api.php?action=orders&id=N</code></td><td>Get order details</td></tr>
-                <tr><td>PUT</td><td><code>/api.php?action=orders&id=N</code></td><td>Update order</td></tr>
-                <tr><td>POST</td><td><code>/api.php?action=customers</code></td><td>Create customer</td></tr>
-                <tr><td>GET</td><td><code>/api.php?action=products</code></td><td>List products</td></tr>
-                <tr><td>POST</td><td><code>/api.php?action=webhooks</code></td><td>Manage webhooks</td></tr>
+                <tr><th><?= $t['th_method'] ?></th><th><?= $t['th_endpoint'] ?></th><th><?= $t['th_description'] ?></th></tr>
+                <tr><td>POST</td><td><code>/api.php?action=orders</code></td><td><?= $t['create_order'] ?></td></tr>
+                <tr><td>GET</td><td><code>/api.php?action=orders</code></td><td><?= $t['list_orders'] ?></td></tr>
+                <tr><td>GET</td><td><code>/api.php?action=orders&id=N</code></td><td><?= $t['get_order'] ?></td></tr>
+                <tr><td>PUT</td><td><code>/api.php?action=orders&id=N</code></td><td><?= $t['update_order'] ?></td></tr>
+                <tr><td>POST</td><td><code>/api.php?action=customers</code></td><td><?= $t['create_customer'] ?></td></tr>
+                <tr><td>GET</td><td><code>/api.php?action=products</code></td><td><?= $t['list_products'] ?></td></tr>
+                <tr><td>POST</td><td><code>/api.php?action=webhooks</code></td><td><?= $t['manage_webhooks'] ?></td></tr>
             </table>
         </div>
         <div class="dev-card">
-            <h3>Authentication</h3>
+            <h3><?= $t['authentication'] ?></h3>
 <pre class="dev-code"><span class="comment">// API Key in header</span>
 X-API-Key: your-api-key-here
 
@@ -318,28 +560,28 @@ X-Idempotency-Key: unique-request-id
     <div class="dev-section" id="auth">
         <h2><i class="fa fa-shield"></i> 7. <?= $t['sec_auth'] ?></h2>
         <div class="dev-card">
-            <h3>Permission Levels</h3>
+            <h3><?= $t['perm_levels'] ?></h3>
             <table class="dev-table">
-                <tr><th>Level</th><th>Role</th><th>Access</th></tr>
-                <tr><td>0</td><td>User</td><td>Assigned company only, create/view documents</td></tr>
-                <tr><td>1</td><td>Admin</td><td>All companies, master data, user management</td></tr>
-                <tr><td>2</td><td>Super Admin</td><td>Full access: gateway config, tax, audit, dev tools</td></tr>
+                <tr><th><?= $t['th_level'] ?></th><th><?= $t['th_role'] ?></th><th><?= $t['th_access'] ?></th></tr>
+                <tr><td>0</td><td><?= $t['user_role'] ?></td><td><?= $t['access_user'] ?></td></tr>
+                <tr><td>1</td><td><?= $t['admin_role'] ?></td><td><?= $t['access_admin'] ?></td></tr>
+                <tr><td>2</td><td><?= $t['super_admin'] ?></td><td><?= $t['access_super'] ?></td></tr>
             </table>
         </div>
         <div class="dev-card">
-            <h3>Session Variables</h3>
+            <h3><?= $t['session_vars'] ?></h3>
             <table class="dev-table">
-                <tr><th>Key</th><th>Type</th><th>Description</th></tr>
-                <tr><td><code>$_SESSION['user_id']</code></td><td>int</td><td>Current user ID</td></tr>
-                <tr><td><code>$_SESSION['com_id']</code></td><td>int</td><td>Current company ID</td></tr>
-                <tr><td><code>$_SESSION['user_level']</code></td><td>int</td><td>Permission level (0/1/2)</td></tr>
-                <tr><td><code>$_SESSION['lang']</code></td><td>int</td><td>Language (0=EN, 1=TH)</td></tr>
-                <tr><td><code>$_SESSION['csrf_token']</code></td><td>string</td><td>CSRF protection token</td></tr>
-                <tr><td><code>$_SESSION['com_name']</code></td><td>string</td><td>Current company name</td></tr>
+                <tr><th><?= $t['th_key'] ?></th><th><?= $t['th_type'] ?></th><th><?= $t['th_description'] ?></th></tr>
+                <tr><td><code>$_SESSION['user_id']</code></td><td>int</td><td><?= $t['current_user_id'] ?></td></tr>
+                <tr><td><code>$_SESSION['com_id']</code></td><td>int</td><td><?= $t['current_com_id'] ?></td></tr>
+                <tr><td><code>$_SESSION['user_level']</code></td><td>int</td><td><?= $t['perm_level'] ?></td></tr>
+                <tr><td><code>$_SESSION['lang']</code></td><td>int</td><td><?= $t['lang_session'] ?></td></tr>
+                <tr><td><code>$_SESSION['csrf_token']</code></td><td>string</td><td><?= $t['csrf_token'] ?></td></tr>
+                <tr><td><code>$_SESSION['com_name']</code></td><td>string</td><td><?= $t['current_com_name'] ?></td></tr>
             </table>
         </div>
         <div class="dev-card">
-            <h3>Self-Registration Flow (v6.0)</h3>
+            <h3><?= $t['self_reg_flow'] ?></h3>
 <pre class="dev-code">1. User fills registration form → POST /register
 2. System creates email_verifications record with token
 3. Email sent with verification link
@@ -354,16 +596,16 @@ X-Idempotency-Key: unique-request-id
     <div class="dev-section" id="ai">
         <h2><i class="fa fa-robot"></i> 8. <?= $t['sec_ai'] ?></h2>
         <div class="dev-card">
-            <h3>Components</h3>
+            <h3><?= $t['components'] ?></h3>
             <table class="dev-table">
-                <tr><th>File</th><th>Purpose</th></tr>
-                <tr><td><code>ai/ai-provider.php</code></td><td>AIProvider wrapper — routes to Ollama or OpenAI</td></tr>
-                <tr><td><code>ai/ollama-client.php</code></td><td>Local Ollama API client (llama3.2, mistral)</td></tr>
-                <tr><td><code>ai/openai-client.php</code></td><td>OpenAI API client (GPT-4o turbo)</td></tr>
-                <tr><td><code>ai/agent-executor.php</code></td><td>Agent tool execution with permission checks</td></tr>
-                <tr><td><code>ai/chat-handler.php</code></td><td>Chat message processing</td></tr>
-                <tr><td><code>ai/chat-stream.php</code></td><td>SSE streaming endpoint</td></tr>
-                <tr><td><code>ai/schema-discovery.php</code></td><td>Auto-discover DB schema for AI context</td></tr>
+                <tr><th><?= $t['th_file'] ?></th><th><?= $t['th_purpose'] ?></th></tr>
+                <tr><td><code>ai/ai-provider.php</code></td><td><?= $t['ai_provider_desc'] ?></td></tr>
+                <tr><td><code>ai/ollama-client.php</code></td><td><?= $t['ollama_desc'] ?></td></tr>
+                <tr><td><code>ai/openai-client.php</code></td><td><?= $t['openai_desc'] ?></td></tr>
+                <tr><td><code>ai/agent-executor.php</code></td><td><?= $t['agent_desc'] ?></td></tr>
+                <tr><td><code>ai/chat-handler.php</code></td><td><?= $t['chat_handler'] ?></td></tr>
+                <tr><td><code>ai/chat-stream.php</code></td><td><?= $t['chat_stream'] ?></td></tr>
+                <tr><td><code>ai/schema-discovery.php</code></td><td><?= $t['schema_disc'] ?></td></tr>
             </table>
         </div>
     </div>
@@ -372,9 +614,9 @@ X-Idempotency-Key: unique-request-id
     <div class="dev-section" id="docker">
         <h2><i class="fa fa-server"></i> 9. <?= $t['sec_docker'] ?></h2>
         <div class="dev-card">
-            <h3>Containers</h3>
+            <h3><?= $t['containers'] ?></h3>
             <table class="dev-table">
-                <tr><th>Container</th><th>Service</th><th>Port</th></tr>
+                <tr><th><?= $t['th_container'] ?></th><th><?= $t['th_service'] ?></th><th><?= $t['th_port'] ?></th></tr>
                 <tr><td><code>iacc_nginx</code></td><td>Nginx reverse proxy</td><td>80, 443</td></tr>
                 <tr><td><code>iacc_php</code></td><td>PHP 8.2 FPM</td><td>9000 (internal)</td></tr>
                 <tr><td><code>iacc_mysql</code></td><td>MySQL 5.7</td><td>3306</td></tr>
@@ -384,7 +626,7 @@ X-Idempotency-Key: unique-request-id
             </table>
         </div>
         <div class="dev-card">
-            <h3>Key Commands</h3>
+            <h3><?= $t['key_commands'] ?></h3>
 <pre class="dev-code"><span class="comment"># Start / stop</span>
 docker compose up -d
 docker compose down
@@ -408,13 +650,13 @@ docker logs iacc_nginx --tail 50</pre>
     <div class="dev-section" id="testing">
         <h2><i class="fa fa-flask"></i> 10. <?= $t['sec_testing'] ?></h2>
         <div class="dev-card">
-            <h3>Test Suites</h3>
+            <h3><?= $t['test_suites'] ?></h3>
             <table class="dev-table">
-                <tr><th>File</th><th>Tests</th><th>Covers</th></tr>
-                <tr><td><code>tests/test-e2e-crud.php</code></td><td>42</td><td>Core CRUD operations, HardClass methods</td></tr>
-                <tr><td><code>tests/test-registration.php</code></td><td>32</td><td>Self-registration, email verification, onboarding</td></tr>
-                <tr><td><code>tests/test-api-*.php</code></td><td>~50+</td><td>Sales Channel API endpoints</td></tr>
-                <tr><td><code>tests/test-mvc-*.php</code></td><td>~50+</td><td>MVC controllers, models, routes</td></tr>
+                <tr><th><?= $t['th_file'] ?></th><th><?= $t['th_tests'] ?></th><th><?= $t['th_covers'] ?></th></tr>
+                <tr><td><code>tests/test-e2e-crud.php</code></td><td>42</td><td><?= $t['crud_tests'] ?></td></tr>
+                <tr><td><code>tests/test-registration.php</code></td><td>32</td><td><?= $t['reg_tests'] ?></td></tr>
+                <tr><td><code>tests/test-api-*.php</code></td><td>~50+</td><td><?= $t['api_tests'] ?></td></tr>
+                <tr><td><code>tests/test-mvc-*.php</code></td><td>~50+</td><td><?= $t['mvc_tests'] ?></td></tr>
             </table>
 <pre class="dev-code"><span class="comment"># Run all tests</span>
 curl -s "http://localhost/tests/test-e2e-crud.php"
@@ -426,9 +668,9 @@ docker exec iacc_php php /var/www/html/tests/test-registration.php</pre>
     <div class="dev-section" id="deploy">
         <h2><i class="fa fa-cloud-upload"></i> 11. <?= $t['sec_deploy'] ?></h2>
         <div class="dev-card">
-            <h3>Deployment Options</h3>
+            <h3><?= $t['deploy_options'] ?></h3>
             <table class="dev-table">
-                <tr><th>Target</th><th>Script</th><th>Method</th></tr>
+                <tr><th><?= $t['th_target'] ?></th><th><?= $t['th_script'] ?></th><th><?= $t['th_method'] ?></th></tr>
                 <tr><td>cPanel</td><td><code>deploy-cpanel.sh</code></td><td>FTP upload</td></tr>
                 <tr><td>DigitalOcean</td><td><code>deploy-digitalocean.sh</code></td><td>SSH + Docker</td></tr>
                 <tr><td>Docker Prod</td><td><code>docker-compose.prod.yml</code></td><td>Docker Compose</td></tr>
@@ -448,7 +690,7 @@ docker compose -f docker-compose.prod.yml up -d
         <h2><i class="fa fa-code"></i> 12. <?= $t['sec_conventions'] ?></h2>
         <div class="dev-grid">
             <div class="dev-card">
-                <h3>Naming</h3>
+                <h3><?= $t['naming'] ?></h3>
                 <table class="dev-table">
                     <tr><td>Controllers</td><td><code>PascalCaseController.php</code></td></tr>
                     <tr><td>Models</td><td><code>PascalCase.php</code></td></tr>
@@ -459,33 +701,33 @@ docker compose -f docker-compose.prod.yml up -d
                 </table>
             </div>
             <div class="dev-card">
-                <h3>Security Rules</h3>
+                <h3><?= $t['security_rules'] ?></h3>
                 <ul style="font-size:13px; line-height:1.8; padding-left:18px; margin:0;">
-                    <li>Prepared statements for all queries</li>
-                    <li>CSRF token on all POST forms</li>
-                    <li><code>htmlspecialchars()</code> on all output</li>
-                    <li>Company filter on all data queries</li>
-                    <li>Rate limiting on auth endpoints</li>
-                    <li>Isolated <code>$args</code> arrays per DB operation</li>
-                    <li>Input validation at system boundaries</li>
+                    <li><?= $t['security_1'] ?></li>
+                    <li><?= $t['security_2'] ?></li>
+                    <li><?= $t['security_3'] ?></li>
+                    <li><?= $t['security_4'] ?></li>
+                    <li><?= $t['security_5'] ?></li>
+                    <li><?= $t['security_6'] ?></li>
+                    <li><?= $t['security_7'] ?></li>
                 </ul>
             </div>
         </div>
         <div class="dev-card">
-            <h3>Multi-Language (Mandatory)</h3>
-            <p>Every new module <strong>must</strong> support bilingual (EN/TH) from day one. Two systems:</p>
+            <h3><?= $t['multi_lang'] ?></h3>
+            <p><?= $t['multi_lang_desc'] ?></p>
             <table class="dev-table">
-                <tr><th>Context</th><th>System</th><th>Session</th></tr>
-                <tr><td>Public/Landing pages</td><td><code>inc/lang/en.php</code> + <code>th.php</code> → <code>__('key')</code></td><td><code>$_SESSION['landing_lang']</code> (string)</td></tr>
-                <tr><td>In-app MVC views</td><td><code>$labels[$lang]</code> array at top of view</td><td><code>$_SESSION['lang']</code> (int 0/1)</td></tr>
+                <tr><th><?= $t['th_context'] ?></th><th><?= $t['th_system'] ?></th><th><?= $t['th_session'] ?></th></tr>
+                <tr><td><?= $t['public_landing'] ?></td><td><code>inc/lang/en.php</code> + <code>th.php</code> → <code>__('key')</code></td><td><code>$_SESSION['landing_lang']</code> (string)</td></tr>
+                <tr><td><?= $t['inapp_mvc'] ?></td><td><code>$labels[$lang]</code> array at top of view</td><td><code>$_SESSION['lang']</code> (int 0/1)</td></tr>
             </table>
         </div>
     </div>
 
     <!-- Footer -->
     <div style="background: #2c3e50; color: white; border-radius: 12px; padding: 24px; text-align: center; margin-top: 20px;">
-        <h3 style="margin: 0 0 6px 0; font-size: 18px;">iACC Developer Reference</h3>
-        <p style="margin: 0; opacity: 0.8; font-size: 13px;">40+ Controllers • 30+ Models • 117+ Views • 175+ Routes • 192+ Tests</p>
+        <h3 style="margin: 0 0 6px 0; font-size: 18px;"><?= $t['dev_ref_title'] ?></h3>
+        <p style="margin: 0; opacity: 0.8; font-size: 13px;"><?= $t['dev_ref_stats'] ?></p>
         <span style="display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 14px; border-radius: 20px; font-size: 12px; margin-top: 10px;">v6.0 • PHP 8.2 • MySQL 5.7 • Docker</span>
     </div>
 </div>
