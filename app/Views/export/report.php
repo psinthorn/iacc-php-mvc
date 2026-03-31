@@ -32,27 +32,30 @@ $valid_sorts = ['name', 'pr', 'qa', 'po', 'iv', 'tx'];
 if (!in_array($sort_by, $valid_sorts)) $sort_by = 'name';
 if (!in_array($sort_dir, ['asc', 'desc'])) $sort_dir = 'asc';
 
+// Language setup for period labels
+$isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
+
 // Build date filter
 switch ($report_period) {
     case 'today':
         $date_filter = "AND DATE(pr.date) = CURDATE()";
-        $period_label = "Today";
+        $period_label = $isThaiLang ? "วันนี้" : "Today";
         break;
     case 'week':
         $date_filter = "AND pr.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
-        $period_label = "Last 7 Days";
+        $period_label = $isThaiLang ? "7 วันล่าสุด" : "Last 7 Days";
         break;
     case 'month':
         $date_filter = "AND pr.date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
-        $period_label = "Last 30 Days";
+        $period_label = $isThaiLang ? "30 วันล่าสุด" : "Last 30 Days";
         break;
     case 'year':
         $date_filter = "AND YEAR(pr.date) = YEAR(CURDATE())";
-        $period_label = "This Year";
+        $period_label = $isThaiLang ? "ปีนี้" : "This Year";
         break;
     default:
         $date_filter = "";
-        $period_label = "All Time";
+        $period_label = $isThaiLang ? "ทั้งหมด" : "All Time";
 }
 
 // Check if company is selected

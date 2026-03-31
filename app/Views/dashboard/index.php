@@ -11,18 +11,136 @@
  *   $flash  — flash messages from POST
  */
 
+// Language setup
+$lang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'th' : 'en';
+$t = [
+    'en' => [
+        'today' => 'Today',
+        '7_days' => '7 Days',
+        '30_days' => '30 Days',
+        'this_year' => 'This Year',
+        'all_time' => 'All Time',
+        'last_30_days' => 'Last 30 Days',
+        'period' => 'Period',
+        'business_summary' => 'Business Summary Report',
+        'stage' => 'Stage',
+        'count' => 'Count',
+        'conversion' => 'Conversion',
+        'purchase_requests' => 'Purchase Requests',
+        'quotations' => 'Quotations',
+        'purchase_orders' => 'Purchase Orders',
+        'invoices' => 'Invoices',
+        'tax_invoices' => 'Tax Invoices',
+        'top_customers' => 'Top Customers',
+        'customer' => 'Customer',
+        'no_data' => 'No data',
+        'full_report' => 'Full Report',
+        'sales_today' => 'Sales Today',
+        'last_24h' => 'Last 24 hours',
+        'month_sales' => 'Month Sales',
+        'current_month' => 'Current month',
+        'pending_orders' => 'Pending Orders',
+        'action_needed' => 'Action needed',
+        'all_clear' => 'All clear',
+        'total_orders' => 'Total Orders',
+        'invoices_month' => 'Invoices (This Month)',
+        'customer_invoices' => 'Customer invoices',
+        'tax_invoices_month' => 'Tax Invoices (This Month)',
+        'tax_docs_issued' => 'Tax documents issued',
+        'revenue_expenses' => 'Revenue vs Expenses (12 Months)',
+        'payment_status' => 'Payment Status',
+        'paid' => 'Paid',
+        'partial' => 'Partial',
+        'unpaid' => 'Unpaid',
+        'order_status' => 'Order Status',
+        'pending' => 'Pending',
+        'completed' => 'Completed',
+        'recent_payments' => 'Recent Payments',
+        'view_all' => 'View All',
+        'po_no' => 'PO #',
+        'description' => 'Description',
+        'date' => 'Date',
+        'amount' => 'Amount',
+        'payment_method' => 'Payment Method',
+        'recent_invoices' => 'Recent Invoices',
+        'inv_no' => 'INV #',
+        'status' => 'Status',
+        'active' => 'Active',
+        'unknown' => 'Unknown',
+        'system_monitor' => 'System Monitor',
+        'developer_tools' => 'Developer Tools',
+    ],
+    'th' => [
+        'today' => 'วันนี้',
+        '7_days' => '7 วัน',
+        '30_days' => '30 วัน',
+        'this_year' => 'ปีนี้',
+        'all_time' => 'ทั้งหมด',
+        'last_30_days' => '30 วันล่าสุด',
+        'period' => 'ช่วงเวลา',
+        'business_summary' => 'รายงานสรุปธุรกิจ',
+        'stage' => 'ขั้นตอน',
+        'count' => 'จำนวน',
+        'conversion' => 'อัตราแปลง',
+        'purchase_requests' => 'คำขอซื้อ',
+        'quotations' => 'ใบเสนอราคา',
+        'purchase_orders' => 'ใบสั่งซื้อ',
+        'invoices' => 'ใบแจ้งหนี้',
+        'tax_invoices' => 'ใบกำกับภาษี',
+        'top_customers' => 'ลูกค้าอันดับต้น',
+        'customer' => 'ลูกค้า',
+        'no_data' => 'ไม่มีข้อมูล',
+        'full_report' => 'รายงานฉบับเต็ม',
+        'sales_today' => 'ยอดขายวันนี้',
+        'last_24h' => '24 ชั่วโมงล่าสุด',
+        'month_sales' => 'ยอดขายเดือนนี้',
+        'current_month' => 'เดือนปัจจุบัน',
+        'pending_orders' => 'คำสั่งซื้อที่รอ',
+        'action_needed' => 'ต้องดำเนินการ',
+        'all_clear' => 'เรียบร้อย',
+        'total_orders' => 'คำสั่งซื้อทั้งหมด',
+        'invoices_month' => 'ใบแจ้งหนี้ (เดือนนี้)',
+        'customer_invoices' => 'ใบแจ้งหนี้ลูกค้า',
+        'tax_invoices_month' => 'ใบกำกับภาษี (เดือนนี้)',
+        'tax_docs_issued' => 'เอกสารภาษีที่ออก',
+        'revenue_expenses' => 'รายรับ vs รายจ่าย (12 เดือน)',
+        'payment_status' => 'สถานะการชำระเงิน',
+        'paid' => 'ชำระแล้ว',
+        'partial' => 'ชำระบางส่วน',
+        'unpaid' => 'ค้างชำระ',
+        'order_status' => 'สถานะคำสั่งซื้อ',
+        'pending' => 'รอดำเนินการ',
+        'completed' => 'เสร็จสิ้น',
+        'recent_payments' => 'การชำระเงินล่าสุด',
+        'view_all' => 'ดูทั้งหมด',
+        'po_no' => 'PO #',
+        'description' => 'รายละเอียด',
+        'date' => 'วันที่',
+        'amount' => 'จำนวนเงิน',
+        'payment_method' => 'วิธีชำระเงิน',
+        'recent_invoices' => 'ใบแจ้งหนี้ล่าสุด',
+        'inv_no' => 'INV #',
+        'status' => 'สถานะ',
+        'active' => 'ใช้งาน',
+        'unknown' => 'ไม่ทราบ',
+        'system_monitor' => 'ระบบติดตาม',
+        'developer_tools' => 'เครื่องมือนักพัฒนา',
+    ],
+][$lang];
+
 // Helper functions
 function format_currency($amount) {
     return '฿' . number_format($amount, 2);
 }
 
 function get_status_badge($status) {
+    global $t;
     if ($status == 0) {
-        return '<span class="badge" style="background: #ffc107; color: black;">Active</span>';
+        return '<span class="badge" style="background: #ffc107; color: black;">' . $t['active'] . '</span>';
     } else if ($status == 1) {
-        return '<span class="badge" style="background: #28a745; color: white;">Completed</span>';
+        return '<span class="badge" style="background: #28a745; color: white;">' . $t['completed'] . '</span>';
     }
-    return '<span class="badge" style="background: #6c757d; color: white;">Unknown</span>';
+    return '<span class="badge" style="background: #6c757d; color: white;">' . $t['unknown'] . '</span>';
 }
 ?>
 <!-- Modern Font -->
@@ -372,48 +490,48 @@ function get_status_badge($status) {
         <div class="col-md-12">
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-bar-chart-o"></i> Business Summary Report
+                    <i class="fa fa-bar-chart-o"></i> <?= $t['business_summary'] ?>
                     <div style="float: right;">
                         <?php $rp = $admin['report_period'] ?? 'month'; ?>
-                        <a href="?page=dashboard&report_period=today" class="btn btn-sm <?php echo $rp == 'today' ? 'btn-primary' : 'btn-default'; ?>">Today</a>
-                        <a href="?page=dashboard&report_period=week" class="btn btn-sm <?php echo $rp == 'week' ? 'btn-primary' : 'btn-default'; ?>">7 Days</a>
-                        <a href="?page=dashboard&report_period=month" class="btn btn-sm <?php echo $rp == 'month' ? 'btn-primary' : 'btn-default'; ?>">30 Days</a>
-                        <a href="?page=dashboard&report_period=year" class="btn btn-sm <?php echo $rp == 'year' ? 'btn-primary' : 'btn-default'; ?>">This Year</a>
-                        <a href="?page=dashboard&report_period=all" class="btn btn-sm <?php echo $rp == 'all' ? 'btn-primary' : 'btn-default'; ?>">All Time</a>
+                        <a href="?page=dashboard&report_period=today" class="btn btn-sm <?php echo $rp == 'today' ? 'btn-primary' : 'btn-default'; ?>"><?= $t['today'] ?></a>
+                        <a href="?page=dashboard&report_period=week" class="btn btn-sm <?php echo $rp == 'week' ? 'btn-primary' : 'btn-default'; ?>"><?= $t['7_days'] ?></a>
+                        <a href="?page=dashboard&report_period=month" class="btn btn-sm <?php echo $rp == 'month' ? 'btn-primary' : 'btn-default'; ?>"><?= $t['30_days'] ?></a>
+                        <a href="?page=dashboard&report_period=year" class="btn btn-sm <?php echo $rp == 'year' ? 'btn-primary' : 'btn-default'; ?>"><?= $t['this_year'] ?></a>
+                        <a href="?page=dashboard&report_period=all" class="btn btn-sm <?php echo $rp == 'all' ? 'btn-primary' : 'btn-default'; ?>"><?= $t['all_time'] ?></a>
                     </div>
                 </h5>
-                <p style="color: #6c757d; margin-bottom: 15px;">Period: <strong><?php echo $admin['report_period_label'] ?? 'Last 30 Days'; ?></strong></p>
+                <p style="color: #6c757d; margin-bottom: 15px;"><?= $t['period'] ?>: <strong><?php echo $admin['report_period_label'] ?? $t['last_30_days']; ?></strong></p>
                 
                 <?php $rs = $admin['report_summary'] ?? []; $pr_count = $rs['total_pr'] ?? 0; ?>
                 <div class="row">
                     <div class="col-md-7">
                         <table class="table table-bordered" style="font-size: 13px;">
                             <thead style="background: #f8f9fa;">
-                                <tr><th>Stage</th><th class="text-center">Count</th><th class="text-center">Conversion</th></tr>
+                                <tr><th><?= $t['stage'] ?></th><th class="text-center"><?= $t['count'] ?></th><th class="text-center"><?= $t['conversion'] ?></th></tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><i class="fa fa-file-o" style="color: #667eea;"></i> Purchase Requests</td>
+                                    <td><i class="fa fa-file-o" style="color: #667eea;"></i> <?= $t['purchase_requests'] ?></td>
                                     <td class="text-center"><strong><?php echo $rs['total_pr'] ?? 0; ?></strong></td>
                                     <td class="text-center">-</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa fa-check" style="color: #17a2b8;"></i> Quotations</td>
+                                    <td><i class="fa fa-check" style="color: #17a2b8;"></i> <?= $t['quotations'] ?></td>
                                     <td class="text-center"><strong><?php echo $rs['total_qa'] ?? 0; ?></strong></td>
                                     <td class="text-center"><?php echo $pr_count > 0 ? round(($rs['total_qa'] ?? 0) / $pr_count * 100) : 0; ?>%</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa fa-shopping-cart" style="color: #ffc107;"></i> Purchase Orders</td>
+                                    <td><i class="fa fa-shopping-cart" style="color: #ffc107;"></i> <?= $t['purchase_orders'] ?></td>
                                     <td class="text-center"><strong><?php echo $rs['total_po'] ?? 0; ?></strong></td>
                                     <td class="text-center"><?php echo $pr_count > 0 ? round(($rs['total_po'] ?? 0) / $pr_count * 100) : 0; ?>%</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa fa-file-text-o" style="color: #28a745;"></i> Invoices</td>
+                                    <td><i class="fa fa-file-text-o" style="color: #28a745;"></i> <?= $t['invoices'] ?></td>
                                     <td class="text-center"><strong><?php echo $rs['total_iv'] ?? 0; ?></strong></td>
                                     <td class="text-center"><?php echo $pr_count > 0 ? round(($rs['total_iv'] ?? 0) / $pr_count * 100) : 0; ?>%</td>
                                 </tr>
                                 <tr style="background: #e8f5e9;">
-                                    <td><i class="fa fa-money" style="color: #28a745;"></i> <strong>Tax Invoices</strong></td>
+                                    <td><i class="fa fa-money" style="color: #28a745;"></i> <strong><?= $t['tax_invoices'] ?></strong></td>
                                     <td class="text-center"><strong style="color: #28a745;"><?php echo $rs['total_tax'] ?? 0; ?></strong></td>
                                     <td class="text-center"><strong style="color: #28a745;"><?php echo $pr_count > 0 ? round(($rs['total_tax'] ?? 0) / $pr_count * 100) : 0; ?>%</strong></td>
                                 </tr>
@@ -422,9 +540,9 @@ function get_status_badge($status) {
                     </div>
                     
                     <div class="col-md-5">
-                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-users"></i> Top Customers</h6>
+                        <h6 style="color: #333; margin-bottom: 10px;"><i class="fa fa-users"></i> <?= $t['top_customers'] ?></h6>
                         <table class="table table-sm" style="font-size: 12px;">
-                            <thead><tr><th>Customer</th><th class="text-center">TX</th><th class="text-center">INV</th></tr></thead>
+                            <thead><tr><th><?= $t['customer'] ?></th><th class="text-center">TX</th><th class="text-center">INV</th></tr></thead>
                             <tbody>
                                 <?php $top_customers = $admin['top_customers'] ?? null; ?>
                                 <?php if($top_customers && mysqli_num_rows($top_customers) > 0): ?>
@@ -436,12 +554,12 @@ function get_status_badge($status) {
                                     </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="3" class="text-center text-muted">No data</td></tr>
+                                    <tr><td colspan="3" class="text-center text-muted"><?= $t['no_data'] ?></td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
                         <a href="index.php?page=report" class="btn btn-sm btn-default btn-block">
-                            <i class="fa fa-external-link"></i> Full Report
+                            <i class="fa fa-external-link"></i> <?= $t['full_report'] ?>
                         </a>
                     </div>
                 </div>
@@ -581,29 +699,29 @@ function get_status_badge($status) {
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card">
                 <div class="kpi-icon primary"><i class="fa fa-dollar-sign"></i></div>
-                <div class="kpi-label">Sales Today</div>
+                <div class="kpi-label"><?= $t['sales_today'] ?></div>
                 <div class="kpi-value"><?php echo format_currency($u['sales_today']); ?></div>
-                <div class="kpi-change"><i class="fa fa-arrow-up"></i> Last 24 hours</div>
+                <div class="kpi-change"><i class="fa fa-arrow-up"></i> <?= $t['last_24h'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card success">
                 <div class="kpi-icon success"><i class="fa fa-chart-line"></i></div>
-                <div class="kpi-label">Month Sales</div>
+                <div class="kpi-label"><?= $t['month_sales'] ?></div>
                 <div class="kpi-value"><?php echo format_currency($u['sales_month']); ?></div>
-                <div class="kpi-change">Current month</div>
+                <div class="kpi-change"><?= $t['current_month'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card warning">
                 <div class="kpi-icon warning"><i class="fa fa-hourglass-half"></i></div>
-                <div class="kpi-label">Pending Orders</div>
+                <div class="kpi-label"><?= $t['pending_orders'] ?></div>
                 <div class="kpi-value"><?php echo $u['pending_orders']; ?></div>
                 <div class="kpi-change">
                     <?php if($u['pending_orders'] > 0): ?>
-                        <span class="badge badge-warning">Action needed</span>
+                        <span class="badge badge-warning"><?= $t['action_needed'] ?></span>
                     <?php else: ?>
-                        <span class="badge badge-success">All clear</span>
+                        <span class="badge badge-success"><?= $t['all_clear'] ?></span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -611,9 +729,9 @@ function get_status_badge($status) {
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card alert">
                 <div class="kpi-icon danger"><i class="fa fa-shopping-cart"></i></div>
-                <div class="kpi-label">Total Orders</div>
+                <div class="kpi-label"><?= $t['total_orders'] ?></div>
                 <div class="kpi-value"><?php echo $u['total_orders']; ?></div>
-                <div class="kpi-change">All-time</div>
+                <div class="kpi-change"><?= $t['all_time'] ?></div>
             </div>
         </div>
     </div>
@@ -623,17 +741,17 @@ function get_status_badge($status) {
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card" style="border-left: 4px solid #4caf50;">
                 <div class="kpi-icon" style="color: #4caf50;"><i class="fa fa-file-invoice"></i></div>
-                <div class="kpi-label">Invoices (This Month)</div>
+                <div class="kpi-label"><?= $t['invoices_month'] ?></div>
                 <div class="kpi-value"><?php echo $u['total_invoices']; ?></div>
-                <div class="kpi-change">Customer invoices</div>
+                <div class="kpi-change"><?= $t['customer_invoices'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card" style="border-left: 4px solid #2196f3;">
                 <div class="kpi-icon" style="color: #2196f3;"><i class="fa fa-receipt"></i></div>
-                <div class="kpi-label">Tax Invoices (This Month)</div>
+                <div class="kpi-label"><?= $t['tax_invoices_month'] ?></div>
                 <div class="kpi-value"><?php echo $u['total_tax_invoices']; ?></div>
-                <div class="kpi-change">Tax documents issued</div>
+                <div class="kpi-change"><?= $t['tax_docs_issued'] ?></div>
             </div>
         </div>
     </div>
@@ -643,7 +761,7 @@ function get_status_badge($status) {
         <div class="col-md-8">
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-line-chart"></i> Revenue vs Expenses (12 Months)
+                    <i class="fa fa-line-chart"></i> <?= $t['revenue_expenses'] ?>
                 </h5>
                 <div style="position: relative; height: 320px;">
                     <canvas id="revenueExpenseChart"></canvas>
@@ -653,7 +771,7 @@ function get_status_badge($status) {
         <div class="col-md-4">
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-pie-chart"></i> Payment Status
+                    <i class="fa fa-pie-chart"></i> <?= $t['payment_status'] ?>
                 </h5>
                 <div style="position: relative; height: 200px;">
                     <canvas id="paymentStatusChart"></canvas>
@@ -661,23 +779,23 @@ function get_status_badge($status) {
                 <div style="margin-top: 12px; font-size: 12px;">
                     <?php $ps = $u['payment_status'] ?? ['paid'=>0,'partial'=>0,'unpaid'=>0]; ?>
                     <div style="display: flex; justify-content: space-around; text-align: center;">
-                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span>Paid: <strong><?php echo $ps['paid']; ?></strong></div>
-                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span>Partial: <strong><?php echo $ps['partial']; ?></strong></div>
-                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 4px;"></span>Unpaid: <strong><?php echo $ps['unpaid']; ?></strong></div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span><?= $t['paid'] ?>: <strong><?php echo $ps['paid']; ?></strong></div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span><?= $t['partial'] ?>: <strong><?php echo $ps['partial']; ?></strong></div>
+                        <div><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 4px;"></span><?= $t['unpaid'] ?>: <strong><?php echo $ps['unpaid']; ?></strong></div>
                     </div>
                 </div>
             </div>
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-tasks"></i> Order Status
+                    <i class="fa fa-tasks"></i> <?= $t['order_status'] ?>
                 </h5>
                 <div style="position: relative; height: 160px;">
                     <canvas id="orderStatusChart"></canvas>
                 </div>
                 <?php $os = $u['order_status'] ?? ['pending'=>0,'completed'=>0]; ?>
                 <div style="margin-top: 12px; font-size: 12px; display: flex; justify-content: space-around; text-align: center;">
-                    <div><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span>Pending: <strong><?php echo $os['pending']; ?></strong></div>
-                    <div><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span>Completed: <strong><?php echo $os['completed']; ?></strong></div>
+                    <div><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span><?= $t['pending'] ?>: <strong><?php echo $os['pending']; ?></strong></div>
+                    <div><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span><?= $t['completed'] ?>: <strong><?php echo $os['completed']; ?></strong></div>
                 </div>
             </div>
         </div>
@@ -690,12 +808,12 @@ function get_status_badge($status) {
             <!-- Recent Payments -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-money-bill-wave"></i> Recent Payments
-                    <a href="index.php?page=payment_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
+                    <i class="fa fa-money-bill-wave"></i> <?= $t['recent_payments'] ?>
+                    <a href="index.php?page=payment_list" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
-                        <thead><tr><th>PO #</th><th>Description</th><th>Date</th><th>Amount</th><th>Payment Method</th><th></th></tr></thead>
+                        <thead><tr><th><?= $t['po_no'] ?></th><th><?= $t['description'] ?></th><th><?= $t['date'] ?></th><th><?= $t['amount'] ?></th><th><?= $t['payment_method'] ?></th><th></th></tr></thead>
                         <tbody>
                             <?php $recent_payments = $u['recent_payments'] ?? null; ?>
                             <?php if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
@@ -720,12 +838,12 @@ function get_status_badge($status) {
             <!-- Active Purchase Orders -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-shopping-cart"></i> Active Purchase Orders
-                    <a href="index.php?page=po_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
+                    <i class="fa fa-shopping-cart"></i> <?= $t['purchase_orders'] ?>
+                    <a href="index.php?page=po_list" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
-                        <thead><tr><th>PO #</th><th>Description</th><th>Tax Invoice #</th><th>Date</th><th>Status</th><th></th></tr></thead>
+                        <thead><tr><th><?= $t['po_no'] ?></th><th><?= $t['description'] ?></th><th>Tax Invoice #</th><th><?= $t['date'] ?></th><th><?= $t['status'] ?></th><th></th></tr></thead>
                         <tbody>
                             <?php $pending_pos = $u['pending_pos'] ?? null; ?>
                             <?php if($pending_pos && mysqli_num_rows($pending_pos) > 0): ?>
@@ -750,12 +868,12 @@ function get_status_badge($status) {
             <!-- Recent Invoices -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-file-invoice"></i> Recent Invoices
-                    <a href="index.php?page=compl_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
+                    <i class="fa fa-file-invoice"></i> <?= $t['recent_invoices'] ?>
+                    <a href="index.php?page=compl_list" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
-                        <thead><tr><th>Invoice #</th><th>Description</th><th>Date</th><th>Amount</th><th></th></tr></thead>
+                        <thead><tr><th><?= $t['inv_no'] ?></th><th><?= $t['description'] ?></th><th><?= $t['date'] ?></th><th><?= $t['amount'] ?></th><th></th></tr></thead>
                         <tbody>
                             <?php $recent_invoices = $u['recent_invoices'] ?? null; ?>
                             <?php if($recent_invoices && mysqli_num_rows($recent_invoices) > 0): ?>
@@ -782,8 +900,8 @@ function get_status_badge($status) {
             <!-- Recent Tax Invoices -->
             <div class="content-card">
                 <h5 class="card-title">
-                    <i class="fa fa-file-invoice-dollar"></i> Recent Tax Invoices
-                    <a href="index.php?page=compl_list" style="float: right; font-size: 11px; color: #667eea;">View All <i class="fa fa-arrow-right"></i></a>
+                    <i class="fa fa-file-invoice-dollar"></i> <?= $t['tax_invoices'] ?>
+                    <a href="index.php?page=compl_list" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">

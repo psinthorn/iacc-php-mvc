@@ -58,14 +58,17 @@
         <p><a href="index.php?page=qa_list" class="btn btn-default"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a></p>
     </div>
 <?php else:
-    $statusLabels = ['0'=>'Pending','1'=>'Quotation','2'=>'Confirmed','3'=>'Delivered','4'=>'Invoiced','5'=>'Completed'];
+    $isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
+    $statusLabels = $isThaiLang
+        ? ['0'=>'รอดำเนินการ','1'=>'ใบเสนอราคา','2'=>'ยืนยันแล้ว','3'=>'จัดส่งแล้ว','4'=>'ออกใบแจ้งหนี้แล้ว','5'=>'เสร็จสิ้น']
+        : ['0'=>'Pending','1'=>'Quotation','2'=>'Confirmed','3'=>'Delivered','4'=>'Invoiced','5'=>'Completed'];
     $statusClasses = ['0'=>'pending','1'=>'pending','2'=>'confirmed','3'=>'delivered','4'=>'delivered','5'=>'delivered'];
 ?>
     <div class="page-header">
         <h2>
             <i class="fa fa-file-text"></i> <?=$xml->purchasingorder ?? 'Purchase Order'?>
             <span class="quo-number">QUO-<?=e($po['tax'] ?? '')?></span>
-            <span class="status-badge <?=$statusClasses[$po['status']] ?? 'pending'?>"><?=$statusLabels[$po['status']] ?? 'Unknown'?></span>
+            <span class="status-badge <?=$statusClasses[$po['status']] ?? 'pending'?>"><?=$statusLabels[$po['status']] ?? ($isThaiLang ? 'ไม่ทราบ' : 'Unknown')?></span>
         </h2>
         <div class="header-actions">
             <a href="index.php?page=qa_list"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
@@ -82,7 +85,7 @@
             <div class="info-row"><span class="info-label"><?=$xml->duedate ?? 'Due Date'?></span><span class="info-value"><?=e($po['valid_pay'])?></span></div>
             <div class="info-row"><span class="info-label"><?=$xml->date ?? 'Date'?></span><span class="info-value"><?=e($po['date'] ?? '')?></span></div>
             <?php if(!empty($po['po_ref'])): ?>
-            <div class="info-row"><span class="info-label">PO Reference</span><span class="info-value"><?=e($po['po_ref'])?></span></div>
+            <div class="info-row"><span class="info-label"><?=$xml->po_reference ?? ($isThaiLang ? 'อ้างอิง PO' : 'PO Reference')?></span><span class="info-value"><?=e($po['po_ref'])?></span></div>
             <?php endif; ?>
         </div>
 
@@ -114,7 +117,7 @@
                     <th>#</th><th><?=$xml->Product ?? 'Product'?></th><th><?=$xml->model ?? 'Model'?></th>
                     <th><?=$xml->description ?? 'Description'?></th><th><?=$xml->Unit ?? 'Qty'?></th>
                     <th class="text-right"><?=$xml->Price ?? 'Price'?></th>
-                    <?php if($has_labour): ?><th>Labour</th><th class="text-right">L.Price</th><?php endif; ?>
+                    <?php if($has_labour): ?><th><?=$xml->labour ?? ($isThaiLang ? 'ค่าแรง' : 'Labour')?></th><th class="text-right"><?=$xml->labour_price ?? ($isThaiLang ? 'ราคาค่าแรง' : 'L.Price')?></th><?php endif; ?>
                     <th class="text-right"><?=$xml->Total ?? 'Amount'?></th>
                 </tr></thead>
                 <tbody>
@@ -159,7 +162,7 @@
             <tr><td><?=$xml->subtotal ?? 'Subtotal'?>:</td><td class="text-right"><?=number_format($subtotal,2)?></td></tr>
             <?php if($dis > 0): ?><tr><td><?=$xml->discount ?? 'Discount'?>:</td><td class="text-right">-<?=number_format($dis,2)?></td></tr><?php endif; ?>
             <?php if($vatRate > 0): ?><tr><td>VAT (<?=$vatRate?>%):</td><td class="text-right"><?=number_format($vatAmount,2)?></td></tr><?php endif; ?>
-            <?php if($overRate > 0): ?><tr><td>Withholding (<?=$overRate?>%):</td><td class="text-right">-<?=number_format($overAmount,2)?></td></tr><?php endif; ?>
+            <?php if($overRate > 0): ?><tr><td><?=$xml->withholding ?? ($isThaiLang ? 'หัก ณ ที่จ่าย' : 'Withholding')?> (<?=$overRate?>%):</td><td class="text-right">-<?=number_format($overAmount,2)?></td></tr><?php endif; ?>
             <tr class="grand-total"><td><?=$xml->grandtotal ?? 'Grand Total'?>:</td><td class="text-right"><?=number_format($grandTotal,2)?></td></tr>
         </table>
     </div>
@@ -173,7 +176,7 @@
             <input type="hidden" name="ref" value="<?=e($po['pr_id'])?>">
             <?= csrf_field() ?>
             <div class="row">
-                <div class="col-md-4"><div class="form-group"><label>PO Reference</label><input type="text" name="po_ref" class="form-control" style="border-radius:8px"></div></div>
+                <div class="col-md-4"><div class="form-group"><label><?=$xml->po_reference ?? ($isThaiLang ? 'อ้างอิง PO' : 'PO Reference')?></label><input type="text" name="po_ref" class="form-control" style="border-radius:8px"></div></div>
                 <div class="col-md-4"><div class="form-group"><label><?=$xml->file ?? 'Upload File'?></label><input type="file" name="file" class="form-control" style="border-radius:8px"></div></div>
                 <div class="col-md-4" style="padding-top:25px"><button type="submit" class="btn-confirm"><i class="fa fa-check"></i> <?=$xml->confirm ?? 'Confirm'?> PO</button></div>
             </div>

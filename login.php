@@ -19,16 +19,23 @@ if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     exit;
 }
 
+// Language handling
+$lang = $_GET['lang'] ?? $_SESSION['landing_lang'] ?? 'en';
+if (!in_array($lang, ['en', 'th'])) $lang = 'en';
+$_SESSION['landing_lang'] = $lang;
+$t = require __DIR__ . '/inc/lang/' . $lang . '.php';
+function __($key) { global $t; return isset($t[$key]) ? $t[$key] : $key; }
+
 // Get error message if any
 $error = isset($_GET['error']) ? $_GET['error'] : '';
 $success = isset($_GET['success']) ? $_GET['success'] : '';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $lang ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - iACC</title>
+    <title><?= __('login_title') ?> - iACC</title>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -460,25 +467,25 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
                     <div class="branding-logo-text">iACC</div>
                 </div>
                 
-                <h1>Welcome Back!</h1>
-                <p>Professional accounting management system designed for modern businesses. Manage invoices, payments, and reports with ease.</p>
+                <h1><?= __('login_welcome') ?></h1>
+                <p><?= __('login_description') ?></p>
                 
                 <ul class="branding-features">
                     <li>
                         <i class="fa fa-check"></i>
-                        <span>Invoice & Receipt Management</span>
+                        <span><?= __('login_feature_1') ?></span>
                     </li>
                     <li>
                         <i class="fa fa-check"></i>
-                        <span>PayPal & Stripe Integration</span>
+                        <span><?= __('login_feature_2') ?></span>
                     </li>
                     <li>
                         <i class="fa fa-check"></i>
-                        <span>Multi-User Access Control</span>
+                        <span><?= __('login_feature_3') ?></span>
                     </li>
                     <li>
                         <i class="fa fa-check"></i>
-                        <span>Comprehensive Reports</span>
+                        <span><?= __('login_feature_4') ?></span>
                     </li>
                 </ul>
             </div>
@@ -493,31 +500,31 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
             </div>
             
             <div class="form-header">
-                <h2>Sign In</h2>
-                <p>Enter your credentials to access your account</p>
+                <h2><?= __('login_title') ?></h2>
+                <p><?= __('login_subtitle') ?></p>
             </div>
             
             <?php if ($error === 'invalid'): ?>
             <div class="alert alert-danger">
                 <i class="fa fa-exclamation-circle"></i>
-                <span>Invalid email or password. Please try again.</span>
+                <span><?= __('login_error_invalid') ?></span>
             </div>
             <?php elseif ($error === 'locked'): ?>
             <div class="alert alert-danger">
                 <i class="fa fa-lock"></i>
-                <span>Account is locked. Please try again in 30 minutes.</span>
+                <span><?= __('login_error_locked') ?></span>
             </div>
             <?php elseif ($error === 'session'): ?>
             <div class="alert alert-danger">
                 <i class="fa fa-clock-o"></i>
-                <span>Session expired. Please sign in again.</span>
+                <span><?= __('login_error_session') ?></span>
             </div>
             <?php endif; ?>
             
             <?php if ($success === 'reset'): ?>
             <div class="alert alert-success">
                 <i class="fa fa-check-circle"></i>
-                <span>Password reset successful! Please sign in.</span>
+                <span><?= __('login_success_reset') ?></span>
             </div>
             <?php endif; ?>
             
@@ -525,28 +532,28 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
                 <?= csrf_field() ?>
                 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email"><?= __('login_email') ?></label>
                     <div class="input-group">
                         <i class="fa fa-envelope"></i>
                         <input type="email" 
                                id="email" 
                                name="m_user" 
                                class="form-control" 
-                               placeholder="you@example.com" 
+                               placeholder="<?= __('login_ph_email') ?>" 
                                required 
                                autofocus>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password"><?= __('login_password') ?></label>
                     <div class="input-group">
                         <i class="fa fa-lock"></i>
                         <input type="password" 
                                id="password" 
                                name="m_pass" 
                                class="form-control" 
-                               placeholder="Enter your password" 
+                               placeholder="<?= __('login_ph_password') ?>" 
                                required>
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <i class="fa fa-eye" id="toggleIcon"></i>
@@ -557,28 +564,28 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
                 <div class="form-options">
                     <label class="remember-me">
                         <input type="checkbox" name="remember" value="1">
-                        <span>Remember me</span>
+                        <span><?= __('login_remember') ?></span>
                     </label>
-                    <a href="index.php?page=forgot_password" class="forgot-link">Forgot password?</a>
+                    <a href="index.php?page=forgot_password" class="forgot-link"><?= __('login_forgot') ?></a>
                 </div>
                 
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <span class="btn-text">Sign In</span>
+                    <span class="btn-text"><?= __('login_button') ?></span>
                     <span class="spinner"></span>
                 </button>
             </form>
             
             <div class="divider">
-                <span>or</span>
+                <span><?= __('login_or') ?></span>
             </div>
             
             <div class="back-to-home" style="text-align:center;">
                 <p style="margin-bottom:10px;font-size:0.9rem;color:#6c757d;">
-                    Don't have an account? 
-                    <a href="index.php?page=register" style="color:#8e44ad;font-weight:600;text-decoration:none;">Sign up free</a>
+                    <?= __('login_no_account') ?> 
+                    <a href="index.php?page=register" style="color:#8e44ad;font-weight:600;text-decoration:none;"><?= __('login_signup_free') ?></a>
                 </p>
                 <a href="landing.php">
-                    <i class="fa fa-arrow-left"></i> Back to Home
+                    <i class="fa fa-arrow-left"></i> <?= __('login_back_home') ?>
                 </a>
             </div>
         </div>

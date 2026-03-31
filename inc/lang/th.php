@@ -230,6 +230,15 @@ return [
     'login_feature_2' => 'รองรับ PayPal และ Stripe',
     'login_feature_3' => 'ควบคุมการเข้าถึงหลายผู้ใช้',
     'login_feature_4' => 'รายงานที่ครอบคลุม',
+    'login_error_invalid' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง',
+    'login_error_locked' => 'บัญชีถูกล็อค กรุณาลองอีกครั้งใน 30 นาที',
+    'login_error_session' => 'เซสชั่นหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง',
+    'login_success_reset' => 'รีเซ็ตรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบ',
+    'login_or' => 'หรือ',
+    'login_signup_free' => 'สมัครฟรี',
+    'login_back_home' => 'กลับสู่หน้าแรก',
+    'login_ph_email' => 'you@example.com',
+    'login_ph_password' => 'กรอกรหัสผ่านของคุณ',
 
     // Templates Section (Landing Page)
     'nav_templates' => 'เทมเพลต',

@@ -154,7 +154,7 @@ $current_year = date('Y');
         <div class="footer-left">
             <div class="footer-logo">iACC</div>
             <span class="footer-copyright">
-                © <?= $current_year ?> iACC. All rights reserved.
+                © <?= $current_year ?> iACC. <?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'สงวนลิขสิทธิ์' : 'All rights reserved' ?>.
             </span>
         </div>
         <div class="footer-links">

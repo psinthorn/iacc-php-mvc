@@ -230,6 +230,15 @@ return [
     'login_feature_2' => 'PayPal & Stripe Integration',
     'login_feature_3' => 'Multi-User Access Control',
     'login_feature_4' => 'Comprehensive Reports',
+    'login_error_invalid' => 'Invalid email or password. Please try again.',
+    'login_error_locked' => 'Account is locked. Please try again in 30 minutes.',
+    'login_error_session' => 'Session expired. Please sign in again.',
+    'login_success_reset' => 'Password reset successful! Please sign in.',
+    'login_or' => 'or',
+    'login_signup_free' => 'Sign up free',
+    'login_back_home' => 'Back to Home',
+    'login_ph_email' => 'you@example.com',
+    'login_ph_password' => 'Enter your password',
 
     // Templates Section (Landing Page)
     'nav_templates' => 'Templates',

@@ -23,12 +23,17 @@ if ($current_user_name) {
 }
 
 // Get role label
-$role_labels = [
+$isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
+$role_labels = $isThaiLang ? [
+    0 => 'ผู้ใช้',
+    1 => 'ผู้ดูแล',
+    2 => 'ผู้ดูแลสูงสุด'
+] : [
     0 => 'User',
     1 => 'Admin',
     2 => 'Super Admin'
 ];
-$role_label = $role_labels[$current_user_level] ?? 'User';
+$role_label = $role_labels[$current_user_level] ?? ($isThaiLang ? 'ผู้ใช้' : 'User');
 
 // Get current language
 $current_lang = isset($_SESSION['lang']) ? intval($_SESSION['lang']) : 0;

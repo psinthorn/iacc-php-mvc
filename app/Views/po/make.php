@@ -4,6 +4,7 @@
  * Variables: $pr, $id, $types, $models, $models_by_type, $brands, $companies, $vendor, $tmp_products, $credit
  */
 global $xml;
+$isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
 
 // Group models by type_id for JavaScript dropdown population
 $allModelsJson = json_encode($models_by_type ?? [], JSON_HEX_APOS | JSON_HEX_QUOT);
@@ -383,7 +384,7 @@ function updateModelDropdown(index, typeId) {
     var modelSelect = $('#model' + index);
     var selectElement = modelSelect[0];
     modelSelect.empty();
-    modelSelect.append('<option value="0">-- No Model --</option>');
+    modelSelect.append('<option value="0"><?= $isThaiLang ? "-- ไม่มีรุ่น --" : "-- No Model --" ?></option>');
     
     var typeIdStr = String(typeId);
     if(typeId && allModelsData[typeIdStr]) {
@@ -446,7 +447,7 @@ $(function(){
         <div class="product-item" id="fr[${indexthis}]">
             <div class="product-item-header">
                 <div class="product-item-number">${indexthis + 1}</div>
-                <span class="product-item-name">New Item</span>
+                <span class="product-item-name"><?= $isThaiLang ? 'รายการใหม่' : 'New Item' ?></span>
                 <button type="button" class="btn-remove-row" onclick="del_tr(this)"><i class="fa fa-times"></i></button>
             </div>
             <div class="product-item-grid" style="display:flex;flex-direction:column;gap:16px;">
@@ -455,7 +456,7 @@ $(function(){
                         <label><?=$xml->product ?? 'Product'?></label>
                         <select id="type${indexthis}" name="type[${indexthis}]" class="form-control product-select smart-dropdown" data-index="${indexthis}" required>
                             <?php 
-                            echo "<option value=''>-- Select --</option>";
+                            echo "<option value=''>" . ($isThaiLang ? '-- เลือก --' : '-- Select --') . "</option>";
                             foreach($types as $prod){
                                 $escapedCat = htmlspecialchars($prod['cat_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8');
                                 $escapedDes = htmlspecialchars($prod['des'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -469,7 +470,7 @@ $(function(){
                     <div class="form-group">
                         <label><?=$xml->model ?? 'Model'?></label>
                         <select id="model${indexthis}" name="model[${indexthis}]" class="form-control model-select smart-dropdown" data-index="${indexthis}">
-                            <option value="0">-- No Model --</option>
+                            <option value="0"><?= $isThaiLang ? '-- ไม่มีรุ่น --' : '-- No Model --' ?></option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -494,7 +495,7 @@ $(function(){
                         <label><?=$xml->labour ?? 'Labour'?></label>
                         <div class="labour-field">
                             <input type="checkbox" name="a_labour[${indexthis}]" id="a_labour${indexthis}" value="1">
-                            <input type="text" class="form-control" name="v_labour[${indexthis}]" id="v_labour${indexthis}" placeholder="Cost...">
+                            <input type="text" class="form-control" name="v_labour[${indexthis}]" id="v_labour${indexthis}" placeholder="<?= $isThaiLang ? 'ราคา...' : 'Cost...' ?>">
                         </div>
                     </div>
                 </div>
@@ -676,7 +677,7 @@ $(function(){
                                 <select name="type[<?=$i?>]" id="type<?=$i?>" class="form-control product-select smart-dropdown" data-index="<?=$i?>" required>
                                     <?php 
                                     if(empty($types)){
-                                        echo "<option value=''>No products available</option>";
+                                        echo "<option value=''>" . ($isThaiLang ? 'ไม่มีสินค้า' : 'No products available') . "</option>";
                                     } else {
                                         foreach($types as $prod){
                                             $selected = ($prod['id'] == $typeId) ? 'selected' : '';
@@ -695,7 +696,7 @@ $(function(){
                             <div class="form-group">
                                 <label><?=$xml->model ?? 'Model'?></label>
                                 <select name="model[<?=$i?>]" id="model<?=$i?>" class="form-control model-select smart-dropdown" data-index="<?=$i?>">
-                                    <option value="0">-- No Model --</option>
+                                    <option value="0"><?= $isThaiLang ? '-- ไม่มีรุ่น --' : '-- No Model --' ?></option>
                                     <?php 
                                     if(isset($models_by_type[$typeId])){
                                         foreach($models_by_type[$typeId] as $model){
