@@ -209,6 +209,15 @@ return [
     'reset_password'         => ['AuthController', 'resetPassword', 'public'],
     'lang_switch'            => ['AuthController', 'switchLanguage', 'public'],
 
+    // ========== Self-Registration (v6.0) ==========
+    'register'               => ['RegistrationController', 'showForm', 'public'],
+    'register_submit'        => ['RegistrationController', 'register', 'public'],
+    'register_sent'          => ['RegistrationController', 'sent', 'public'],
+    'register_verify'        => ['RegistrationController', 'verify', 'public'],
+    'onboarding'             => ['RegistrationController', 'onboarding'],
+    'onboarding_complete'    => ['RegistrationController', 'completeOnboarding'],
+    'plans'                  => ['RegistrationController', 'plans'],
+
     // ========== Phase 8: Q2 2026 – Payment Gateway & Multi-Currency (MVC) ==========
 
     // ========== Q3 2026 – Expense Module ==========

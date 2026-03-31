@@ -572,7 +572,11 @@ $success = isset($_GET['success']) ? $_GET['success'] : '';
                 <span>or</span>
             </div>
             
-            <div class="back-to-home">
+            <div class="back-to-home" style="text-align:center;">
+                <p style="margin-bottom:10px;font-size:0.9rem;color:#6c757d;">
+                    Don't have an account? 
+                    <a href="index.php?page=register" style="color:#8e44ad;font-weight:600;text-decoration:none;">Sign up free</a>
+                </p>
                 <a href="landing.php">
                     <i class="fa fa-arrow-left"></i> Back to Home
                 </a>
