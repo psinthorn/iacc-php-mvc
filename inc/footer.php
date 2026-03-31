@@ -106,6 +106,32 @@ $current_year = date('Y');
     text-decoration: underline;
 }
 
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.footer-links a:hover {
+    color: #3b82f6;
+    background: #e9ecef;
+}
+
+.footer-links .sep {
+    color: #dee2e6;
+    font-size: 10px;
+}
+
 @media (max-width: 768px) {
     .footer-content {
         flex-direction: column;
@@ -115,6 +141,10 @@ $current_year = date('Y');
     .footer-right {
         flex-direction: column;
         gap: 8px;
+    }
+    
+    .footer-links {
+        justify-content: center;
     }
 }
 </style>
@@ -126,6 +156,13 @@ $current_year = date('Y');
             <span class="footer-copyright">
                 © <?= $current_year ?> iACC. All rights reserved.
             </span>
+        </div>
+        <div class="footer-links">
+            <a href="index.php?page=help"><i class="fa fa-life-ring"></i> <?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'ช่วยเหลือ' : 'Help' ?></a>
+            <span class="sep">•</span>
+            <a href="index.php?page=user_manual"><i class="fa fa-book"></i> <?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'คู่มือ' : 'Manual' ?></a>
+            <span class="sep">•</span>
+            <a href="index.php?page=master_data_guide" target="_blank"><i class="fa fa-sitemap"></i> <?= (isset($_SESSION['lang']) && $_SESSION['lang'] == 1) ? 'ข้อมูลหลัก' : 'Master Data' ?></a>
         </div>
         <div class="footer-right">
             <span class="footer-version">
