@@ -355,7 +355,7 @@ class LineOAController extends BaseController
     /**
      * CSRF verification helper
      */
-    private function verifyCsrf(): void
+    protected function verifyCsrf(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
         $token = $_POST['csrf_token'] ?? '';
