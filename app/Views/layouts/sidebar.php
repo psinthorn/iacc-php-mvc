@@ -477,6 +477,38 @@ include_once 'inc/top-navbar.php';
                         </ul>
                     </li>
                     
+                    <!-- LINE OA (Developer role only) -->
+                    <li>
+                        <a href="#"><i class="fa fa-comment"></i> <?=$xml->lineoa ?? 'LINE OA'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=line_dashboard"><i class="fa fa-dashboard"></i> <?=$xml->linedashboard ?? 'Dashboard'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=line_orders"><i class="fa fa-shopping-cart"></i> <?=$xml->lineorders ?? 'Orders'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=line_messages"><i class="fa fa-envelope"></i> <?=$xml->linemessages ?? 'Messages'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=line_users"><i class="fa fa-users"></i> <?=$xml->lineusers ?? 'Users'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=line_auto_replies"><i class="fa fa-reply-all"></i> <?=$xml->lineautoreplies ?? 'Auto Replies'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=line_send_message"><i class="fa fa-paper-plane"></i> <?=$xml->linesendmessage ?? 'Send Message'?></a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="index.php?page=line_settings"><i class="fa fa-cog"></i> <?=$xml->linesettings ?? 'Settings'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=line_webhook_log"><i class="fa fa-list-alt"></i> <?=$xml->linewebhooklog ?? 'Webhook Log'?></a>
+                            </li>
+                        </ul>
+                    </li>
+                    
                     <!-- AI Tools (Developer role only) -->
                     <li>
                         <a href="#"><i class="fa fa-robot"></i> <?=$xml->aitools ?? 'AI Tools'?><span class="fa arrow"></span></a>
