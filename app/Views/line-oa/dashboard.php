@@ -70,10 +70,17 @@ $statusBadge = [
     </div>
 </div>
 
+<?php if (!empty($_SESSION['flash_success'])): ?>
+<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_success']); endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_error']); endif; ?>
+
 <?php if (!$config): ?>
 <div class="alert alert-warning">
     <i class="fa fa-exclamation-triangle"></i> <?= $t['not_configured'] ?>
-    <a href="?page=line_settings" class="btn btn-sm btn-success ms-3"><?= $t['configure_now'] ?></a>
+    <a href="?page=line_settings" class="btn btn-sm btn-success" style="margin-left:10px;"><?= $t['configure_now'] ?></a>
 </div>
 <?php endif; ?>
 

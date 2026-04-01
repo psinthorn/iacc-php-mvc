@@ -42,14 +42,14 @@ $t = $labels[$lang];
     </div>
 </div>
 
-<?php if (!empty($success)): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?></div>
-<?php endif; ?>
-<?php if (!empty($error)): ?>
-    <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-<?php endif; ?>
+<?php if (!empty($_SESSION['flash_success'])): ?>
+<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_success']); endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_error']); endif; ?>
 
-<?php if (empty($users)): ?>
+<?php if (empty($lineUsers)): ?>
     <div class="alert alert-info"><?= $t['no_users'] ?></div>
 <?php else: ?>
 <div class="row">
@@ -64,7 +64,7 @@ $t = $labels[$lang];
                         <label><?= $t['select_user'] ?></label>
                         <select name="line_user_id" class="form-control" required>
                             <option value="">-- <?= $t['select_user'] ?> --</option>
-                            <?php foreach ($users as $u): ?>
+                            <?php foreach ($lineUsers as $u): ?>
                             <option value="<?= $u['line_user_id'] ?>"><?= htmlspecialchars($u['display_name'] ?: $u['line_user_id'], ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>

@@ -104,7 +104,7 @@ $t = $labels[$lang];
                         <td><?= $rule['priority'] ?></td>
                         <td><span class="label label-<?= $rule['is_active'] ? 'success' : 'default' ?>"><?= $rule['is_active'] ? $t['yes'] : $t['no'] ?></span></td>
                         <td>
-                            <button class="btn btn-xs btn-info" onclick="editRule(<?= htmlspecialchars(json_encode($rule), ENT_QUOTES, 'UTF-8') ?>)"><i class="fa fa-edit"></i></button>
+                            <button class="btn btn-xs btn-info" data-rule='<?= json_encode($rule, JSON_HEX_APOS | JSON_HEX_QUOT) ?>' onclick="editRule(JSON.parse(this.getAttribute('data-rule')))"><i class="fa fa-edit"></i></button>
                             <form method="POST" action="?page=line_store" style="display:inline;" onsubmit="return confirm('<?= $t['confirm_delete'] ?>')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                                 <input type="hidden" name="action" value="delete_auto_reply">

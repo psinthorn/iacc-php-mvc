@@ -32,6 +32,11 @@ $labels = [
         'payment_slip' => 'Payment Slip',
         'processed_by' => 'Processed By',
         'processed_at' => 'Processed At',
+        'pending' => 'Pending',
+        'confirmed' => 'Confirmed',
+        'processing' => 'Processing',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
     ],
     'th' => [
         'page_title' => 'รายละเอียดคำสั่งซื้อ',
@@ -61,6 +66,11 @@ $labels = [
         'payment_slip' => 'สลิปการชำระเงิน',
         'processed_by' => 'ดำเนินการโดย',
         'processed_at' => 'เวลาดำเนินการ',
+        'pending' => 'รอดำเนินการ',
+        'confirmed' => 'ยืนยันแล้ว',
+        'processing' => 'กำลังดำเนินการ',
+        'completed' => 'เสร็จสิ้น',
+        'cancelled' => 'ยกเลิก',
     ]
 ];
 $t = $labels[$lang];
@@ -143,7 +153,7 @@ if (!empty($order['items_json'])) {
                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                     <select name="status" class="form-control">
                         <?php foreach (['pending','confirmed','processing','completed','cancelled'] as $s): ?>
-                        <option value="<?= $s ?>" <?= ($order['status'] ?? '') === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
+                        <option value="<?= $s ?>" <?= ($order['status'] ?? '') === $s ? 'selected' : '' ?>><?= $t[$s] ?? ucfirst($s) ?></option>
                         <?php endforeach; ?>
                     </select>
                     <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> <?= $t['update_status'] ?></button>

@@ -72,6 +72,13 @@ $paymentBadge = ['unpaid'=>'default','slip_uploaded'=>'warning','confirmed'=>'su
     </div>
 </div>
 
+<?php if (!empty($_SESSION['flash_success'])): ?>
+<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_success']); endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_error']); endif; ?>
+
 <!-- Filters -->
 <div class="row" style="margin-bottom: 15px;">
     <div class="col-lg-12">
