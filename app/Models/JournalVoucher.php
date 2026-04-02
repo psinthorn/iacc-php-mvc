@@ -72,14 +72,14 @@ class JournalVoucher extends BaseModel
         }
 
         $sql = "SELECT jv.*, 
-                    u.fname as created_by_name
+                    u.name as created_by_name
                 FROM journal_vouchers jv
                 LEFT JOIN authorize u ON jv.created_by = u.id
                 WHERE {$whereStr}
                 ORDER BY {$orderBy}
                 {$limit}";
         $result = mysqli_query($this->conn, $sql);
-        return $result ? $this->fetchAll($result) : [];
+        return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
     }
 
     /**
@@ -113,9 +113,9 @@ class JournalVoucher extends BaseModel
     {
         $comId = (int) ($_SESSION['com_id'] ?? 0);
         $sql = "SELECT jv.*, 
-                    u.fname as created_by_name,
-                    pu.fname as posted_by_name,
-                    cu.fname as cancelled_by_name
+                    u.name as created_by_name,
+                    pu.name as posted_by_name,
+                    cu.name as cancelled_by_name
                 FROM journal_vouchers jv
                 LEFT JOIN authorize u ON jv.created_by = u.id
                 LEFT JOIN authorize pu ON jv.posted_by = pu.id
@@ -142,7 +142,7 @@ class JournalVoucher extends BaseModel
                 WHERE je.journal_voucher_id = {$journalVoucherId}
                 ORDER BY je.sort_order ASC, je.id ASC";
         $result = mysqli_query($this->conn, $sql);
-        return $result ? $this->fetchAll($result) : [];
+        return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
     }
 
     /**
