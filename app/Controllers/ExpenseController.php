@@ -43,7 +43,7 @@ class ExpenseController extends BaseController
      */
     public function index(): void
     {
-        if ($this->user['level'] < 1) {
+        if ($this->user['level'] < 0) {
             echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied.</div>';
             return;
         }
@@ -76,7 +76,7 @@ class ExpenseController extends BaseController
      */
     public function form(): void
     {
-        if ($this->user['level'] < 1) {
+        if ($this->user['level'] < 0) {
             echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied.</div>';
             return;
         }
@@ -246,7 +246,7 @@ class ExpenseController extends BaseController
      */
     public function summary(): void
     {
-        if ($this->user['level'] < 1) {
+        if ($this->user['level'] < 0) {
             echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied.</div>';
             return;
         }
@@ -272,7 +272,7 @@ class ExpenseController extends BaseController
      */
     public function projectReport(): void
     {
-        if ($this->user['level'] < 1) {
+        if ($this->user['level'] < 0) {
             echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied.</div>';
             return;
         }
@@ -371,7 +371,7 @@ class ExpenseController extends BaseController
      */
     public function categories(): void
     {
-        if ($this->user['level'] < 1) {
+        if ($this->user['level'] < 0) {
             echo '<div class="alert alert-danger"><i class="fa fa-lock"></i> Access denied.</div>';
             return;
         }
