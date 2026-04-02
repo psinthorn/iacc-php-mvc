@@ -34,6 +34,7 @@ $t = [
         // Chapter 2
         'ch2_title'         => 'Initial Setup',
         'ch2_intro'         => 'Before creating transactions, you must set up your master data. Follow these steps in order:',
+        'ch2_preloaded'     => '<strong><i class="fa fa-magic"></i> Good news!</strong> When you register, the system automatically creates starter data for you: <strong>10 expense categories</strong>, <strong>4 payment methods</strong> (Cash, Bank Transfer, Credit Card, Cheque), and <strong>20 chart of accounts</strong>. You can start using them right away or customize them to fit your business. See the <a href="index.php?page=master_data_guide">Master Data Guide</a> for the full list.',
         'ch2_1_title'       => 'Step 1: Create Your Company',
         'ch2_1_desc'        => 'Go to <strong>Master Data → Company</strong>. Click <strong>Add New</strong>. Fill in company name, address, tax ID, phone number, and branch. This is your business identity that appears on invoices, quotations, and receipts.',
         'ch2_1_fields'      => 'Required fields: Company Name, Address, Phone. Optional: Tax ID, Branch, Website, Logo.',
@@ -146,6 +147,7 @@ $t = [
 
         'ch2_title'         => 'การตั้งค่าเริ่มต้น',
         'ch2_intro'         => 'ก่อนสร้างรายการ คุณต้องตั้งค่าข้อมูลหลักก่อน ปฏิบัติตามขั้นตอนเหล่านี้ตามลำดับ:',
+        'ch2_preloaded'     => '<strong><i class="fa fa-magic"></i> ข่าวดี!</strong> เมื่อคุณลงทะเบียน ระบบจะสร้างข้อมูลเริ่มต้นให้อัตโนมัติ: <strong>หมวดหมู่ค่าใช้จ่าย 10 รายการ</strong>, <strong>วิธีชำระเงิน 4 รายการ</strong> (เงินสด, โอนเงิน, บัตรเครดิต, เช็ค) และ <strong>ผังบัญชี 20 รายการ</strong> คุณสามารถเริ่มใช้งานได้ทันทีหรือปรับแต่งตามธุรกิจ ดูรายละเอียดทั้งหมดได้ที่ <a href="index.php?page=master_data_guide">คู่มือข้อมูลหลัก</a>',
         'ch2_1_title'       => 'ขั้นตอนที่ 1: สร้างบริษัท',
         'ch2_1_desc'        => 'ไปที่ <strong>ข้อมูลหลัก → บริษัท</strong> คลิก <strong>เพิ่มใหม่</strong> กรอกชื่อบริษัท ที่อยู่ เลขประจำตัวผู้เสียภาษี หมายเลขโทรศัพท์ และสาขา ข้อมูลนี้จะปรากฏบนใบแจ้งหนี้ ใบเสนอราคา และใบเสร็จ',
         'ch2_1_fields'      => 'ฟิลด์บังคับ: ชื่อบริษัท, ที่อยู่, โทรศัพท์ ไม่บังคับ: เลขประจำตัวผู้เสียภาษี, สาขา, เว็บไซต์, โลโก้',
@@ -351,6 +353,10 @@ $t = [
     <div class="manual-chapter" id="ch2">
         <h2><span class="ch-num">2</span> <?= $t['ch2_title'] ?></h2>
         <p style="color:#555; font-size:14px; margin-bottom:16px;"><?= $t['ch2_intro'] ?></p>
+
+        <div class="manual-callout note" style="background:#f0fdf4; border-left-color:#22c55e;">
+            <?= $t['ch2_preloaded'] ?>
+        </div>
 
         <div class="manual-callout note">
             <strong><i class="fa fa-info-circle"></i> <?= $t['ch2_hierarchy'] ?>:</strong> <?= $t['ch2_hierarchy_desc'] ?>

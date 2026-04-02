@@ -115,6 +115,25 @@ $t = [
         'clean_prices' => 'Update prices when suppliers change their rates',
         'clean_caps' => 'Use consistent capitalization (Title Case recommended)',
         'clean_logos' => 'Add logos to brands for visual recognition',
+        'default_data_title' => 'Pre-loaded Default Data',
+        'default_data_desc' => 'When you register a new company, the system automatically creates starter data so you can begin working immediately. You can customize, rename, or delete any of these defaults.',
+        'default_expense_cat' => 'Default Expense Categories',
+        'default_expense_cat_desc' => 'Your company comes with 10 universal expense categories:',
+        'default_payment' => 'Default Payment Methods',
+        'default_payment_desc' => 'Four standard payment methods are pre-configured:',
+        'default_coa' => 'Default Chart of Accounts',
+        'default_coa_desc' => '20 standard accounts following Thai accounting conventions:',
+        'default_coa_assets' => 'Assets (5 accounts)',
+        'default_coa_assets_items' => 'Cash, Bank Account, Accounts Receivable, Inventory, Prepaid Expenses',
+        'default_coa_liabilities' => 'Liabilities (4 accounts)',
+        'default_coa_liabilities_items' => 'Accounts Payable, Accrued Expenses, VAT Payable, Withholding Tax Payable',
+        'default_coa_equity' => 'Equity (2 accounts)',
+        'default_coa_equity_items' => 'Owner\'s Equity, Retained Earnings',
+        'default_coa_revenue' => 'Revenue (3 accounts)',
+        'default_coa_revenue_items' => 'Sales Revenue, Service Revenue, Other Income',
+        'default_coa_expenses' => 'Expenses (6 accounts)',
+        'default_coa_expenses_items' => 'Cost of Goods Sold, Operating Expenses, Salary Expense, Rent Expense, Utilities Expense, Depreciation Expense',
+        'default_customize_tip' => 'Tip: These are starting points. Add categories specific to your industry, rename accounts to match your business, or deactivate any you don\'t need.',
         'faq_title' => 'Frequently Asked Questions',
         'faq1_q' => 'Q: Can I have multiple brands under one product type?',
         'faq1_a' => 'Yes! For example, under "Flight Ticket" product type, you can have models from Singapore Airlines, Thai Airways, AirAsia, etc.',
@@ -235,6 +254,25 @@ $t = [
         'clean_prices' => 'อัปเดตราคาเมื่อซัพพลายเออร์เปลี่ยนอัตรา',
         'clean_caps' => 'ใช้ตัวพิมพ์ใหญ่ที่สม่ำเสมอ (แนะนำ Title Case)',
         'clean_logos' => 'เพิ่มโลโก้ให้แบรนด์เพื่อการจดจำ',
+        'default_data_title' => 'ข้อมูลเริ่มต้นที่ระบบสร้างให้',
+        'default_data_desc' => 'เมื่อคุณลงทะเบียนบริษัทใหม่ ระบบจะสร้างข้อมูลเริ่มต้นให้อัตโนมัติ เพื่อให้คุณเริ่มใช้งานได้ทันที คุณสามารถแก้ไข เปลี่ยนชื่อ หรือลบข้อมูลเริ่มต้นเหล่านี้ได้',
+        'default_expense_cat' => 'หมวดหมู่ค่าใช้จ่ายเริ่มต้น',
+        'default_expense_cat_desc' => 'บริษัทของคุณมาพร้อมหมวดหมู่ค่าใช้จ่าย 10 รายการ:',
+        'default_payment' => 'วิธีการชำระเงินเริ่มต้น',
+        'default_payment_desc' => 'วิธีการชำระเงินมาตรฐาน 4 รายการถูกตั้งค่าไว้แล้ว:',
+        'default_coa' => 'ผังบัญชีเริ่มต้น',
+        'default_coa_desc' => 'บัญชีมาตรฐาน 20 รายการตามหลักบัญชีไทย:',
+        'default_coa_assets' => 'สินทรัพย์ (5 บัญชี)',
+        'default_coa_assets_items' => 'เงินสด, เงินฝากธนาคาร, ลูกหนี้การค้า, สินค้าคงเหลือ, ค่าใช้จ่ายจ่ายล่วงหน้า',
+        'default_coa_liabilities' => 'หนี้สิน (4 บัญชี)',
+        'default_coa_liabilities_items' => 'เจ้าหนี้การค้า, ค่าใช้จ่ายค้างจ่าย, ภาษีมูลค่าเพิ่มค้างจ่าย, ภาษีหัก ณ ที่จ่ายค้างจ่าย',
+        'default_coa_equity' => 'ส่วนของเจ้าของ (2 บัญชี)',
+        'default_coa_equity_items' => 'ทุนเจ้าของ, กำไรสะสม',
+        'default_coa_revenue' => 'รายได้ (3 บัญชี)',
+        'default_coa_revenue_items' => 'รายได้จากการขาย, รายได้จากการบริการ, รายได้อื่น',
+        'default_coa_expenses' => 'ค่าใช้จ่าย (6 บัญชี)',
+        'default_coa_expenses_items' => 'ต้นทุนสินค้าขาย, ค่าใช้จ่ายในการดำเนินงาน, เงินเดือนและค่าจ้าง, ค่าเช่า, ค่าสาธารณูปโภค, ค่าเสื่อมราคา',
+        'default_customize_tip' => 'เคล็ดลับ: ข้อมูลเหล่านี้เป็นจุดเริ่มต้น เพิ่มหมวดหมู่เฉพาะอุตสาหกรรมของคุณ เปลี่ยนชื่อบัญชีให้ตรงกับธุรกิจ หรือปิดการใช้งานรายการที่ไม่ต้องการ',
         'faq_title' => 'คำถามที่พบบ่อย',
         'faq1_q' => 'ถาม: สามารถมีหลายแบรนด์ภายใต้ประเภทสินค้าเดียวได้หรือไม่?',
         'faq1_a' => 'ได้! เช่น ภายใต้ประเภท "ตั๋วเครื่องบิน" คุณสามารถมีรุ่นจาก Singapore Airlines, Thai Airways, AirAsia ฯลฯ',
@@ -881,6 +919,56 @@ $page_title = $t['page_title'];
             <li><?= $t['clean_caps'] ?></li>
             <li><?= $t['clean_logos'] ?></li>
         </ul>
+    </div>
+
+    <!-- Pre-loaded Default Data -->
+    <div class="guide-section">
+        <h2><i class="fa fa-magic"></i> <?= $t['default_data_title'] ?></h2>
+        <p style="color:#555; margin-bottom:16px;"><?= $t['default_data_desc'] ?></p>
+
+        <h3><i class="fa fa-tags"></i> <?= $t['default_expense_cat'] ?></h3>
+        <p><?= $t['default_expense_cat_desc'] ?></p>
+        <table class="table table-bordered table-striped" style="font-size:13px;">
+            <thead><tr><th style="width:30px">#</th><th>English</th><th>ภาษาไทย</th><th>Code</th><th style="width:40px">Icon</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>Office Rent</td><td>ค่าเช่าสำนักงาน</td><td>EXP-RENT</td><td><i class="fa fa-building" style="color:#6366f1"></i></td></tr>
+                <tr><td>2</td><td>Utilities</td><td>ค่าสาธารณูปโภค</td><td>EXP-UTIL</td><td><i class="fa fa-bolt" style="color:#f59e0b"></i></td></tr>
+                <tr><td>3</td><td>Office Supplies</td><td>วัสดุสำนักงาน</td><td>EXP-SUPP</td><td><i class="fa fa-paperclip" style="color:#10b981"></i></td></tr>
+                <tr><td>4</td><td>Travel & Transport</td><td>ค่าเดินทาง</td><td>EXP-TRAV</td><td><i class="fa fa-car" style="color:#3b82f6"></i></td></tr>
+                <tr><td>5</td><td>Salary & Wages</td><td>เงินเดือนและค่าจ้าง</td><td>EXP-SAL</td><td><i class="fa fa-users" style="color:#ef4444"></i></td></tr>
+                <tr><td>6</td><td>Marketing & Advertising</td><td>การตลาดและโฆษณา</td><td>EXP-MKT</td><td><i class="fa fa-bullhorn" style="color:#f97316"></i></td></tr>
+                <tr><td>7</td><td>Professional Fees</td><td>ค่าบริการวิชาชีพ</td><td>EXP-PROF</td><td><i class="fa fa-briefcase" style="color:#8b5cf6"></i></td></tr>
+                <tr><td>8</td><td>Equipment & Maintenance</td><td>อุปกรณ์และซ่อมบำรุง</td><td>EXP-EQUIP</td><td><i class="fa fa-wrench" style="color:#64748b"></i></td></tr>
+                <tr><td>9</td><td>Insurance</td><td>ค่าประกันภัย</td><td>EXP-INS</td><td><i class="fa fa-shield" style="color:#06b6d4"></i></td></tr>
+                <tr><td>10</td><td>Miscellaneous</td><td>อื่นๆ</td><td>EXP-MISC</td><td><i class="fa fa-folder" style="color:#a855f7"></i></td></tr>
+            </tbody>
+        </table>
+
+        <h3><i class="fa fa-credit-card"></i> <?= $t['default_payment'] ?></h3>
+        <p><?= $t['default_payment_desc'] ?></p>
+        <table class="table table-bordered table-striped" style="font-size:13px;">
+            <thead><tr><th style="width:30px">#</th><th>English</th><th>ภาษาไทย</th><th style="width:40px">Icon</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>Cash</td><td>เงินสด</td><td><i class="fa fa-money"></i></td></tr>
+                <tr><td>2</td><td>Bank Transfer</td><td>โอนเงินผ่านธนาคาร</td><td><i class="fa fa-university"></i></td></tr>
+                <tr><td>3</td><td>Credit Card</td><td>บัตรเครดิต</td><td><i class="fa fa-credit-card"></i></td></tr>
+                <tr><td>4</td><td>Cheque</td><td>เช็ค</td><td><i class="fa fa-file-text-o"></i></td></tr>
+            </tbody>
+        </table>
+
+        <h3><i class="fa fa-book"></i> <?= $t['default_coa'] ?></h3>
+        <p><?= $t['default_coa_desc'] ?></p>
+        <ul>
+            <li><strong><?= $t['default_coa_assets'] ?>:</strong> <?= $t['default_coa_assets_items'] ?></li>
+            <li><strong><?= $t['default_coa_liabilities'] ?>:</strong> <?= $t['default_coa_liabilities_items'] ?></li>
+            <li><strong><?= $t['default_coa_equity'] ?>:</strong> <?= $t['default_coa_equity_items'] ?></li>
+            <li><strong><?= $t['default_coa_revenue'] ?>:</strong> <?= $t['default_coa_revenue_items'] ?></li>
+            <li><strong><?= $t['default_coa_expenses'] ?>:</strong> <?= $t['default_coa_expenses_items'] ?></li>
+        </ul>
+
+        <div class="manual-callout tip" style="background:#f0fdf4; border-left:4px solid #22c55e; padding:12px 16px; margin-top:16px; border-radius:4px;">
+            <strong><i class="fa fa-lightbulb-o"></i> <?= $t['default_customize_tip'] ?></strong>
+        </div>
     </div>
 
     <!-- FAQ -->
