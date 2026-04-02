@@ -24,6 +24,7 @@ $agentTools = getAgentTools();
 $schemaTools = getSchemaTools();
 ?>
 
+<div class="ai-documentation-page">
 <div class="row">
     <div class="col-lg-12">
         <h3 class="page-header">
@@ -40,7 +41,7 @@ $schemaTools = getSchemaTools();
         <div class="panel panel-primary">
             <div class="panel-heading text-center">Total Tools</div>
             <div class="panel-body text-center">
-                <h2><?=count($allTools)?></h2>
+                <span class="stat-value"><?=count($allTools)?></span>
             </div>
         </div>
     </div>
@@ -48,7 +49,7 @@ $schemaTools = getSchemaTools();
         <div class="panel panel-success">
             <div class="panel-heading text-center">Business Tools</div>
             <div class="panel-body text-center">
-                <h2><?=count($agentTools)?></h2>
+                <span class="stat-value"><?=count($agentTools)?></span>
             </div>
         </div>
     </div>
@@ -56,7 +57,7 @@ $schemaTools = getSchemaTools();
         <div class="panel panel-info">
             <div class="panel-heading text-center">Schema Tools</div>
             <div class="panel-body text-center">
-                <h2><?=count($schemaTools)?></h2>
+                <span class="stat-value"><?=count($schemaTools)?></span>
             </div>
         </div>
     </div>
@@ -64,7 +65,7 @@ $schemaTools = getSchemaTools();
         <div class="panel panel-warning">
             <div class="panel-heading text-center">Providers</div>
             <div class="panel-body text-center">
-                <h2>2</h2>
+                <span class="stat-value">2</span>
                 <small>OpenAI / Ollama</small>
             </div>
         </div>
@@ -99,11 +100,11 @@ $schemaTools = getSchemaTools();
                         </div>
                     </div>
                     
-                    <div class="flow-row" style="margin-top: 20px;">
-                        <div class="flow-box" style="visibility: hidden;"></div>
-                        <div class="flow-arrow" style="visibility: hidden;"></div>
+                    <div class="flow-row flow-row-spacer">
+                        <div class="flow-box flow-placeholder"></div>
+                        <div class="flow-arrow flow-placeholder"></div>
                         <div class="flow-arrow-down">↓</div>
-                        <div class="flow-arrow" style="visibility: hidden;"></div>
+                        <div class="flow-arrow flow-placeholder"></div>
                         <div class="flow-arrow-down">↓</div>
                     </div>
                     
@@ -121,18 +122,18 @@ $schemaTools = getSchemaTools();
                         </div>
                         <div class="flow-arrow">←</div>
                         <div class="flow-box ai-box">
-                            <i class="fa fa-robot fa-2x"></i>
+                            <i class="fa fa-microchip fa-2x"></i>
                             <div>OpenAI / Ollama</div>
                             <small>Tool Calls</small>
                         </div>
                     </div>
                     
-                    <div class="flow-row" style="margin-top: 20px;">
+                    <div class="flow-row flow-row-spacer">
                         <div class="flow-arrow-down">↓</div>
-                        <div class="flow-arrow" style="visibility: hidden;"></div>
+                        <div class="flow-arrow flow-placeholder"></div>
                         <div class="flow-arrow-down">↓</div>
-                        <div class="flow-arrow" style="visibility: hidden;"></div>
-                        <div class="flow-box" style="visibility: hidden;"></div>
+                        <div class="flow-arrow flow-placeholder"></div>
+                        <div class="flow-box flow-placeholder"></div>
                     </div>
                     
                     <div class="flow-row">
@@ -251,7 +252,8 @@ cache/
                     <!-- Business Tools -->
                     <div class="col-md-6">
                         <h4><i class="fa fa-briefcase"></i> Business Tools (<?=count($agentTools)?>)</h4>
-                        <table class="table table-condensed table-striped" style="font-size: 12px;">
+                        <div class="table-responsive">
+                        <table class="table table-condensed table-striped tool-table">
                             <thead>
                                 <tr>
                                     <th>Tool</th>
@@ -262,7 +264,7 @@ cache/
                             <tbody>
                                 <?php foreach ($agentTools as $tool): ?>
                                 <tr>
-                                    <td><code><?=$tool['name']?></code></td>
+                                    <td><code><?=htmlspecialchars($tool['name'], ENT_QUOTES, 'UTF-8')?></code></td>
                                     <td>
                                         <?php if ($tool['operation'] === 'read'): ?>
                                         <span class="label label-success">READ</span>
@@ -272,17 +274,19 @@ cache/
                                         <span class="label label-default">UTIL</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?=substr($tool['description'], 0, 60)?>...</td>
+                                    <td><?=htmlspecialchars(substr($tool['description'], 0, 60), ENT_QUOTES, 'UTF-8')?>...</td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                     
                     <!-- Schema Tools -->
                     <div class="col-md-6">
                         <h4><i class="fa fa-database"></i> Schema Discovery Tools (<?=count($schemaTools)?>)</h4>
-                        <table class="table table-condensed table-striped" style="font-size: 12px;">
+                        <div class="table-responsive">
+                        <table class="table table-condensed table-striped tool-table">
                             <thead>
                                 <tr>
                                     <th>Tool</th>
@@ -293,16 +297,18 @@ cache/
                             <tbody>
                                 <?php foreach ($schemaTools as $tool): ?>
                                 <tr>
-                                    <td><code><?=$tool['name']?></code></td>
+                                    <td><code><?=htmlspecialchars($tool['name'], ENT_QUOTES, 'UTF-8')?></code></td>
                                     <td><span class="label label-info">SCHEMA</span></td>
-                                    <td><?=substr($tool['description'], 0, 60)?>...</td>
+                                    <td><?=htmlspecialchars(substr($tool['description'], 0, 60), ENT_QUOTES, 'UTF-8')?>...</td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
+                        </div>
                         
-                        <h4 style="margin-top: 30px;"><i class="fa fa-key"></i> Key Database Tables</h4>
-                        <table class="table table-condensed" style="font-size: 12px;">
+                        <h4 class="section-heading"><i class="fa fa-key"></i> Key Database Tables</h4>
+                        <div class="table-responsive">
+                        <table class="table table-condensed tool-table">
                             <tr><td><code>iv</code></td><td>Invoices (tex→po.id)</td></tr>
                             <tr><td><code>po</code></td><td>Purchase Orders (ref→pr.id)</td></tr>
                             <tr><td><code>pr</code></td><td>Quotations (cus_id, ven_id→company)</td></tr>
@@ -310,6 +316,7 @@ cache/
                             <tr><td><code>pay</code></td><td>Payments (po_id, volumn=amount)</td></tr>
                             <tr><td><code>company</code></td><td>Companies (customers & vendors)</td></tr>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -352,54 +359,81 @@ cache/
     </div>
 </div>
 
+</div><!-- /.ai-documentation-page -->
+
 <style>
-.flow-diagram {
+.ai-documentation-page .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    display: block;
+    margin: 0;
+}
+.ai-documentation-page .flow-diagram {
     text-align: center;
     padding: 20px;
 }
-.flow-row {
+.ai-documentation-page .flow-row {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
-.flow-box {
+.ai-documentation-page .flow-row-spacer {
+    margin-top: 20px;
+}
+.ai-documentation-page .flow-placeholder {
+    visibility: hidden;
+}
+.ai-documentation-page .flow-box {
     padding: 15px 20px;
     border-radius: 8px;
     min-width: 140px;
     text-align: center;
 }
-.flow-arrow {
+.ai-documentation-page .flow-arrow {
     font-size: 24px;
     color: #666;
     padding: 0 10px;
 }
-.flow-arrow-down {
+.ai-documentation-page .flow-arrow-down {
     font-size: 24px;
     color: #666;
 }
-.user-box { background: #e3f2fd; border: 2px solid #2196F3; }
-.handler-box { background: #fff3e0; border: 2px solid #ff9800; }
-.provider-box { background: #f3e5f5; border: 2px solid #9c27b0; }
-.tools-box { background: #e8f5e9; border: 2px solid #4CAF50; }
-.executor-box { background: #fce4ec; border: 2px solid #e91e63; }
-.ai-box { background: #e0f7fa; border: 2px solid #00bcd4; }
-.db-box { background: #fff8e1; border: 2px solid #ffc107; }
-.result-box { background: #f1f8e9; border: 2px solid #8bc34a; }
-.response-box { background: #e8eaf6; border: 2px solid #3f51b5; }
-
-.file-tree {
+.ai-documentation-page .user-box { background: #e3f2fd; border: 2px solid #2196F3; }
+.ai-documentation-page .handler-box { background: #fff3e0; border: 2px solid #ff9800; }
+.ai-documentation-page .provider-box { background: #f3e5f5; border: 2px solid #9c27b0; }
+.ai-documentation-page .tools-box { background: #e8f5e9; border: 2px solid #4CAF50; }
+.ai-documentation-page .executor-box { background: #fce4ec; border: 2px solid #e91e63; }
+.ai-documentation-page .ai-box { background: #e0f7fa; border: 2px solid #00bcd4; }
+.ai-documentation-page .db-box { background: #fff8e1; border: 2px solid #ffc107; }
+.ai-documentation-page .result-box { background: #f1f8e9; border: 2px solid #8bc34a; }
+.ai-documentation-page .response-box { background: #e8eaf6; border: 2px solid #3f51b5; }
+.ai-documentation-page .file-tree {
     background: #f8f9fa;
     padding: 15px;
     border-radius: 5px;
     font-size: 12px;
     line-height: 1.8;
 }
-.file-tree a {
+.ai-documentation-page .file-tree a {
     color: #2196F3;
 }
-
-.panel-body h2 {
-    margin: 0;
+.ai-documentation-page .tool-table {
+    font-size: 12px;
+}
+.ai-documentation-page .section-heading {
+    margin-top: 30px;
+}
+@media (max-width: 768px) {
+    .ai-documentation-page .flow-row {
+        flex-direction: column;
+    }
+    .ai-documentation-page .flow-arrow {
+        transform: rotate(90deg);
+    }
+    .ai-documentation-page .flow-placeholder {
+        display: none;
+    }
 }
 </style>
