@@ -16,6 +16,12 @@ require_once __DIR__ . '/includes/database.php';
 $configPath = __DIR__ . '/config.php';
 $config = file_exists($configPath) ? require $configPath : [];
 
+// Block setup.php after first configuration unless logged in as admin
+if (($config['configured'] ?? false) && empty($_SESSION['template_admin_logged_in'])) {
+    header('Location: index.php');
+    exit;
+}
+
 // Handle AJAX actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');

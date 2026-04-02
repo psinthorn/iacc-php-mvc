@@ -89,18 +89,16 @@ function getImageUrl(string $name, int $index = 0): string {
 </head>
 <body>
 
-<!-- Admin bar (visible to site owner) -->
+<!-- Admin bar (visible only to logged-in admin) -->
+<?php if (!empty($_SESSION['template_admin_logged_in'])): ?>
 <div class="admin-bar">
     <i class="fa-solid fa-gear"></i> Template Admin:
     <a href="admin.php"><i class="fa-solid fa-sliders"></i> Admin Panel</a>
     <a href="sync.php"><i class="fa-solid fa-rotate"></i> Sync Products</a>
     <a href="setup.php"><i class="fa-solid fa-wrench"></i> Settings</a>
-    <?php if (!empty($_SESSION['template_admin_logged_in'])): ?>
-        <a href="admin.php?action=logout" style="color:#f87171;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
-    <?php else: ?>
-        <a href="admin-login.php" style="color:#4ade80;"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-    <?php endif; ?>
+    <a href="admin.php?action=logout" style="color:#f87171;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
 </div>
+<?php endif; ?>
 
 <!-- ============ NAVIGATION ============ -->
 <nav class="navbar" id="navbar">
