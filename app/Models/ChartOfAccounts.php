@@ -42,7 +42,7 @@ class ChartOfAccounts extends BaseModel
         $whereStr = implode(' AND ', $where);
         $sql = "SELECT * FROM chart_of_accounts WHERE {$whereStr} ORDER BY account_code ASC";
         $result = mysqli_query($this->conn, $sql);
-        return $result ? $this->fetchAll($result) : [];
+        return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
     }
 
     /**
@@ -164,6 +164,6 @@ class ChartOfAccounts extends BaseModel
                          coa.account_type, coa.normal_balance, coa.level
                 ORDER BY coa.account_code ASC";
         $result = mysqli_query($this->conn, $sql);
-        return $result ? $this->fetchAll($result) : [];
+        return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
     }
 }
