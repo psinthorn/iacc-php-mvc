@@ -316,6 +316,9 @@ cache/
 </div><!-- /.ai-documentation-page -->
 
 <style>
+/* Page spacing */
+.ai-documentation-page { padding: 0 15px; }
+
 /* Hero Header */
 .ai-documentation-page .doc-hero {
     background: linear-gradient(135deg, #667eea, #764ba2);
