@@ -42,24 +42,26 @@ $labels = [
 $t = $labels[$lang];
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header"><i class="fa fa-users"></i> <?= $t['page_title'] ?></h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_users'; include __DIR__ . '/_nav.php'; ?>
+
+<?php if (!empty($_SESSION['flash_success'])): ?>
+<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_success']); endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_error']); endif; ?>
 
 <div class="row" style="margin-bottom: 15px;">
     <div class="col-lg-12">
         <div class="btn-group">
-            <a href="?page=line_users" class="btn btn-<?= !$currentType ? 'primary' : 'default' ?>"><?= $t['all'] ?></a>
-            <a href="?page=line_users&type=customer" class="btn btn-<?= $currentType === 'customer' ? 'primary' : 'default' ?>"><?= $t['customer'] ?></a>
-            <a href="?page=line_users&type=agent" class="btn btn-<?= $currentType === 'agent' ? 'primary' : 'default' ?>"><?= $t['agent'] ?></a>
+            <a href="index.php?page=line_users" class="btn btn-<?= !$currentType ? 'primary' : 'default' ?>"><?= $t['all'] ?></a>
+            <a href="index.php?page=line_users&type=customer" class="btn btn-<?= $currentType === 'customer' ? 'primary' : 'default' ?>"><?= $t['customer'] ?></a>
+            <a href="index.php?page=line_users&type=agent" class="btn btn-<?= $currentType === 'agent' ? 'primary' : 'default' ?>"><?= $t['agent'] ?></a>
         </div>
     </div>
 </div>
 
-<div class="panel panel-default">
-    <div class="panel-body">
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <?php if (empty($lineUsers)): ?>
             <p class="text-muted text-center"><?= $t['no_users'] ?></p>
         <?php else: ?>
@@ -98,8 +100,8 @@ $t = $labels[$lang];
                         <td><?= $lu['last_interaction_at'] ? date('d M Y H:i', strtotime($lu['last_interaction_at'])) : '-' ?></td>
                         <td><?= date('d M Y', strtotime($lu['created_at'])) ?></td>
                         <td>
-                            <a href="?page=line_messages&user_id=<?= $lu['id'] ?>" class="btn btn-xs btn-info"><i class="fa fa-comments"></i> <?= $t['view_messages'] ?></a>
-                            <a href="?page=line_send_message&user_id=<?= $lu['id'] ?>" class="btn btn-xs btn-success"><i class="fa fa-paper-plane"></i> <?= $t['send_message'] ?></a>
+                            <a href="index.php?page=line_messages&user_id=<?= $lu['id'] ?>" class="btn btn-xs btn-info"><i class="fa fa-comments"></i> <?= $t['view_messages'] ?></a>
+                            <a href="index.php?page=line_send_message&user_id=<?= $lu['id'] ?>" class="btn btn-xs btn-success"><i class="fa fa-paper-plane"></i> <?= $t['send_message'] ?></a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -107,5 +109,5 @@ $t = $labels[$lang];
             </table>
         </div>
         <?php endif; ?>
-    </div>
 </div>
+</div><!-- /master-data-container -->

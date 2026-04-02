@@ -62,14 +62,7 @@ $labels = [
 $t = $labels[$lang];
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header">
-            <i class="fa fa-reply-all"></i> <?= $t['page_title'] ?>
-            <button class="btn btn-success pull-right" data-toggle="modal" data-target="#ruleModal" onclick="resetForm()"><i class="fa fa-plus"></i> <?= $t['add_rule'] ?></button>
-        </h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_auto_replies'; include __DIR__ . '/_nav.php'; ?>
 
 <?php if (!empty($_SESSION['flash_success'])): ?>
 <div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -78,8 +71,9 @@ $t = $labels[$lang];
 <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
 <?php unset($_SESSION['flash_error']); endif; ?>
 
-<div class="panel panel-default">
-    <div class="panel-body">
+<div style="margin-bottom:15px;"><button class="btn btn-success" data-toggle="modal" data-target="#ruleModal" onclick="resetForm()"><i class="fa fa-plus"></i> <?= $t['add_rule'] ?></button></div>
+
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <?php if (empty($rules)): ?>
             <p class="text-muted text-center"><?= $t['no_rules'] ?></p>
         <?php else: ?>
@@ -105,7 +99,7 @@ $t = $labels[$lang];
                         <td><span class="label label-<?= $rule['is_active'] ? 'success' : 'default' ?>"><?= $rule['is_active'] ? $t['yes'] : $t['no'] ?></span></td>
                         <td>
                             <button class="btn btn-xs btn-info" data-rule='<?= json_encode($rule, JSON_HEX_APOS | JSON_HEX_QUOT) ?>' onclick="editRule(JSON.parse(this.getAttribute('data-rule')))"><i class="fa fa-edit"></i></button>
-                            <form method="POST" action="?page=line_store" style="display:inline;" onsubmit="return confirm('<?= $t['confirm_delete'] ?>')">
+                            <form method="POST" action="index.php?page=line_store" style="display:inline;" onsubmit="return confirm('<?= $t['confirm_delete'] ?>')">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                                 <input type="hidden" name="action" value="delete_auto_reply">
                                 <input type="hidden" name="reply_id" value="<?= $rule['id'] ?>">
@@ -118,14 +112,13 @@ $t = $labels[$lang];
             </table>
         </div>
         <?php endif; ?>
-    </div>
 </div>
 
 <!-- Add/Edit Modal -->
 <div class="modal fade" id="ruleModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="?page=line_store">
+            <form method="POST" action="index.php?page=line_store">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                 <input type="hidden" name="action" value="save_auto_reply">
                 <input type="hidden" name="reply_id" id="reply_id" value="">
@@ -200,3 +193,4 @@ function editRule(rule) {
     $('#ruleModal').modal('show');
 }
 </script>
+</div><!-- /master-data-container -->

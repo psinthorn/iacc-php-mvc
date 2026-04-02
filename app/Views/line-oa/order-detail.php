@@ -39,6 +39,13 @@ $labels = [
         'processing' => 'Processing',
         'completed' => 'Completed',
         'cancelled' => 'Cancelled',
+        'customer_order' => 'Customer Order',
+        'agent_order' => 'Agent Order',
+        'booking' => 'Booking',
+        'unpaid' => 'Unpaid',
+        'slip_uploaded' => 'Slip Uploaded',
+        'payment_confirmed' => 'Confirmed',
+        'rejected' => 'Rejected',
     ],
     'th' => [
         'page_title' => 'รายละเอียดคำสั่งซื้อ',
@@ -75,6 +82,13 @@ $labels = [
         'processing' => 'กำลังดำเนินการ',
         'completed' => 'เสร็จสิ้น',
         'cancelled' => 'ยกเลิก',
+        'customer_order' => 'สั่งซื้อ',
+        'agent_order' => 'ตัวแทนสั่ง',
+        'booking' => 'จอง',
+        'unpaid' => 'ยังไม่ชำระ',
+        'slip_uploaded' => 'อัปโหลดสลิปแล้ว',
+        'payment_confirmed' => 'ยืนยันแล้ว',
+        'rejected' => 'ปฏิเสธ',
     ]
 ];
 $t = $labels[$lang];
@@ -87,14 +101,7 @@ if (!empty($order['items_json'])) {
 }
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header">
-            <i class="fa fa-file-text-o"></i> <?= $t['page_title'] ?>: <?= htmlspecialchars($order['order_ref'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-            <a href="?page=line_orders" class="btn btn-default pull-right"><i class="fa fa-arrow-left"></i> <?= $t['back'] ?></a>
-        </h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_order_detail'; $navIcon = 'fa-file-text-o'; include __DIR__ . '/_nav.php'; ?>
 
 <?php if (!empty($_SESSION['flash_success'])): ?>
 <div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -106,17 +113,17 @@ if (!empty($order['items_json'])) {
 <div class="row">
     <!-- Order Info -->
     <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-info-circle"></i> <?= $t['order_info'] ?></div>
+        <div style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:15px;">
+            <div style="padding:15px 20px; border-bottom:1px solid #eee; font-weight:600;"><i class="fa fa-info-circle"></i> <?= $t['order_info'] ?></div>
             <div class="panel-body">
                 <table class="table table-bordered">
                     <tr><th style="width:35%"><?= $t['order_ref'] ?></th><td><strong><?= htmlspecialchars($order['order_ref'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong></td></tr>
                     <tr><th><?= $t['customer'] ?></th><td><?= htmlspecialchars($order['display_name'] ?? $order['guest_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td></tr>
                     <tr><th><?= $t['phone'] ?></th><td><?= htmlspecialchars($order['guest_phone'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td></tr>
                     <tr><th><?= $t['email'] ?></th><td><?= htmlspecialchars($order['guest_email'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td></tr>
-                    <tr><th><?= $t['type'] ?></th><td><span class="label label-default"><?= htmlspecialchars($order['order_type'] ?? '', ENT_QUOTES, 'UTF-8') ?></span></td></tr>
-                    <tr><th><?= $t['status'] ?></th><td><span class="label label-<?= $statusBadge[$order['status']] ?? 'default' ?>"><?= htmlspecialchars($order['status'] ?? '', ENT_QUOTES, 'UTF-8') ?></span></td></tr>
-                    <tr><th><?= $t['payment_status'] ?></th><td><?= htmlspecialchars($order['payment_status'] ?? 'unpaid', ENT_QUOTES, 'UTF-8') ?></td></tr>
+                    <tr><th><?= $t['type'] ?></th><td><span class="label label-default"><?= $t[$order['order_type']] ?? htmlspecialchars($order['order_type'] ?? '', ENT_QUOTES, 'UTF-8') ?></span></td></tr>
+                    <tr><th><?= $t['status'] ?></th><td><span class="label label-<?= $statusBadge[$order['status']] ?? 'default' ?>"><?= $t[$order['status']] ?? ucfirst($order['status'] ?? '') ?></span></td></tr>
+                    <tr><th><?= $t['payment_status'] ?></th><td><span class="label label-<?= ['unpaid'=>'default','slip_uploaded'=>'warning','confirmed'=>'success','rejected'=>'danger'][$order['payment_status'] ?? ''] ?? 'default' ?>"><?= $t[$order['payment_status']] ?? ucfirst($order['payment_status'] ?? 'unpaid') ?></span></td></tr>
                     <tr><th><?= $t['amount'] ?></th><td><strong><?= number_format($order['total_amount'] ?? 0, 2) ?> <?= $order['currency'] ?? 'THB' ?></strong></td></tr>
                     <tr><th><?= $t['date'] ?></th><td><?= $order['created_at'] ?? '-' ?></td></tr>
                     <?php if (!empty($order['booking_date'])): ?>
@@ -127,10 +134,10 @@ if (!empty($order['items_json'])) {
                     <tr><th><?= $t['notes'] ?></th><td><?= htmlspecialchars($order['notes'], ENT_QUOTES, 'UTF-8') ?></td></tr>
                     <?php endif; ?>
                     <?php if (!empty($order['linked_pr_id'])): ?>
-                    <tr><th><?= $t['linked_pr'] ?></th><td><a href="?page=pr_view&id=<?= (int)$order['linked_pr_id'] ?>">#<?= (int)$order['linked_pr_id'] ?></a></td></tr>
+                    <tr><th><?= $t['linked_pr'] ?></th><td><a href="index.php?page=pr_view&id=<?= (int)$order['linked_pr_id'] ?>">#<?= (int)$order['linked_pr_id'] ?></a></td></tr>
                     <?php endif; ?>
                     <?php if (!empty($order['linked_po_id'])): ?>
-                    <tr><th><?= $t['linked_po'] ?></th><td><a href="?page=po_view&id=<?= (int)$order['linked_po_id'] ?>">#<?= (int)$order['linked_po_id'] ?></a></td></tr>
+                    <tr><th><?= $t['linked_po'] ?></th><td><a href="index.php?page=po_view&id=<?= (int)$order['linked_po_id'] ?>">#<?= (int)$order['linked_po_id'] ?></a></td></tr>
                     <?php endif; ?>
                 </table>
 
@@ -154,10 +161,10 @@ if (!empty($order['items_json'])) {
         </div>
 
         <!-- Actions -->
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-cogs"></i> <?= $t['update_status'] ?></div>
+        <div style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:15px;">
+            <div style="padding:15px 20px; border-bottom:1px solid #eee; font-weight:600;"><i class="fa fa-cogs"></i> <?= $t['update_status'] ?></div>
             <div class="panel-body">
-                <form method="POST" action="?page=line_store" class="form-inline">
+                <form method="POST" action="index.php?page=line_store" class="form-inline">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                     <input type="hidden" name="action" value="update_order_status">
                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
@@ -171,14 +178,14 @@ if (!empty($order['items_json'])) {
 
                 <?php if (($order['payment_status'] ?? '') === 'slip_uploaded'): ?>
                 <hr>
-                <form method="POST" action="?page=line_store" class="form-inline">
+                <form method="POST" action="index.php?page=line_store" class="form-inline">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                     <input type="hidden" name="action" value="confirm_payment">
                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                     <input type="hidden" name="payment_status" value="confirmed">
                     <button type="submit" class="btn btn-success"><i class="fa fa-check-circle"></i> <?= $t['confirm_payment'] ?></button>
                 </form>
-                <form method="POST" action="?page=line_store" class="form-inline" style="margin-top: 5px;">
+                <form method="POST" action="index.php?page=line_store" class="form-inline" style="margin-top: 5px;">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                     <input type="hidden" name="action" value="confirm_payment">
                     <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
@@ -192,8 +199,8 @@ if (!empty($order['items_json'])) {
 
     <!-- Conversation -->
     <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-comments"></i> <?= $t['conversation'] ?></div>
+        <div style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:15px;">
+            <div style="padding:15px 20px; border-bottom:1px solid #eee; font-weight:600;"><i class="fa fa-comments"></i> <?= $t['conversation'] ?></div>
             <div class="panel-body" style="max-height: 500px; overflow-y: auto;">
                 <?php if (empty($messages)): ?>
                     <p class="text-muted"><?= $t['no_messages'] ?></p>
@@ -211,3 +218,4 @@ if (!empty($order['items_json'])) {
         </div>
     </div>
 </div>
+</div><!-- /master-data-container -->

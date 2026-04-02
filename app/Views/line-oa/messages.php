@@ -34,14 +34,16 @@ $labels = [
 $t = $labels[$lang];
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header"><i class="fa fa-comments"></i> <?= $t['page_title'] ?></h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_messages'; include __DIR__ . '/_nav.php'; ?>
 
-<div class="panel panel-default">
-    <div class="panel-body">
+<?php if (!empty($_SESSION['flash_success'])): ?>
+<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_success']); endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
+<?php unset($_SESSION['flash_error']); endif; ?>
+
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <?php if (empty($messages)): ?>
             <p class="text-muted text-center"><?= $t['no_messages'] ?></p>
         <?php else: ?>
@@ -61,7 +63,7 @@ $t = $labels[$lang];
                     <?php foreach ($messages as $msg): ?>
                     <tr>
                         <td>
-                            <a href="?page=line_messages&user_id=<?= $msg['line_user_id'] ?>">
+                            <a href="index.php?page=line_messages&user_id=<?= $msg['line_user_id'] ?>">
                                 <?= htmlspecialchars($msg['display_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?>
                             </a>
                         </td>
@@ -83,5 +85,5 @@ $t = $labels[$lang];
             </table>
         </div>
         <?php endif; ?>
-    </div>
 </div>
+</div><!-- /master-data-container -->

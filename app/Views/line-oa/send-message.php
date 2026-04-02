@@ -36,11 +36,7 @@ $labels = [
 $t = $labels[$lang];
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header"><i class="fa fa-paper-plane"></i> <?= $t['page_title'] ?></h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_send_message'; include __DIR__ . '/_nav.php'; ?>
 
 <?php if (!empty($_SESSION['flash_success'])): ?>
 <div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -54,9 +50,8 @@ $t = $labels[$lang];
 <?php else: ?>
 <div class="row">
     <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <form method="POST" action="?page=line_store">
+        <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <form method="POST" action="index.php?page=line_store">
                     <input type="hidden" name="action" value="send_message">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
 
@@ -97,9 +92,9 @@ $t = $labels[$lang];
                 </form>
             </div>
         </div>
-    </div>
 </div>
 <?php endif; ?>
+</div><!-- /master-data-container -->
 
 <script>
 function toggleFields() {

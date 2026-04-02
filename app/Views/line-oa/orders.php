@@ -66,11 +66,7 @@ $statusBadge = ['pending'=>'warning','confirmed'=>'info','processing'=>'primary'
 $paymentBadge = ['unpaid'=>'default','slip_uploaded'=>'warning','confirmed'=>'success','rejected'=>'danger'];
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header"><i class="fa fa-shopping-cart"></i> <?= $t['page_title'] ?></h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_orders'; include __DIR__ . '/_nav.php'; ?>
 
 <?php if (!empty($_SESSION['flash_success'])): ?>
 <div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -80,25 +76,22 @@ $paymentBadge = ['unpaid'=>'default','slip_uploaded'=>'warning','confirmed'=>'su
 <?php unset($_SESSION['flash_error']); endif; ?>
 
 <!-- Filters -->
-<div class="row" style="margin-bottom: 15px;">
-    <div class="col-lg-12">
+<div style="margin-bottom: 15px;">
         <div class="btn-group">
-            <a href="?page=line_orders" class="btn btn-<?= !$currentStatus ? 'primary' : 'default' ?>"><?= $t['all'] ?></a>
+            <a href="index.php?page=line_orders" class="btn btn-<?= !$currentStatus ? 'primary' : 'default' ?>"><?= $t['all'] ?></a>
             <?php foreach (['pending','confirmed','processing','completed','cancelled'] as $s): ?>
-            <a href="?page=line_orders&status=<?= $s ?>" class="btn btn-<?= $currentStatus === $s ? 'primary' : 'default' ?>"><?= $t[$s] ?></a>
+            <a href="index.php?page=line_orders&status=<?= $s ?>" class="btn btn-<?= $currentStatus === $s ? 'primary' : 'default' ?>"><?= $t[$s] ?></a>
             <?php endforeach; ?>
         </div>
         <div class="btn-group" style="margin-left: 10px;">
-            <a href="?page=line_orders" class="btn btn-<?= !$currentType ? 'info' : 'default' ?>"><?= $t['all'] ?></a>
+            <a href="index.php?page=line_orders" class="btn btn-<?= !$currentType ? 'info' : 'default' ?>"><?= $t['all'] ?></a>
             <?php foreach (['customer_order','agent_order','booking'] as $ot): ?>
-            <a href="?page=line_orders&order_type=<?= $ot ?>" class="btn btn-<?= $currentType === $ot ? 'info' : 'default' ?>"><?= $t[$ot] ?></a>
+            <a href="index.php?page=line_orders&order_type=<?= $ot ?>" class="btn btn-<?= $currentType === $ot ? 'info' : 'default' ?>"><?= $t[$ot] ?></a>
             <?php endforeach; ?>
         </div>
-    </div>
 </div>
 
-<div class="panel panel-default">
-    <div class="panel-body">
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <?php if (empty($orders)): ?>
             <p class="text-muted text-center"><?= $t['no_orders'] ?></p>
         <?php else: ?>
@@ -126,12 +119,12 @@ $paymentBadge = ['unpaid'=>'default','slip_uploaded'=>'warning','confirmed'=>'su
                         <td><span class="label label-<?= $paymentBadge[$order['payment_status']] ?? 'default' ?>"><?= $t[$order['payment_status']] ?? $order['payment_status'] ?></span></td>
                         <td><?= number_format($order['total_amount'] ?? 0, 2) ?> <?= $order['currency'] ?? 'THB' ?></td>
                         <td><?= date('d M Y H:i', strtotime($order['created_at'])) ?></td>
-                        <td><a href="?page=line_order_detail&id=<?= $order['id'] ?>" class="btn btn-sm btn-info"><i class="fa fa-eye"></i> <?= $t['view'] ?></a></td>
+                        <td><a href="index.php?page=line_order_detail&id=<?= $order['id'] ?>" class="btn btn-sm btn-info"><i class="fa fa-eye"></i> <?= $t['view'] ?></a></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
         <?php endif; ?>
-    </div>
 </div>
+</div><!-- /master-data-container -->

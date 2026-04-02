@@ -61,12 +61,7 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https'
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $generatedWebhookUrl = $protocol . '://' . $host . '/line-webhook.php?company_id=' . $companyId;
 ?>
-
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header"><i class="fa fa-cog"></i> <?= $t['page_title'] ?></h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_settings'; include __DIR__ . '/_nav.php'; ?>
 
 <?php if (!empty($_SESSION['flash_success'])): ?>
 <div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES, 'UTF-8') ?></div>
@@ -75,12 +70,11 @@ $generatedWebhookUrl = $protocol . '://' . $host . '/line-webhook.php?company_id
 <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
 <?php unset($_SESSION['flash_error']); endif; ?>
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-cogs"></i> <?= $t['channel_config'] ?></div>
-            <div class="panel-body">
-                <form method="POST" action="?page=line_store">
+<div style="display:flex; gap:20px; flex-wrap:wrap;">
+    <div style="flex:2; min-width:400px;">
+        <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <h4 style="margin-top:0;"><i class="fa fa-cogs"></i> <?= $t['channel_config'] ?></h4>
+                <form method="POST" action="index.php?page=line_store">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                     <input type="hidden" name="action" value="save_config">
 
@@ -129,14 +123,12 @@ $generatedWebhookUrl = $protocol . '://' . $host . '/line-webhook.php?company_id
 
                     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> <?= $t['save'] ?></button>
                 </form>
-            </div>
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="panel panel-info">
-            <div class="panel-heading"><i class="fa fa-question-circle"></i> <?= $t['how_to_setup'] ?></div>
-            <div class="panel-body">
+    <div style="flex:1; min-width:300px;">
+        <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid #3498db;">
+            <h4 style="margin-top:0;"><i class="fa fa-question-circle"></i> <?= $t['how_to_setup'] ?></h4>
                 <ol style="padding-left: 15px; line-height: 2;">
                     <li><?= $t['step1'] ?></li>
                     <li><?= $t['step2'] ?></li>
@@ -157,4 +149,6 @@ $generatedWebhookUrl = $protocol . '://' . $host . '/line-webhook.php?company_id
             </div>
         </div>
     </div>
+</div>
+
 </div>

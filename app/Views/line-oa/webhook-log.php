@@ -28,14 +28,9 @@ $labels = [
 $t = $labels[$lang];
 ?>
 
-<div class="row">
-    <div class="col-lg-12">
-        <h3 class="page-header"><i class="fa fa-list-alt"></i> <?= $t['page_title'] ?></h3>
-    </div>
-</div>
+<?php $currentNavPage = 'line_webhook_log'; $navIcon = 'fa-list-alt'; include __DIR__ . '/_nav.php'; ?>
 
-<div class="panel panel-default">
-    <div class="panel-body">
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <?php if (empty($events)): ?>
             <p class="text-muted text-center"><?= $t['no_events'] ?></p>
         <?php else: ?>
@@ -66,5 +61,5 @@ $t = $labels[$lang];
             </table>
         </div>
         <?php endif; ?>
-    </div>
 </div>
+</div><!-- /master-data-container -->
