@@ -51,9 +51,10 @@ class LineOA extends BaseModel
                  webhook_url, is_active, greeting_message, auto_reply_enabled)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
             );
-            $stmt->bind_param('issssis',
+            $stmt->bind_param('issssisi',
                 $companyId, $data['channel_id'], $data['channel_secret'], $data['channel_access_token'],
-                $data['webhook_url'], $data['is_active'], $data['greeting_message']
+                $data['webhook_url'], $data['is_active'], $data['greeting_message'],
+                $data['auto_reply_enabled']
             );
         }
 
@@ -311,6 +312,20 @@ class LineOA extends BaseModel
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param($types, ...$params);
+        $result = $stmt->execute();
+        $stmt->close();
+        return $result;
+    }
+
+    /**
+     * Link a LINE order to iACC business records (PR + PO)
+     */
+    public function linkToBusinessRecords(int $id, int $companyId, int $prId, int $poId): bool
+    {
+        $stmt = $this->conn->prepare(
+            "UPDATE line_orders SET linked_pr_id = ?, linked_po_id = ? WHERE id = ? AND company_id = ?"
+        );
+        $stmt->bind_param('iiii', $prId, $poId, $id, $companyId);
         $result = $stmt->execute();
         $stmt->close();
         return $result;

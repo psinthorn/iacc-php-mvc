@@ -162,6 +162,11 @@ class LineOAController extends BaseController
 
         $this->lineModel->updateOrderStatus($orderId, $companyId, $status, $this->user['id']);
 
+        // When confirmed, process into iACC business records (PR → PO → Products)
+        if ($status === 'confirmed') {
+            $this->processOrderToBusinessRecords($orderId, $companyId);
+        }
+
         // Optionally notify via LINE
         $order = $this->lineModel->getOrder($orderId, $companyId);
         if ($order) {
@@ -205,6 +210,59 @@ class LineOAController extends BaseController
 
         $_SESSION['flash_success'] = 'Payment status updated.';
         $this->redirect('?page=line_order_detail&id=' . $orderId);
+    }
+
+    /**
+     * Process LINE order into iACC business records via ChannelService
+     * Creates: Customer → PR → PO → Product line items
+     */
+    private function processOrderToBusinessRecords(int $orderId, int $companyId): void
+    {
+        $order = $this->lineModel->getOrder($orderId, $companyId);
+        if (!$order || !empty($order['linked_po_id'])) {
+            return; // Already linked or not found
+        }
+
+        try {
+            $channelService = new \App\Services\ChannelService();
+
+            // Map LINE order data to ChannelService format
+            $items = json_decode($order['items_json'] ?? '[]', true) ?: [];
+            $itemDescription = '';
+            foreach ($items as $item) {
+                $itemDescription .= ($item['name'] ?? 'Item') . ' x' . ($item['qty'] ?? 1) . ', ';
+            }
+            $itemDescription = rtrim($itemDescription, ', ') ?: ($order['order_type'] === 'booking' ? 'Booking' : 'LINE Order');
+
+            $channelOrder = [
+                'guest_name'   => $order['guest_name'] ?: ($order['display_name'] ?? 'LINE Customer'),
+                'guest_email'  => $order['guest_email'] ?? '',
+                'guest_phone'  => $order['guest_phone'] ?? '',
+                'room_type'    => $itemDescription,
+                'total_amount' => $order['total_amount'] ?? 0,
+                'check_in'     => $order['booking_date'] ?? date('Y-m-d'),
+                'check_out'    => $order['booking_date'] ?? date('Y-m-d', strtotime('+1 day')),
+                'channel'      => 'line',
+                'notes'        => $order['notes'] ?? "LINE Order Ref: {$order['order_ref']}",
+            ];
+
+            $authData = ['company_id' => $companyId];
+
+            $result = $channelService->processOrder($orderId, $channelOrder, $authData);
+
+            if ($result['success']) {
+                $this->lineModel->linkToBusinessRecords(
+                    $orderId, $companyId,
+                    $result['data']['pr_id'],
+                    $result['data']['po_id']
+                );
+                $_SESSION['flash_success'] = 'Order confirmed and linked to PR #' . $result['data']['pr_id'] . ' / PO #' . $result['data']['po_id'];
+            } else {
+                $_SESSION['flash_error'] = 'Order confirmed but failed to create business records: ' . ($result['error'] ?? 'Unknown error');
+            }
+        } catch (\Exception $e) {
+            $_SESSION['flash_error'] = 'Order confirmed but processing failed: ' . $e->getMessage();
+        }
     }
 
     /**

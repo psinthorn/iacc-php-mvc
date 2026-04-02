@@ -32,6 +32,8 @@ $labels = [
         'payment_slip' => 'Payment Slip',
         'processed_by' => 'Processed By',
         'processed_at' => 'Processed At',
+        'linked_pr' => 'Linked PR',
+        'linked_po' => 'Linked PO',
         'pending' => 'Pending',
         'confirmed' => 'Confirmed',
         'processing' => 'Processing',
@@ -66,6 +68,8 @@ $labels = [
         'payment_slip' => 'สลิปการชำระเงิน',
         'processed_by' => 'ดำเนินการโดย',
         'processed_at' => 'เวลาดำเนินการ',
+        'linked_pr' => 'PR ที่เชื่อมโยง',
+        'linked_po' => 'PO ที่เชื่อมโยง',
         'pending' => 'รอดำเนินการ',
         'confirmed' => 'ยืนยันแล้ว',
         'processing' => 'กำลังดำเนินการ',
@@ -121,6 +125,12 @@ if (!empty($order['items_json'])) {
                     <?php endif; ?>
                     <?php if (!empty($order['notes'])): ?>
                     <tr><th><?= $t['notes'] ?></th><td><?= htmlspecialchars($order['notes'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+                    <?php endif; ?>
+                    <?php if (!empty($order['linked_pr_id'])): ?>
+                    <tr><th><?= $t['linked_pr'] ?></th><td><a href="?page=pr_view&id=<?= (int)$order['linked_pr_id'] ?>">#<?= (int)$order['linked_pr_id'] ?></a></td></tr>
+                    <?php endif; ?>
+                    <?php if (!empty($order['linked_po_id'])): ?>
+                    <tr><th><?= $t['linked_po'] ?></th><td><a href="?page=po_view&id=<?= (int)$order['linked_po_id'] ?>">#<?= (int)$order['linked_po_id'] ?></a></td></tr>
                     <?php endif; ?>
                 </table>
 
