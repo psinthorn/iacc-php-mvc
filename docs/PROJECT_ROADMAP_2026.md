@@ -1,33 +1,39 @@
 # iAcc PHP Application - 2026 Development Roadmap
 
 **Document Date**: January 9, 2026  
-**Project Status**: ✅ Production Ready (v4.7)  
-**Last Updated**: January 9, 2026
+**Project Status**: ✅ Production Ready (v5.11)  
+**Last Updated**: April 2, 2026
 
 ---
 
 ## 📊 EXECUTIVE SUMMARY
 
 ### Current Project Status
-- **Version**: 4.7 - Production Ready (SaaS Ready)
-- **Language**: PHP 7.4/8.3 Compatible ✅
+- **Version**: 5.11-demo-data — Production Ready
+- **Language**: PHP 8.2/8.3 Compatible ✅
 - **Database**: MySQL 5.7/8.0 Compatible ✅
-- **Architecture**: Multi-Tenant SaaS Ready ✅
-- **Deployment**: Docker Dev ✅ → cPanel Production (Pending)
+- **Architecture**: MVC + REST API + SaaS Ready ✅
+- **Deployment**: Docker Dev ✅ | cPanel Production ✅ | GitHub Actions CI/CD ✅
 - **Authentication**: Bcrypt + RBAC ✅ COMPLETE
+- **Self-Registration**: Email verification + trial activation ✅ COMPLETE
 
-### Key Achievements (January 2026)
-✅ **Security Complete**: Bcrypt passwords, CSRF, rate limiting, SQL injection prevention  
-✅ **AI Chatbot**: 29 tools, OpenAI/Ollama, Thai/English, streaming  
-✅ **Multi-Tenant**: `company_id` isolation on 17+ tables  
-✅ **RBAC System**: 6 roles, 8 permissions, PHP enforcement functions  
-✅ **Developer Role**: Full access role for dev tools & AI features  
-✅ **RBAC Enforcement**: `has_permission()`, `has_role()`, `require_permission()`  
-✅ **Database Optimization**: 13 foreign keys, 40+ indexes  
-✅ **UI Modernization**: 30+ pages with Inter font, card layouts, gradients  
-✅ **Invoice Workflow**: PR → PO → Delivery → Invoice → Payment → Tax Invoice  
-✅ **PDF Templates**: All templates modernized  
-✅ **Developer Tools**: CRUD tester, session debugger, RBAC tester, roadmap viewer  
+### Key Achievements (January–April 2026)
+✅ **v5.0 Full MVC Migration**: 38 controllers, 32 models, 117 views, 175 routes, zero legacy  
+✅ **v5.1 Sales Channel API**: REST API (5 phases), webhooks, API key auth, rate limiting  
+✅ **v5.2 UI Modernization**: All views upgraded to consistent modern design  
+✅ **v5.3 Payment Gateway**: PromptPay QR, multi-currency (10 currencies), Thai tax reports  
+✅ **v5.4 Expense Module**: Full CRUD, 10 categories, VAT/WHT, approval workflow  
+✅ **v5.5 Dashboard & Reports**: Chart.js dashboards, AR Aging, Reports Hub  
+✅ **v5.6 Journal Vouchers**: Double-entry bookkeeping, chart of accounts  
+✅ **v5.7 Website Templates**: API-powered tour booking template with admin panel  
+✅ **v5.8 Database Hardening**: Timestamps on all 59 tables, backfill from legacy  
+✅ **v5.9 Split Invoice**: Automatic material/labour invoice separation for WHT  
+✅ **v5.10 Multi-Language**: 515 bilingual translation keys (EN/TH)  
+✅ **v5.11 Demo Data & Seeder**: CompanySeeder auto-seeds 34 records (10 expense categories, 4 payment methods, 20 chart of accounts) on registration; 3-company demo seed  
+✅ **Self-Registration**: Email verification → auto company+user creation → 14-day trial → default data seeding  
+✅ **LINE OA Integration**: SalesAgentService, LineChannelAdapter, AI settings UI (feature branch)  
+✅ **CI/CD Pipeline**: GitHub Actions deploy to staging (develop) and production (main)  
+✅ **192 Tests**: 42 E2E + 20 API + 126 MVC + 4 Split Invoice  
 
 ### ✅ Security Features - ALL COMPLETED
 | Feature | Status |
@@ -64,9 +70,11 @@
 | Timestamps | ✅ 11 tables |
 
 ### Next Steps
-1. **cPanel Production Deployment** - Code is production-ready
-2. **Load Testing** - Performance validation before go-live
-3. **Add timestamps to remaining tables**  
+1. **Merge LINE OA integration** — `feature/line-oa-sales-channel` → develop → main
+2. **Expense module fixes** — `feature/expense` branch (company_id → com_id fix)
+3. **Self-registration testing** — End-to-end signup flow with CompanySeeder
+4. **Production deployment** — Push develop → main with all Q1-Q2 features
+5. **v6.0 SaaS Features** — Trial management UI, plan comparison, payment integration
 
 ---
 
@@ -1060,7 +1068,7 @@ service httpd start
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: January 1, 2026  
-**Status**: Ready for Execution  
-**Next Review**: After Phase 1 Completion
+**Document Version**: 2.0  
+**Last Updated**: April 2, 2026  
+**Status**: In Progress — Phases 1-4 Complete, v5.11 Released  
+**Next Review**: After v6.0 Planning

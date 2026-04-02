@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 5.10-i18n-complete  
+**Version**: 5.11-demo-data  
 **Status**: Production Ready  
-**Last Updated**: March 30, 2026  
+**Last Updated**: April 2, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 5.7 | **Nginx**: Alpine
 
@@ -26,7 +26,7 @@
 | **Controllers** | 38 (+1 Q3) |
 | **Models** | 32 (+2 Q3) |
 | **Views** | 117 (+2 reports) |
-| **Services** | 3 (ChannelService, PromptPayService, CurrencyService) |
+| **Services** | 4 (ChannelService, PromptPayService, CurrencyService, CompanySeeder) |
 | **MVC Routes** | 175 (+2 reports) |
 | **Legacy Routes** | 0 |
 | **Test Cases** | 192 (42 E2E + 20 API + 126 MVC + 4 Split Invoice) |
@@ -71,10 +71,11 @@ app/
 │   ├── ApiKey.php                 # API key management
 │   ├── ChannelOrder.php           # Channel order processing
 │   └── ...
-├── Services/ (3)
+├── Services/ (4)
 │   ├── ChannelService.php         # Business logic for channel API
 │   ├── PromptPayService.php       # QR code generation & payment
-│   └── CurrencyService.php        # Exchange rates (BOT API)
+│   ├── CurrencyService.php        # Exchange rates (BOT API)
+│   └── CompanySeeder.php          # Default master data for new companies
 └── Views/ (109)
     ├── expense/                   # 6 expense views (list, form, view, categories, summary, project-report)
     ├── report/                    # 2 report views (hub, ar-aging)
@@ -366,6 +367,7 @@ Used by CI/CD pipeline for post-deployment verification.
 
 ## ✅ Core Features
 
+- **Self-Registration** — Email verification, auto company creation, trial activation, default data seeding
 - **Company Management** — Vendors, suppliers, customers with soft delete
 - **Product Catalog** — Brands, categories, types, models with pricing
 - **Purchase Workflow** — PR → PO → Delivery → Invoice → Payment → Tax Invoice
@@ -381,6 +383,7 @@ Used by CI/CD pipeline for post-deployment verification.
 - **Multi-Currency** — 10 currencies, BOT exchange rates, toggle activation
 - **Thai Tax Reports** — PP30 (VAT Return), ภ.ง.ด.3/53 (WHT), CSV export, save/file
 - **Multi-language** — Thai and English support (515 translation keys, XML-based)
+- **Help System** — In-app user manual, master data guide, developer summary (bilingual)
 - **AI Chatbot** — 29 tools, OpenAI/Ollama, Thai/English, streaming
 - **Dashboard** — KPI cards, Chart.js charts (revenue/expenses, payment status, order status), company selector
 
@@ -546,8 +549,9 @@ $config["dbname"]   = getenv('DB_NAME') ?: "iacc";
 
 | Table | Description |
 |-------|-------------|
-| `expense_categories` | Expense category definitions (10 seeded, bilingual EN/TH) |
+| `expense_categories` | Expense category definitions (10 seeded per company, bilingual EN/TH) |
 | `expenses` | Expense records with VAT/WHT, approval workflow, receipt upload |
+| `chart_of_accounts` | Chart of accounts (20 seeded per company, Thai accounting standard) |
 
 ### Security Tables
 
@@ -560,6 +564,16 @@ $config["dbname"]   = getenv('DB_NAME') ?: "iacc";
 | `permissions` | RBAC permissions |
 | `role_permissions` | Role-permission mapping |
 | `user_roles` | User-role assignments |
+
+| `email_verifications` | Self-registration email verification tokens |
+| `api_subscriptions` | SaaS subscription plans & trials (14-day free) |
+
+### Registration & Onboarding
+
+| Table | Description |
+|-------|-------------|
+| `email_verifications` | Pending registrations with verification tokens |
+| `api_subscriptions` | Trial/paid subscription tracking |
 
 ### Optimization
 
@@ -667,6 +681,31 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## �📋 Changelog
+
+### v5.11-demo-data (April 2, 2026) — Demo Data & Company Seeder
+
+**CompanySeeder Service** — Auto-seeds default master data when a new company registers:
+
+- **10 Expense Categories**: Office Rent, Utilities, Office Supplies, Travel & Transport, Salary & Wages, Marketing & Advertising, Professional Fees, Equipment & Maintenance, Insurance, Miscellaneous — all bilingual (EN/TH) with icons and colors
+- **4 Payment Methods**: Cash, Bank Transfer, Credit Card, Cheque — bilingual with Font Awesome icons
+- **20 Chart of Accounts**: Standard Thai accounting structure — Assets (5), Liabilities (4), Equity (2), Revenue (3), Expenses (6) — bilingual EN/TH
+- **Integration**: Auto-called during self-registration (Registration::createAccount) so new companies start with useful data instead of empty screens
+- **Help Docs Updated**: Master Data Guide now includes "Pre-loaded Default Data" section with full reference tables; User Manual updated with "Good news!" callout in Initial Setup chapter
+
+**Demo Seed** (`database/seeds/demo_3_companies.sql`):
+
+- **3 Demo Companies**: Alpha Tech Solutions (IT), Beta Supply Co. (hardware), Gamma Design Studio (creative agency)
+- **7 User Accounts**: Admin + staff accounts per company (password: `demo1234`)
+- **Cross-Company Data**: 6 vendor/customer cross-references, 8 PRs, 6 POs, 13 products, 3 invoices, 1 receipt
+- **Financial Data**: 23 expense categories, 16 expenses (with VAT/WHT), 34 chart of accounts, 4 journal vouchers with 8 journal entries
+- **Idempotent**: Safe to re-run — cleanup block at top removes previous demo data
+
+**LINE OA Sales Channel Integration** (feature/line-oa-sales-channel):
+
+- **SalesAgentService**: AI-powered sales agent for LINE OA conversations
+- **LineChannelAdapter**: LINE Messaging API adapter for webhook processing
+- **AI Settings UI**: Admin page for configuring AI providers and models
+- **Migration 008**: LINE OA channel and AI agent database tables
 
 ### v5.10-i18n-complete (March 30, 2026) — Complete Multi-Language Support
 
