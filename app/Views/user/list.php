@@ -32,7 +32,7 @@ $currentUserId = intval($_SESSION['user_id'] ?? 0);
 .role-header.user { background:linear-gradient(135deg,#10b981,#34d399); color:#fff; }
 .role-title { display:flex; align-items:center; gap:16px; }
 .role-title .role-icon { width:48px; height:48px; background:rgba(255,255,255,.2); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; }
-.role-title h4 { margin:0; font-size:18px; font-weight:700; }
+.role-title h4 { margin:0; font-size:18px; font-weight:700; color:#fff; }
 .role-title .role-desc { font-size:13px; opacity:.9; margin-top:4px; }
 .role-count { background:rgba(255,255,255,.2); padding:8px 18px; border-radius:20px; font-weight:600; font-size:14px; border:2px solid rgba(255,255,255,.3); }
 .role-body .table { margin:0; }
