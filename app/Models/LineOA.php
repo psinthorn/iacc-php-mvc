@@ -485,6 +485,60 @@ class LineOA extends BaseModel
         $stats['total_revenue'] = (float) $stmt->get_result()->fetch_assoc()['total'];
         $stmt->close();
 
+        // Confirmed orders
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as cnt FROM line_orders WHERE company_id = ? AND status = 'confirmed' AND deleted_at IS NULL");
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $stats['confirmed_orders'] = (int) $stmt->get_result()->fetch_assoc()['cnt'];
+        $stmt->close();
+
+        // Completed orders
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as cnt FROM line_orders WHERE company_id = ? AND status = 'completed' AND deleted_at IS NULL");
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $stats['completed_orders'] = (int) $stmt->get_result()->fetch_assoc()['cnt'];
+        $stmt->close();
+
+        // Total messages
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as cnt FROM line_messages WHERE company_id = ?");
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $stats['total_messages'] = (int) $stmt->get_result()->fetch_assoc()['cnt'];
+        $stmt->close();
+
+        // Linked orders (with PR/PO)
+        $stmt = $this->conn->prepare("SELECT COUNT(*) as cnt FROM line_orders WHERE company_id = ? AND linked_po_id IS NOT NULL AND deleted_at IS NULL");
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $stats['linked_orders'] = (int) $stmt->get_result()->fetch_assoc()['cnt'];
+        $stmt->close();
+
         return $stats;
+    }
+
+    /**
+     * Get daily message counts for the last 7 days
+     */
+    public function getDailyMessageStats(int $companyId, int $days = 7): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT DATE(created_at) as day,
+                    SUM(direction = 'inbound') as inbound,
+                    SUM(direction = 'outbound') as outbound,
+                    COUNT(*) as total
+             FROM line_messages
+             WHERE company_id = ? AND created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+             GROUP BY DATE(created_at)
+             ORDER BY day ASC"
+        );
+        $stmt->bind_param('ii', $companyId, $days);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+        $stmt->close();
+        return $rows;
     }
 }

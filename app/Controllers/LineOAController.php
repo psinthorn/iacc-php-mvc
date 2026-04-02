@@ -35,12 +35,14 @@ class LineOAController extends BaseController
         $config = $this->lineModel->getConfig($companyId);
         $recentOrders = $this->lineModel->getOrders($companyId, null, null, 5);
         $recentMessages = $this->lineModel->getMessages($companyId, null, 10);
+        $dailyMessages = $this->lineModel->getDailyMessageStats($companyId);
 
         $this->render('line-oa/dashboard', [
             'stats' => $stats,
             'config' => $config,
             'recentOrders' => $recentOrders,
-            'recentMessages' => $recentMessages
+            'recentMessages' => $recentMessages,
+            'dailyMessages' => $dailyMessages
         ]);
     }
 
@@ -86,7 +88,7 @@ class LineOAController extends BaseController
                 $this->sendMessage($companyId);
                 break;
             default:
-                $this->redirect('?page=line_dashboard');
+                $this->redirect('line_dashboard');
         }
     }
 
@@ -104,7 +106,7 @@ class LineOAController extends BaseController
 
         $this->lineModel->saveConfig($companyId, $data);
         $_SESSION['flash_success'] = 'LINE OA settings saved successfully.';
-        $this->redirect('?page=line_settings');
+        $this->redirect('line_settings');
     }
 
     /**
@@ -135,7 +137,7 @@ class LineOAController extends BaseController
 
         if (!$order) {
             $_SESSION['flash_error'] = 'Order not found.';
-            $this->redirect('?page=line_orders');
+            $this->redirect('line_orders');
             return;
         }
 
@@ -156,7 +158,7 @@ class LineOAController extends BaseController
 
         if (!in_array($status, $allowed)) {
             $_SESSION['flash_error'] = 'Invalid status.';
-            $this->redirect('?page=line_orders');
+            $this->redirect('line_orders');
             return;
         }
 
@@ -182,7 +184,7 @@ class LineOAController extends BaseController
         }
 
         $_SESSION['flash_success'] = 'Order status updated.';
-        $this->redirect('?page=line_order_detail&id=' . $orderId);
+        $this->redirect('index.php?page=line_order_detail&id=' . $orderId);
     }
 
     private function confirmPayment(int $companyId): void
@@ -209,7 +211,7 @@ class LineOAController extends BaseController
         }
 
         $_SESSION['flash_success'] = 'Payment status updated.';
-        $this->redirect('?page=line_order_detail&id=' . $orderId);
+        $this->redirect('index.php?page=line_order_detail&id=' . $orderId);
     }
 
     /**
@@ -322,13 +324,13 @@ class LineOAController extends BaseController
 
         if (empty($data['trigger_keyword']) || empty($data['reply_content'])) {
             $_SESSION['flash_error'] = 'Keyword and reply content are required.';
-            $this->redirect('?page=line_auto_replies');
+            $this->redirect('line_auto_replies');
             return;
         }
 
         $this->lineModel->saveAutoReply($companyId, $data);
         $_SESSION['flash_success'] = 'Auto-reply rule saved.';
-        $this->redirect('?page=line_auto_replies');
+        $this->redirect('line_auto_replies');
     }
 
     private function deleteAutoReply(int $companyId): void
@@ -336,7 +338,7 @@ class LineOAController extends BaseController
         $replyId = intval($_POST['reply_id'] ?? 0);
         $this->lineModel->deleteAutoReply($replyId, $companyId);
         $_SESSION['flash_success'] = 'Auto-reply rule deleted.';
-        $this->redirect('?page=line_auto_replies');
+        $this->redirect('line_auto_replies');
     }
 
     /**
@@ -373,21 +375,21 @@ class LineOAController extends BaseController
 
         if (!$lineUserDbId || empty($messageText)) {
             $_SESSION['flash_error'] = 'User and message are required.';
-            $this->redirect('?page=line_send_message');
+            $this->redirect('line_send_message');
             return;
         }
 
         $config = $this->lineModel->getConfig($companyId);
         if (!$config || !$config['is_active']) {
             $_SESSION['flash_error'] = 'LINE OA is not configured or inactive.';
-            $this->redirect('?page=line_send_message');
+            $this->redirect('line_send_message');
             return;
         }
 
         $lineUser = $this->lineModel->getLineUserById($lineUserDbId);
         if (!$lineUser) {
             $_SESSION['flash_error'] = 'LINE user not found.';
-            $this->redirect('?page=line_send_message');
+            $this->redirect('line_send_message');
             return;
         }
 
@@ -407,7 +409,7 @@ class LineOAController extends BaseController
             $_SESSION['flash_error'] = 'Failed to send message: ' . ($result['message'] ?? 'Unknown error');
         }
 
-        $this->redirect('?page=line_send_message');
+        $this->redirect('line_send_message');
     }
 
     /**
