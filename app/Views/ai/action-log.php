@@ -87,6 +87,13 @@
 </div>
 
 <style>
+/* Page container */
+.ai-action-log-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Stat cards */
 .ai-action-log-page .stat-card {
     background: #fff;

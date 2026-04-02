@@ -42,6 +42,13 @@
 </div><!-- /.ai-chat-history-page -->
 
 <style>
+/* Page container */
+.ai-chat-history-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Cards */
 .ai-chat-history-page .ai-card {
     background: #fff;

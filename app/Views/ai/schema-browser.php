@@ -79,6 +79,13 @@
 </div><!-- /.ai-schema-browser-page -->
 
 <style>
+/* Page container */
+.ai-schema-browser-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Cards */
 .ai-schema-browser-page .ai-card {
     background: #fff;

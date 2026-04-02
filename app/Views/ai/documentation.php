@@ -316,8 +316,12 @@ cache/
 </div><!-- /.ai-documentation-page -->
 
 <style>
-/* Page spacing */
-.ai-documentation-page { padding: 0 15px; }
+/* Page container */
+.ai-documentation-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
 
 /* Hero Header */
 .ai-documentation-page .doc-hero {
