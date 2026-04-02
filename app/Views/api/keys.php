@@ -116,6 +116,9 @@ if ($activeCount < $subscription['keys_limit']):
                     <td>
                         <code style="font-size:0.8rem; background:#f8f9fa; padding:3px 8px; border-radius:4px;"
                               id="secret-<?= $key['id'] ?>"><?= \App\Models\ApiKey::maskSecret($key['api_secret']) ?></code>
+                        <button class="btn btn-xs btn-link" onclick="copyToClipboard('secret-<?= $key['id'] ?>')" title="Copy">
+                            <i class="fa fa-copy"></i>
+                        </button>
                     </td>
                     <td>
                         <?php if ($key['is_active']): ?>
