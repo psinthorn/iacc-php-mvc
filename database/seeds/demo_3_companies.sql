@@ -54,11 +54,11 @@ DELETE FROM expenses WHERE expense_number LIKE 'EXP-A-2026%' OR expense_number L
 -- ============================================================
 -- 1. COMPANIES (owner = themselves, customer+vendor flags)
 -- ============================================================
-INSERT INTO company (name_en, name_th, name_sh, contact, email, default_currency, phone, fax, tax, customer, vender, customer_type, logo, term, company_id)
+INSERT INTO company (name_en, name_th, name_sh, contact, email, phone, fax, tax, customer, vender, logo, term, company_id)
 VALUES
-('Alpha Tech Solutions Co., Ltd.', 'บริษัท อัลฟ่า เทค โซลูชั่นส์ จำกัด', 'ALPHA', 'Somchai Prasert', 'info@alphatech.co.th', 'THB', '02-111-1111', '02-111-1112', '0105560001111', 1, 0, 'b2b', '', 'Net 30', NULL),
-('Beta Supply Co., Ltd.', 'บริษัท เบต้า ซัพพลาย จำกัด', 'BETA', 'Nattaya Srisuk', 'info@betasupply.co.th', 'THB', '02-222-2222', '02-222-2223', '0105560002222', 1, 1, 'b2b', '', 'Net 15', NULL),
-('Gamma Design Studio Co., Ltd.', 'บริษัท แกมม่า ดีไซน์ สตูดิโอ จำกัด', 'GAMMA', 'Kittipong Dejsupa', 'hello@gammadesign.co.th', 'THB', '02-333-3333', '02-333-3334', '0105560003333', 1, 0, 'b2b', '', 'Net 30', NULL);
+('Alpha Tech Solutions Co., Ltd.', 'บริษัท อัลฟ่า เทค โซลูชั่นส์ จำกัด', 'ALPHA', 'Somchai Prasert', 'info@alphatech.co.th', '02-111-1111', '02-111-1112', '0105560001111', 1, 0, '', 'Net 30', NULL),
+('Beta Supply Co., Ltd.', 'บริษัท เบต้า ซัพพลาย จำกัด', 'BETA', 'Nattaya Srisuk', 'info@betasupply.co.th', '02-222-2222', '02-222-2223', '0105560002222', 1, 1, '', 'Net 15', NULL),
+('Gamma Design Studio Co., Ltd.', 'บริษัท แกมม่า ดีไซน์ สตูดิโอ จำกัด', 'GAMMA', 'Kittipong Dejsupa', 'hello@gammadesign.co.th', '02-333-3333', '02-333-3334', '0105560003333', 1, 0, '', 'Net 30', NULL);
 
 SET @ALPHA_ID = (SELECT id FROM company WHERE name_sh = 'ALPHA' AND deleted_at IS NULL ORDER BY id DESC LIMIT 1);
 SET @BETA_ID  = (SELECT id FROM company WHERE name_sh = 'BETA' AND deleted_at IS NULL ORDER BY id DESC LIMIT 1);
@@ -71,19 +71,19 @@ UPDATE company SET company_id = @GAMMA_ID WHERE id = @GAMMA_ID;
 
 -- Also register cross-company relationships:
 -- Beta as vendor record under Alpha
-INSERT INTO company (name_en, name_th, name_sh, contact, email, default_currency, phone, fax, tax, customer, vender, customer_type, logo, term, company_id)
+INSERT INTO company (name_en, name_th, name_sh, contact, email, phone, fax, tax, customer, vender, logo, term, company_id)
 VALUES
-('Beta Supply Co., Ltd.', 'บริษัท เบต้า ซัพพลาย จำกัด', 'BETA-V', 'Nattaya Srisuk', 'info@betasupply.co.th', 'THB', '02-222-2222', '', '0105560002222', 0, 1, 'b2b', '', 'Net 15', @ALPHA_ID),
+('Beta Supply Co., Ltd.', 'บริษัท เบต้า ซัพพลาย จำกัด', 'BETA-V', 'Nattaya Srisuk', 'info@betasupply.co.th', '02-222-2222', '', '0105560002222', 0, 1, '', 'Net 15', @ALPHA_ID),
 -- Gamma as customer record under Alpha
-('Gamma Design Studio Co., Ltd.', 'บริษัท แกมม่า ดีไซน์ สตูดิโอ จำกัด', 'GAMMA-C', 'Kittipong Dejsupa', 'hello@gammadesign.co.th', 'THB', '02-333-3333', '', '0105560003333', 1, 0, 'b2b', '', 'Net 30', @ALPHA_ID),
+('Gamma Design Studio Co., Ltd.', 'บริษัท แกมม่า ดีไซน์ สตูดิโอ จำกัด', 'GAMMA-C', 'Kittipong Dejsupa', 'hello@gammadesign.co.th', '02-333-3333', '', '0105560003333', 1, 0, '', 'Net 30', @ALPHA_ID),
 -- Alpha as customer record under Beta
-('Alpha Tech Solutions Co., Ltd.', 'บริษัท อัลฟ่า เทค โซลูชั่นส์ จำกัด', 'ALPHA-C', 'Somchai Prasert', 'info@alphatech.co.th', 'THB', '02-111-1111', '', '0105560001111', 1, 0, 'b2b', '', 'Net 30', @BETA_ID),
+('Alpha Tech Solutions Co., Ltd.', 'บริษัท อัลฟ่า เทค โซลูชั่นส์ จำกัด', 'ALPHA-C', 'Somchai Prasert', 'info@alphatech.co.th', '02-111-1111', '', '0105560001111', 1, 0, '', 'Net 30', @BETA_ID),
 -- Gamma as customer record under Beta
-('Gamma Design Studio Co., Ltd.', 'บริษัท แกมม่า ดีไซน์ สตูดิโอ จำกัด', 'GAMMA-C2', 'Kittipong Dejsupa', 'hello@gammadesign.co.th', 'THB', '02-333-3333', '', '0105560003333', 1, 0, 'b2b', '', 'Net 30', @BETA_ID),
+('Gamma Design Studio Co., Ltd.', 'บริษัท แกมม่า ดีไซน์ สตูดิโอ จำกัด', 'GAMMA-C2', 'Kittipong Dejsupa', 'hello@gammadesign.co.th', '02-333-3333', '', '0105560003333', 1, 0, '', 'Net 30', @BETA_ID),
 -- Beta as vendor record under Gamma
-('Beta Supply Co., Ltd.', 'บริษัท เบต้า ซัพพลาย จำกัด', 'BETA-V2', 'Nattaya Srisuk', 'info@betasupply.co.th', 'THB', '02-222-2222', '', '0105560002222', 0, 1, 'b2b', '', 'Net 15', @GAMMA_ID),
+('Beta Supply Co., Ltd.', 'บริษัท เบต้า ซัพพลาย จำกัด', 'BETA-V2', 'Nattaya Srisuk', 'info@betasupply.co.th', '02-222-2222', '', '0105560002222', 0, 1, '', 'Net 15', @GAMMA_ID),
 -- Alpha as customer record under Gamma
-('Alpha Tech Solutions Co., Ltd.', 'บริษัท อัลฟ่า เทค โซลูชั่นส์ จำกัด', 'ALPHA-C2', 'Somchai Prasert', 'info@alphatech.co.th', 'THB', '02-111-1111', '', '0105560001111', 1, 0, 'b2b', '', 'Net 30', @GAMMA_ID);
+('Alpha Tech Solutions Co., Ltd.', 'บริษัท อัลฟ่า เทค โซลูชั่นส์ จำกัด', 'ALPHA-C2', 'Somchai Prasert', 'info@alphatech.co.th', '02-111-1111', '', '0105560001111', 1, 0, '', 'Net 30', @GAMMA_ID);
 
 SET @BETA_VEN_ALPHA  = (SELECT id FROM company WHERE name_sh = 'BETA-V' AND company_id = @ALPHA_ID LIMIT 1);
 SET @GAMMA_CUS_ALPHA = (SELECT id FROM company WHERE name_sh = 'GAMMA-C' AND company_id = @ALPHA_ID LIMIT 1);
