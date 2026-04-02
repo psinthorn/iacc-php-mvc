@@ -386,8 +386,8 @@ function get_status_badge($status) {
     </div>
     
     <style>
-    .company-selector-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; overflow: hidden; }
-    .company-selector-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+    .company-selector-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+    .company-selector-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; color: #fff; border-radius: 16px 16px 0 0; }
     .selector-title { display: flex; align-items: center; gap: 14px; }
     .selector-title > i { font-size: 28px; opacity: 0.9; }
     .selector-title h5 { margin: 0; font-size: 18px; font-weight: 700; }
@@ -444,7 +444,7 @@ function get_status_badge($status) {
                             resultsContainer.innerHTML = '<div class="search-no-results"><i class="fa fa-search"></i><div>No companies found</div></div>';
                         } else {
                             resultsContainer.innerHTML = data.map(company => `
-                                <a href="index.php?page=remote&select_company=${company.id}" class="search-result-item">
+                                <a href="index.php?page=remote&select_company=${company.id}" class="md-search-result-item">
                                     <div class="result-logo">
                                         ${company.logo ? `<img src="upload/${company.logo}" alt="">` : '<i class="fa fa-building"></i>'}
                                     </div>

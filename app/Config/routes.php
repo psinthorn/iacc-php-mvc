@@ -136,7 +136,7 @@ return [
     'account_store'     => ['UserAccountController', 'store'],
 
     // ========== Phase 6: Admin & Dev Tools (MVC) ==========
-    'monitoring'            => ['DevToolsController', 'monitoring', 'standalone'],
+    'monitoring'            => ['DevToolsController', 'monitoring'],
     'containers'            => ['DevToolsController', 'containers'],
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
@@ -155,7 +155,8 @@ return [
     'ai_schema_refresh'      => ['AiAdminController', 'schemaRefresh'],
 
     // ========== Phase 5D: AI Core (MVC) ==========
-    'ai_settings'            => ['AiSettingsController', 'index', 'standalone'],
+    'ai_settings'            => ['AiSettingsController', 'index'],
+    'ai_settings_api'        => ['AiSettingsController', 'api', 'standalone'],
     'ai_chat'                => ['AiChatController', 'index', 'standalone'],
 
     // Developer Tools (Admin Only) — rendered inside admin layout

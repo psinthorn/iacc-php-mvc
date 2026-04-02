@@ -4,33 +4,19 @@ namespace App\Controllers;
 /**
  * AiSettingsController - AI Provider Configuration
  * 
- * Standalone page (own HTML/head/body) for configuring AI providers.
- * Handles both AJAX API endpoints and the settings form page.
- * This is a standalone page that does NOT use the admin layout.
+ * Settings page rendered inside admin layout with navbar/sidebar.
+ * AJAX API handled via separate standalone route (ai_settings_api).
  */
 class AiSettingsController extends BaseController
 {
     public function index(): void
     {
-        // Handle AJAX requests BEFORE any output
-        if (isset($_GET['ajax']) || (isset($_POST['action']) && in_array($_POST['action'], ['test_provider', 'quick_test', 'pull_model', 'list_models']))) {
-            $this->handleAjax();
-            return;
-        }
-
-        // Standalone page — require files and render full HTML
         require_once __DIR__ . '/../../ai/ai-provider.php';
-
-        // Check access
-        if (empty($_SESSION['user_id'])) {
-            header('Location: index.php?page=login');
-            exit;
-        }
 
         $message = '';
         $messageType = '';
 
-        // Handle form submission
+        // Handle form submission (POST is dispatched early by index.php, must redirect)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_settings') {
             $this->verifyCsrf();
             $settings = [
@@ -46,23 +32,31 @@ class AiSettingsController extends BaseController
                 'max_tokens' => intval($_POST['max_tokens'] ?? 2048),
             ];
 
-            if (\AIProvider::saveSettings($settings)) {
+            $status = \AIProvider::saveSettings($settings) ? 'saved' : 'error';
+            header('Location: index.php?page=ai_settings&status=' . $status);
+            exit;
+        }
+
+        $settings = \AIProvider::getSettings();
+
+        // Flash message from redirect
+        if (isset($_GET['status'])) {
+            if ($_GET['status'] === 'saved') {
                 $message = 'Settings saved successfully!';
                 $messageType = 'success';
-            } else {
+            } elseif ($_GET['status'] === 'error') {
                 $message = 'Failed to save settings';
                 $messageType = 'error';
             }
         }
 
-        $settings = \AIProvider::getSettings();
+        $this->render('ai/settings', compact('settings', 'message', 'messageType'));
+    }
 
-        // Render standalone view (includes own HTML/head/body)
-        // Expose $config so require_once("inc/sys.configs.php") no-op doesn't break DbConn
-        $config = $GLOBALS['config'] ?? null;
-        $viewFile = __DIR__ . '/../Views/ai/settings.php';
-        include $viewFile;
-        exit;
+    /** Standalone AJAX API endpoint for ai_settings_api route */
+    public function api(): void
+    {
+        $this->handleAjax();
     }
 
     private function handleAjax(): void

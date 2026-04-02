@@ -1,9 +1,10 @@
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">
+        <h3 class="page-header">
             <i class="fa fa-list-alt"></i> AI Action Log
             <small>Tool Execution Audit</small>
-        </h1>
+        </h3>
+        <?php $currentPage = 'ai_action_log'; include __DIR__ . '/_nav.php'; ?>
     </div>
 </div>
 

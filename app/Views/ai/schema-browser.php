@@ -5,10 +5,11 @@
 ?>
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">
+        <h3 class="page-header">
             <i class="fa fa-database"></i> Database Schema Browser
             <small>AI Schema Discovery</small>
-        </h1>
+        </h3>
+        <?php $currentPage = 'ai_schema_browser'; include __DIR__ . '/_nav.php'; ?>
     </div>
 </div>
 

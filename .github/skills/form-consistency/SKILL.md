@@ -184,6 +184,36 @@ When inputs appear side by side (e.g., in `.form-inline`, `.input-group`, or gri
 3. Buttons in the same row match: `.btn` = 44px, `.btn-sm` = 36px, `.btn-lg` = 52px
 4. `.input-group-btn .btn` height matches the adjacent input
 
+## CSS Scoping for Views in Admin Layout
+
+When converting standalone pages to normal routes (rendered inside admin layout), CSS selectors can leak into the sidebar, navbar, and other layout elements.
+
+**Always scope view-specific CSS under a page wrapper class:**
+
+```css
+/* BAD — leaks into admin layout */
+.form-group input { height: 44px; }
+.card { border: 2px solid #e0e0e0; }
+
+/* GOOD — scoped to page only */
+.ai-settings-page .form-group input { height: 44px; }
+.ai-settings-page .card { border: 2px solid #e0e0e0; }
+```
+
+### `overflow: hidden` Clips Dropdowns
+
+`overflow: hidden` on a parent container clips absolutely-positioned children like search result dropdowns, datepickers, and popovers.
+
+```css
+/* BAD — clips dropdown results */
+.company-selector-card { overflow: hidden; }
+
+/* GOOD — allows dropdown to overflow */
+.company-selector-card { overflow: visible; }
+```
+
+**Also watch for**: CSS class mismatches between JS and CSS (e.g., JS creates `search-result-item` but CSS styles `md-search-result-item`).
+
 ## Verification
 
 After fixing, run this visual check:

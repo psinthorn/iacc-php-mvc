@@ -1,72 +1,71 @@
 <?php
 /**
- * AI Settings View (standalone HTML page)
+ * AI Settings View (rendered inside admin layout)
  * Variables: $settings, $message, $messageType
  */
 require_once __DIR__ . '/../../../inc/dev-tools-style.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Settings - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-    <style>
-        .provider-card { background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 25px; margin-bottom: 20px; transition: all 0.3s ease; }
-        .provider-card.selected { border-color: #667eea; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2); }
-        .provider-card.disabled { opacity: 0.6; background: #f8f9fa; }
-        .provider-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .provider-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .provider-icon.ollama { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; }
-        .provider-icon.openai { background: linear-gradient(135deg, #10a37f, #0d8a6a); color: white; }
-        .provider-title { flex: 1; }
-        .provider-title h3 { margin: 0 0 5px 0; color: #333; }
-        .provider-title p { margin: 0; color: #666; font-size: 13px; }
-        .provider-select { display: flex; gap: 10px; align-items: center; }
-        .provider-select input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
-        .form-group input, .form-group select { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-height: 48px; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
-        .form-group small { display: block; margin-top: 5px; color: #888; font-size: 12px; }
-        .form-row { display: flex; gap: 20px; }
-        .form-row .form-group { flex: 1; }
-        .test-result { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; }
-        .test-result.success { background: #d4edda; border: 1px solid #c3e6cb; }
-        .test-result.error { background: #f8d7da; border: 1px solid #f5c6cb; }
-        .btn-test { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        .btn-test:hover { background: #5a6268; }
-        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 26px; }
-        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .toggle-slider { background-color: #667eea; }
-        input:checked + .toggle-slider:before { transform: translateX(24px); }
-        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
+<div class="col-lg-12">
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">
+            <i class="fa fa-cogs"></i> AI Settings
+            <small>Configure AI provider and model settings</small>
+        </h3>
+        <?php $currentPage = 'ai_settings'; include __DIR__ . '/_nav.php'; ?>
+    </div>
+</div>
+<?php echo get_dev_tools_css(); ?>
+<style>
+        .ai-settings-page .provider-card { background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 25px; margin-bottom: 20px; transition: all 0.3s ease; }
+        .ai-settings-page .provider-card.selected { border-color: #667eea; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2); }
+        .ai-settings-page .provider-card.disabled { opacity: 0.6; background: #f8f9fa; }
+        .ai-settings-page .provider-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .ai-settings-page .provider-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .ai-settings-page .provider-icon.ollama { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; }
+        .ai-settings-page .provider-icon.openai { background: linear-gradient(135deg, #10a37f, #0d8a6a); color: white; }
+        .ai-settings-page .provider-title { flex: 1; }
+        .ai-settings-page .provider-title h3 { margin: 0 0 5px 0; color: #333; }
+        .ai-settings-page .provider-title p { margin: 0; color: #666; font-size: 13px; }
+        .ai-settings-page .provider-select { display: flex; gap: 10px; align-items: center; }
+        .ai-settings-page .provider-select input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
+        .ai-settings-page .form-group input, .ai-settings-page .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; height: 44px; }
+        .ai-settings-page .form-group input:focus, .ai-settings-page .form-group select:focus { outline: none; border-color: #667eea; }
+        .ai-settings-page .form-row { display: flex; gap: 20px; }
+        .ai-settings-page .form-row .form-group { flex: 1; }
+        .ai-settings-page .test-result { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; }
+        .ai-settings-page .test-result.success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .ai-settings-page .test-result.error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .ai-settings-page .btn-test { background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .ai-settings-page .btn-test:hover { background: #5a6268; }
+        .ai-settings-page .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .ai-settings-page .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .ai-settings-page .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 26px; }
+        .ai-settings-page .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        .ai-settings-page input:checked + .toggle-slider { background-color: #667eea; }
+        .ai-settings-page input:checked + .toggle-slider:before { transform: translateX(24px); }
+        .ai-settings-page .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .current-status-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px 25px; margin-bottom: 25px; color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
-        .current-status-bar h4 { margin: 0 0 5px 0; font-size: 14px; opacity: 0.9; font-weight: 500; }
-        .current-status-info { display: flex; align-items: center; gap: 15px; }
-        .current-provider-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .current-provider-details h3 { margin: 0; font-size: 20px; font-weight: 600; }
-        .current-provider-details p { margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; }
-        .current-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-        .current-status-badge.online { background: rgba(40, 167, 69, 0.9); }
-        .current-status-badge.offline { background: rgba(220, 53, 69, 0.9); }
-        .current-status-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+        .ai-settings-page .ai-alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; }
+        .ai-settings-page .ai-alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .ai-settings-page .ai-alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .ai-settings-page .current-status-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px 25px; margin-bottom: 25px; color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .ai-settings-page .current-status-bar h4 { margin: 0 0 5px 0; font-size: 14px; opacity: 0.9; font-weight: 500; }
+        .ai-settings-page .current-status-info { display: flex; align-items: center; gap: 15px; }
+        .ai-settings-page .current-provider-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .ai-settings-page .current-provider-details h3 { margin: 0; font-size: 20px; font-weight: 600; }
+        .ai-settings-page .current-provider-details p { margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; }
+        .ai-settings-page .current-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .ai-settings-page .current-status-badge.online { background: rgba(40, 167, 69, 0.9); }
+        .ai-settings-page .current-status-badge.offline { background: rgba(220, 53, 69, 0.9); }
+        .ai-settings-page .current-status-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .status-actions { display: flex; gap: 10px; }
-        .status-actions .btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-        .status-actions .btn:hover { background: rgba(255,255,255,0.3); }
+        .ai-settings-page .status-actions { display: flex; gap: 10px; }
+        .ai-settings-page .status-actions .btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .ai-settings-page .status-actions .btn:hover { background: rgba(255,255,255,0.3); }
     </style>
-</head>
-<body>
+    <div class="ai-settings-page">
     <div class="dev-tools-container">
-        <?php echo get_dev_tools_header('AI Settings', 'Configure AI provider and model settings', 'fa-cogs', '#667eea'); ?>
 
         <!-- Current Status Bar -->
         <div class="current-status-bar" id="currentStatusBar">
@@ -95,13 +94,14 @@ require_once __DIR__ . '/../../../inc/dev-tools-style.php';
         </div>
 
         <?php if ($message): ?>
-        <div class="alert alert-<?= $messageType ?>">
+        <div class="ai-alert ai-alert-<?= $messageType === 'error' ? 'error' : $messageType ?>">
             <i class="fa fa-<?= $messageType === 'success' ? 'check-circle' : 'exclamation-circle' ?>"></i>
             <?= htmlspecialchars($message) ?>
         </div>
         <?php endif; ?>
 
         <form method="POST" id="settingsForm">
+            <?= csrf_field() ?>
             <input type="hidden" name="action" value="save_settings">
 
             <!-- OpenAI Provider -->
@@ -213,7 +213,7 @@ require_once __DIR__ . '/../../../inc/dev-tools-style.php';
     </div>
 
     <script>
-    const ajaxUrl = 'index.php?page=ai_settings&ajax=1';
+    const ajaxUrl = 'index.php?page=ai_settings_api';
     const modelInfo = {
         'qwen2:0.5b': { size:'395MB',ram:'1GB',cpu:15,speed:'Very Fast',quality:'⭐⭐',desc:'Smallest and fastest.' },
         'tinyllama:1.1b': { size:'637MB',ram:'1.5GB',cpu:20,speed:'Fast',quality:'⭐⭐⭐',desc:'Great balance of speed and quality.' },
@@ -315,5 +315,6 @@ require_once __DIR__ . '/../../../inc/dev-tools-style.php';
 
     document.addEventListener('DOMContentLoaded',function(){updateModelInfo();checkCurrentStatus();});
     </script>
-</body>
-</html>
+</div><!-- End dev-tools-container -->
+</div><!-- End ai-settings-page -->
+</div><!-- End col-lg-12 -->

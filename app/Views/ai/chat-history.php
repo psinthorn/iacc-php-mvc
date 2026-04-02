@@ -1,8 +1,9 @@
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">
+        <h3 class="page-header">
             <i class="fa fa-comments"></i> AI Chat History
-        </h1>
+        </h3>
+        <?php $currentPage = 'ai_chat_history'; include __DIR__ . '/_nav.php'; ?>
     </div>
 </div>
 
@@ -96,7 +97,7 @@ function deleteSession(sessionId) {
     fetch('index.php?page=ai_chat_history&ajax=1&action=delete_session', {
         method: 'POST', credentials: 'same-origin',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'session_id=' + encodeURIComponent(sessionId)
+        body: 'session_id=' + encodeURIComponent(sessionId) + '&csrf_token=' + encodeURIComponent('<?= csrf_token() ?>')
     }).then(r => r.json()).then(data => {
         if (data.success) {
             loadSessions();

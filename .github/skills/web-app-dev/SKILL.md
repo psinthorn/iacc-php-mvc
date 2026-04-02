@@ -203,15 +203,136 @@ if (!has_permission('view_new_module')) {
 }
 ```
 
+### 4. AJAX Endpoints: Separate Standalone Routes
+
+When a **normal** route page needs to call an AJAX/JSON API endpoint (e.g., for live search, save-without-reload), the API endpoint **MUST** be a separate `'standalone'` route.
+
+**Why**: Normal routes render inside the admin HTML shell. If a controller returns JSON inside a normal route, the response gets wrapped in `<html><head>...` from the layout — breaking the JSON.
+
+```php
+// routes.php
+'ai_settings'     => ['AiSettingsController', 'index'],               // Normal — HTML page inside layout
+'ai_settings_api' => ['AiSettingsController', 'api', 'standalone'],    // Standalone — returns JSON only
+
+// DevTools example
+'debug_session'     => ['DevToolsController', 'debugSession'],              // Normal — HTML page
+'debug_session_api' => ['DevToolsController', 'debugSessionApi', 'standalone'], // Standalone — JSON API for AJAX
+```
+
+**Pattern**: Name the AJAX route `{page}_api` and keep it in the same controller.
+
+### 5. CSRF Token in AJAX POST Calls
+
+Controllers that call `$this->verifyCsrf()` require the CSRF token on **all** POST requests, including AJAX `fetch()` calls.
+
+```javascript
+// In a view inside admin layout — csrf_token() is available via inc/csrf.php
+fetch('index.php?page=ai_settings_api', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'param=value&csrf_token=' + encodeURIComponent('<?= csrf_token() ?>')
+})
+```
+
+**Common mistake**: Forgetting `csrf_token` in AJAX calls → controller returns 403/redirect instead of JSON.
+
+### 6. CSS Scoping in Admin Layout Views
+
+When a view renders inside the admin layout (normal route), its CSS selectors can **leak** into the sidebar, navbar, and other layout elements.
+
+**Problem**: Generic selectors like `.form-group`, `.alert`, `.card`, `.btn` override the admin layout styles.
+
+**Solution**: Wrap all view content in a page-specific class and scope all CSS under it:
+
+```php
+<!-- View: app/Views/ai/settings.php -->
+<style>
+    /* GOOD — scoped under page wrapper */
+    .ai-settings-page .provider-card { border: 2px solid #e0e0e0; }
+    .ai-settings-page .form-group input { height: 44px; }
+    
+    /* BAD — leaks into layout */
+    .provider-card { border: 2px solid #e0e0e0; }  /* affects sidebar cards too! */
+    .form-group input { height: 44px; }              /* changes all forms! */
+</style>
+
+<div class="ai-settings-page">
+    <!-- All page content here -->
+</div>
+```
+
+**CSS Gotcha — `overflow: hidden` clips dropdowns**:
+
+If a parent container has `overflow: hidden`, absolutely-positioned children (dropdowns, search results, popovers) get clipped. Use `overflow: visible` on containers that have dropdown children, or move the dropdown to a portal/outside the clipped container.
+
+### 7. Shared Navigation Partial
+
+For groups of related admin pages (e.g., AI admin, devtools), create a shared navigation partial:
+
+```php
+// app/Views/ai/_nav.php
+<?php
+$currentPage = $currentPage ?? '';
+$pages = [
+    ['page' => 'ai_settings',       'icon' => 'fa-cogs',     'label' => 'Settings'],
+    ['page' => 'ai_chat_history',   'icon' => 'fa-comments', 'label' => 'Chat History'],
+    // ... more pages
+];
+?>
+<div class="ai-nav-bar" style="margin-bottom: 20px; ...">
+    <?php foreach ($pages as $p): ?>
+    <a href="index.php?page=<?= $p['page'] ?>" 
+       class="btn btn-sm <?= $currentPage === $p['page'] ? 'btn-primary' : 'btn-default' ?>">
+        <i class="fa <?= $p['icon'] ?>"></i> <?= $p['label'] ?>
+    </a>
+    <?php endforeach; ?>
+</div>
+```
+
+**Usage in each page view:**
+```php
+<?php $currentPage = 'ai_settings'; ?>
+<?php include __DIR__ . '/_nav.php'; ?>
+```
+
+**Convention**: Prefix partial files with `_` (e.g., `_nav.php`, `_filters.php`).
+
+### 8. POST Handlers in Normal Routes (PRG Pattern)
+
+In normal routes, `index.php` dispatches POST handlers **before** rendering the HTML shell. The POST handler runs, then `exit;` is called before any HTML output.
+
+**This means**: POST handlers in normal routes MUST use **Post-Redirect-Get (PRG)** — they cannot render a view directly because the HTML shell hasn't started yet.
+
+```php
+// GOOD — PRG pattern for normal route POST handler
+public function store()
+{
+    $this->verifyCsrf();
+    // ... process form ...
+    $this->redirect('?page=items_list');  // redirect, then exit
+}
+
+// BAD — trying to render from POST handler in normal route
+public function store()
+{
+    $this->verifyCsrf();
+    // ... process form ...
+    $this->render('items/success');  // Won't work — HTML shell not started yet!
+}
+```
+
 ## Critical Rules
 
 1. **Multi-tenant isolation**: Always filter by `company_id` from `$_SESSION['com_id']`
 2. **CSRF on all forms**: Use `csrf_field()` in forms, `$this->validateCsrf()` in controllers
-3. **SQL injection prevention**: Use `sql_escape()` or prepared statements — NEVER raw `$_REQUEST` in queries
-4. **Isolated $args arrays**: Use separate arrays per DB operation (see [DB Patterns](./references/db-patterns.md))
-5. **Soft delete**: Use `deleted_at` column, filter with `WHERE deleted_at IS NULL`
-6. **Security headers**: BaseController handles these automatically
-7. **Rate limiting**: Login uses 5 attempts/15 min; API uses 60/min
+3. **CSRF on AJAX POSTs**: Include `csrf_token` parameter in all `fetch()` POST bodies
+4. **SQL injection prevention**: Use `sql_escape()` or prepared statements — NEVER raw `$_REQUEST` in queries
+5. **Isolated $args arrays**: Use separate arrays per DB operation (see [DB Patterns](./references/db-patterns.md))
+6. **Soft delete**: Use `deleted_at` column, filter with `WHERE deleted_at IS NULL`
+7. **Security headers**: BaseController handles these automatically
+8. **Rate limiting**: Login uses 5 attempts/15 min; API uses 60/min
+9. **CSS scoping**: Views in normal routes MUST scope CSS under a page-specific wrapper class
+10. **AJAX endpoints**: JSON-returning endpoints MUST be `'standalone'` routes — never normal
 
 ## Testing
 

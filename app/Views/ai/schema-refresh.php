@@ -4,10 +4,11 @@
 ?>
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">
+        <h3 class="page-header">
             <i class="fa fa-refresh"></i> Schema Refresh
             <small>Keep AI in sync with database changes</small>
-        </h1>
+        </h3>
+        <?php $currentPage = 'ai_schema_refresh'; include __DIR__ . '/_nav.php'; ?>
     </div>
 </div>
 
@@ -152,7 +153,7 @@ function setAutoRefresh(enabled) {
     fetch('index.php?page=ai_schema_refresh&ajax=1&action=set_auto_refresh', {
         method: 'POST', credentials: 'same-origin',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'enabled=' + (enabled ? '1' : '0')
+        body: 'enabled=' + (enabled ? '1' : '0') + '&csrf_token=' + encodeURIComponent('<?= csrf_token() ?>')
     }).then(r => r.json()).then(data => {
         if (data.success) {
             document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
