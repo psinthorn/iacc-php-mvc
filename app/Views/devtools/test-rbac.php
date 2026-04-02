@@ -125,7 +125,7 @@ function getRbacStatusBadge($passed, $expected = true) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RBAC Test - Developer Tools</title>
     <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../inc/skeleton-loader.php'; ?>
+    <?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
     <style><?php echo get_skeleton_styles(); ?></style>
 </head>
 <body>

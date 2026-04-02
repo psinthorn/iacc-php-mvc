@@ -264,7 +264,7 @@ function getStatusBadge($result) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD Test - Developer Tools</title>
     <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../inc/skeleton-loader.php'; ?>
+    <?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
     <style><?php echo get_skeleton_styles(); ?></style>
 </head>
 <body>
@@ -327,7 +327,7 @@ function getStatusBadge($result) {
         <!-- Database Connection -->
         <div class="test-section">
             <h2><i class="fa fa-plug"></i> Database Connection</h2>
-            <?php echo getStatusBadge($results['db_connection']); ?>
+            <?php echo getStatusBadge($results['db_connection'] ?? null); ?>
         </div>
         
         <!-- Table Existence -->
@@ -433,11 +433,11 @@ function getStatusBadge($result) {
             <h2><i class="fa fa-users"></i> Authorization Table</h2>
             <div style="margin-bottom: 15px;">
                 <h3>User Records</h3>
-                <?php echo getStatusBadge($results['authorize_read']); ?>
+                <?php echo getStatusBadge($results['authorize_read'] ?? null); ?>
             </div>
             <div>
                 <h3>Password Migration</h3>
-                <?php echo getStatusBadge($results['password_check']); ?>
+                <?php echo getStatusBadge($results['password_check'] ?? null); ?>
             </div>
         </div>
         

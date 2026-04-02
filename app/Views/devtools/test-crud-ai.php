@@ -162,7 +162,7 @@ function executeCrud($db, $operation, $table, $data = [], $whereId = null) {
 }
 
 // Handle AJAX requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     
     $action = $_POST['action'];
