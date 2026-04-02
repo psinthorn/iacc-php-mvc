@@ -3,26 +3,13 @@ chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * AI-Powered CRUD Testing Tool
  * Uses AI (OpenAI/Ollama) to generate test scenarios, analyze failures, and interactive testing
- * 
- * @package iACC
- * @version 1.1
- * @date 2026-01-05
+ * Rendered inside admin layout
  */
 
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
 require_once("inc/dev-tools-style.php");
 require_once("ai/ai-provider.php");
 
-// Check access
-check_dev_tools_access();
-
-$db = new DbConn($config);
+$db = new \DbConn($config);
 $ai = new AIProvider();
 $aiSettings = AIProvider::getSettings();
 
@@ -413,13 +400,8 @@ If you cannot understand the request, set understood to false and explain why in
     exit;
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI CRUD Testing - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
     <style>
         .ai-chat-container {
             background: #f8f9fa;
@@ -600,8 +582,6 @@ If you cannot understand the request, set understood to false and explain why in
             font-size: 13px;
         }
     </style>
-</head>
-<body>
     <div class="dev-tools-container">
         <?php echo get_dev_tools_header('AI-Powered CRUD Testing', 'Use AI (' . ucfirst($ai->getProvider()) . ') to generate tests, analyze failures, and test with natural language', 'fa-robot', '#667eea'); ?>
         
@@ -1100,5 +1080,4 @@ Result: ${JSON.stringify(result.data, null, 2)}</pre>`;
     loadTableSchema();
     updateManualForm();
     </script>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

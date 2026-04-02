@@ -3,18 +3,12 @@ chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Language Debug Tool
  * Debug language/localization settings and API
- * Redesigned with modern UI
+ * Rendered inside admin layout
  */
 
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
 require_once("inc/dev-tools-style.php");
 
-// Check access
-check_dev_tools_access();
-
-$db = new DbConn($config);
+$db = new \DbConn($config);
 
 // Get current session language
 $session_lang = $_SESSION['lang'] ?? 0;
@@ -66,15 +60,8 @@ if (isset($_GET['format']) && $_GET['format'] === 'json') {
     exit;
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Debug - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-</head>
-<body>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
     <div class="dev-tools-container">
         <?php echo get_dev_tools_header('Language Debug', 'Debug language/localization settings and synchronization', 'fa-language', '#2980b9'); ?>
         
@@ -244,5 +231,4 @@ if (isset($_GET['format']) && $_GET['format'] === 'json') {
             <a href="index.php?page=dashboard" class="btn-dev btn-outline"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>
         </div>
     </div>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

@@ -158,16 +158,20 @@ return [
     'ai_settings'            => ['AiSettingsController', 'index', 'standalone'],
     'ai_chat'                => ['AiChatController', 'index', 'standalone'],
 
-    // Developer Tools (Admin Only) — all standalone (own HTML shell)
-    'test_crud'              => ['DevToolsController', 'testCrud', 'standalone'],
-    'test_crud_ai'           => ['DevToolsController', 'testCrudAi', 'standalone'],
-    'test_rbac'              => ['DevToolsController', 'testRbac', 'standalone'],
+    // Developer Tools (Admin Only) — rendered inside admin layout
+    'test_crud'              => ['DevToolsController', 'testCrud'],
+    'test_crud_ai'           => ['DevToolsController', 'testCrudAi'],
+    'test_rbac'              => ['DevToolsController', 'testRbac'],
     'ai_documentation'       => ['AiAdminController', 'documentation'],
-    'debug_session'          => ['DevToolsController', 'debugSession', 'standalone'],
-    'debug_php'              => ['DevToolsController', 'debugPhp', 'standalone'],
-    'test_containers'        => ['DevToolsController', 'testContainers', 'standalone'],
-    'api_lang_debug'         => ['DevToolsController', 'langDebug', 'standalone'],
-    'dev_roadmap'            => ['DevToolsController', 'roadmap', 'standalone'],
+    'debug_session'          => ['DevToolsController', 'debugSession'],
+    'debug_php'              => ['DevToolsController', 'debugPhp'],
+    'test_containers'        => ['DevToolsController', 'testContainers'],
+    'api_lang_debug'         => ['DevToolsController', 'langDebug'],
+    'dev_roadmap'            => ['DevToolsController', 'roadmap'],
+    // DevTools AJAX/API endpoints (standalone — JSON responses)
+    'debug_session_api'      => ['DevToolsController', 'debugSessionApi', 'standalone'],
+    'debug_php_api'          => ['DevToolsController', 'debugPhpApi', 'standalone'],
+    'lang_debug_api'         => ['DevToolsController', 'langDebugApi', 'standalone'],
     
     // User Account
     'help'                   => ['HelpController', 'index'],

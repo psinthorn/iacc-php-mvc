@@ -3,24 +3,12 @@ chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * RBAC Test Page
  * Tests the Role-Based Access Control system
- * 
- * Access: Developer role required
- * Created: January 9, 2026
- * Updated: January 9, 2026 - Redesigned to match test-crud.php styling
+ * Rendered inside admin layout
  */
-error_reporting(E_ALL & ~E_NOTICE);
-session_start();
 
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
 require_once("inc/dev-tools-style.php");
 
-$db = new DbConn($config);
-$db->checkSecurity();
-
-// Require Developer access
-check_dev_tools_access();
+$db = new \DbConn($config);
 
 // Refresh RBAC cache if requested
 if (isset($_GET['refresh'])) {
@@ -118,17 +106,10 @@ function getRbacStatusBadge($passed, $expected = true) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBAC Test - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
-    <style><?php echo get_skeleton_styles(); ?></style>
-</head>
-<body>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
+<?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
+<style><?php echo get_skeleton_styles(); ?></style>
     <div class="dev-tools-container skeleton-loading" id="pageContainer">
         <!-- Skeleton Loading State -->
         <div class="skeleton-container">
@@ -460,5 +441,4 @@ echo htmlspecialchars(json_encode($rbacSession, JSON_PRETTY_PRINT | JSON_UNESCAP
         </div><!-- End content-container -->
     </div>
     <script><?php echo get_skeleton_js('pageContainer', 300); ?></script>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

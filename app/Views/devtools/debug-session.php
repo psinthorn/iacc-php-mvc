@@ -3,16 +3,10 @@ chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Session Debug Tool
  * View and analyze current session data
- * Redesigned with modern UI
+ * Rendered inside admin layout
  */
 
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
 require_once("inc/dev-tools-style.php");
-
-// Check access
-check_dev_tools_access();
 
 // Gather session data
 $session_data = $_SESSION;
@@ -40,15 +34,8 @@ $status_labels = [
     PHP_SESSION_ACTIVE => 'Active'
 ];
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Session Debug - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-</head>
-<body>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
     <div class="dev-tools-container">
         <?php echo get_dev_tools_header('Session Debug', 'View and analyze current PHP session data', 'fa-key', '#e67e22'); ?>
         
@@ -186,5 +173,4 @@ $status_labels = [
             <a href="index.php?page=dashboard" class="btn-dev btn-outline"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>
         </div>
     </div>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

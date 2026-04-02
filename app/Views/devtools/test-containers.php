@@ -3,12 +3,9 @@ chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Container Test Tool
  * View raw Docker container data for debugging
- * Redesigned with modern UI
+ * Rendered inside admin layout
  */
 
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
 require_once("inc/dev-tools-style.php");
 
 // Check access (Docker tools must be enabled)
@@ -51,17 +48,10 @@ $unique_names = count(array_unique($names));
 $has_duplicate_ids = count($ids) !== $unique_ids;
 $has_duplicate_names = count($names) !== $unique_names;
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Container Test - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
-    <style><?php echo get_skeleton_styles(); ?></style>
-</head>
-<body>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
+<?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
+<style><?php echo get_skeleton_styles(); ?></style>
     <div class="dev-tools-container skeleton-loading" id="pageContainer">
         <!-- Skeleton Loading State -->
         <div class="skeleton-container">
@@ -202,5 +192,4 @@ $has_duplicate_names = count($names) !== $unique_names;
         </div><!-- End content-container -->
     </div>
     <script><?php echo get_skeleton_js('pageContainer', 300); ?></script>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

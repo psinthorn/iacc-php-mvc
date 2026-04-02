@@ -3,23 +3,10 @@ chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Developer Roadmap Page
  * Displays the PROJECT_ROADMAP_2026.md in a styled format
- * 
- * Access: Developer role required
- * Created: January 9, 2026
+ * Rendered inside admin layout
  */
-error_reporting(E_ALL & ~E_NOTICE);
-session_start();
 
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
 require_once("inc/dev-tools-style.php");
-
-$db = new DbConn($config);
-$db->checkSecurity();
-
-// Require Developer access
-check_dev_tools_access();
 
 // Read the roadmap markdown file
 $roadmapFile = __DIR__ . '/../../docs/PROJECT_ROADMAP_2026.md';
@@ -108,14 +95,9 @@ function markdown_to_html($text) {
 
 $htmlContent = markdown_to_html($roadmapContent);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Roadmap - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
+<?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
     <style>
         <?php echo get_skeleton_styles(); ?>
         
@@ -275,8 +257,6 @@ $htmlContent = markdown_to_html($roadmapContent);
             }
         }
     </style>
-</head>
-<body>
     <div class="dev-tools-container skeleton-loading" id="pageContainer">
         <!-- Skeleton Loading State -->
         <div class="skeleton-container">
@@ -350,5 +330,4 @@ $htmlContent = markdown_to_html($roadmapContent);
         </div><!-- End content-container -->
     </div>
     <script><?php echo get_skeleton_js('pageContainer', 300); ?></script>
-</body>
-</html>
+</div><!-- End col-lg-12 -->
