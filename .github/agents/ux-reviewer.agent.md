@@ -1,5 +1,5 @@
 ---
-description: "UX/UI reviewer for iACC. Use when: auditing view templates for design consistency, checking Bootstrap 3 class usage, verifying responsive layout, reviewing accessibility, checking CSS patterns, validating breadcrumbs/flash messages/form patterns, ensuring bilingual label display. Read-only — reports issues without modifying code."
+description: "UX/UI reviewer for iACC. Use when: auditing view templates for design consistency, checking Bootstrap 3 class usage, verifying responsive layout, reviewing accessibility, checking CSS patterns, validating breadcrumbs/flash messages/form patterns, ensuring bilingual label display, checking input field height consistency, form input sizing. Read-only — reports issues without modifying code. Invokes form-consistency skill for input sizing audits."
 tools: [read, search]
 ---
 
@@ -109,20 +109,115 @@ You are the **UX/UI Reviewer** for the iACC PHP MVC application. You perform rea
 </div>
 ```
 
+### Modern Design System: `master-data.css`
+
+Used by **Sales Channel modules** (API, LINE OA) and master data CRUD pages.
+When a module uses `master-data.css`, it replaces the BS3 panel/page-header patterns above.
+
+**CSS file**: `css/master-data.css` — import via `<link rel="stylesheet" href="css/master-data.css">`
+
+#### Key CSS Classes
+| Class | Purpose |
+|-------|----------|
+| `.master-data-container` | Full-page wrapper (max-width 1400px, Inter font) |
+| `.master-data-header` | Purple gradient header bar with title + nav buttons |
+| `.stats-row` | CSS Grid container for stat cards (auto-fit, min 200px) |
+| `.stat-card` | KPI card with hover lift. Variants: `.primary`, `.success`, `.warning`, `.info`, `.danger` |
+| `.stat-icon` | Large watermark icon inside stat card (positioned absolute, 48px) |
+| `.stat-value` | Big number inside stat card (36px, weight 800) |
+| `.stat-label` | Uppercase label below stat value (13px, letter-spacing) |
+| `.action-toolbar` | Search + filter + action buttons bar |
+| `.master-data-table` | Enhanced data table with hover effects |
+| `.inline-form-container` | Inline create/edit form panel |
+
+#### Modern Page Header (with Nav)
+```html
+<link rel="stylesheet" href="css/master-data.css">
+<div class="master-data-container">
+<div class="master-data-header">
+    <h2><i class="fa fa-icon"></i> <?= $t['page_title'] ?></h2>
+    <div>
+        <a href="index.php?page=module_page" class="btn btn-sm btn-outline-primary">
+            <i class="fa fa-icon"></i> <?= $t['label'] ?>
+        </a>
+        <!-- more nav buttons... -->
+    </div>
+</div>
+```
+
+#### Shared Nav Partial (LINE OA)
+The LINE OA module uses `app/Views/line-oa/_nav.php` — a shared partial that renders the `master-data-header` with bilingual nav buttons for all 7 pages:
+```php
+<?php $currentNavPage = 'line_orders'; include __DIR__ . '/_nav.php'; ?>
+<!-- Opens <div class="master-data-container"> — must close with </div> at end of page -->
+```
+The partial auto-hides the current page's button and shows all others.
+
+#### Modern Card (replacing BS3 `.panel`)
+```html
+<div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <!-- content -->
+</div>
+```
+With heading:
+```html
+<div style="background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:15px;">
+    <div style="padding:15px 20px; border-bottom:1px solid #eee; font-weight:600;">
+        <i class="fa fa-icon"></i> <?= $t['heading'] ?>
+    </div>
+    <div class="panel-body">...</div>
+</div>
+```
+
+#### Stat Card
+```html
+<div class="stats-row">
+    <div class="stat-card primary">
+        <div class="stat-icon"><i class="fa fa-users"></i></div>
+        <div class="stat-value"><?= number_format($count) ?></div>
+        <div class="stat-label"><?= $t['total_users'] ?></div>
+    </div>
+    <div class="stat-card success">...</div>
+</div>
+```
+
+#### Link Format
+All links and form actions **must** use `index.php?page=` prefix:
+```php
+<!-- CORRECT -->
+<a href="index.php?page=line_orders">...</a>
+<form action="index.php?page=line_store">...</form>
+
+<!-- WRONG — causes double-encoding via BaseController::redirect() -->
+<a href="?page=line_orders">...</a>
+```
+
 ## Audit Checklist
 
 ### Layout Consistency
 - [ ] Page header with icon and translated title
 - [ ] Flash messages displayed after page header (if page receives redirects)
 - [ ] Breadcrumb navigation where applicable
-- [ ] Consistent panel structure (panel-heading + panel-body)
+- [ ] Consistent panel structure (panel-heading + panel-body) OR modern card style
 - [ ] Back/cancel buttons on detail/form pages
+- [ ] All `href` and `action` use `index.php?page=` prefix (not bare `?page=`)
+
+### Modern Design System (master-data.css modules)
+- [ ] `<link rel="stylesheet" href="css/master-data.css">` imported
+- [ ] Content wrapped in `<div class="master-data-container">`
+- [ ] Page uses `master-data-header` with nav buttons (not old `page-header`)
+- [ ] Nav buttons are bilingual (not hardcoded English)
+- [ ] Shared nav partial used where available (`_nav.php`)
+- [ ] KPI cards use `stats-row` + `stat-card` classes (not inline cards)
+- [ ] Modern cards used consistently (not mixed with BS3 `.panel`)
+- [ ] `master-data-container` div properly closed at end of page
 
 ### Bootstrap Version
-- [ ] No BS5-only classes (`ms-*`, `me-*`, `mt-*`, `mb-*`, `badge`, `card`, `data-bs-*`)
-- [ ] Using BS3 classes (`pull-left`, `pull-right`, `label`, `panel`, `data-dismiss`)
+- [ ] No BS5-only classes (`ms-*`, `me-*`, `mt-*`, `mb-*`, `badge`, `card`, `data-bs-*`) UNLESS module explicitly uses BS5 or master-data.css
+- [ ] Using BS3 classes (`pull-left`, `pull-right`, `label`, `panel`, `data-dismiss`) for legacy pages
 - [ ] `col-xs-*` for mobile grid (not just `col-*`)
 - [ ] `btn-xs` or `btn-sm` used consistently within module
+- [ ] `btn-outline-primary` only used inside `master-data-header` nav (from `button-improvements.css`)
 
 ### Forms
 - [ ] CSRF token present: `<input type="hidden" name="csrf_token">`
@@ -130,6 +225,17 @@ You are the **UX/UI Reviewer** for the iACC PHP MVC application. You perform rea
 - [ ] `required` attribute on mandatory fields
 - [ ] Consistent button styles (`btn-primary` for submit, `btn-default` for cancel)
 - [ ] Form actions point to valid routes
+
+### Form Input Sizing (see form-consistency skill)
+- [ ] No inline `style="height:..."` on input, select, or textarea elements
+- [ ] All inputs use `.form-control` class
+- [ ] Size variants use standard classes: `.form-control-sm` (36px) or `.form-control-lg` (52px)
+- [ ] No non-standard height values (only 36px, 44px, 52px allowed)
+- [ ] Inputs on the same row use the same size class
+- [ ] `select` and `input` in the same row have matching heights
+- [ ] Buttons adjacent to inputs use matching size: `.btn` (44px), `.btn-sm` (36px), `.btn-lg` (52px)
+- [ ] No `!important` on height/min-height in page-specific CSS
+- [ ] Placeholder text is fully visible (not clipped by small height)
 
 ### Tables
 - [ ] Wrapped in `<div class="table-responsive">`
@@ -181,3 +287,4 @@ Group findings by file, then by severity within each file.
 5. Check all `$t` arrays have both `en` and `th` entries for every key used
 6. Verify form actions match valid routes in `app/Config/routes.php`
 7. Compare with a known-good reference view (e.g., `app/Views/sales-channel/dashboard.php`)
+8. For `master-data.css` modules: verify CSS import, container wrapper, header nav, modern cards, and link format

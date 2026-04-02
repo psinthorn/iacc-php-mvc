@@ -44,7 +44,9 @@ $messages = [
 .modal-box h3 { margin:0 0 20px; }
 .modal-form-group { margin-bottom: 16px; }
 .modal-form-group label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
-.modal-form-group input, .modal-form-group textarea { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; box-sizing:border-box; }
+.modal-form-group input, .modal-form-group textarea { width:100%; padding:10px 14px; border:1px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; box-sizing:border-box; height:44px; min-height:44px; }
+.modal-form-group textarea { height:auto; min-height:80px; }
+.modal-form-group input[type="color"] { height:44px; min-height:44px; padding:4px 8px; }
 .modal-form-group input:focus { border-color:var(--md-primary,#4f46e5); box-shadow:0 0 0 3px rgba(79,70,229,0.1); }
 .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:20px; }
 </style>
@@ -102,11 +104,11 @@ $messages = [
                     <i class="fa fa-file-text-o"></i> <?= $cat['expense_count'] ?? 0 ?> <?= $isThai ? 'รายการ' : 'expenses' ?>
                 </span>
                 <div class="cat-actions">
-                    <button class="cat-btn" onclick='openModal(<?= json_encode($cat) ?>)' title="Edit"><i class="fa fa-pencil"></i></button>
+                    <button class="cat-btn" onclick='openModal(<?= json_encode($cat) ?>)' title="<?= $isThai ? 'แก้ไข' : 'Edit' ?>"><i class="fa fa-pencil"></i></button>
                     <form method="post" action="index.php?page=expense_cat_toggle" style="display:inline;">
                         <?= csrf_field() ?>
                         <input type="hidden" name="id" value="<?= $cat['id'] ?>">
-                        <button type="submit" class="cat-btn" title="<?= $cat['is_active'] ? 'Disable' : 'Enable' ?>">
+                        <button type="submit" class="cat-btn" title="<?= $cat['is_active'] ? ($isThai ? 'ปิดใช้งาน' : 'Disable') : ($isThai ? 'เปิดใช้งาน' : 'Enable') ?>">
                             <i class="fa fa-<?= $cat['is_active'] ? 'eye-slash' : 'eye' ?>"></i>
                         </button>
                     </form>
@@ -114,7 +116,7 @@ $messages = [
                     <form method="post" action="index.php?page=expense_cat_delete" style="display:inline;" onsubmit="return confirm('<?= $isThai ? 'ลบหมวดหมู่นี้?' : 'Delete this category?' ?>')">
                         <?= csrf_field() ?>
                         <input type="hidden" name="id" value="<?= $cat['id'] ?>">
-                        <button type="submit" class="cat-btn" style="color:#ef4444;" title="Delete"><i class="fa fa-trash"></i></button>
+                        <button type="submit" class="cat-btn" style="color:#ef4444;" title="<?= $isThai ? 'ลบ' : 'Delete' ?>"><i class="fa fa-trash"></i></button>
                     </form>
                     <?php endif; ?>
                 </div>
@@ -154,7 +156,7 @@ $messages = [
                 </div>
                 <div class="modal-form-group">
                     <label><?= $isThai ? 'สี' : 'Color' ?></label>
-                    <input type="color" name="color" id="catColor" value="#6366f1" style="height:42px; padding:4px;">
+                    <input type="color" name="color" id="catColor" value="#6366f1">
                 </div>
             </div>
             <div class="modal-form-group">
