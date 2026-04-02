@@ -328,11 +328,13 @@ function get_status_badge($status) {
                 
                 <!-- Smart Search -->
                 <div class="company-search-box">
-                    <i class="fa fa-search search-icon"></i>
-                    <input type="text" id="companySearchInput" class="company-search-input" 
-                           placeholder="<?=$xml->search_companies_placeholder ?? 'Search companies by name, contact, email...'?>" 
-                           autocomplete="off">
-                    <div id="companySearchResults" class="company-search-results"></div>
+                    <div class="md-search-box">
+                        <i class="fa fa-search md-search-icon"></i>
+                        <input type="text" id="companySearchInput" class="md-search-input" 
+                               placeholder="<?=$xml->search_companies_placeholder ?? 'Search companies by name, contact, email...'?>" 
+                               autocomplete="off">
+                        <div id="companySearchResults" class="md-search-results"></div>
+                    </div>
                 </div>
                 
                 <!-- Quick Selection Grid -->
@@ -384,28 +386,16 @@ function get_status_badge($status) {
     </div>
     
     <style>
-    .company-selector-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; overflow: hidden; }
-    .company-selector-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+    .company-selector-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+    .company-selector-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; color: #fff; border-radius: 16px 16px 0 0; }
     .selector-title { display: flex; align-items: center; gap: 14px; }
     .selector-title > i { font-size: 28px; opacity: 0.9; }
     .selector-title h5 { margin: 0; font-size: 18px; font-weight: 700; }
     .selector-title p { margin: 4px 0 0 0; font-size: 13px; opacity: 0.85; }
     .btn-clear-company { background: rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
     .btn-clear-company:hover { background: rgba(255,255,255,0.3); color: #fff; text-decoration: none; }
-    .company-search-box { padding: 20px 24px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; position: relative; }
-    .company-search-input { width: 100%; height: 48px; padding: 12px 16px 12px 46px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: #fff; transition: all 0.2s ease; }
-    .company-search-input:focus { border-color: #667eea; box-shadow: 0 0 0 4px rgba(102,126,234,0.12); outline: none; }
-    .company-search-box .search-icon { position: absolute; left: 40px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; }
-    .company-search-results { position: absolute; top: 100%; left: 24px; right: 24px; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid #e5e7eb; max-height: 320px; overflow-y: auto; z-index: 1000; display: none; }
-    .company-search-results.show { display: block; }
-    .search-result-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.15s ease; text-decoration: none; color: inherit; }
-    .search-result-item:hover { background: #f1f5f9; text-decoration: none; }
-    .search-result-item .result-logo { width: 40px; height: 40px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .search-result-item .result-logo img { width: 100%; height: 100%; object-fit: cover; }
-    .search-result-item .result-logo i { color: #94a3b8; }
-    .search-result-item .result-info { flex: 1; }
-    .search-result-item .result-name { font-weight: 600; color: #1e293b; font-size: 14px; }
-    .search-result-item .result-meta { font-size: 12px; color: #64748b; }
+    .company-search-box { padding: 20px 24px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; }
+    .company-search-box .md-search-results { left: 0; right: 0; }
     .search-no-results { padding: 24px; text-align: center; color: #64748b; }
     .search-no-results i { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
     .quick-selection-label { padding: 16px 24px 8px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
@@ -454,7 +444,7 @@ function get_status_badge($status) {
                             resultsContainer.innerHTML = '<div class="search-no-results"><i class="fa fa-search"></i><div>No companies found</div></div>';
                         } else {
                             resultsContainer.innerHTML = data.map(company => `
-                                <a href="index.php?page=remote&select_company=${company.id}" class="search-result-item">
+                                <a href="index.php?page=remote&select_company=${company.id}" class="md-search-result-item">
                                     <div class="result-logo">
                                         ${company.logo ? `<img src="upload/${company.logo}" alt="">` : '<i class="fa fa-building"></i>'}
                                     </div>

@@ -3,53 +3,59 @@
 /** @var string $discoveredAt */
 /** @var array|null $cachedSchema */
 ?>
+<div class="ai-schema-browser-page">
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">
+        <h3 class="page-header">
             <i class="fa fa-database"></i> Database Schema Browser
             <small>AI Schema Discovery</small>
-        </h1>
+        </h3>
+        <?php $currentPage = 'ai_schema_browser'; include __DIR__ . '/_nav.php'; ?>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-lg-12">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <i class="fa fa-info-circle"></i> Schema Cache Status
-                <div class="pull-right">
-                    <button class="btn btn-xs btn-success" onclick="refreshSchema()">
-                        <i class="fa fa-refresh"></i> Refresh Cache
-                    </button>
-                </div>
-            </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-3"><div class="stat-box"><h3><?=count($tables)?></h3><p>Tables Discovered</p></div></div>
-                    <div class="col-md-3"><div class="stat-box"><h3 id="total-rows">-</h3><p>Total Rows</p></div></div>
-                    <div class="col-md-3"><div class="stat-box"><h3 id="total-columns">-</h3><p>Total Columns</p></div></div>
-                    <div class="col-md-3"><div class="stat-box"><h4><?=htmlspecialchars($discoveredAt)?></h4><p>Last Cached</p></div></div>
-                </div>
-            </div>
+<!-- Hero Header -->
+<div class="schema-browser-hero">
+    <div class="hero-content">
+        <div class="hero-icon"><i class="fa fa-database"></i></div>
+        <div class="hero-text">
+            <h2>Database Schema Browser</h2>
+            <p>Explore tables, columns, and relationships discovered by AI</p>
         </div>
     </div>
+    <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-value"><?=count($tables)?></span><span class="hero-stat-label">Tables</span></div>
+        <div class="hero-stat"><span class="hero-stat-value" id="hero-columns">-</span><span class="hero-stat-label">Columns</span></div>
+        <div class="hero-stat hero-action" onclick="refreshSchema()">
+            <span class="hero-stat-value"><i class="fa fa-refresh"></i></span>
+            <span class="hero-stat-label">Refresh</span>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="stat-cards">
+    <div class="stat-card stat-primary"><span class="stat-value"><?=count($tables)?></span><span class="stat-label">Tables Discovered</span></div>
+    <div class="stat-card stat-success"><span class="stat-value" id="total-rows">-</span><span class="stat-label">Total Rows</span></div>
+    <div class="stat-card stat-info"><span class="stat-value" id="total-columns">-</span><span class="stat-label">Total Columns</span></div>
+    <div class="stat-card stat-default"><span class="stat-value stat-value-sm"><?=htmlspecialchars($discoveredAt)?></span><span class="stat-label">Last Cached</span></div>
 </div>
 
 <div class="row">
     <div class="col-md-4">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-search"></i> Search Schema</div>
-            <div class="panel-body">
+        <div class="ai-card">
+            <div class="ai-card-header"><i class="fa fa-search"></i> Search Schema</div>
+            <div class="ai-card-body">
                 <div class="input-group">
                     <input type="text" id="search-input" class="form-control" placeholder="Search tables or columns...">
-                    <span class="input-group-btn"><button class="btn btn-primary" onclick="searchSchema()"><i class="fa fa-search"></i></button></span>
+                    <span class="input-group-btn"><button class="btn" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:0 8px 8px 0;" onclick="searchSchema()"><i class="fa fa-search"></i></button></span>
                 </div>
                 <div id="search-results" style="margin-top: 10px;"></div>
             </div>
         </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-list"></i> Tables (<?=count($tables)?>)</div>
-            <div class="panel-body" style="max-height: 400px; overflow-y: auto;">
+        <div class="ai-card">
+            <div class="ai-card-header"><i class="fa fa-list"></i> Tables (<?=count($tables)?>)</div>
+            <div class="ai-card-body tables-list-container">
                 <div class="list-group" id="tables-list">
                     <?php foreach ($tables as $tableName => $info): ?>
                     <a href="#" class="list-group-item table-item" data-table="<?=htmlspecialchars($tableName)?>">
@@ -62,30 +68,181 @@
         </div>
     </div>
     <div class="col-md-8">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-info-circle"></i> Table Details <span id="selected-table" class="text-primary"></span></div>
-            <div class="panel-body" id="table-details"><p class="text-muted text-center">Select a table to view details</p></div>
+        <div class="ai-card">
+            <div class="ai-card-header"><i class="fa fa-info-circle"></i> Table Details <span id="selected-table" class="text-primary"></span></div>
+            <div class="ai-card-body" id="table-details"><p class="text-muted text-center">Select a table to view details</p></div>
         </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-code"></i> Compact Schema (for AI)</div>
-            <div class="panel-body">
-                <pre id="compact-schema" style="max-height: 300px; overflow-y: auto; font-size: 11px;"><?=htmlspecialchars(\SchemaDiscovery::loadCompactSchema() ?: 'Not cached')?></pre>
+        <div class="ai-card">
+            <div class="ai-card-header"><i class="fa fa-code"></i> Compact Schema (for AI)</div>
+            <div class="ai-card-body">
+                <pre class="code-block" id="compact-schema"><?=htmlspecialchars(\SchemaDiscovery::loadCompactSchema() ?: 'Not cached')?></pre>
             </div>
         </div>
     </div>
 </div>
+</div><!-- /.ai-schema-browser-page -->
 
 <style>
-.stat-box { text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; }
-.stat-box h3 { margin: 0; color: #2196F3; font-size: 28px; }
-.stat-box h4 { margin: 0; color: #666; font-size: 14px; }
-.stat-box p { margin: 5px 0 0; color: #666; }
-.table-item.active { background: #2196F3; color: white; }
-.table-item.active .badge { background: white; color: #2196F3; }
-.column-row { padding: 5px 10px; border-bottom: 1px solid #eee; }
-.column-row:hover { background: #f5f5f5; }
-.key-badge { font-size: 10px; padding: 2px 5px; }
-.fk-link { color: #ff9800; font-size: 11px; }
+/* Page container */
+.ai-schema-browser-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero Header */
+.ai-schema-browser-page .schema-browser-hero {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.ai-schema-browser-page .hero-content { display: flex; align-items: center; gap: 20px; }
+.ai-schema-browser-page .hero-icon {
+    width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0;
+}
+.ai-schema-browser-page .hero-text h2 { margin: 0; font-size: 22px; font-weight: 700; }
+.ai-schema-browser-page .hero-text p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+.ai-schema-browser-page .hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.ai-schema-browser-page .hero-stat {
+    background: rgba(255,255,255,0.15); padding: 10px 18px; border-radius: 10px;
+    text-align: center; min-width: 80px; border: 1px solid rgba(255,255,255,0.2);
+}
+.ai-schema-browser-page .hero-stat-value { display: block; font-size: 20px; font-weight: 700; }
+.ai-schema-browser-page .hero-stat-label { display: block; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.ai-schema-browser-page .hero-action { cursor: pointer; transition: background 0.2s; }
+.ai-schema-browser-page .hero-action:hover { background: rgba(255,255,255,0.25); }
+
+/* Stat cards (CSS Grid) */
+.ai-schema-browser-page .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Cards */
+.ai-schema-browser-page .ai-card {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.ai-schema-browser-page .ai-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.ai-schema-browser-page .ai-card-header {
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+    font-weight: 600;
+    font-size: 15px;
+}
+.ai-schema-browser-page .ai-card-header i { color: #667eea; margin-right: 8px; }
+.ai-schema-browser-page .ai-card-body { padding: 20px; }
+
+/* Stat cards */
+.ai-schema-browser-page .stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 12px;
+    text-align: center;
+    border-left: 4px solid #ccc;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.ai-schema-browser-page .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.ai-schema-browser-page .stat-primary { border-left-color: #667eea; }
+.ai-schema-browser-page .stat-success { border-left-color: #27ae60; }
+.ai-schema-browser-page .stat-info { border-left-color: #3498db; }
+.ai-schema-browser-page .stat-default { border-left-color: #95a5a6; }
+.ai-schema-browser-page .stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.ai-schema-browser-page .stat-value-sm { font-size: 14px; }
+.ai-schema-browser-page .stat-label {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.ai-schema-browser-page .stat-primary .stat-value { color: #667eea; }
+.ai-schema-browser-page .stat-success .stat-value { color: #27ae60; }
+.ai-schema-browser-page .stat-info .stat-value { color: #3498db; }
+.ai-schema-browser-page .stat-default .stat-value { color: #666; }
+
+/* Tables list */
+.ai-schema-browser-page .tables-list-container { max-height: 400px; overflow-y: auto; padding: 10px; }
+.ai-schema-browser-page .table-item {
+    border-radius: 8px;
+    margin-bottom: 2px;
+    border: none;
+    transition: all 0.2s;
+}
+.ai-schema-browser-page .table-item:hover { background: #f0f4ff; }
+.ai-schema-browser-page .table-item.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: transparent;
+}
+.ai-schema-browser-page .table-item.active .badge { background: rgba(255,255,255,0.3); color: #fff; }
+.ai-schema-browser-page .table-item .badge { background: #e9ecef; color: #666; }
+
+/* Column details */
+.ai-schema-browser-page .column-row {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.ai-schema-browser-page .column-row:hover { background: #f8f9fa; }
+.ai-schema-browser-page .key-badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+.ai-schema-browser-page .fk-link {
+    color: #f39c12;
+    font-size: 12px;
+    padding: 4px 0;
+}
+
+/* Code block */
+.ai-schema-browser-page .code-block {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* Search results */
+.ai-schema-browser-page #search-results a {
+    color: #667eea;
+    transition: color 0.2s;
+}
+.ai-schema-browser-page #search-results a:hover { color: #764ba2; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-schema-browser-page .schema-browser-hero { flex-direction: column; text-align: center; }
+    .ai-schema-browser-page .hero-content { flex-direction: column; }
+    .ai-schema-browser-page .hero-stats { justify-content: center; }
+    .ai-schema-browser-page .stat-cards { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 
 <script>
@@ -97,6 +254,7 @@ totalColumns += <?=count($info['columns'] ?? [])?>;
 <?php endforeach; ?>
 document.getElementById('total-rows').textContent = totalRows.toLocaleString();
 document.getElementById('total-columns').textContent = totalColumns.toLocaleString();
+if (document.getElementById('hero-columns')) document.getElementById('hero-columns').textContent = totalColumns.toLocaleString();
 
 document.querySelectorAll('.table-item').forEach(el => {
     el.addEventListener('click', function(e) {

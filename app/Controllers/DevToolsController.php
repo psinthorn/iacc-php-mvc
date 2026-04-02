@@ -4,7 +4,7 @@ namespace App\Controllers;
 /**
  * DevToolsController - Developer tools and debug pages
  * All pages require developer/super-admin access
- * Most pages are standalone (own HTML shell)
+ * Rendered inside the admin layout (navbar + sidebar)
  */
 class DevToolsController extends BaseController
 {
@@ -13,67 +13,100 @@ class DevToolsController extends BaseController
         parent::__construct();
     }
 
-    /** Session Debug - standalone page */
+    /**
+     * Include a view file with global variables in scope.
+     * Used for devtools views that have their own PHP logic at the top.
+     * The view is rendered inside the admin layout (index.php provides HTML shell).
+     */
+    private function includeDevView(string $viewFile): void
+    {
+        $config = $GLOBALS['config'] ?? null;
+        $db = $GLOBALS['db'] ?? null;
+        include $viewFile;
+    }
+
+    /**
+     * Include a view as standalone (own HTML, no layout).
+     * Used for AJAX/JSON API endpoints within devtools views.
+     */
+    private function includeStandalone(string $viewFile): void
+    {
+        $config = $GLOBALS['config'] ?? null;
+        $db = $GLOBALS['db'] ?? null;
+        include $viewFile;
+        exit;
+    }
+
+    /** Session Debug — JSON API via ?format=json */
     public function debugSession(): void
     {
-        include __DIR__ . '/../Views/devtools/debug-session.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/debug-session.php');
     }
 
-    /** Language Debug - standalone page */
+    /** Language Debug — JSON API via ?format=json */
     public function langDebug(): void
     {
-        include __DIR__ . '/../Views/devtools/lang-debug.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/lang-debug.php');
     }
 
-    /** Dev Roadmap - standalone page */
+    /** Dev Roadmap */
     public function roadmap(): void
     {
-        include __DIR__ . '/../Views/devtools/roadmap.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/roadmap.php');
     }
 
-    /** CRUD Test - standalone page */
+    /** CRUD Test */
     public function testCrud(): void
     {
-        include __DIR__ . '/../Views/devtools/test-crud.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/test-crud.php');
     }
 
-    /** RBAC Test - standalone page */
+    /** RBAC Test */
     public function testRbac(): void
     {
-        include __DIR__ . '/../Views/devtools/test-rbac.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/test-rbac.php');
     }
 
-    /** Container Test - standalone page */
+    /** Container Test */
     public function testContainers(): void
     {
-        include __DIR__ . '/../Views/devtools/test-containers.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/test-containers.php');
     }
 
-    /** AI CRUD Test - standalone page */
+    /** AI CRUD Test */
     public function testCrudAi(): void
     {
-        include __DIR__ . '/../Views/devtools/test-crud-ai.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/test-crud-ai.php');
     }
 
-    /** PHP Debug - standalone page */
+    /** PHP Debug — AJAX via ?action= handled as standalone */
     public function debugPhp(): void
     {
-        include __DIR__ . '/../Views/devtools/debug-php.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/debug-php.php');
     }
 
-    /** System Monitoring - standalone page */
+    /** PHP Debug AJAX API endpoint */
+    public function debugPhpApi(): void
+    {
+        $this->includeStandalone(__DIR__ . '/../Views/devtools/debug-php.php');
+    }
+
+    /** Session Debug JSON API endpoint */
+    public function debugSessionApi(): void
+    {
+        $this->includeStandalone(__DIR__ . '/../Views/devtools/debug-session.php');
+    }
+
+    /** Language Debug JSON API endpoint */
+    public function langDebugApi(): void
+    {
+        $this->includeStandalone(__DIR__ . '/../Views/devtools/lang-debug.php');
+    }
+
+    /** System Monitoring */
     public function monitoring(): void
     {
-        include __DIR__ . '/../Views/devtools/monitoring.php';
-        exit;
+        $this->includeDevView(__DIR__ . '/../Views/devtools/monitoring.php');
     }
 
     /** Container Monitor - partial page (included in admin layout) */

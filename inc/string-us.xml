@@ -521,5 +521,14 @@
 <usermanual>User Manual</usermanual>
 <masterdataguide>Master Data Guide</masterdataguide>
 <devsummary>Developer Summary</devsummary>
+<lineoa>LINE OA</lineoa>
+<linedashboard>Dashboard</linedashboard>
+<lineorders>Orders</lineorders>
+<linemessages>Messages</linemessages>
+<lineusers>Users</lineusers>
+<lineautoreplies>Auto Replies</lineautoreplies>
+<linesendmessage>Send Message</linesendmessage>
+<linesettings>Settings</linesettings>
+<linewebhooklog>Webhook Log</linewebhooklog>
 
 </note>

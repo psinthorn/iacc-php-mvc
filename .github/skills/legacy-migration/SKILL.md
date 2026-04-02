@@ -118,6 +118,15 @@ class BrandController extends BaseController
 'brand_delete' => ['BrandController', 'delete'],
 ```
 
+**Route type flags** (third array element):
+- `'standalone'` — Page has own `<html><head><body>` and calls `exit;` (devtools, PDFs, AI settings)
+- `'public'` — No authentication required
+- _(none)_ — Normal page rendered inside admin layout via `$this->render()`
+
+**CRITICAL**: Legacy standalone pages that use `chdir()` + `require_once("inc/...")` MUST have their route flagged as `'standalone'`. Without it, the view runs inside the admin HTML shell and relative paths break.
+
+**Path depth after migration**: Views move from root (`legacy/test-crud.php`) to 3 levels deep (`app/Views/devtools/test-crud.php`). Update `chdir()` from `__DIR__` to `__DIR__ . "/../../.."` (3 levels to reach project root).
+
 ### Step 6: Keep Legacy Working (Transition Period)
 
 During migration, both old and new code may coexist:
@@ -240,6 +249,115 @@ if (!isset($_SESSION['user_id'])) {
 | `inc/class.hard.php` | DB abstraction | Active (both legacy + safe methods) |
 | `inc/class.company_filter.php` | Multi-tenant filtering | Active |
 | `inc/class.paypal.php` | PayPal integration | Legacy |
+
+### Pattern E: Standalone Page → Normal Route (Admin Layout)
+
+Convert standalone pages that have their own `<html>` shell to normal routes rendered inside the admin layout (sidebar + navbar).
+
+**When to do this**: When standalone pages should feel integrated — devtools, admin settings, AI config panels.
+
+**Step 1: Strip the HTML shell from the view**
+
+```php
+// BEFORE (standalone — own HTML shell)
+<?php session_start(); require_once("inc/sys.configs.php"); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Settings</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        .form-group input { height: 44px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- page content -->
+    </div>
+</body>
+</html>
+
+// AFTER (normal — rendered inside admin layout)
+<style>
+    /* MUST scope CSS under page wrapper to prevent leaking into sidebar/navbar */
+    .ai-settings-page .form-group input { height: 44px; }
+</style>
+<div class="col-lg-12">
+    <div class="ai-settings-page">
+        <!-- page content -->
+    </div>
+</div>
+```
+
+**Step 2: Remove redundant PHP headers from the view**
+
+Remove these from the view — `index.php` already handles them:
+- `session_start()` — session already started
+- `require_once("inc/sys.configs.php")` — already loaded
+- `require_once("inc/csrf.php")` — already loaded
+- Access control checks — handled by route auth
+
+**Step 3: Update the route**
+
+```php
+// Remove 'standalone' flag
+// BEFORE:
+'ai_settings' => ['AiSettingsController', 'index', 'standalone'],
+// AFTER:
+'ai_settings' => ['AiSettingsController', 'index'],
+```
+
+**Step 4: Update the controller**
+
+```php
+// BEFORE (standalone)
+public function index()
+{
+    $config = $GLOBALS['config'] ?? null;
+    include __DIR__ . '/../Views/ai/settings.php';
+    exit;
+}
+
+// AFTER (normal — use render())
+public function index()
+{
+    $this->render('ai/settings', ['pageTitle' => 'AI Settings']);
+}
+```
+
+**Step 5: Separate AJAX endpoints**
+
+If the standalone page had mixed concerns (HTML page + JSON API responding to POST), split them:
+
+```php
+// routes.php — the HTML page is normal, the API endpoint stays standalone
+'ai_settings'     => ['AiSettingsController', 'index'],               // Normal → admin layout
+'ai_settings_api' => ['AiSettingsController', 'api', 'standalone'],   // Standalone → JSON API
+```
+
+**Step 6: Scope CSS to avoid leakage**
+
+Standalone pages often use generic CSS selectors that break the admin layout when converted:
+
+| Selector | Problem | Fix |
+|----------|---------|-----|
+| `.form-group` | Overrides sidebar forms | `.my-page .form-group` |
+| `.card` | Changes admin dashboard cards | `.my-page .card` |
+| `.alert` | Affects layout flash messages | `.my-page .alert` |
+| `.btn` | Changes sidebar nav buttons | `.my-page .btn-custom` |
+
+**Checklist for standalone → normal conversion:**
+- [ ] Removed `<!DOCTYPE>`, `<html>`, `<head>`, `<body>` tags
+- [ ] Removed `session_start()` and redundant `require_once`
+- [ ] Wrapped content in `<div class="col-lg-12">` → page wrapper
+- [ ] Scoped ALL CSS under `.page-name-wrapper` prefix
+- [ ] No `overflow: hidden` on containers with dropdowns
+- [ ] Separated AJAX/JSON endpoints to standalone routes
+- [ ] POST handlers use PRG (Post-Redirect-Get) pattern
+- [ ] Updated route: removed `'standalone'` flag
+- [ ] Updated controller: `include+exit` → `$this->render()`
+- [ ] Tested page loads inside admin layout without CSS conflicts
 
 ## Safety Rules
 

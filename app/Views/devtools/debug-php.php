@@ -1,21 +1,15 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * PHP Debug & Error Log Viewer
  * View PHP environment info, error logs, and run diagnostics
- * Integrated into admin Developer Tools panel
+ * Rendered inside admin layout
  */
 
-session_start();
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
 require_once("inc/dev-tools-style.php");
 
-// Check access - Developer role required
-check_dev_tools_access();
-
 // Initialize database connection
-$db = new DbConn($config);
+$db = new \DbConn($config);
 
 // ============================================================================
 // Handle AJAX actions
@@ -197,13 +191,8 @@ foreach (get_log_files() as $lf) {
 // Is Docker environment?
 $is_docker = function_exists('is_running_in_docker') ? is_running_in_docker() : file_exists('/.dockerenv');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHP Debug - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
     <style>
         .debug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .debug-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -258,8 +247,6 @@ $is_docker = function_exists('is_running_in_docker') ? is_running_in_docker() : 
         .stat-card.stat-blue .stat-value { color: var(--info); }
         .stat-card.stat-orange .stat-value { color: var(--warning); }
     </style>
-</head>
-<body>
 <div class="dev-tools-container">
     <?php echo get_dev_tools_header('PHP Debug & Logs', 'PHP environment, error logs, and system diagnostics', 'fa-bug', '#e74c3c'); ?>
     
@@ -511,8 +498,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'phpinfo') {
     exit;
 }
 ?>
-</body>
-</html>
+</div><!-- End col-lg-12 -->
 <?php
 
 function colorize_log($line) {

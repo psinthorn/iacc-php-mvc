@@ -12,6 +12,15 @@ $isThai = ($lang ?? '2') === '1';
 $grandNet = array_sum(array_column($projects, 'total_net'));
 $grandPaid = array_sum(array_column($projects, 'paid_amount'));
 $grandUnpaid = array_sum(array_column($projects, 'unpaid_amount'));
+
+$statusLabels = [
+    'draft' => $isThai ? 'ฉบับร่าง' : 'Draft',
+    'pending' => $isThai ? 'รอดำเนินการ' : 'Pending',
+    'approved' => $isThai ? 'อนุมัติแล้ว' : 'Approved',
+    'paid' => $isThai ? 'จ่ายแล้ว' : 'Paid',
+    'rejected' => $isThai ? 'ปฏิเสธ' : 'Rejected',
+    'cancelled' => $isThai ? 'ยกเลิก' : 'Cancelled',
+];
 ?>
 
 <link rel="stylesheet" href="css/master-data.css">
@@ -33,7 +42,7 @@ $grandUnpaid = array_sum(array_column($projects, 'unpaid_amount'));
 /* Filter bar */
 .filter-bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:white; padding:16px 20px; border-radius:12px; border:1px solid var(--md-border,#e2e8f0); margin-bottom:20px; }
 .filter-bar .filter-input,
-.filter-bar .filter-select { padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; outline:none; font-family:'Inter',sans-serif; }
+.filter-bar .filter-select { padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; outline:none; font-family:'Inter',sans-serif; height:36px; min-height:36px; box-sizing:border-box; }
 .filter-bar .filter-input:focus,
 .filter-bar .filter-select:focus { border-color:var(--md-primary,#4f46e5); box-shadow:0 0 0 3px rgba(79,70,229,0.1); }
 
@@ -93,7 +102,7 @@ $grandUnpaid = array_sum(array_column($projects, 'unpaid_amount'));
                 <option value="approved" <?= ($filters['status'] ?? '') === 'approved' ? 'selected' : '' ?>><?= $isThai ? 'อนุมัติ' : 'Approved' ?></option>
                 <option value="paid" <?= ($filters['status'] ?? '') === 'paid' ? 'selected' : '' ?>><?= $isThai ? 'จ่ายแล้ว' : 'Paid' ?></option>
             </select>
-            <button type="submit" class="btn-header btn-header-primary" style="padding:8px 16px;"><i class="fa fa-search"></i></button>
+            <button type="submit" class="btn-header btn-header-primary" style="padding:8px 16px; background:var(--md-primary,#4f46e5); color:white; border:1px solid var(--md-primary,#4f46e5);"><i class="fa fa-search"></i></button>
             <?php if (!empty($filters['date_from']) || !empty($filters['status'])): ?>
             <a href="index.php?page=expense_project_report" style="color:#ef4444; font-size:13px; text-decoration:none;"><i class="fa fa-times"></i> <?= $isThai ? 'ล้าง' : 'Clear' ?></a>
             <?php endif; ?>
@@ -244,7 +253,7 @@ $grandUnpaid = array_sum(array_column($projects, 'unpaid_amount'));
                             <?= htmlspecialchars($isThai && $ex['category_name_th'] ? $ex['category_name_th'] : $ex['category_name']) ?>
                         </span>
                     </td>
-                    <td><span style="background:<?= $statusColors[$ex['status']] ?? '#94a3b8' ?>22; color:<?= $statusColors[$ex['status']] ?? '#94a3b8' ?>; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;"><?= ucfirst($ex['status']) ?></span></td>
+                    <td><span style="background:<?= $statusColors[$ex['status']] ?? '#94a3b8' ?>22; color:<?= $statusColors[$ex['status']] ?? '#94a3b8' ?>; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;"><?= $statusLabels[$ex['status']] ?? ucfirst($ex['status']) ?></span></td>
                     <td style="text-align:right;">฿<?= number_format($ex['amount'], 2) ?></td>
                     <td style="text-align:right; color:#64748b;">฿<?= number_format($ex['vat_amount'], 2) ?></td>
                     <td style="text-align:right; font-weight:600;">฿<?= number_format($ex['net_amount'], 2) ?></td>

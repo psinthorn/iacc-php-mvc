@@ -45,16 +45,16 @@ $total_customers = $stats['customers'];
 <!-- Action Toolbar -->
 <div class="action-toolbar">
     <div class="search-section">
-        <div class="search-input-wrapper">
-            <form method="get" action="" class="search-form">
-                <i class="fa fa-search search-icon"></i>
+        <div class="md-search-box md-search-has-btn" style="max-width: 500px;">
+            <i class="fa fa-search md-search-icon"></i>
+            <form method="get" action="">
                 <input type="hidden" name="page" value="company">
                 <input type="hidden" name="type" value="<?=htmlspecialchars($type_filter)?>">
-                <input type="text" class="search-input" name="search" 
+                <input type="text" class="md-search-input" name="search" 
                        placeholder="<?=$xml->search ?? 'Search'?> company, contact, email, phone..." 
                        value="<?=htmlspecialchars($search)?>"
                        autocomplete="off">
-                <button type="submit" class="search-btn"><i class="fa fa-arrow-right"></i></button>
+                <button type="submit" class="md-search-btn"><i class="fa fa-arrow-right"></i></button>
             </form>
         </div>
         
@@ -95,13 +95,6 @@ $total_customers = $stats['customers'];
 
 <style>
 .search-section { display: flex; flex-direction: column; gap: 16px; flex: 1; }
-.search-input-wrapper { position: relative; max-width: 500px; }
-.search-form { position: relative; display: flex; align-items: center; margin: 0; }
-.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; z-index: 2; pointer-events: none; }
-.search-input { width: 100%; height: 48px; padding: 12px 50px 12px 46px !important; border: 2px solid #e2e8f0 !important; border-radius: 12px !important; font-size: 15px !important; background: #f8fafc; color: #1e293b; transition: all 0.2s ease; }
-.search-input:hover { border-color: #cbd5e1 !important; background: #fff; }
-.search-input:focus { border-color: #667eea !important; background: #fff; box-shadow: 0 0 0 4px rgba(102,126,234,0.12) !important; outline: none; }
-.search-btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-tab { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #64748b; background: #f1f5f9; border: 2px solid transparent; text-decoration: none; transition: all 0.2s ease; }
 .filter-tab:hover { background: #e2e8f0; color: #475569; text-decoration: none; }

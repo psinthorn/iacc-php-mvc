@@ -1,24 +1,14 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * CRUD Operations Test Script
  * Tests Create, Read, Update, Delete for all main tables
- * Redesigned with modern UI
+ * Redesigned with modern UI — rendered inside admin layout
  */
 
-session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
 require_once("inc/dev-tools-style.php");
 
-// Check access
-check_dev_tools_access();
-
-$db = new DbConn($config);
+$db = new \DbConn($config);
 $results = [];
 $test_date = date('Y-m-d H:i:s');
 
@@ -257,17 +247,10 @@ function getStatusBadge($result) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUD Test - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../inc/skeleton-loader.php'; ?>
-    <style><?php echo get_skeleton_styles(); ?></style>
-</head>
-<body>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
+<?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
+<style><?php echo get_skeleton_styles(); ?></style>
     <div class="dev-tools-container skeleton-loading" id="pageContainer">
         <!-- Skeleton Loading State -->
         <div class="skeleton-container">
@@ -327,7 +310,7 @@ function getStatusBadge($result) {
         <!-- Database Connection -->
         <div class="test-section">
             <h2><i class="fa fa-plug"></i> Database Connection</h2>
-            <?php echo getStatusBadge($results['db_connection']); ?>
+            <?php echo getStatusBadge($results['db_connection'] ?? null); ?>
         </div>
         
         <!-- Table Existence -->
@@ -433,11 +416,11 @@ function getStatusBadge($result) {
             <h2><i class="fa fa-users"></i> Authorization Table</h2>
             <div style="margin-bottom: 15px;">
                 <h3>User Records</h3>
-                <?php echo getStatusBadge($results['authorize_read']); ?>
+                <?php echo getStatusBadge($results['authorize_read'] ?? null); ?>
             </div>
             <div>
                 <h3>Password Migration</h3>
-                <?php echo getStatusBadge($results['password_check']); ?>
+                <?php echo getStatusBadge($results['password_check'] ?? null); ?>
             </div>
         </div>
         
@@ -480,5 +463,4 @@ function getStatusBadge($result) {
         </div><!-- End content-container -->
     </div>
     <script><?php echo get_skeleton_js('pageContainer', 300); ?></script>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

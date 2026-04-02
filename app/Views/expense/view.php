@@ -3,10 +3,14 @@
  * Expense Detail View
  * 
  * Uses master-data.css design system
- * Variables from controller: $expense, $lang
+ * Variables from controller: $expense, $message, $lang
  */
 
 $isThai = ($lang ?? '2') === '1';
+
+$messages = [
+    'status_updated' => ['\u2705', $isThai ? '\u0e2d\u0e31\u0e1e\u0e40\u0e14\u0e17\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08' : 'Status updated'],
+];
 
 $statusLabels = [
     'draft' => $isThai ? 'ฉบับร่าง' : 'Draft',
@@ -68,6 +72,13 @@ $canPay = in_array($expense['status'], ['approved']);
             </div>
         </div>
     </div>
+
+    <!-- Flash Message -->
+    <?php if (!empty($message) && isset($messages[$message])): ?>
+    <div style="background:#f0fdf4; border-left:4px solid #10b981; padding:12px 20px; border-radius:0 8px 8px 0; margin-bottom:16px; font-size:14px;">
+        <?= $messages[$message][0] ?> <?= $messages[$message][1] ?>
+    </div>
+    <?php endif; ?>
 
     <div class="detail-container">
         <!-- Status Bar -->

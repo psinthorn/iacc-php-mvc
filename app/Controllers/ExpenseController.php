@@ -191,7 +191,8 @@ class ExpenseController extends BaseController
         }
 
         $lang = $_SESSION['lang'] ?? '2';
-        $this->render('expense/view', compact('expense', 'lang'));
+        $message = $_GET['msg'] ?? '';
+        $this->render('expense/view', compact('expense', 'lang', 'message'));
     }
 
     /**

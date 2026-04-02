@@ -1,0 +1,277 @@
+/**
+ * Search Box Module — Reusable search input with icon
+ * 
+ * Solves Bootstrap 3 specificity override: `input[type="text"]` (0,0,1,1)
+ * beats single class selectors (0,0,1,0). This module uses higher-specificity
+ * selectors to ensure padding/height/font-size are not overridden.
+ *
+ * USAGE (3 sizes):
+ *
+ *   Default (48px) — standard search bars:
+ *     <div class="md-search-box">
+ *         <i class="fa fa-search md-search-icon"></i>
+ *         <input type="text" class="md-search-input" placeholder="Search...">
+ *     </div>
+ *
+ *   Small (36px) — inline filters, table toolbars:
+ *     <div class="md-search-box md-search-sm">
+ *         <i class="fa fa-search md-search-icon"></i>
+ *         <input type="text" class="md-search-input" placeholder="Filter...">
+ *     </div>
+ *
+ *   Large (56px) — hero/landing search:
+ *     <div class="md-search-box md-search-lg">
+ *         <i class="fa fa-search md-search-icon"></i>
+ *         <input type="text" class="md-search-input" placeholder="Search...">
+ *     </div>
+ *
+ *   With submit button:
+ *     <div class="md-search-box">
+ *         <i class="fa fa-search md-search-icon"></i>
+ *         <form>
+ *             <input type="text" class="md-search-input" placeholder="Search...">
+ *             <button type="submit" class="md-search-btn"><i class="fa fa-arrow-right"></i></button>
+ *         </form>
+ *     </div>
+ *
+ *   With autocomplete results:
+ *     <div class="md-search-box">
+ *         <i class="fa fa-search md-search-icon"></i>
+ *         <input type="text" class="md-search-input" placeholder="Search...">
+ *         <div class="md-search-results">...</div>
+ *     </div>
+ */
+
+/* ===== Container ===== */
+.md-search-box {
+    position: relative;
+    width: 100%;
+}
+
+/* ===== Icon ===== */
+.md-search-box .md-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 16px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ===== Input — uses attribute+class selector to beat Bootstrap 3 ===== */
+/* Specificity: input[type="text"].md-search-input = 0,0,1,2 — beats Bootstrap's input[type="text"] (0,0,1,1) */
+input[type="text"].md-search-input,
+input[type="search"].md-search-input {
+    width: 100%;
+    height: 48px;
+    padding: 12px 16px 12px 46px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #f8fafc;
+    color: #1e293b;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    outline: none;
+}
+
+input[type="text"].md-search-input:hover,
+input[type="search"].md-search-input:hover {
+    border-color: #cbd5e1;
+    background: #fff;
+}
+
+input[type="text"].md-search-input:focus,
+input[type="search"].md-search-input:focus {
+    border-color: #667eea;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+}
+
+input[type="text"].md-search-input::placeholder,
+input[type="search"].md-search-input::placeholder {
+    color: #94a3b8;
+}
+
+/* ===== With submit button — add right padding ===== */
+.md-search-box.md-search-has-btn input[type="text"].md-search-input,
+.md-search-box.md-search-has-btn input[type="search"].md-search-input {
+    padding-right: 50px;
+}
+
+/* ===== Submit Button ===== */
+.md-search-box .md-search-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.md-search-box .md-search-btn:hover {
+    transform: translateY(-50%) translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== Size: Small (36px) — for inline filters ===== */
+.md-search-sm .md-search-icon {
+    left: 12px;
+    font-size: 13px;
+}
+
+.md-search-sm input[type="text"].md-search-input,
+.md-search-sm input[type="search"].md-search-input {
+    height: 36px;
+    padding: 6px 12px 6px 36px;
+    border-radius: 8px;
+    font-size: 13px;
+    border-width: 1px;
+}
+
+.md-search-sm .md-search-btn {
+    width: 26px;
+    height: 26px;
+    right: 5px;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+/* ===== Size: Large (56px) — for hero/landing ===== */
+.md-search-lg .md-search-icon {
+    left: 20px;
+    font-size: 18px;
+}
+
+.md-search-lg input[type="text"].md-search-input,
+.md-search-lg input[type="search"].md-search-input {
+    height: 56px;
+    padding: 14px 20px 14px 52px;
+    border-radius: 14px;
+    font-size: 17px;
+}
+
+.md-search-lg .md-search-btn {
+    width: 42px;
+    height: 42px;
+    right: 7px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+/* ===== Autocomplete Results Dropdown ===== */
+.md-search-box .md-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e5e7eb;
+    max-height: 320px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    margin-top: 4px;
+}
+
+.md-search-box .md-search-results.show {
+    display: block;
+}
+
+.md-search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.md-search-result-item:hover {
+    background: #f1f5f9;
+    text-decoration: none;
+    color: inherit;
+}
+
+.md-search-result-item .result-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.md-search-result-item .result-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.md-search-result-item .result-logo i {
+    color: #94a3b8;
+}
+
+.md-search-result-item .result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.md-search-result-item .result-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.md-search-result-item .result-meta {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.md-search-no-results {
+    padding: 24px;
+    text-align: center;
+    color: #64748b;
+}
+
+.md-search-no-results i {
+    font-size: 32px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+    display: block;
+}
+
+/* ===== Form wrapper (when using <form> inside search box) ===== */
+.md-search-box form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .md-search-box {
+        max-width: 100%;
+    }
+}

@@ -24,13 +24,16 @@ $title = $isEdit
 .form-group label { font-size: 13px; font-weight: 600; color: #374151; }
 .form-group label .req { color: #ef4444; }
 .form-group input, .form-group select, .form-group textarea {
+    height: 44px; min-height: 44px; box-sizing: border-box;
     padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;
-    font-size: 14px; outline: none; transition: all 0.2s;
+    font-size: 14px; outline: none; transition: all 0.2s; width: 100%;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     border-color: var(--md-primary, #4f46e5); box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
 }
-.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group textarea { height: auto; min-height: 80px; resize: vertical; }
+.form-group input[type="file"] { height: auto; padding: 10px 14px; line-height: 1.5; }
+.form-group input[type="color"] { padding: 4px 8px; }
 .form-group .hint { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 .amount-preview {
     background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
@@ -193,7 +196,7 @@ $title = $isEdit
                 </div>
                 <div class="form-group">
                     <label><?= $isThai ? 'แนบใบเสร็จ' : 'Attach Receipt' ?></label>
-                    <input type="file" name="receipt_file" accept="image/*,.pdf" style="padding:8px;">
+                    <input type="file" name="receipt_file" accept="image/*,.pdf">
                     <?php if (!empty($expense['receipt_file'])): ?>
                         <span class="hint"><i class="fa fa-paperclip"></i> <?= $isThai ? 'มีไฟล์แนบอยู่แล้ว' : 'File already attached' ?>: <?= basename($expense['receipt_file']) ?></span>
                     <?php endif; ?>

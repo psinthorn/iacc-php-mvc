@@ -85,7 +85,7 @@ return [
     'voc_make'      => ['VoucherController', 'make'],   // legacy alias
     'voc_view'      => ['VoucherController', 'view'],   // legacy alias
     'voucher_store' => ['VoucherController', 'store'],
-    'vou_print'     => ['VoucherController', 'print'],
+    'vou_print'     => ['VoucherController', 'print', 'standalone'],
 
     // Delivery (Phase 3E)
     'deliv_list'    => ['DeliveryController', 'index'],
@@ -101,7 +101,7 @@ return [
     'rep_make'      => ['ReceiptController', 'make'],   // legacy alias
     'rep_view'      => ['ReceiptController', 'view'],   // legacy alias
     'receipt_store' => ['ReceiptController', 'store'],
-    'rep_print'     => ['ReceiptController', 'print'],
+    'rep_print'     => ['ReceiptController', 'print', 'standalone'],
 
     // Billing (Phase 3E)
     'billing'       => ['BillingController', 'index'],
@@ -156,9 +156,10 @@ return [
 
     // ========== Phase 5D: AI Core (MVC) ==========
     'ai_settings'            => ['AiSettingsController', 'index'],
-    'ai_chat'                => ['AiChatController', 'index'],
+    'ai_settings_api'        => ['AiSettingsController', 'api', 'standalone'],
+    'ai_chat'                => ['AiChatController', 'index', 'standalone'],
 
-    // Developer Tools (Admin Only)
+    // Developer Tools (Admin Only) — rendered inside admin layout
     'test_crud'              => ['DevToolsController', 'testCrud'],
     'test_crud_ai'           => ['DevToolsController', 'testCrudAi'],
     'test_rbac'              => ['DevToolsController', 'testRbac'],
@@ -168,6 +169,10 @@ return [
     'test_containers'        => ['DevToolsController', 'testContainers'],
     'api_lang_debug'         => ['DevToolsController', 'langDebug'],
     'dev_roadmap'            => ['DevToolsController', 'roadmap'],
+    // DevTools AJAX/API endpoints (standalone — JSON responses)
+    'debug_session_api'      => ['DevToolsController', 'debugSessionApi', 'standalone'],
+    'debug_php_api'          => ['DevToolsController', 'debugPhpApi', 'standalone'],
+    'lang_debug_api'         => ['DevToolsController', 'langDebugApi', 'standalone'],
     
     // User Account
     'help'                   => ['HelpController', 'index'],
@@ -204,6 +209,18 @@ return [
     'api_request_upgrade'    => ['AdminApiController', 'requestUpgrade'],
     'api_invoices'           => ['AdminApiController', 'invoices'],
     'api_invoice_generate'   => ['AdminApiController', 'generateInvoice'],
+
+    // ========== LINE OA Sales Channel (MVC) ==========
+    'line_dashboard'     => ['LineOAController', 'dashboard'],
+    'line_settings'      => ['LineOAController', 'settings'],
+    'line_store'         => ['LineOAController', 'store'],
+    'line_orders'        => ['LineOAController', 'orders'],
+    'line_order_detail'  => ['LineOAController', 'orderDetail'],
+    'line_messages'      => ['LineOAController', 'messages'],
+    'line_users'         => ['LineOAController', 'users'],
+    'line_auto_replies'  => ['LineOAController', 'autoReplies'],
+    'line_webhook_log'   => ['LineOAController', 'webhookLog'],
+    'line_send_message'  => ['LineOAController', 'sendMessagePage'],
 
     // ========== Pre-Auth Routes (no login required, standalone HTML) ==========
     'authorize'              => ['AuthController', 'authenticate', 'public'],

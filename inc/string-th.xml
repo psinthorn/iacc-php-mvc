@@ -521,5 +521,14 @@
 <usermanual>คู่มือการใช้งาน</usermanual>
 <masterdataguide>คู่มือข้อมูลหลัก</masterdataguide>
 <devsummary>สรุปสำหรับนักพัฒนา</devsummary>
+<lineoa>LINE OA</lineoa>
+<linedashboard>แดชบอร์ด</linedashboard>
+<lineorders>คำสั่งซื้อ</lineorders>
+<linemessages>ข้อความ</linemessages>
+<lineusers>ผู้ใช้</lineusers>
+<lineautoreplies>ตอบกลับอัตโนมัติ</lineautoreplies>
+<linesendmessage>ส่งข้อความ</linesendmessage>
+<linesettings>ตั้งค่า</linesettings>
+<linewebhooklog>บันทึก Webhook</linewebhooklog>
 
 </note>

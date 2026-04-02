@@ -1,26 +1,16 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Admin Monitoring Dashboard
  * System health, performance metrics, and security monitoring
- * Access: Developer role required
- * Updated: January 9, 2026 - v4.7 UX/UI refresh
+ * Rendered inside admin layout
  */
-error_reporting(E_ALL & ~E_NOTICE);
-session_start();
 
-require_once("inc/sys.configs.php");
-require_once("inc/class.dbconn.php");
-require_once("inc/security.php");
 require_once("inc/monitoring.php");
 require_once("inc/performance.php");
 require_once("inc/dev-tools-style.php");
 
-$db = new DbConn($config);
-$db->checkSecurity();
-
-// Require Developer access
-check_dev_tools_access();
+$db = new \DbConn($config);
 
 $is_super_admin = ($_SESSION['user_level'] ?? 0) >= 2;
 
@@ -60,14 +50,9 @@ $health_status = $health['overall'] ?? 'unknown';
 $suspicious_count = count($login_activity['suspicious_ips'] ?? []);
 $error_count = count($recent_errors);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Monitoring - Developer Tools</title>
-    <?php echo get_dev_tools_css(); ?>
-    <?php include_once __DIR__ . '/../../inc/skeleton-loader.php'; ?>
+<div class="col-lg-12">
+<?php echo get_dev_tools_css(); ?>
+<?php include_once __DIR__ . '/../../../inc/skeleton-loader.php'; ?>
     <style>
         <?php echo get_skeleton_styles(); ?>
         
@@ -294,8 +279,6 @@ $error_count = count($recent_errors);
             background: rgba(52, 152, 219, 0.3);
         }
     </style>
-</head>
-<body>
     <div class="dev-tools-container skeleton-loading" id="pageContainer">
         <!-- Skeleton Loading State -->
         <div class="skeleton-container">
@@ -669,5 +652,4 @@ $error_count = count($recent_errors);
         }
     }, 1000);
     </script>
-</body>
-</html>
+</div><!-- End col-lg-12 -->

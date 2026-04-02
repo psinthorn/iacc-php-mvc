@@ -125,6 +125,11 @@ docker inspect --format='{{.State.Health.Status}}' iacc_php
 3. **Form arrays** - Products use indexed arrays: `type[0]`, `price[0]`, `model[0]` etc.
 4. **Checkbox handling** - Empty checkboxes need default '0' value handling
 5. **Session company** - `$_SESSION['com_id']` contains current user's company ID
+6. **CSS scoping in admin layout** - Views rendered in normal routes MUST scope all CSS under a page-specific wrapper class (e.g., `.ai-settings-page .form-group`) to prevent leaking into sidebar/navbar
+7. **AJAX endpoints must be standalone** - JSON-returning endpoints need `'standalone'` route flag; normal routes wrap output in HTML shell
+8. **CSRF in AJAX** - All `fetch()` POST calls must include `csrf_token` parameter: `'&csrf_token=' + encodeURIComponent('<?= csrf_token() ?>')`
+9. **POST handlers in normal routes use PRG** - POST dispatch runs before HTML shell; use redirect, not render
+10. **`overflow: hidden` clips dropdowns** - Don't set `overflow: hidden` on containers with absolutely-positioned children (search dropdowns, datepickers)
 
 ### Critical: Shared $args Variable Issue
 **The root cause of many bugs in this legacy codebase is the shared `$args` variable.**

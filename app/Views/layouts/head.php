@@ -32,6 +32,9 @@
     <!-- Smart Dropdown Component - Searchable & Sortable dropdowns -->
     <link href="css/smart-dropdown.css" rel="stylesheet">
     
+    <!-- Search Box Module - Reusable search input with icon -->
+    <link href="css/search-box.css" rel="stylesheet">
+    
     <!-- jQuery - Use 3.x with 1.x migrate for compatibility -->
     <?php if ($useBootstrap5): ?>
     <script src="js/jquery-3.7.1.min.js"></script>
