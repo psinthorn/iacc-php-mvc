@@ -135,12 +135,12 @@
 
 /* Hero Header */
 .ai-schema-refresh-page .refresh-hero {
-    background: linear-gradient(135deg, #00bcd4, #0097a7);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
     padding: 30px;
     border-radius: 16px;
     margin-bottom: 25px;
-    box-shadow: 0 10px 40px rgba(0, 188, 212, 0.3);
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
 }
 .ai-schema-refresh-page .hero-content {
     display: flex;
@@ -205,7 +205,7 @@
     font-weight: 600;
     font-size: 15px;
 }
-.ai-schema-refresh-page .ai-card-header i { color: #00bcd4; margin-right: 8px; }
+.ai-schema-refresh-page .ai-card-header i { color: #667eea; margin-right: 8px; }
 .ai-schema-refresh-page .ai-card-body { padding: 20px; }
 
 /* Controls grid */
@@ -262,22 +262,22 @@
     transition: all 0.2s;
 }
 .ai-schema-refresh-page .action-btn.primary {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
 }
-.ai-schema-refresh-page .action-btn.primary:hover { box-shadow: 0 4px 12px rgba(33,150,243,0.4); }
+.ai-schema-refresh-page .action-btn.primary:hover { box-shadow: 0 4px 15px rgba(102,126,234,0.4); transform: translateY(-1px); }
 .ai-schema-refresh-page .action-btn.info {
-    background: linear-gradient(135deg, #ff9800, #f57c00);
-    color: #fff;
+    background: #f0f4ff;
+    color: #667eea;
 }
-.ai-schema-refresh-page .action-btn.info:hover { box-shadow: 0 4px 12px rgba(255,152,0,0.4); }
+.ai-schema-refresh-page .action-btn.info:hover { background: #e0e8ff; }
 .ai-schema-refresh-page .action-btn.small {
-    padding: 6px 14px;
+    padding: 8px 16px;
     font-size: 12px;
-    background: #f0f0f0;
-    color: #555;
+    background: #f0f4ff;
+    color: #667eea;
 }
-.ai-schema-refresh-page .action-btn.small:hover { background: #e0e0e0; }
+.ai-schema-refresh-page .action-btn.small:hover { background: #e0e8ff; }
 
 /* Toggle group */
 .ai-schema-refresh-page .toggle-group {
@@ -357,7 +357,7 @@
 .ai-schema-refresh-page .step-num {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #00bcd4, #0097a7);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
     border-radius: 50%;
     display: inline-flex;
@@ -376,7 +376,7 @@
     padding: 15px 18px;
     border-radius: 8px;
     font-size: 13px;
-    border-left: 4px solid #00bcd4;
+    border-left: 4px solid #667eea;
 }
 .ai-schema-refresh-page .code-block {
     background: #2d2d2d;

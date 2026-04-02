@@ -8,15 +8,29 @@
     </div>
 </div>
 
+<!-- Hero Header -->
+<div class="chat-history-hero">
+    <div class="hero-content">
+        <div class="hero-icon"><i class="fa fa-comments"></i></div>
+        <div class="hero-text">
+            <h2>AI Chat History</h2>
+            <p>Browse past conversations and review AI responses</p>
+        </div>
+    </div>
+    <div class="hero-stats">
+        <div class="hero-stat hero-action" onclick="loadSessions()">
+            <span class="hero-stat-value"><i class="fa fa-refresh"></i></span>
+            <span class="hero-stat-label">Refresh</span>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <!-- Sessions List -->
     <div class="col-md-4">
         <div class="ai-card">
             <div class="ai-card-header">
                 <i class="fa fa-list"></i> Chat Sessions
-                <button class="btn btn-xs btn-primary pull-right" onclick="loadSessions()" style="border-radius: 6px;">
-                    <i class="fa fa-refresh"></i> Refresh
-                </button>
             </div>
             <div class="ai-card-body sessions-container">
                 <div id="sessions-list">
@@ -49,6 +63,37 @@
     padding: 0 20px;
 }
 
+/* Hero Header */
+.ai-chat-history-page .chat-history-hero {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.ai-chat-history-page .hero-content { display: flex; align-items: center; gap: 20px; }
+.ai-chat-history-page .hero-icon {
+    width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0;
+}
+.ai-chat-history-page .hero-text h2 { margin: 0; font-size: 22px; font-weight: 700; }
+.ai-chat-history-page .hero-text p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+.ai-chat-history-page .hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.ai-chat-history-page .hero-stat {
+    background: rgba(255,255,255,0.15); padding: 10px 18px; border-radius: 10px;
+    text-align: center; min-width: 80px; border: 1px solid rgba(255,255,255,0.2);
+}
+.ai-chat-history-page .hero-stat-value { display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
+.ai-chat-history-page .hero-stat-label { display: block; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.ai-chat-history-page .hero-action { cursor: pointer; transition: background 0.2s; }
+.ai-chat-history-page .hero-action:hover { background: rgba(255,255,255,0.25); }
+
 /* Cards */
 .ai-chat-history-page .ai-card {
     background: #fff;
@@ -57,7 +102,9 @@
     box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     margin-bottom: 20px;
     overflow: hidden;
+    transition: box-shadow 0.2s;
 }
+.ai-chat-history-page .ai-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
 .ai-chat-history-page .ai-card-header {
     background: linear-gradient(135deg, #f8f9fa, #fff);
     border-bottom: 1px solid #eee;
@@ -138,6 +185,13 @@
 @keyframes chFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-chat-history-page .chat-history-hero { flex-direction: column; text-align: center; }
+    .ai-chat-history-page .hero-content { flex-direction: column; }
+    .ai-chat-history-page .hero-stats { justify-content: center; }
 }
 </style>
 

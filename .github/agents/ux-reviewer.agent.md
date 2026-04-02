@@ -192,6 +192,183 @@ All links and form actions **must** use `index.php?page=` prefix:
 <a href="?page=line_orders">...</a>
 ```
 
+### AI Tools Design System (Dev Tools Section)
+
+Used by **all AI admin pages** (`app/Views/ai/`). Based on the `test_crud` page skeleton.
+These pages render INSIDE the admin layout shell (not standalone), so all CSS MUST be scoped under a page-specific wrapper class.
+
+**Reference Implementation**: `tests/test-crud.php` (standalone), `app/Views/ai/test_crud_ai.php` (standalone)
+
+#### Page Structure Pattern
+```html
+<div class="ai-{page-name}-page">
+  <!-- Page header (from admin shell) -->
+  <div class="row"><div class="col-lg-12">
+    <h3 class="page-header"><i class="fa fa-icon"></i> Title <small>subtitle</small></h3>
+    <?php $currentPage = 'ai_page_name'; include __DIR__ . '/_nav.php'; ?>
+  </div></div>
+
+  <!-- Hero Header -->
+  <div class="{page}-hero">...</div>
+
+  <!-- Content Cards -->
+  <div class="ai-card">
+    <div class="ai-card-header"><i class="fa fa-icon"></i> Title</div>
+    <div class="ai-card-body">...</div>
+  </div>
+</div>
+
+<style>
+.ai-{page-name}-page { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+/* ALL CSS scoped under .ai-{page-name}-page */
+</style>
+```
+
+#### Hero Header Pattern
+Every AI page SHOULD have a hero header. Use this standard pattern:
+```css
+.ai-{page}-page .{page}-hero {
+  background: linear-gradient(135deg, #667eea, #764ba2);  /* STANDARD purple */
+  color: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+```
+**Hero sub-elements**: `.hero-content` (flex row: icon + text), `.hero-icon` (60×60px frosted glass), `.hero-text` (h2 + p), `.hero-stats` (flex row of stat boxes)
+
+**Hero gradient MUST be purple** (`#667eea → #764ba2`) for ALL AI pages. No page-specific colors.
+
+#### Card Pattern (`.ai-card`)
+```css
+.ai-{page}-page .ai-card {
+  background: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.ai-{page}-page .ai-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.ai-{page}-page .ai-card-header {
+  background: linear-gradient(135deg, #f8f9fa, #fff);
+  border-bottom: 1px solid #eee;
+  padding: 15px 20px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.ai-{page}-page .ai-card-header i { color: #667eea; margin-right: 8px; }
+.ai-{page}-page .ai-card-body { padding: 20px; }
+```
+
+#### Button Pattern (`.action-btn`)
+Use `.action-btn` with variants — do NOT use Bootstrap `.btn-primary` / `.btn-secondary` inside AI pages:
+```css
+.ai-{page}-page .action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 22px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; text-decoration: none;
+}
+.ai-{page}-page .action-btn.primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+}
+.ai-{page}-page .action-btn.primary:hover {
+  box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+  transform: translateY(-1px);
+}
+.ai-{page}-page .action-btn.secondary { background: #f0f0f0; color: #555; }
+.ai-{page}-page .action-btn.small { padding: 8px 16px; font-size: 12px; background: #f0f4ff; color: #667eea; }
+```
+
+#### Stat Card Pattern
+```css
+.ai-{page}-page .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.ai-{page}-page .stat-card {
+  background: #fff; border-radius: 12px; padding: 20px; text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-left: 4px solid #667eea; /* color varies by variant */
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.ai-{page}-page .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+```
+
+#### Status Badge Pattern
+```css
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.status-badge.success { background: #d4edda; color: #27ae60; }
+.status-badge.error   { background: #f8d7da; color: #e74c3c; }
+.status-badge.warning { background: #fff3cd; color: #856404; }
+.status-badge.info    { background: #d1ecf1; color: #3498db; }
+```
+
+#### Form Input Pattern
+```css
+.ai-{page}-page .form-group label { display: block; font-weight: 600; font-size: 13px; color: #555; margin-bottom: 6px; }
+.ai-{page}-page .form-group input,
+.ai-{page}-page .form-group select {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid #ddd; border-radius: 8px;
+  font-size: 14px; height: 44px;
+  transition: border-color 0.2s;
+}
+.ai-{page}-page .form-group input:focus,
+.ai-{page}-page .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+```
+
+#### Standard Design Tokens
+| Token | Value |
+|-------|-------|
+| Primary gradient | `linear-gradient(135deg, #667eea, #764ba2)` |
+| Card shadow (rest) | `0 2px 12px rgba(0,0,0,0.06)` |
+| Card shadow (hover) | `0 4px 20px rgba(0,0,0,0.1)` |
+| Hero shadow | `0 10px 40px rgba(102, 126, 234, 0.3)` |
+| Card border-radius | `12px` |
+| Hero border-radius | `16px` |
+| Badge border-radius | `20px` |
+| Button border-radius | `8px` |
+| Card header icon color | `#667eea` |
+| Container max-width | `1400px` |
+| Container padding | `0 20px` |
+| Standard input height | `44px` |
+| Focus ring | `0 0 0 3px rgba(102,126,234,0.1)` |
+
+#### Responsive Breakpoints (REQUIRED on every AI page)
+```css
+@media (max-width: 768px) {
+  .ai-{page}-page .{page}-hero { flex-direction: column; text-align: center; }
+  .ai-{page}-page .hero-content { flex-direction: column; }
+  .ai-{page}-page .hero-stats { justify-content: center; }
+  .ai-{page}-page .stat-cards { grid-template-columns: repeat(2, 1fr); }
+  .ai-{page}-page .form-row { flex-direction: column; gap: 0; }
+}
+```
+
+#### AI Tools Design Audit Checklist
+- [ ] Page wrapped in `.ai-{page-name}-page` as outermost class
+- [ ] `max-width: 1400px; margin: 0 auto; padding: 0 20px` on wrapper
+- [ ] ALL CSS scoped under `.ai-{page-name}-page`
+- [ ] Hero header present with PURPLE gradient (`#667eea → #764ba2`) — no page-specific colors
+- [ ] Cards use `.ai-card` + `.ai-card-header` + `.ai-card-body` — not BS3 `.panel` or BS5 `.card`
+- [ ] Card header icon color is `#667eea` (purple)
+- [ ] Buttons use `.action-btn` with `.primary` / `.secondary` / `.small` — not `.btn-primary`
+- [ ] Forms use scoped `.form-group input` with 44px height, 8px border-radius
+- [ ] Status badges use `.status-badge` pattern with 20px border-radius
+- [ ] `@media (max-width: 768px)` responsive breakpoints present
+- [ ] No `require_once dev-tools-style.php` (that injects conflicting global CSS)
+- [ ] No Bootstrap class mixing (.btn-secondary = BS5, doesn't exist in BS3)
+- [ ] Page includes `_nav.php` with correct `$currentPage` value
+- [ ] Loading spinner uses scoped `@keyframes` animation name (not generic `spin`)
+- [ ] Toggle switches have `aria-label` attribute
+
 ## Audit Checklist
 
 ### Layout Consistency
