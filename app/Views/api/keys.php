@@ -115,8 +115,9 @@ if ($activeCount < $subscription['keys_limit']):
                     </td>
                     <td>
                         <code style="font-size:0.8rem; background:#f8f9fa; padding:3px 8px; border-radius:4px;"
-                              id="secret-<?= $key['id'] ?>"><?= \App\Models\ApiKey::maskSecret($key['api_secret']) ?></code>
-                        <button class="btn btn-xs btn-link" onclick="copyToClipboard('secret-<?= $key['id'] ?>')" title="Copy">
+                              id="secret-<?= $key['id'] ?>"
+                              data-full="<?= htmlspecialchars($key['api_secret']) ?>"><?= \App\Models\ApiKey::maskSecret($key['api_secret']) ?></code>
+                        <button class="btn btn-xs btn-link" onclick="copySecret('secret-<?= $key['id'] ?>')" title="Copy full secret">
                             <i class="fa fa-copy"></i>
                         </button>
                     </td>
@@ -182,6 +183,18 @@ function copyToClipboard(elementId) {
     const el = document.getElementById(elementId);
     if (el) {
         navigator.clipboard.writeText(el.textContent).then(() => {
+            const btn = el.nextElementSibling;
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-check" style="color:green;"></i>';
+            setTimeout(() => btn.innerHTML = orig, 1500);
+        });
+    }
+}
+function copySecret(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) {
+        const fullSecret = el.getAttribute('data-full');
+        navigator.clipboard.writeText(fullSecret).then(() => {
             const btn = el.nextElementSibling;
             const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fa fa-check" style="color:green;"></i>';
