@@ -159,6 +159,10 @@ class Registration extends BaseModel
             $subscription = new Subscription();
             $subscriptionId = $subscription->createTrial($companyId);
 
+            // 4. Seed default master data (expense categories, payment methods, chart of accounts)
+            $seeder = new \App\Services\CompanySeeder($this->conn);
+            $seeder->seedAll($companyId);
+
             $this->conn->commit();
 
             return [
