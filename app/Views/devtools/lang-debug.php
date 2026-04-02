@@ -1,5 +1,5 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Language Debug Tool
  * Debug language/localization settings and API

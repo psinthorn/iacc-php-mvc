@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_level']) || $_SESSION['user_level'] < 2) {
     return;
 }
 
-require_once __DIR__ . '/../../ai/agent-tools.php';
+require_once __DIR__ . '/../../../ai/agent-tools.php';
 
 // Get tool counts
 $allTools = getAllTools();

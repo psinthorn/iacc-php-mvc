@@ -3,7 +3,7 @@
  * AI Settings View (standalone HTML page)
  * Variables: $settings, $message, $messageType
  */
-require_once __DIR__ . '/../../inc/dev-tools-style.php';
+require_once __DIR__ . '/../../../inc/dev-tools-style.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

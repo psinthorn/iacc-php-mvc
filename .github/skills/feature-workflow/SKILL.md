@@ -128,10 +128,21 @@ Location: `app/Config/routes.php`
 
 ```php
 // Route types:
-'page_name' => ['Controller', 'method'],           // Normal (auth required)
-'page_name' => ['Controller', 'method', 'public'],  // Public (no auth)
-'page_name' => ['Controller', 'method', 'standalone'], // Auth, no layout wrapper
+'page_name' => ['Controller', 'method'],              // Normal (auth required, inside admin layout)
+'page_name' => ['Controller', 'method', 'public'],     // Public (no auth)
+'page_name' => ['Controller', 'method', 'standalone'],  // Auth, own HTML shell, NOT wrapped in layout
 ```
+
+**How to choose the right type:**
+| Controller Pattern | Route Type |
+|---|---|
+| Uses `$this->render('view')` | Normal _(no flag)_ |
+| Uses `include $file; exit;` (own `<html>`) | `'standalone'` |
+| No auth required | `'public'` |
+
+**CRITICAL**: If a controller includes a view file that has its own `<html><head><body>` and calls `exit;`, the route MUST be `'standalone'`. Without it, the admin layout wraps the page, and `chdir()`/relative paths inside the view will break.
+
+**Path depth rule**: Views in `app/Views/` are 3 levels deep from project root. Use `chdir(__DIR__ . "/../../..")` for project root, `__DIR__ . '/../../../inc/'` for includes.
 
 Place routes in the appropriate section with a comment header.
 

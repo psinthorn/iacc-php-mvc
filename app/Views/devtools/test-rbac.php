@@ -1,5 +1,5 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * RBAC Test Page
  * Tests the Role-Based Access Control system

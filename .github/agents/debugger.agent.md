@@ -58,6 +58,40 @@ Query returns data from other companies because `com_id` was not in the WHERE cl
 `$_SESSION['lang']` is integer (0/1) for in-app, but `$_SESSION['landing_lang']` is string ('en'/'th') for public pages. Mixing these up causes language bugs.
 
 ### 4. XML Parse Errors
+
+### 5. Standalone Route Missing Flag ("Page Not Found" on devtools/AI pages)
+Standalone pages (own `<html>`) routed without `'standalone'` flag get wrapped inside the admin layout. The view's `chdir()` resolves to `app/` instead of project root, causing `require_once("inc/...")` to fail.
+
+**Symptoms**: "Page Not Found", `Failed opening required 'inc/sys.configs.php'`, double `<html>` tags, blank page.
+
+**How to diagnose**:
+1. Check `logs/app.log` — route dispatches twice (page + fallback to dashboard)
+2. Check route in `app/Config/routes.php` — missing `'standalone'` third parameter
+3. Verify controller method uses `include + exit;` (not `$this->render()`)
+
+**Fix**: Add `'standalone'` to the route array: `'page' => ['Controller', 'method', 'standalone']`
+
+### 6. Wrong `__DIR__` Path Depth in Views
+Views in `app/Views/` are 3 levels deep. `chdir(__DIR__ . "/../..")` goes to `app/` not project root.
+**Fix**: Use `chdir(__DIR__ . "/../../..")` and `__DIR__ . '/../../../inc/'`
+
+### 7. `require_once` No-Op Causing NULL Variables in Standalone Views
+When `index.php` already loaded `inc/sys.configs.php` via `require_once`, a standalone view's `require_once("inc/sys.configs.php")` is a **no-op** — the file is NOT re-executed. So `$config` (set in global scope by index.php) is NOT available in the controller method's local scope where the `include` runs.
+
+**Symptoms**: `DbConn->__construct(NULL)`, `No such file or directory` from mysqli, NULL parameter errors.
+
+**How to diagnose**: Check if the standalone view uses `require_once` for a file already loaded by index.php, then uses variables set by that file.
+
+**Fix**: In the controller, expose globals before including the view:
+```php
+private function includeStandalone(string $viewFile): void
+{
+    $config = $GLOBALS['config'] ?? null;
+    $db = $GLOBALS['db'] ?? null;
+    include $viewFile;
+    exit;
+}
+```
 Duplicate `</note>` closing tags or unescaped `&` in `inc/string-th.xml` / `inc/string-us.xml`.
 
 ## Request Flow

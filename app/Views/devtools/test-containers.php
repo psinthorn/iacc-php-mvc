@@ -1,5 +1,5 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Container Test Tool
  * View raw Docker container data for debugging

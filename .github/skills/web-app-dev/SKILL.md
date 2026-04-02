@@ -111,10 +111,56 @@ See [View Templates Reference](./references/view-templates.md)
 **Step 4: Register Routes** in `app/Config/routes.php`
 
 ```php
-'new_module'        => ['controller' => 'NewModuleController', 'action' => 'index'],
-'new_module_create' => ['controller' => 'NewModuleController', 'action' => 'create'],
-'new_module_edit'   => ['controller' => 'NewModuleController', 'action' => 'edit'],
-'new_module_view'   => ['controller' => 'NewModuleController', 'action' => 'view'],
+// Route types:
+'new_module'        => ['NewModuleController', 'index'],               // Normal — rendered inside admin layout
+'new_module_create' => ['NewModuleController', 'create'],              // Normal
+'new_module_store'  => ['NewModuleController', 'store'],               // POST handler (early dispatch + exit)
+'new_module_print'  => ['NewModuleController', 'print', 'standalone'], // Own HTML shell — NOT wrapped in layout
+'health'            => ['HealthController', 'index', 'public'],        // No auth required
+```
+
+**Route type rules:**
+| Type | Third Param | When to Use |
+|------|-------------|-------------|
+| Normal | _(none)_ | Controller uses `$this->render('view')` — rendered inside admin sidebar+header layout |
+| Standalone | `'standalone'` | Controller uses `include $file; exit;` — page has its own `<html><head><body>` (devtools, PDFs, AI settings) |
+| Public | `'public'` | No authentication required (health check, landing pages) |
+
+**CRITICAL**: If a controller method includes a file and calls `exit;`, the route **MUST** have `'standalone'`. Without it, the view runs inside the admin layout where `chdir()` and relative paths break.
+
+### Path Depth Rules for Views
+
+Views in `app/Views/` are **3 levels deep** from project root `/var/www/html/`:
+
+```
+/var/www/html/                          ← project root
+└── app/Views/devtools/test-crud.php    ← 3 levels deep
+└── app/Views/ai/settings.php           ← 3 levels deep
+```
+
+- `chdir()` to project root: `chdir(__DIR__ . "/../../..");` — NOT `"/../.."`
+- `__DIR__` to `inc/`: `__DIR__ . '/../../../inc/file.php'` — NOT `'/../../inc/'`
+- `__DIR__` to `ai/`: `__DIR__ . '/../../../ai/file.php'` — NOT `'/../../ai/'`
+
+### `require_once` Scoping Gotcha for Standalone Views
+
+When `index.php` already loaded `inc/sys.configs.php`, a standalone view's `require_once("inc/sys.configs.php")` is a **no-op**. Variables like `$config` exist only in the global scope, not in the controller method's scope where `include` runs.
+
+**Fix**: In the controller, expose globals before including the view:
+```php
+// In controller method:
+$config = $GLOBALS['config'] ?? null;
+include __DIR__ . '/../Views/module/standalone-view.php';
+exit;
+
+// Or use a helper:
+private function includeStandalone(string $viewFile): void
+{
+    $config = $GLOBALS['config'] ?? null;
+    $db = $GLOBALS['db'] ?? null;
+    include $viewFile;
+    exit;
+}
 ```
 
 **Step 5: Create Migration** in `database/migrations/`

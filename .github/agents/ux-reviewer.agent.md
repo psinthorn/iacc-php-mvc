@@ -237,6 +237,24 @@ All links and form actions **must** use `index.php?page=` prefix:
 - [ ] No `!important` on height/min-height in page-specific CSS
 - [ ] Placeholder text is fully visible (not clipped by small height)
 
+### Search Box Module (`css/search-box.css`)
+- [ ] Search boxes use `md-search-*` classes from the reusable module — NOT custom inline CSS
+- [ ] Container: `<div class="md-search-box">` (add `.md-search-has-btn` if submit button present)
+- [ ] Icon: `<i class="fa fa-search md-search-icon">` — NOT `.search-icon` or other ad-hoc class
+- [ ] Input: `<input type="text" class="md-search-input">` — NOT `.search-input`, `.company-search-input`
+- [ ] Button: `<button class="md-search-btn">` — NOT `.search-btn`
+- [ ] Dropdown: `<div class="md-search-results">` — NOT `.company-search-results`
+- [ ] Size variant `.md-search-sm` (36px) for inline filters, `.md-search-lg` (56px) for hero search
+- [ ] No `!important` hacks for padding, height, border, font-size on search inputs
+- [ ] No inline `<style>` blocks duplicating search box CSS that's already in the module
+
+### Bootstrap 3 Specificity Override Pattern
+When Bootstrap 3's `input[type="text"]` (specificity 0,0,1,1) overrides custom classes:
+- **DO**: Use `input[type="text"].my-class` (specificity 0,0,2,1) to beat Bootstrap
+- **DO**: Set `box-sizing: border-box` on inputs with custom padding/height
+- **DO NOT**: Use `!important` on padding, height, or border to fight Bootstrap
+- **DO NOT**: Use single-class selectors like `.my-input` that get overridden
+
 ### Tables
 - [ ] Wrapped in `<div class="table-responsive">`
 - [ ] Using `table table-striped table-hover`
@@ -264,6 +282,14 @@ All links and form actions **must** use `index.php?page=` prefix:
 - [ ] All variables used in view are passed by the controller's `render()` call
 - [ ] Variable names match between controller and view
 - [ ] No undefined variable warnings (`$var ?? default` pattern for optional vars)
+
+### Route Type Flags (`app/Config/routes.php`)
+- [ ] Controllers using `$this->render()` → route has NO third parameter (dispatched inside admin HTML shell)
+- [ ] Controllers using `include` + `exit;` (own HTML/head/body) → route MUST have `'standalone'` as third parameter
+- [ ] Public pages (no auth required) → route MUST have `'public'` as third parameter
+- [ ] Missing `'standalone'` on standalone pages causes: view `chdir()` breaks relative paths, nested `<html>` tags, and "Page Not Found" or fatal errors
+
+**Quick check**: If a controller method ends with `include $viewFile; exit;` → the route MUST be `['Controller', 'method', 'standalone']`.
 
 ## Output Format
 

@@ -85,7 +85,7 @@ return [
     'voc_make'      => ['VoucherController', 'make'],   // legacy alias
     'voc_view'      => ['VoucherController', 'view'],   // legacy alias
     'voucher_store' => ['VoucherController', 'store'],
-    'vou_print'     => ['VoucherController', 'print'],
+    'vou_print'     => ['VoucherController', 'print', 'standalone'],
 
     // Delivery (Phase 3E)
     'deliv_list'    => ['DeliveryController', 'index'],
@@ -101,7 +101,7 @@ return [
     'rep_make'      => ['ReceiptController', 'make'],   // legacy alias
     'rep_view'      => ['ReceiptController', 'view'],   // legacy alias
     'receipt_store' => ['ReceiptController', 'store'],
-    'rep_print'     => ['ReceiptController', 'print'],
+    'rep_print'     => ['ReceiptController', 'print', 'standalone'],
 
     // Billing (Phase 3E)
     'billing'       => ['BillingController', 'index'],
@@ -136,7 +136,7 @@ return [
     'account_store'     => ['UserAccountController', 'store'],
 
     // ========== Phase 6: Admin & Dev Tools (MVC) ==========
-    'monitoring'            => ['DevToolsController', 'monitoring'],
+    'monitoring'            => ['DevToolsController', 'monitoring', 'standalone'],
     'containers'            => ['DevToolsController', 'containers'],
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
@@ -155,19 +155,19 @@ return [
     'ai_schema_refresh'      => ['AiAdminController', 'schemaRefresh'],
 
     // ========== Phase 5D: AI Core (MVC) ==========
-    'ai_settings'            => ['AiSettingsController', 'index'],
-    'ai_chat'                => ['AiChatController', 'index'],
+    'ai_settings'            => ['AiSettingsController', 'index', 'standalone'],
+    'ai_chat'                => ['AiChatController', 'index', 'standalone'],
 
-    // Developer Tools (Admin Only)
-    'test_crud'              => ['DevToolsController', 'testCrud'],
-    'test_crud_ai'           => ['DevToolsController', 'testCrudAi'],
-    'test_rbac'              => ['DevToolsController', 'testRbac'],
+    // Developer Tools (Admin Only) — all standalone (own HTML shell)
+    'test_crud'              => ['DevToolsController', 'testCrud', 'standalone'],
+    'test_crud_ai'           => ['DevToolsController', 'testCrudAi', 'standalone'],
+    'test_rbac'              => ['DevToolsController', 'testRbac', 'standalone'],
     'ai_documentation'       => ['AiAdminController', 'documentation'],
-    'debug_session'          => ['DevToolsController', 'debugSession'],
-    'debug_php'              => ['DevToolsController', 'debugPhp'],
-    'test_containers'        => ['DevToolsController', 'testContainers'],
-    'api_lang_debug'         => ['DevToolsController', 'langDebug'],
-    'dev_roadmap'            => ['DevToolsController', 'roadmap'],
+    'debug_session'          => ['DevToolsController', 'debugSession', 'standalone'],
+    'debug_php'              => ['DevToolsController', 'debugPhp', 'standalone'],
+    'test_containers'        => ['DevToolsController', 'testContainers', 'standalone'],
+    'api_lang_debug'         => ['DevToolsController', 'langDebug', 'standalone'],
+    'dev_roadmap'            => ['DevToolsController', 'roadmap', 'standalone'],
     
     // User Account
     'help'                   => ['HelpController', 'index'],

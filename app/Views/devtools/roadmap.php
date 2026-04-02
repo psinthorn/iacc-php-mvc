@@ -1,5 +1,5 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Developer Roadmap Page
  * Displays the PROJECT_ROADMAP_2026.md in a styled format

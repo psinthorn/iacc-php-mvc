@@ -118,6 +118,15 @@ class BrandController extends BaseController
 'brand_delete' => ['BrandController', 'delete'],
 ```
 
+**Route type flags** (third array element):
+- `'standalone'` — Page has own `<html><head><body>` and calls `exit;` (devtools, PDFs, AI settings)
+- `'public'` — No authentication required
+- _(none)_ — Normal page rendered inside admin layout via `$this->render()`
+
+**CRITICAL**: Legacy standalone pages that use `chdir()` + `require_once("inc/...")` MUST have their route flagged as `'standalone'`. Without it, the view runs inside the admin HTML shell and relative paths break.
+
+**Path depth after migration**: Views move from root (`legacy/test-crud.php`) to 3 levels deep (`app/Views/devtools/test-crud.php`). Update `chdir()` from `__DIR__` to `__DIR__ . "/../../.."` (3 levels to reach project root).
+
 ### Step 6: Keep Legacy Working (Transition Period)
 
 During migration, both old and new code may coexist:

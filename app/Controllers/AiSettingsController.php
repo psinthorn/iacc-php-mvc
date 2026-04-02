@@ -58,6 +58,8 @@ class AiSettingsController extends BaseController
         $settings = \AIProvider::getSettings();
 
         // Render standalone view (includes own HTML/head/body)
+        // Expose $config so require_once("inc/sys.configs.php") no-op doesn't break DbConn
+        $config = $GLOBALS['config'] ?? null;
         $viewFile = __DIR__ . '/../Views/ai/settings.php';
         include $viewFile;
         exit;

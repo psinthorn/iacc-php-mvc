@@ -1,5 +1,5 @@
 <?php
-chdir(__DIR__ . "/../.."); // Set working directory to project root
+chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * AI-Powered CRUD Testing Tool
  * Uses AI (OpenAI/Ollama) to generate test scenarios, analyze failures, and interactive testing
