@@ -1,3 +1,4 @@
+<div class="ai-action-log-page">
 <div class="row">
     <div class="col-lg-12">
         <h3 class="page-header">
@@ -10,20 +11,20 @@
 
 <!-- Stats Row -->
 <div class="row" id="stats-row">
-    <div class="col-md-2"><div class="panel panel-primary"><div class="panel-heading text-center">Total Actions</div><div class="panel-body text-center"><h2 id="stat-total">-</h2></div></div></div>
-    <div class="col-md-2"><div class="panel panel-success"><div class="panel-heading text-center">Executed</div><div class="panel-body text-center"><h2 id="stat-executed">-</h2></div></div></div>
-    <div class="col-md-2"><div class="panel panel-danger"><div class="panel-heading text-center">Failed</div><div class="panel-body text-center"><h2 id="stat-failed">-</h2></div></div></div>
-    <div class="col-md-2"><div class="panel panel-warning"><div class="panel-heading text-center">Pending</div><div class="panel-body text-center"><h2 id="stat-pending">-</h2></div></div></div>
-    <div class="col-md-2"><div class="panel panel-info"><div class="panel-heading text-center">Unique Tools</div><div class="panel-body text-center"><h2 id="stat-tools">-</h2></div></div></div>
-    <div class="col-md-2"><div class="panel panel-default"><div class="panel-heading text-center">Sessions</div><div class="panel-body text-center"><h2 id="stat-sessions">-</h2></div></div></div>
+    <div class="col-md-2"><div class="stat-card stat-primary"><span class="stat-value" id="stat-total">-</span><span class="stat-label">Total Actions</span></div></div>
+    <div class="col-md-2"><div class="stat-card stat-success"><span class="stat-value" id="stat-executed">-</span><span class="stat-label">Executed</span></div></div>
+    <div class="col-md-2"><div class="stat-card stat-danger"><span class="stat-value" id="stat-failed">-</span><span class="stat-label">Failed</span></div></div>
+    <div class="col-md-2"><div class="stat-card stat-warning"><span class="stat-value" id="stat-pending">-</span><span class="stat-label">Pending</span></div></div>
+    <div class="col-md-2"><div class="stat-card stat-info"><span class="stat-value" id="stat-tools">-</span><span class="stat-label">Unique Tools</span></div></div>
+    <div class="col-md-2"><div class="stat-card stat-default"><span class="stat-value" id="stat-sessions">-</span><span class="stat-label">Sessions</span></div></div>
 </div>
 
 <!-- Filters -->
 <div class="row">
     <div class="col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-filter"></i> Filters</div>
-            <div class="panel-body">
+        <div class="ai-card">
+            <div class="ai-card-header"><i class="fa fa-filter"></i> Filters</div>
+            <div class="ai-card-body">
                 <div class="row">
                     <div class="col-md-3">
                         <label>Status</label>
@@ -55,9 +56,9 @@
 <!-- Logs Table -->
 <div class="row">
     <div class="col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-heading"><i class="fa fa-list"></i> Action Log <span id="log-info" class="text-muted"></span></div>
-            <div class="panel-body">
+        <div class="ai-card">
+            <div class="ai-card-header"><i class="fa fa-list"></i> Action Log <span id="log-info" class="text-muted"></span></div>
+            <div class="ai-card-body">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover" id="logs-table">
                         <thead>
@@ -73,6 +74,7 @@
         </div>
     </div>
 </div>
+</div><!-- /.ai-action-log-page -->
 
 <!-- Detail Modal -->
 <div class="modal fade" id="detailModal" tabindex="-1">
@@ -85,15 +87,131 @@
 </div>
 
 <style>
-.status-badge { padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; }
-.status-executed { background: #4CAF50; color: white; }
-.status-failed { background: #f44336; color: white; }
-.status-pending { background: #ff9800; color: white; }
-.status-confirmed { background: #2196F3; color: white; }
-.status-cancelled { background: #9e9e9e; color: white; }
-.json-preview { max-width: 200px; max-height: 50px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; color: #666; cursor: pointer; }
-.json-preview:hover { background: #f5f5f5; }
-#stats-row h2 { margin: 0; }
+/* Stat cards */
+.ai-action-log-page .stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 15px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    border-left: 4px solid #ccc;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.ai-action-log-page .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.ai-action-log-page .stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.ai-action-log-page .stat-label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.ai-action-log-page .stat-primary { border-left-color: #667eea; }
+.ai-action-log-page .stat-primary .stat-value { color: #667eea; }
+.ai-action-log-page .stat-success { border-left-color: #27ae60; }
+.ai-action-log-page .stat-success .stat-value { color: #27ae60; }
+.ai-action-log-page .stat-danger { border-left-color: #e74c3c; }
+.ai-action-log-page .stat-danger .stat-value { color: #e74c3c; }
+.ai-action-log-page .stat-warning { border-left-color: #f39c12; }
+.ai-action-log-page .stat-warning .stat-value { color: #f39c12; }
+.ai-action-log-page .stat-info { border-left-color: #3498db; }
+.ai-action-log-page .stat-info .stat-value { color: #3498db; }
+.ai-action-log-page .stat-default { border-left-color: #95a5a6; }
+.ai-action-log-page .stat-default .stat-value { color: #95a5a6; }
+
+/* Cards */
+.ai-action-log-page .ai-card {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.ai-action-log-page .ai-card-header {
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+    font-weight: 600;
+    font-size: 15px;
+}
+.ai-action-log-page .ai-card-header i { color: #667eea; margin-right: 8px; }
+.ai-action-log-page .ai-card-body { padding: 20px; }
+
+/* Status badges */
+.ai-action-log-page .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.ai-action-log-page .status-executed { background: #d4edda; color: #155724; }
+.ai-action-log-page .status-failed { background: #f8d7da; color: #721c24; }
+.ai-action-log-page .status-pending { background: #fff3cd; color: #856404; }
+.ai-action-log-page .status-confirmed { background: #cce5ff; color: #004085; }
+.ai-action-log-page .status-cancelled { background: #e2e3e5; color: #383d41; }
+
+/* JSON preview */
+.ai-action-log-page .json-preview {
+    max-width: 200px;
+    max-height: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+    color: #666;
+    cursor: pointer;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.ai-action-log-page .json-preview:hover { background: #e9ecef; }
+
+/* Table */
+.ai-action-log-page .table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+}
+.ai-action-log-page .table tbody tr {
+    animation: alFadeIn 0.3s ease;
+}
+
+/* Modal */
+#detailModal .modal-content { border-radius: 12px; overflow: hidden; }
+#detailModal .modal-header { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; }
+#detailModal .modal-header .close { color: #fff; opacity: 0.8; }
+#detailModal .modal-body pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+/* Pagination */
+.ai-action-log-page .pagination > li > a { border-radius: 8px; margin: 0 2px; }
+.ai-action-log-page .pagination > .active > a { background: #667eea; border-color: #667eea; }
+
+@keyframes alFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 
 <script>

@@ -1,3 +1,4 @@
+<div class="ai-chat-history-page">
 <div class="row">
     <div class="col-lg-12">
         <h3 class="page-header">
@@ -10,14 +11,14 @@
 <div class="row">
     <!-- Sessions List -->
     <div class="col-md-4">
-        <div class="panel panel-default">
-            <div class="panel-heading">
+        <div class="ai-card">
+            <div class="ai-card-header">
                 <i class="fa fa-list"></i> Chat Sessions
-                <button class="btn btn-xs btn-primary pull-right" onclick="loadSessions()">
+                <button class="btn btn-xs btn-primary pull-right" onclick="loadSessions()" style="border-radius: 6px;">
                     <i class="fa fa-refresh"></i> Refresh
                 </button>
             </div>
-            <div class="panel-body" style="max-height: 600px; overflow-y: auto;">
+            <div class="ai-card-body sessions-container">
                 <div id="sessions-list">
                     <p class="text-muted">Loading sessions...</p>
                 </div>
@@ -27,27 +28,110 @@
     
     <!-- Messages View -->
     <div class="col-md-8">
-        <div class="panel panel-default">
-            <div class="panel-heading">
+        <div class="ai-card">
+            <div class="ai-card-header">
                 <i class="fa fa-comments-o"></i> Conversation
                 <span id="session-info" class="text-muted"></span>
             </div>
-            <div class="panel-body" id="messages-container" style="max-height: 600px; overflow-y: auto;">
+            <div class="ai-card-body messages-container" id="messages-container">
                 <p class="text-muted text-center">Select a session to view messages</p>
             </div>
         </div>
     </div>
 </div>
+</div><!-- /.ai-chat-history-page -->
 
 <style>
-.session-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
-.session-item:hover { background: #f5f5f5; }
-.session-item.active { background: #e3f2fd; border-left: 3px solid #2196F3; }
-.message-bubble { padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; max-width: 80%; }
-.message-user { background: #e3f2fd; margin-left: auto; text-align: right; }
-.message-assistant { background: #f5f5f5; }
-.message-meta { font-size: 11px; color: #999; margin-top: 5px; }
-.tool-calls { background: #fff3e0; border-left: 3px solid #ff9800; padding: 5px 10px; margin-top: 5px; font-size: 12px; }
+/* Cards */
+.ai-chat-history-page .ai-card {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.ai-chat-history-page .ai-card-header {
+    background: linear-gradient(135deg, #f8f9fa, #fff);
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+    font-weight: 600;
+    font-size: 15px;
+}
+.ai-chat-history-page .ai-card-header i { color: #667eea; margin-right: 8px; }
+.ai-chat-history-page .ai-card-body { padding: 20px; }
+
+/* Sessions list */
+.ai-chat-history-page .sessions-container { max-height: 600px; overflow-y: auto; }
+.ai-chat-history-page .session-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ai-chat-history-page .session-item:hover { background: #f0f4ff; }
+.ai-chat-history-page .session-item.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: transparent;
+}
+.ai-chat-history-page .session-item.active .text-muted { color: rgba(255,255,255,0.7) !important; }
+.ai-chat-history-page .session-item .session-info { flex: 1; }
+.ai-chat-history-page .session-item .btn-danger {
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: 6px;
+}
+.ai-chat-history-page .session-item:hover .btn-danger { opacity: 1; }
+.ai-chat-history-page .session-item.active .btn-danger { opacity: 1; background: rgba(255,255,255,0.2); border-color: transparent; color: #fff; }
+
+/* Messages */
+.ai-chat-history-page .messages-container { max-height: 600px; overflow-y: auto; }
+.ai-chat-history-page .message-bubble {
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    max-width: 80%;
+    animation: chFadeIn 0.3s ease;
+    line-height: 1.5;
+}
+.ai-chat-history-page .message-user {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+    border-bottom-right-radius: 4px;
+}
+.ai-chat-history-page .message-assistant {
+    background: #f0f2f5;
+    color: #333;
+    border-bottom-left-radius: 4px;
+}
+.ai-chat-history-page .message-meta {
+    font-size: 11px;
+    color: #999;
+    margin-top: 6px;
+}
+.ai-chat-history-page .message-user .message-meta { color: rgba(255,255,255,0.7); }
+.ai-chat-history-page .tool-calls {
+    background: #fff3e0;
+    border-left: 3px solid #ff9800;
+    padding: 8px 12px;
+    margin-top: 8px;
+    font-size: 12px;
+    border-radius: 0 6px 6px 0;
+}
+.ai-chat-history-page .message-user .tool-calls { border-left-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.15); }
+
+@keyframes chFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 
 <script>
@@ -64,8 +148,10 @@ function renderSessions(sessions) {
     if (sessions.length === 0) { container.innerHTML = '<p class="text-muted">No chat sessions found</p>'; return; }
     container.innerHTML = sessions.map(s => `
         <div class="session-item ${s.session_id === currentSessionId ? 'active' : ''}" onclick="loadMessages('${s.session_id}')">
-            <div><strong>${s.session_id.substring(0, 8)}...</strong></div>
-            <div class="text-muted" style="font-size: 12px;">${s.message_count} messages • ${new Date(s.last_message).toLocaleString()}</div>
+            <div class="session-info">
+                <div><strong>${s.session_id.substring(0, 8)}...</strong></div>
+                <div class="text-muted" style="font-size: 12px;">${s.message_count} messages &bull; ${new Date(s.last_message).toLocaleString()}</div>
+            </div>
             <button class="btn btn-xs btn-danger" onclick="event.stopPropagation(); deleteSession('${s.session_id}')"><i class="fa fa-trash"></i></button>
         </div>
     `).join('');
