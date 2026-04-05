@@ -14,6 +14,7 @@ class Expense extends BaseModel
 {
     protected string $table = 'expenses';
     protected bool $useCompanyFilter = true;
+    protected string $companyColumn = 'com_id';
 
     /**
      * Generate next expense number: EXP-YYYYMM-XXXX

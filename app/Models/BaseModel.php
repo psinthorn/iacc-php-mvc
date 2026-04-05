@@ -39,6 +39,9 @@ class BaseModel
     /** @var bool Whether this table uses company_id filtering */
     protected bool $useCompanyFilter = true;
 
+    /** @var string The company column name in this table */
+    protected string $companyColumn = 'company_id';
+
     public function __construct()
     {
         global $db;
@@ -184,11 +187,10 @@ class BaseModel
      */
     public function create(array $data)
     {
-        // Auto-add company_id if applicable
-        if ($this->useCompanyFilter && !isset($data['company_id'])) {
+        // Auto-add company column if applicable
+        if ($this->useCompanyFilter && !isset($data[$this->companyColumn])) {
             $companyId = intval($_SESSION['com_id'] ?? 0);
-            // Use NULL for company_id=0 to satisfy FK constraints
-            $data['company_id'] = $companyId > 0 ? $companyId : null;
+            $data[$this->companyColumn] = $companyId > 0 ? $companyId : null;
         }
 
         return $this->hard->insertSafe($this->table, $data);
@@ -209,7 +211,7 @@ class BaseModel
         if ($this->useCompanyFilter) {
             $companyId = intval($_SESSION['com_id'] ?? 0);
             if ($companyId > 0) {
-                $where['company_id'] = $companyId;
+                $where[$this->companyColumn] = $companyId;
             }
         }
 
@@ -230,7 +232,7 @@ class BaseModel
         if ($this->useCompanyFilter) {
             $companyId = intval($_SESSION['com_id'] ?? 0);
             if ($companyId > 0) {
-                $where['company_id'] = $companyId;
+                $where[$this->companyColumn] = $companyId;
             }
         }
 
