@@ -46,22 +46,20 @@ $errorMessages = [
 }
 </style>
 
-<div style="max-width:1200px; margin:0 auto; padding:20px;">
+<div class="master-data-container">
 
     <!-- Header -->
-    <div style="background:linear-gradient(135deg, #0d9488, #0891b2); border-radius:16px; padding:28px 32px; margin-bottom:24px; color:white;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-                <h2 style="margin:0; font-size:24px; font-weight:700;">
-                    📒 <?= $isEdit ? ($isThai ? 'แก้ไขใบสำคัญ' : 'Edit Journal Voucher') : ($isThai ? 'สร้างใบสำคัญใหม่' : 'New Journal Voucher') ?>
-                </h2>
-                <p style="margin:4px 0 0; opacity:0.9; font-size:14px;">
-                    <?= htmlspecialchars($jvNumber) ?>
-                </p>
+    <div class="master-data-header" data-theme="teal">
+        <div class="header-content">
+            <div class="header-text">
+                <h2>📒 <?= $isEdit ? ($isThai ? 'แก้ไขใบสำคัญ' : 'Edit Journal Voucher') : ($isThai ? 'สร้างใบสำคัญใหม่' : 'New Journal Voucher') ?></h2>
+                <p><?= htmlspecialchars($jvNumber) ?></p>
             </div>
-            <a href="index.php?page=journal_list" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px;">
-                ← <?= $isThai ? 'กลับรายการ' : 'Back to List' ?>
-            </a>
+            <div class="header-actions">
+                <a href="index.php?page=journal_list" class="btn-header btn-header-outline">
+                    ← <?= $isThai ? 'กลับรายการ' : 'Back to List' ?>
+                </a>
+            </div>
         </div>
     </div>
 

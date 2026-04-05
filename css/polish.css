@@ -142,7 +142,7 @@ a:visited {
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
   color: var(--primary-dark);
 }
 
@@ -241,7 +241,7 @@ pre code {
 /* ========== Abbreviation ========== */
 abbr {
   cursor: help;
-  text-decoration: underline dotted;
+  text-decoration: none;
   border-bottom: 1px dotted var(--gray-medium);
 }
 
@@ -268,7 +268,7 @@ del {
 }
 
 ins {
-  text-decoration: underline;
+  text-decoration: none;
   color: var(--success-color);
   background-color: rgba(40, 167, 69, 0.1);
 }
@@ -473,7 +473,7 @@ p, ul, ol, dl, pre, blockquote {
   }
 
   a {
-    text-decoration: underline;
+    text-decoration: none;
   }
 
   button, .btn {

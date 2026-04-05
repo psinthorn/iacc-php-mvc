@@ -46,24 +46,20 @@ foreach ($accounts as $acc) {
 .coa-row:hover { background:#f8fafc; }
 </style>
 
-<div style="max-width:1200px; margin:0 auto; padding:20px;">
+<div class="master-data-container">
 
     <!-- Header -->
-    <div style="background:linear-gradient(135deg, #0d9488, #0891b2); border-radius:16px; padding:28px 32px; margin-bottom:24px; color:white;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-                <h2 style="margin:0; font-size:24px; font-weight:700;">
-                    📊 <?= $isThai ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts' ?>
-                </h2>
-                <p style="margin:4px 0 0; opacity:0.9; font-size:14px;">
-                    <?= $isThai ? 'จัดการรหัสบัญชีสำหรับบันทึกรายการ' : 'Manage account codes for journal entries' ?>
-                </p>
+    <div class="master-data-header" data-theme="teal">
+        <div class="header-content">
+            <div class="header-text">
+                <h2>📊 <?= $isThai ? 'ผังบัญชี (Chart of Accounts)' : 'Chart of Accounts' ?></h2>
+                <p><?= $isThai ? 'จัดการรหัสบัญชีสำหรับบันทึกรายการ' : 'Manage account codes for journal entries' ?></p>
             </div>
-            <div style="display:flex; gap:10px;">
-                <a href="index.php?page=journal_list" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px;">
+            <div class="header-actions">
+                <a href="index.php?page=journal_list" class="btn-header btn-header-outline">
                     ← <?= $isThai ? 'สมุดรายวัน' : 'Journal Vouchers' ?>
                 </a>
-                <button onclick="openModal()" style="padding:10px 20px; background:white; color:#0d9488; border:none; border-radius:10px; font-weight:600; font-size:14px; cursor:pointer;">
+                <button onclick="openModal()" class="btn-header btn-header-primary">
                     ＋ <?= $isThai ? 'เพิ่มบัญชี' : 'Add Account' ?>
                 </button>
             </div>

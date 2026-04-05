@@ -119,7 +119,7 @@ a {
 
 a:hover {
   color: var(--primary-dark);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 a:active {

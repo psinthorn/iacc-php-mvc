@@ -103,7 +103,7 @@ $current_year = date('Y');
 }
 
 .footer-developer a:hover {
-    text-decoration: underline;
+    opacity: 0.8;
 }
 
 .footer-links {

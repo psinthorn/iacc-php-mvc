@@ -459,7 +459,7 @@ body {
 
 .high-contrast a {
   color: var(--primary-dark);
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: var(--font-weight-bold);
 }
 

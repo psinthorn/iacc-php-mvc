@@ -27,7 +27,7 @@
 
   /* ========== Link Display ========== */
   a, a:visited {
-    text-decoration: underline;
+    text-decoration: none;
     color: #000;
   }
 

@@ -343,7 +343,7 @@ a.link-gradient-underline:hover::after {
 }
 
 .text-decoration-hover:hover {
-  text-decoration: underline;
+  text-decoration: none;
   border-bottom-color: var(--primary-color);
 }
 

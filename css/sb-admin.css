@@ -2,6 +2,10 @@
 
 /* ------------------------------- */
 
+a, a:hover, a:focus, a:active {
+    text-decoration: none !important;
+}
+
  body {
     background-color: #f8f8f8;
 }

@@ -129,8 +129,8 @@ docker inspect --format='{{.State.Health.Status}}' iacc_php
 7. **AJAX endpoints must be standalone** - JSON-returning endpoints need `'standalone'` route flag; normal routes wrap output in HTML shell
 8. **CSRF in AJAX** - All `fetch()` POST calls must include `csrf_token` parameter: `'&csrf_token=' + encodeURIComponent('<?= csrf_token() ?>')`
 9. **POST handlers in normal routes use PRG** - POST dispatch runs before HTML shell; use redirect, not render
-10. **`overflow: hidden` clips dropdowns** - Don't set `overflow: hidden` on containers with absolutely-positioned children (search dropdowns, datepickers)
-
+10. **`overflow: hidden` clips dropdowns** - Don't set `overflow: hidden` on containers with absolutely-positioned children (search dropdowns, datepickers)11. **No underline on links** — Global rule in `sb-admin.css` removes `text-decoration` on all links (normal, hover, focus). Use color/opacity changes for hover cues, never underline.
+12. **Page headers use gradient style** — `.master-data-header` in `master-data.css` uses purple gradient with ALL children forced white via `!important`. Use `data-theme` attribute for module-specific colors: `teal` (journal/accounting), `blue`, `emerald`, `rose`, `amber`. Button classes `.btn-header-primary` (translucent white) and `.btn-header-outline` (subtle white border) are defined globally — do NOT duplicate in views or use inline styles on header elements.
 ### Critical: Shared $args Variable Issue
 **The root cause of many bugs in this legacy codebase is the shared `$args` variable.**
 

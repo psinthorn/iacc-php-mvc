@@ -288,7 +288,7 @@
 }
 
 .panel-title > a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* ========== Panel Body ========== */

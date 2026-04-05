@@ -174,6 +174,21 @@ This ensures the base sizing applies everywhere even if individual views forget 
 - Never invent new height values (only 36px, 44px, 52px)
 - Never set `height` without also setting matching `min-height`
 - Never use `px` padding without `box-sizing: border-box`
+- Never add `text-decoration: underline` on links — global rule in `sb-admin.css` removes all underlines
+
+## Link Styling Convention
+
+All links across the project have **no underline** on any state (normal, hover, focus). This is enforced globally in `css/sb-admin.css`:
+
+```css
+a, a:hover, a:focus {
+    text-decoration: none;
+}
+```
+
+- Do NOT add `text-decoration: underline` or `text-decoration: underline on hover` to any link
+- Use color change or opacity on hover instead of underline for interactivity cues
+- This applies to all views: admin, public, forms, tables, headers
 
 ## Same-Row Alignment Checklist
 
@@ -198,6 +213,53 @@ When converting standalone pages to normal routes (rendered inside admin layout)
 /* GOOD — scoped to page only */
 .ai-settings-page .form-group input { height: 44px; }
 .ai-settings-page .card { border: 2px solid #e0e0e0; }
+```
+
+## Page Header Convention
+
+All `.master-data-header` elements use a **gradient background** with forced white text, defined globally in `master-data.css`:
+
+- **Default**: Purple gradient (`#4f46e5` → `#4338ca`)
+- **Module themes**: Use `data-theme` attribute — `teal`, `blue`, `emerald`, `rose`, `amber`
+- **Text**: ALL children forced white via `!important` selector list
+- **Buttons**: `.btn-header-primary` (translucent white bg) and `.btn-header-outline` (subtle white border)
+- **Layout**: `.header-content`, `.header-text`, `.header-actions` are all defined globally
+
+```html
+<!-- Default purple header -->
+<div class="master-data-header">
+  <div class="header-content">
+    <div class="header-text">
+      <h2><i class="fa fa-icon"></i> Title</h2>
+      <p>Subtitle text</p>
+    </div>
+    <div class="header-actions">
+      <a href="#" class="btn-header btn-header-outline"><i class="fa fa-arrow-left"></i> Back</a>
+      <a href="#" class="btn-header btn-header-primary"><i class="fa fa-plus"></i> Create</a>
+    </div>
+  </div>
+</div>
+
+<!-- Module-specific teal header (e.g., Journal/Accounting) -->
+<div class="master-data-header" data-theme="teal">
+  ...same structure...
+</div>
+```
+
+### Available Themes
+| Theme | Gradient | Module |
+|-------|----------|--------|
+| (default) | Purple `#4f46e5` → `#4338ca` | Expense, generic |
+| `teal` | `#0d9488` → `#0891b2` | Journal, Accounting |
+| `blue` | `#2563eb` → `#1d4ed8` | Tax, Reports |
+| `emerald` | `#059669` → `#047857` | (available) |
+| `rose` | `#e11d48` → `#be123c` | (available) |
+| `amber` | `#d97706` → `#b45309` | (available) |
+
+### DON'T
+- Never inline `background:linear-gradient(...)` or `color:white` on header elements
+- Never duplicate `.btn-header` styles in view `<style>` blocks
+- Never use `style="..."` on buttons inside the header — use classes only
 ```
 
 ### `overflow: hidden` Clips Dropdowns

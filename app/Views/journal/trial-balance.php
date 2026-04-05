@@ -38,24 +38,20 @@ $isBalanced = abs($grandDebit - $grandCredit) < 0.01;
 }
 </style>
 
-<div style="max-width:1000px; margin:0 auto; padding:20px;">
+<div class="master-data-container">
 
     <!-- Header -->
-    <div class="no-print" style="background:linear-gradient(135deg, #0d9488, #0891b2); border-radius:16px; padding:28px 32px; margin-bottom:24px; color:white;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-                <h2 style="margin:0; font-size:24px; font-weight:700;">
-                    📋 <?= $isThai ? 'งบทดลอง (Trial Balance)' : 'Trial Balance' ?>
-                </h2>
-                <p style="margin:4px 0 0; opacity:0.9; font-size:14px;">
-                    <?= $isThai ? 'ยอดรวม Debit/Credit จากใบสำคัญที่ผ่านรายการแล้ว' : 'Debit/Credit totals from posted journal vouchers' ?>
-                </p>
+    <div class="master-data-header no-print" data-theme="teal">
+        <div class="header-content">
+            <div class="header-text">
+                <h2>📋 <?= $isThai ? 'งบทดลอง (Trial Balance)' : 'Trial Balance' ?></h2>
+                <p><?= $isThai ? 'ยอดรวม Debit/Credit จากใบสำคัญที่ผ่านรายการแล้ว' : 'Debit/Credit totals from posted journal vouchers' ?></p>
             </div>
-            <div style="display:flex; gap:10px;">
-                <a href="index.php?page=journal_list" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px;">
+            <div class="header-actions">
+                <a href="index.php?page=journal_list" class="btn-header btn-header-outline">
                     ← <?= $isThai ? 'สมุดรายวัน' : 'Journal Vouchers' ?>
                 </a>
-                <button onclick="window.print()" style="padding:10px 20px; background:white; color:#0d9488; border:none; border-radius:10px; font-weight:600; font-size:14px; cursor:pointer;">
+                <button onclick="window.print()" class="btn-header btn-header-primary">
                     🖨️ <?= $isThai ? 'พิมพ์' : 'Print' ?>
                 </button>
             </div>

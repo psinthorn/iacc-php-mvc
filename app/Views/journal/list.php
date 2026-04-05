@@ -33,27 +33,23 @@ $typeIcons = [
 
 <link rel="stylesheet" href="css/master-data.css">
 
-<div style="max-width:1400px; margin:0 auto; padding:20px;">
+<div class="master-data-container">
 
     <!-- Header -->
-    <div style="background:linear-gradient(135deg, #0d9488, #0891b2); border-radius:16px; padding:28px 32px; margin-bottom:24px; color:white;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-                <h2 style="margin:0; font-size:24px; font-weight:700;">
-                    📒 <?= $isThai ? 'สมุดรายวัน' : 'Journal Vouchers' ?>
-                </h2>
-                <p style="margin:4px 0 0; opacity:0.9; font-size:14px;">
-                    <?= $isThai ? 'บันทึกรายการบัญชีแบบ Debit/Credit' : 'Double-entry bookkeeping journal entries' ?>
-                </p>
+    <div class="master-data-header" data-theme="teal">
+        <div class="header-content">
+            <div class="header-text">
+                <h2>📒 <?= $isThai ? 'สมุดรายวัน' : 'Journal Vouchers' ?></h2>
+                <p><?= $isThai ? 'บันทึกรายการบัญชีแบบ Debit/Credit' : 'Double-entry bookkeeping journal entries' ?></p>
             </div>
-            <div style="display:flex; gap:10px;">
-                <a href="index.php?page=journal_accounts" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px; backdrop-filter:blur(10px);">
+            <div class="header-actions">
+                <a href="index.php?page=journal_accounts" class="btn-header btn-header-outline">
                     📊 <?= $isThai ? 'ผังบัญชี' : 'Chart of Accounts' ?>
                 </a>
-                <a href="index.php?page=journal_trial_balance" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px; backdrop-filter:blur(10px);">
+                <a href="index.php?page=journal_trial_balance" class="btn-header btn-header-outline">
                     📋 <?= $isThai ? 'งบทดลอง' : 'Trial Balance' ?>
                 </a>
-                <a href="index.php?page=journal_form" style="padding:10px 20px; background:white; color:#0d9488; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px;">
+                <a href="index.php?page=journal_form" class="btn-header btn-header-primary">
                     ＋ <?= $isThai ? 'สร้างใบสำคัญ' : 'New Journal Voucher' ?>
                 </a>
             </div>

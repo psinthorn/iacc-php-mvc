@@ -57,18 +57,29 @@
     align-items: center;
     margin-bottom: 24px;
     padding: 24px 28px;
-    background: linear-gradient(135deg, var(--md-primary) 0%, #4338ca 100%);
+    background: linear-gradient(135deg, var(--md-primary, #4f46e5) 0%, #4338ca 100%);
     color: white;
     border-radius: var(--md-radius-lg);
     box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
     border: none;
 }
 
+/* Force ALL children white on dark header */
+.master-data-header,
+.master-data-header h2,
+.master-data-header h2 i,
+.master-data-header p,
+.master-data-header a,
+.master-data-header span,
+.master-data-header .header-text p,
+.master-data-header .header-actions a {
+    color: white !important;
+}
+
 .master-data-header h2 {
     margin: 0;
     font-size: 24px !important;
     font-weight: 700;
-    color: white !important;
     letter-spacing: -0.3px;
     display: flex;
     align-items: center;
@@ -77,8 +88,8 @@
 
 .master-data-header h2 i {
     margin-right: 0;
-    color: rgba(255,255,255,0.9) !important;
     font-size: 26px;
+    opacity: 0.9;
 }
 
 .master-data-header .text-muted {
@@ -88,6 +99,84 @@
     background: rgba(255,255,255,0.15);
     padding: 6px 14px;
     border-radius: 20px;
+}
+
+/* Header layout helpers */
+.master-data-header .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.master-data-header .header-text h2 { margin: 0; }
+.master-data-header .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Header subtitle text */
+.master-data-header .header-text p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+/* Header action buttons */
+.btn-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+.btn-header-primary {
+    background: rgba(255,255,255,0.2);
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.btn-header-primary:hover {
+    background: rgba(255,255,255,0.3);
+    color: white !important;
+}
+.btn-header-outline {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.9) !important;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.btn-header-outline:hover {
+    background: rgba(255,255,255,0.2);
+    color: white !important;
+}
+
+/* Module-specific header colors — override with inline style or data attribute */
+.master-data-header[data-theme="teal"] {
+    background: linear-gradient(135deg, #0d9488, #0891b2);
+    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.3);
+}
+.master-data-header[data-theme="blue"] {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+}
+.master-data-header[data-theme="emerald"] {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 4px 20px rgba(5, 150, 105, 0.3);
+}
+.master-data-header[data-theme="rose"] {
+    background: linear-gradient(135deg, #e11d48, #be123c);
+    box-shadow: 0 4px 20px rgba(225, 29, 72, 0.3);
+}
+.master-data-header[data-theme="amber"] {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    box-shadow: 0 4px 20px rgba(217, 119, 6, 0.3);
 }
 
 /* ========== Stats Cards - Enhanced ========== */

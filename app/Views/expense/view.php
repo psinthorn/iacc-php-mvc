@@ -9,7 +9,7 @@
 $isThai = ($lang ?? '2') === '1';
 
 $messages = [
-    'status_updated' => ['\u2705', $isThai ? '\u0e2d\u0e31\u0e1e\u0e40\u0e14\u0e17\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08' : 'Status updated'],
+    'status_updated' => ['✅', $isThai ? 'อัพเดทสถานะสำเร็จ' : 'Status updated'],
 ];
 
 $statusLabels = [
@@ -46,10 +46,13 @@ $canPay = in_array($expense['status'], ['approved']);
 .amount-line.net { border-top: 2px solid #0ea5e9; margin-top: 8px; padding-top: 14px; font-size: 20px; font-weight: 700; color: #0369a1; }
 .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; color: white; }
 .action-btn { padding: 10px 24px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.action-btn:hover { transform: translateY(-1px); }
+.action-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .btn-approve { background: #3b82f6; color: white; }
+.btn-approve:hover { background: #2563eb; color: white; }
 .btn-pay { background: #10b981; color: white; }
+.btn-pay:hover { background: #059669; color: white; }
 .btn-reject { background: #ef4444; color: white; }
+.btn-reject:hover { background: #dc2626; color: white; }
 </style>
 
 <div class="master-data-container">
@@ -75,9 +78,15 @@ $canPay = in_array($expense['status'], ['approved']);
 
     <!-- Flash Message -->
     <?php if (!empty($message) && isset($messages[$message])): ?>
-    <div style="background:#f0fdf4; border-left:4px solid #10b981; padding:12px 20px; border-radius:0 8px 8px 0; margin-bottom:16px; font-size:14px;">
+    <div class="flash-msg" style="background:#f0fdf4; border-left:4px solid #10b981; padding:12px 20px; border-radius:0 8px 8px 0; margin-bottom:16px; font-size:14px; transition: opacity 0.4s ease;">
         <?= $messages[$message][0] ?> <?= $messages[$message][1] ?>
     </div>
+    <script>
+    setTimeout(function() {
+        var el = document.querySelector('.flash-msg');
+        if (el) { el.style.opacity = '0'; setTimeout(function() { el.remove(); }, 400); }
+    }, 3000);
+    </script>
     <?php endif; ?>
 
     <div class="detail-container">

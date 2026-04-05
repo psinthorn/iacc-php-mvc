@@ -37,30 +37,26 @@ $status = $voucher['status'] ?? 'draft';
 
 <link rel="stylesheet" href="css/master-data.css">
 
-<div style="max-width:1100px; margin:0 auto; padding:20px;">
+<div class="master-data-container">
 
     <!-- Header -->
-    <div style="background:linear-gradient(135deg, #0d9488, #0891b2); border-radius:16px; padding:28px 32px; margin-bottom:24px; color:white;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
-                    <h2 style="margin:0; font-size:24px; font-weight:700;">
-                        <?= $typeIcons[$voucher['voucher_type']] ?? '📄' ?> <?= htmlspecialchars($voucher['jv_number']) ?>
-                    </h2>
-                    <span style="padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; background:<?= $statusColors[$status] ?? '#94a3b8' ?>; color:white;">
+    <div class="master-data-header" data-theme="teal">
+        <div class="header-content">
+            <div class="header-text">
+                <h2>
+                    <?= $typeIcons[$voucher['voucher_type']] ?? '📄' ?> <?= htmlspecialchars($voucher['jv_number']) ?>
+                    <span style="padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; background:<?= $statusColors[$status] ?? '#94a3b8' ?>;">
                         <?= $statusLabels[$status] ?? $status ?>
                     </span>
-                </div>
-                <p style="margin:0; opacity:0.9; font-size:14px;">
-                    <?= $typeLabels[$voucher['voucher_type']] ?? '' ?> — <?= date('d/m/Y', strtotime($voucher['transaction_date'])) ?>
-                </p>
+                </h2>
+                <p><?= $typeLabels[$voucher['voucher_type']] ?? '' ?> — <?= date('d/m/Y', strtotime($voucher['transaction_date'])) ?></p>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <a href="index.php?page=journal_list" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px;">
+            <div class="header-actions">
+                <a href="index.php?page=journal_list" class="btn-header btn-header-outline">
                     ← <?= $isThai ? 'กลับรายการ' : 'Back to List' ?>
                 </a>
                 <?php if ($status === 'draft'): ?>
-                <a href="index.php?page=journal_form&id=<?= $voucher['id'] ?>" style="padding:10px 20px; background:rgba(255,255,255,0.2); color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:14px;">
+                <a href="index.php?page=journal_form&id=<?= $voucher['id'] ?>" class="btn-header btn-header-outline">
                     ✏️ <?= $isThai ? 'แก้ไข' : 'Edit' ?>
                 </a>
                 <?php endif; ?>

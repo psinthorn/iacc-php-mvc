@@ -34,17 +34,6 @@ $messages = [
 <link rel="stylesheet" href="css/master-data.css">
 
 <style>
-/* Header layout — extends master-data-header */
-.master-data-header .header-content { display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:12px; }
-.master-data-header .header-text h2 { margin:0; }
-.master-data-header .header-text p { margin:4px 0 0; font-size:14px; opacity:0.85; }
-.master-data-header .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
-.btn-header { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all 0.2s; border:none; cursor:pointer; }
-.btn-header-primary { background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3); }
-.btn-header-primary:hover { background:rgba(255,255,255,0.3); color:white; text-decoration:none; }
-.btn-header-outline { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.2); }
-.btn-header-outline:hover { background:rgba(255,255,255,0.2); color:white; text-decoration:none; }
-
 .filter-bar {
     display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
     background: white; padding: 16px 20px; border-radius: 12px;
@@ -86,7 +75,7 @@ $messages = [
                 <p><?= $isThai ? 'จัดการค่าใช้จ่ายทั้งหมดของบริษัท' : 'Track and manage all company expenses' ?></p>
             </div>
             <div class="header-actions">
-                <a href="index.php?page=expense_export&format=csv&date_from=<?= $filters['date_from'] ?? '' ?>&date_to=<?= $filters['date_to'] ?? '' ?>&status=<?= $filters['status'] ?? '' ?>&category_id=<?= $filters['category_id'] ?? '' ?>" class="btn-header btn-header-outline" style="color:#10b981;">
+                <a href="index.php?page=expense_export&format=csv&date_from=<?= $filters['date_from'] ?? '' ?>&date_to=<?= $filters['date_to'] ?? '' ?>&status=<?= $filters['status'] ?? '' ?>&category_id=<?= $filters['category_id'] ?? '' ?>" class="btn-header btn-header-outline">
                     <i class="fa fa-download"></i> <?= $isThai ? 'ส่งออก CSV' : 'Export CSV' ?>
                 </a>
                 <a href="index.php?page=expense_project_report" class="btn-header btn-header-outline">
@@ -179,8 +168,8 @@ $messages = [
     </form>
 
     <!-- Expense Table -->
-    <div class="master-data-table-wrapper">
-        <table class="master-data-table">
+    <div class="master-data-table">
+        <table class="table" style="width:100%; margin-bottom:0;">
             <thead>
                 <tr>
                     <th>#</th>
