@@ -5,16 +5,16 @@
  */
 ?>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/master-data.css">
 <style>
     .receipt-wrapper { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1200px; margin: 0 auto; }
-    .page-header { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 24px 28px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 10px 40px rgba(39,174,96,0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-    .page-header h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
-    .page-header .header-actions a { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
-    .page-header .header-actions a:hover { background: rgba(255,255,255,0.35); text-decoration: none; color: white; }
-    .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; overflow: hidden; }
+    .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; overflow: visible; }
+    .form-card .card-header { border-radius: 12px 12px 0 0; }
     .form-card .card-header { background: #f9fafb; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
     .form-card .card-body { padding: 20px; }
-    .form-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 10px 14px; font-size: 14px; }
+    .form-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 10px 14px; font-size: 14px; height: auto; min-height: 44px; box-sizing: border-box; }
+    .form-card select.form-control { min-height: 44px; height: 44px; padding-right: 30px; }
+    .form-card input[type="date"].form-control { min-height: 44px; }
     .form-card .form-control:focus { border-color: #27ae60; box-shadow: 0 0 0 3px rgba(39,174,96,0.1); outline: none; }
     .form-card label { font-weight: 600; color: #374151; font-size: 13px; margin-bottom: 6px; }
     .source-selector { display: flex; gap: 12px; margin-bottom: 16px; }
@@ -31,7 +31,7 @@
     .btn-add-product { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     .btn-submit { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
     .btn-submit:hover { box-shadow: 0 6px 20px rgba(39,174,96,0.35); color: white; }
-    @media (max-width: 768px) { .page-header { padding: 16px 20px; } .page-header h2 { font-size: 18px; } }
+    @media (max-width: 768px) { .master-data-header { padding: 16px 20px; } .master-data-header h2 { font-size: 18px; } }
 </style>
 
 <?php
@@ -44,10 +44,14 @@ $source_type = $rc['source_type'] ?? 'direct';
 ?>
 
 <div class="receipt-wrapper">
-    <div class="page-header">
-        <h2><i class="fa fa-<?=$isEdit?'pencil':'plus-circle'?>"></i> <?=$title?> <?=$xml->receipt ?? 'Receipt'?><?=$isEdit ? ' #'.e($rc_id) : ''?></h2>
-        <div class="header-actions">
-            <a href="index.php?page=receipt_list"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
+    <div class="master-data-header" data-theme="emerald">
+        <div class="header-content">
+            <div class="header-text">
+                <h2><i class="fa fa-<?=$isEdit?'pencil':'plus-circle'?>"></i> <?=$title?> <?=$xml->receipt ?? 'Receipt'?><?=$isEdit ? ' #'.e($rc_id) : ''?></h2>
+            </div>
+            <div class="header-actions">
+                <a href="index.php?page=receipt_list" class="btn-header btn-header-primary"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
+            </div>
         </div>
     </div>
 
@@ -68,7 +72,7 @@ $source_type = $rc['source_type'] ?? 'direct';
 
                 <div id="panel_quotation" class="source-panel <?=$source_type=='quotation'?'active':''?>">
                     <div class="form-group"><label><?=$xml->quotation ?? 'Quotation'?></label>
-                        <select name="quotation_id" class="form-control">
+                        <select name="quotation_id" class="form-control smart-dropdown">
                             <option value="">-- <?=$xml->select ?? 'Select'?> --</option>
                             <?php if(!empty($quotations)): foreach($quotations as $q): ?><option value="<?=e($q['id'])?>" <?=($rc['quotation_id'] ?? '') == $q['id'] ? 'selected' : ''?>><?=e($q['name_en'] ?? '')?> — <?=e($q['po_date'] ?? '')?></option><?php endforeach; endif; ?>
                         </select>
@@ -76,7 +80,7 @@ $source_type = $rc['source_type'] ?? 'direct';
                 </div>
                 <div id="panel_invoice" class="source-panel <?=$source_type=='invoice'?'active':''?>">
                     <div class="form-group"><label><?=$xml->invoice ?? 'Invoice'?></label>
-                        <select name="invoice_id" class="form-control">
+                        <select name="invoice_id" class="form-control smart-dropdown">
                             <option value="">-- <?=$xml->select ?? 'Select'?> --</option>
                             <?php if(!empty($invoices)): foreach($invoices as $iv): ?><option value="<?=e($iv['id'])?>" <?=($rc['invoice_id'] ?? '') == $iv['id'] ? 'selected' : ''?>><?=e($iv['name_en'] ?? '')?> — <?=e($iv['iv_date'] ?? '')?></option><?php endforeach; endif; ?>
                         </select>
@@ -117,7 +121,7 @@ $source_type = $rc['source_type'] ?? 'direct';
                     <div class="product-header"><span class="product-number">#<?=$i+1?></span><button type="button" class="btn-remove removeRow"><i class="fa fa-times"></i></button></div>
                     <div class="row">
                         <div class="col-md-3"><div class="form-group"><label><?=$xml->Product ?? 'Product'?></label>
-                            <select name="type[]" class="form-control">
+                            <select name="type[]" class="form-control smart-dropdown">
                                 <option value="">--</option>
                                 <?php if(!empty($types)): foreach($types as $t): ?><option value="<?=$t['id']?>" <?=($p['type'] ?? $p['type_id'] ?? '') == $t['id'] ? 'selected' : ''?>><?=e($t['name'])?></option><?php endforeach; endif; ?>
                             </select></div></div>
@@ -132,7 +136,7 @@ $source_type = $rc['source_type'] ?? 'direct';
                     <div class="product-header"><span class="product-number">#1</span><button type="button" class="btn-remove removeRow"><i class="fa fa-times"></i></button></div>
                     <div class="row">
                         <div class="col-md-3"><div class="form-group"><label><?=$xml->Product ?? 'Product'?></label>
-                            <select name="type[]" class="form-control"><option value="">--</option>
+                            <select name="type[]" class="form-control smart-dropdown"><option value="">--</option>
                                 <?php if(!empty($types)): foreach($types as $t): ?><option value="<?=$t['id']?>"><?=e($t['name'])?></option><?php endforeach; endif; ?>
                             </select></div></div>
                         <div class="col-md-2"><div class="form-group"><label><?=$xml->Unit ?? 'Qty'?></label><input type="number" name="quantity[]" class="form-control" value="1" min="1"></div></div>
@@ -168,8 +172,25 @@ document.getElementById('addProductRow')?.addEventListener('click', function() {
     clone.dataset.index = productIdx;
     clone.querySelector('.product-number').textContent = '#' + (productIdx+1);
     clone.querySelectorAll('input').forEach(el => { if(el.type==='number') el.value=el.name.includes('quantity')?'1':'0'; else el.value=''; });
+    // Remove cloned SmartDropdown wrappers, restore original selects
+    clone.querySelectorAll('.sd-container').forEach(wrapper => {
+        var select = wrapper.querySelector('select');
+        if (select) {
+            select.style.display = '';
+            select.selectedIndex = 0;
+            select._smartDropdown = null;
+            wrapper.parentNode.insertBefore(select, wrapper);
+        }
+        wrapper.remove();
+    });
     clone.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
     container.appendChild(clone);
+    // Initialize SmartDropdown on new row
+    if (typeof SmartDropdown !== 'undefined') {
+        clone.querySelectorAll('.smart-dropdown').forEach(function(select) {
+            if (!select._smartDropdown) new SmartDropdown(select);
+        });
+    }
     productIdx++;
 });
 document.addEventListener('click', function(e) {

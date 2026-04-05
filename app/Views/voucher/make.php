@@ -15,13 +15,14 @@ $allModelsJson = json_encode($models_by_type ?? [], JSON_HEX_TAG | JSON_HEX_APOS
     .page-header h2 { margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
     .page-header .header-actions a { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
     .page-header .header-actions a:hover { background: rgba(255,255,255,0.35); text-decoration: none; color: white; }
-    .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; overflow: hidden; }
+    .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; overflow: visible; }
+    .form-card .card-header { border-radius: 12px 12px 0 0; }
     .form-card .card-header { background: #f9fafb; padding: 14px 20px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1f2937; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
     .form-card .card-body { padding: 20px; }
-    .form-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 10px 14px; font-size: 14px; width: 100%; box-sizing: border-box; }
+    .form-card .form-control { border-radius: 8px; border: 1px solid #e5e7eb; padding: 10px 14px; font-size: 14px; width: 100%; box-sizing: border-box; height: auto; min-height: 44px; }
     .form-card .form-control:focus { border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.1); outline: none; }
     .form-card label { font-weight: 600; color: #374151; font-size: 13px; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.3px; }
-    .form-card select.form-control { height: auto; padding: 10px 14px; background: white; }
+    .form-card select.form-control { height: 44px; min-height: 44px; padding: 10px 14px; padding-right: 30px; background: white; }
     .product-section .card-header { background: #e74c3c; color: white; }
     .product-item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin-bottom: 12px; position: relative; }
     .product-item .product-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -135,14 +136,14 @@ $title = $isEdit ? ($xml->edits ?? 'Edit') : ($xml->create ?? 'Create');
                     <div class="product-header"><span class="product-number">#<?=$i+1?></span><button type="button" class="btn-remove removeRow"><i class="fa fa-times"></i></button></div>
                     <div class="row">
                         <div class="col-md-3"><div class="form-group"><label><?=$xml->product ?? 'Product'?></label>
-                            <select name="type[<?=$i?>]" id="type_<?=$i?>" class="form-control type-select" data-index="<?=$i?>" onchange="updateModelDropdown(<?=$i?>, this.value)">
+                            <select name="type[<?=$i?>]" id="type_<?=$i?>" class="form-control type-select smart-dropdown" data-index="<?=$i?>" onchange="updateModelDropdown(<?=$i?>, this.value)">
                                 <option value="">-- <?=$xml->select ?? 'Select'?> --</option>
                                 <?php if(!empty($types)): foreach($types as $t): ?>
                                 <option value="<?=$t['id']?>" <?=($p['type'] ?? '') == $t['id'] ? 'selected' : ''?>><?=e($t['name'])?><?=!empty($t['cat_name']) ? ' ('.$t['cat_name'].')' : ''?></option>
                                 <?php endforeach; endif; ?>
                             </select></div></div>
                         <div class="col-md-3"><div class="form-group"><label><?=$xml->model ?? 'Model'?></label>
-                            <select name="model[<?=$i?>]" id="model_<?=$i?>" class="form-control model-select" data-index="<?=$i?>">
+                            <select name="model[<?=$i?>]" id="model_<?=$i?>" class="form-control model-select smart-dropdown" data-index="<?=$i?>">
                                 <option value="0">-- <?=$xml->model ?? 'Model'?> --</option>
                                 <?php
                                 // Pre-populate models for selected type on edit
@@ -167,14 +168,14 @@ $title = $isEdit ? ($xml->edits ?? 'Edit') : ($xml->create ?? 'Create');
                     <div class="product-header"><span class="product-number">#1</span><button type="button" class="btn-remove removeRow"><i class="fa fa-times"></i></button></div>
                     <div class="row">
                         <div class="col-md-3"><div class="form-group"><label><?=$xml->product ?? 'Product'?></label>
-                            <select name="type[0]" id="type_0" class="form-control type-select" data-index="0" onchange="updateModelDropdown(0, this.value)">
+                            <select name="type[0]" id="type_0" class="form-control type-select smart-dropdown" data-index="0" onchange="updateModelDropdown(0, this.value)">
                                 <option value="">-- <?=$xml->select ?? 'Select'?> --</option>
                                 <?php if(!empty($types)): foreach($types as $t): ?>
                                 <option value="<?=$t['id']?>"><?=e($t['name'])?><?=!empty($t['cat_name']) ? ' ('.$t['cat_name'].')' : ''?></option>
                                 <?php endforeach; endif; ?>
                             </select></div></div>
                         <div class="col-md-3"><div class="form-group"><label><?=$xml->model ?? 'Model'?></label>
-                            <select name="model[0]" id="model_0" class="form-control model-select" data-index="0">
+                            <select name="model[0]" id="model_0" class="form-control model-select smart-dropdown" data-index="0">
                                 <option value="0">-- <?=$xml->model ?? 'Model'?> --</option>
                             </select>
                             <input type="hidden" name="ban_id[0]" value="0">
@@ -235,6 +236,11 @@ function updateModelDropdown(index, typeId) {
             modelSelect.appendChild(opt);
         });
     }
+
+    // Refresh smart dropdown if initialized
+    if (modelSelect._smartDropdown) {
+        modelSelect._smartDropdown.refresh();
+    }
 }
 
 /**
@@ -277,9 +283,9 @@ document.getElementById('addProductRow').addEventListener('click', function() {
     div.innerHTML = '<div class="product-header"><span class="product-number">#' + (productIdx+1) + '</span><button type="button" class="btn-remove removeRow"><i class="fa fa-times"></i></button></div>'
         + '<div class="row">'
         + '<div class="col-md-3"><div class="form-group"><label><?=addslashes($xml->product ?? "Product")?></label>'
-        + '<select name="type[' + productIdx + ']" id="type_' + productIdx + '" class="form-control type-select" data-index="' + productIdx + '" onchange="updateModelDropdown(' + productIdx + ', this.value)">' + typeOptionsHtml + '</select></div></div>'
+        + '<select name="type[' + productIdx + ']" id="type_' + productIdx + '" class="form-control type-select smart-dropdown" data-index="' + productIdx + '" onchange="updateModelDropdown(' + productIdx + ', this.value)">' + typeOptionsHtml + '</select></div></div>'
         + '<div class="col-md-3"><div class="form-group"><label><?=addslashes($xml->model ?? "Model")?></label>'
-        + '<select name="model[' + productIdx + ']" id="model_' + productIdx + '" class="form-control model-select" data-index="' + productIdx + '"><option value="0">-- <?=addslashes($xml->model ?? "Model")?> --</option></select>'
+        + '<select name="model[' + productIdx + ']" id="model_' + productIdx + '" class="form-control model-select smart-dropdown" data-index="' + productIdx + '"><option value="0">-- <?=addslashes($xml->model ?? "Model")?> --</option></select>'
         + '<input type="hidden" name="ban_id[' + productIdx + ']" value="0"></div></div>'
         + '<div class="col-md-2"><div class="form-group"><label><?=addslashes($xml->Unit ?? "Qty")?></label><input type="number" name="quantity[' + productIdx + ']" class="form-control" value="1" min="1"></div></div>'
         + '<div class="col-md-2"><div class="form-group"><label><?=addslashes($xml->Price ?? "Price")?></label>'
@@ -288,6 +294,7 @@ document.getElementById('addProductRow').addEventListener('click', function() {
         + '</div>'
         + '<div class="product-notes"><textarea name="des[' + productIdx + ']" class="form-control" placeholder="<?=addslashes($xml->notes ?? "Notes")?>"></textarea></div>';
     container.appendChild(div);
+    initSmartDropdowns(div);
     document.getElementById('countloop').value = productIdx + 1;
     productIdx++;
 });
@@ -295,6 +302,19 @@ document.getElementById('addProductRow').addEventListener('click', function() {
 /**
  * Remove product row
  */
+/**
+ * Initialize SmartDropdown on selects within a container
+ */
+function initSmartDropdowns(container) {
+    if (typeof SmartDropdown !== 'undefined' && container) {
+        container.querySelectorAll('.smart-dropdown').forEach(function(select) {
+            if (!select._smartDropdown) {
+                new SmartDropdown(select);
+            }
+        });
+    }
+}
+
 document.addEventListener('click', function(e) {
     if (e.target.closest('.removeRow') && document.querySelectorAll('.product-item').length > 1) {
         e.target.closest('.product-item').remove();
