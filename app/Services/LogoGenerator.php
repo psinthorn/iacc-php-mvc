@@ -81,17 +81,26 @@ class LogoGenerator
 
         imagefilledrectangle($img, 0, 0, $size - 1, $size - 1, $bg);
 
-        $fontSize = strlen($initials) <= 2 ? 60 : 42;
-
         $fontFile = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
         if (!file_exists($fontFile)) {
             $fontFile = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf';
         }
 
         if (file_exists($fontFile)) {
-            $bbox = imagettfbbox($fontSize, 0, $fontFile, $initials);
-            $textWidth = $bbox[2] - $bbox[0];
-            $textHeight = $bbox[1] - $bbox[7];
+            // Dynamic sizing: scale text to fill ~75% of canvas
+            $targetWidth = $size * 0.75;
+            $targetHeight = $size * 0.55;
+            $fontSize = 120; // start large
+
+            // Shrink until text fits within target area
+            do {
+                $bbox = imagettfbbox($fontSize, 0, $fontFile, $initials);
+                $textWidth = $bbox[2] - $bbox[0];
+                $textHeight = $bbox[1] - $bbox[7];
+                if ($textWidth <= $targetWidth && $textHeight <= $targetHeight) break;
+                $fontSize -= 2;
+            } while ($fontSize > 10);
+
             $x = ($size - $textWidth) / 2 - $bbox[0];
             $y = ($size - $textHeight) / 2 - $bbox[7];
             imagettftext($img, $fontSize, 0, (int)$x, (int)$y, $white, $fontFile, $initials);

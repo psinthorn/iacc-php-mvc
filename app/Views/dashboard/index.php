@@ -407,7 +407,7 @@ function get_status_badge($status) {
     .company-quick-card:hover { border-color: #667eea; background: #fff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.15); text-decoration: none; }
     .company-quick-card.active { border-color: #667eea; background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%); }
     .company-quick-logo { width: 44px; height: 44px; border-radius: 10px; background: #fff; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-    .company-quick-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+    .company-quick-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
     .company-quick-logo i { font-size: 18px; color: #94a3b8; }
     .company-quick-info { flex: 1; min-width: 0; }
     .company-quick-name { font-weight: 600; font-size: 14px; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
