@@ -178,7 +178,20 @@ class Company extends BaseModel
                     '$comId'
                 )";
         mysqli_query($this->conn, $sql);
-        return intval(mysqli_insert_id($this->conn));
+        $newId = intval(mysqli_insert_id($this->conn));
+
+        // Auto-generate logo if none was uploaded
+        if ($newId > 0 && $logo === '') {
+            $generator = new \App\Services\LogoGenerator();
+            $logo = $generator->generateForCompany(
+                $newId,
+                $fields['name_sh'] ?? '',
+                $fields['name_en'] ?? ''
+            );
+            mysqli_query($this->conn, "UPDATE company SET logo='" . \sql_escape($logo) . "' WHERE id='" . \sql_int($newId) . "'");
+        }
+
+        return $newId;
     }
 
     /**
@@ -191,6 +204,16 @@ class Company extends BaseModel
         $logo = $this->handleLogoUpload($fields['name_en'] ?? '');
         if ($logo) {
             $logoSql = ", logo='" . \sql_escape($logo) . "'";
+        } else {
+            // Auto-generate if no existing logo file
+            $existing = mysqli_fetch_assoc(mysqli_query($this->conn, "SELECT logo FROM company WHERE id='" . \sql_int($id) . "'"));
+            $existingLogo = trim($existing['logo'] ?? '');
+            $uploadDir = dirname(__DIR__, 2) . '/upload';
+            if ($existingLogo === '' || !file_exists($uploadDir . '/' . $existingLogo)) {
+                $generator = new \App\Services\LogoGenerator();
+                $logo = $generator->generateForCompany($id, $fields['name_sh'] ?? '', $fields['name_en'] ?? '');
+                $logoSql = ", logo='" . \sql_escape($logo) . "'";
+            }
         }
 
         $sql = "UPDATE company SET 
