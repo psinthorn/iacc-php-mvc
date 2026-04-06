@@ -420,9 +420,10 @@ class Delivery extends BaseModel
         }
     }
 
-    public function getCustomers(): array
+    public function getCustomers(int $comId = 0): array
     {
-        return $this->fetchAll("SELECT id, name_en FROM company WHERE customer='1' AND deleted_at IS NULL ORDER BY name_en");
+        $companyFilter = $comId > 0 ? " AND company_id = " . intval($comId) : '';
+        return $this->fetchAll("SELECT id, name_en FROM company WHERE customer='1' AND deleted_at IS NULL" . $companyFilter . " ORDER BY name_en");
     }
 
     public function getStoreItems(int $comId, int $typeId): array

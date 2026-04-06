@@ -50,7 +50,7 @@ class DeliveryController extends BaseController
     {
         $comId = $this->getCompanyId();
         $this->render('delivery/make', [
-            'customers' => $this->delivery->getCustomers(),
+            'customers' => $this->delivery->getCustomers($comId),
             'types' => (new \App\Models\PurchaseOrder())->getTypes($comId),
         ]);
     }
@@ -67,7 +67,7 @@ class DeliveryController extends BaseController
         $this->render('delivery/edit', [
             'detail' => $detail, 'products' => $products,
             'id' => $id, 'mode' => $mode,
-            'customers' => $this->delivery->getCustomers(),
+            'customers' => $this->delivery->getCustomers($comId),
         ]);
     }
 
