@@ -131,6 +131,28 @@ docker inspect --format='{{.State.Health.Status}}' iacc_php
 9. **POST handlers in normal routes use PRG** - POST dispatch runs before HTML shell; use redirect, not render
 10. **`overflow: hidden` clips dropdowns** - Don't set `overflow: hidden` on containers with absolutely-positioned children (search dropdowns, datepickers)11. **No underline on links** — Global rule in `sb-admin.css` removes `text-decoration` on all links (normal, hover, focus). Use color/opacity changes for hover cues, never underline.
 12. **Page headers use gradient style** — `.master-data-header` in `master-data.css` uses purple gradient with ALL children forced white via `!important`. Use `data-theme` attribute for module-specific colors: `teal` (journal/accounting), `blue`, `emerald`, `rose`, `amber`. Button classes `.btn-header-primary` (translucent white) and `.btn-header-outline` (subtle white border) are defined globally — do NOT duplicate in views or use inline styles on header elements.
+### Critical: Multi-Tenant Query Filtering
+**Every query that returns companies, vendors, or customers MUST filter by `company_id`.**
+
+The SaaS platform is multi-tenant — each company only sees its own data via `$_SESSION['com_id']`. 
+Model methods that query the `company` table must accept `$comId` and apply it:
+
+```php
+// BAD - returns ALL customers across entire SaaS platform
+public function getCustomers(): array {
+    return $this->fetchAll("SELECT ... FROM company WHERE customer='1'");
+}
+
+// GOOD - scoped to logged-in company's tenant
+public function getCustomers(int $comId = 0): array {
+    $filter = $comId > 0 ? " AND company_id = " . intval($comId) : '';
+    return $this->fetchAll("SELECT ... FROM company WHERE customer='1'" . $filter);
+}
+```
+
+**Fixed:** `PurchaseRequest::getCustomers()`, `PurchaseRequest::getVendors()` (branch: `fix/pr-dropdown-company-filter`)
+**Check for same bug in:** Any model method querying company/vendor/customer lists — especially PO, Quotation, Invoice models.
+
 ### Critical: Shared $args Variable Issue
 **The root cause of many bugs in this legacy codebase is the shared `$args` variable.**
 
