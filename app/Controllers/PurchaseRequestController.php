@@ -50,7 +50,7 @@ class PurchaseRequestController extends BaseController
     {
         $comId = $this->getCompanyId();
         $this->render('pr/create', [
-            'customers' => $this->pr->getCustomers(),
+            'customers' => $this->pr->getCustomers($comId),
             'categories' => $this->pr->getCategoriesWithTypes($comId),
             'com_id' => $comId,
         ]);

@@ -158,14 +158,16 @@ class PurchaseRequest extends BaseModel
         return $this->fetchAll("SELECT * FROM type " . $cf->whereCompanyFilter() . " AND cat_id='" . \sql_int($catId) . "'");
     }
 
-    public function getVendors(): array
+    public function getVendors(int $comId = 0): array
     {
-        return $this->fetchAll("SELECT id, name_en, name_sh FROM company WHERE vender='1' AND deleted_at IS NULL ORDER BY name_en");
+        $companyFilter = $comId > 0 ? " AND company_id = " . intval($comId) : '';
+        return $this->fetchAll("SELECT id, name_en, name_sh FROM company WHERE vender='1' AND deleted_at IS NULL" . $companyFilter . " ORDER BY name_en");
     }
 
-    public function getCustomers(): array
+    public function getCustomers(int $comId = 0): array
     {
-        return $this->fetchAll("SELECT id, name_en, name_sh FROM company WHERE customer='1' AND deleted_at IS NULL ORDER BY name_en");
+        $companyFilter = $comId > 0 ? " AND company_id = " . intval($comId) : '';
+        return $this->fetchAll("SELECT id, name_en, name_sh FROM company WHERE customer='1' AND deleted_at IS NULL" . $companyFilter . " ORDER BY name_en");
     }
 
     public function getPRDetail(int $id, int $comId): ?array
