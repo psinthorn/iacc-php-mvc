@@ -207,6 +207,22 @@ include_once 'inc/top-navbar.php';
                   
                   <?php if($_SESSION['com_id']!=""){?>
                   
+                  <!-- Quick Create -->
+                    <li>
+                        <a href="#"><i class="fa fa-bolt" style="color:#f59e0b"></i> <?=$xml->quickcreate ?? 'Quick Create'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=qc_quotation"><i class="fa fa-file-text-o"></i> <?=$xml->startfromquotation ?? 'Start from Quotation'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=qc_invoice"><i class="fa fa-file-text"></i> <?=$xml->startfrominvoice ?? 'Start from Invoice'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=qc_tax_invoice"><i class="fa fa-file"></i> <?=$xml->startfromtaxinvoice ?? 'Start from Tax Invoice'?></a>
+                            </li>
+                        </ul>
+                    </li>
+
                   <!-- Purchasing Request -->
                   <li>
                     <a href="#"><i class="fa fa-pencil-square-o"></i> <?=$xml->purchasingrequest ?? 'Purchase Request'?><span class="fa arrow"></span></a>
@@ -219,22 +235,6 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <li>
                                 <a href="index.php?page=pr_make"><i class="fa fa-plus-circle"></i> <?=$xml->prforcustomer ?? 'PR for Customer'?></a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Quick Create -->
-                    <li>
-                        <a href="#"><i class="fa fa-bolt" style="color:#f59e0b"></i> <?=$xml->quickcreate ?? 'Quick Create'?><span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level">
-                            <li>
-                                <a href="index.php?page=qc_quotation"><i class="fa fa-file-text-o"></i> <?=$xml->startfromquotation ?? 'Start from Quotation'?></a>
-                            </li>
-                            <li>
-                                <a href="index.php?page=qc_invoice"><i class="fa fa-file-text"></i> <?=$xml->startfrominvoice ?? 'Start from Invoice'?></a>
-                            </li>
-                            <li>
-                                <a href="index.php?page=qc_tax_invoice"><i class="fa fa-file"></i> <?=$xml->startfromtaxinvoice ?? 'Start from Tax Invoice'?></a>
                             </li>
                         </ul>
                     </li>

@@ -47,11 +47,12 @@ $isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
     display: flex; align-items: center; gap: 8px;
 }
 .quick-create-page .section-title i { color: #10b981; }
-.quick-create-page .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.quick-create-page .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
 .quick-create-page .form-group { margin-bottom: 16px; }
 .quick-create-page .form-group label {
-    display: block; font-size: 11px; font-weight: 600; color: #374151;
+    display: flex; align-items: center; font-size: 11px; font-weight: 600; color: #374151;
     margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+    min-height: 30px;
 }
 .quick-create-page .form-group .form-control {
     width: 100%; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 8px;
@@ -119,15 +120,19 @@ $isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
     transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
 @media (max-width: 1400px) { .quick-create-page .product-row-main { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 992px) { .quick-create-page .product-row-main { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 992px) {
+    .quick-create-page .product-row-main { grid-template-columns: 1fr 1fr; }
+    .quick-create-page .form-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 576px) {
     .quick-create-page .product-row-main { grid-template-columns: 1fr; }
     .quick-create-page .page-header-qc { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
 .quick-create-page .btn-cust-toggle {
-    padding: 6px 14px; border-radius: 6px; border: 1px solid #e5e7eb;
-    background: #f9fafb; color: #6b7280; cursor: pointer; font-size: 12px;
-    font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 4px; border: 1px solid #e5e7eb;
+    background: #f9fafb; color: #6b7280; cursor: pointer; font-size: 11px;
+    font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 3px;
+    line-height: 1;
 }
 .quick-create-page .btn-cust-toggle.active {
     background: #10b981; color: white; border-color: #10b981;
@@ -176,15 +181,17 @@ $isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
                 <input type="text" class="form-control" name="name" id="qcTitle" required placeholder="<?= $isThaiLang ? 'หัวข้อเอกสาร' : 'Document title' ?>">
             </div>
             <div class="form-group">
-                <label><?= $isThaiLang ? 'ลูกค้า' : 'Customer' ?></label>
-                <div class="customer-toggle" style="display:flex;gap:8px;margin-bottom:8px;">
-                    <button type="button" class="btn-cust-toggle active" data-mode="existing" onclick="toggleCustomerMode('existing',this)">
-                        <i class="fa fa-search"></i> <?= $isThaiLang ? 'ลูกค้าเดิม' : 'Existing' ?>
-                    </button>
-                    <button type="button" class="btn-cust-toggle" data-mode="new" onclick="toggleCustomerMode('new',this)">
-                        <i class="fa fa-plus"></i> <?= $isThaiLang ? 'ลูกค้าใหม่' : 'New' ?>
-                    </button>
-                </div>
+                <label style="display:flex;align-items:center;justify-content:space-between;">
+                    <span><?= $isThaiLang ? 'ลูกค้า' : 'Customer' ?></span>
+                    <span class="customer-toggle" style="display:flex;gap:4px;">
+                        <button type="button" class="btn-cust-toggle active" data-mode="existing" onclick="toggleCustomerMode('existing',this)">
+                            <i class="fa fa-search"></i> <?= $isThaiLang ? 'เดิม' : 'Existing' ?>
+                        </button>
+                        <button type="button" class="btn-cust-toggle" data-mode="new" onclick="toggleCustomerMode('new',this)">
+                            <i class="fa fa-plus"></i> <?= $isThaiLang ? 'ใหม่' : 'New' ?>
+                        </button>
+                    </span>
+                </label>
                 <div id="existingCustomerWrap">
                     <select name="cus_id" id="cusIdSelect" class="form-control smart-dropdown">
                         <option value=""><?= $isThaiLang ? '-- เลือกลูกค้า --' : '-- Select Customer --' ?></option>
