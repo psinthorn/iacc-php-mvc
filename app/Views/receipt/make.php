@@ -102,8 +102,8 @@ $source_type = $rc['source_type'] ?? 'direct';
                     <div class="col-md-6"><div class="form-group"><label><?=$xml->description ?? 'Description'?></label><textarea name="description" class="form-control" rows="2"><?=e($rc['description'] ?? '')?></textarea></div></div>
                     <div class="col-md-3"><div class="form-group"><label><?=$xml->status ?? 'Status'?></label>
                         <select name="status" class="form-control">
+                            <option value="confirmed" <?=($rc['status'] ?? 'confirmed') == 'confirmed' ? 'selected' : ''?>><?=$xml->confirmed ?? 'Confirmed'?></option>
                             <option value="draft" <?=($rc['status'] ?? '') == 'draft' ? 'selected' : ''?>><?=$xml->draft ?? 'Draft'?></option>
-                            <option value="confirmed" <?=($rc['status'] ?? '') == 'confirmed' ? 'selected' : ''?>><?=$xml->confirmed ?? 'Confirmed'?></option>
                         </select></div></div>
                     <div class="col-md-3"><div class="form-group"><label><?=$xml->discount ?? 'Discount'?> (%)</label><input type="number" name="discount" class="form-control" value="<?=e($rc['dis'] ?? $rc['discount'] ?? '0')?>" step="0.01"></div></div>
                 </div>

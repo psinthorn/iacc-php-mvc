@@ -349,6 +349,10 @@
 <apiorders>คำสั่งซื้อ API</apiorders>
 <apiinvoices>ใบแจ้งหนี้ API</apiinvoices>
 <apiupgrade>อัพเกรด API</apiupgrade>
+<quickcreate>สร้างด่วน</quickcreate>
+<startfromquotation>เริ่มจากใบเสนอราคา</startfromquotation>
+<startfrominvoice>เริ่มจากใบแจ้งหนี้</startfrominvoice>
+<startfromtaxinvoice>เริ่มจากใบกำกับภาษี</startfromtaxinvoice>
 <salesorders>คำสั่งขาย</salesorders>
 <aitools>เครื่องมือ AI</aitools>
 <aichathistory>ประวัติการสนทนา AI</aichathistory>

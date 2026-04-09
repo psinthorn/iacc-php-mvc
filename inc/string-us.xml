@@ -349,6 +349,10 @@
 <apiorders>API Orders</apiorders>
 <apiinvoices>API Invoices</apiinvoices>
 <apiupgrade>API Upgrade</apiupgrade>
+<quickcreate>Quick Create</quickcreate>
+<startfromquotation>Start from Quotation</startfromquotation>
+<startfrominvoice>Start from Invoice</startfrominvoice>
+<startfromtaxinvoice>Start from Tax Invoice</startfromtaxinvoice>
 <salesorders>Sales Orders</salesorders>
 <aitools>AI Tools</aitools>
 <aichathistory>AI Chat History</aichathistory>

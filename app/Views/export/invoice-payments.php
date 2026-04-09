@@ -4,7 +4,7 @@
  * Exports invoice payment tracking data to CSV format
  */
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
 
 // Load core files
 require_once("inc/sys.configs.php");
@@ -13,6 +13,14 @@ require_once("inc/security.php");
 require_once("inc/audit.php");
 
 // Initialize database and check authentication
+if (!isset($config)) {
+    $config = [
+        'hostname' => getenv('DB_HOST') ?: 'mysql',
+        'username' => getenv('DB_USERNAME') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: 'root',
+        'dbname'   => getenv('DB_DATABASE') ?: 'iacc',
+    ];
+}
 $db = new DbConn($config);
 $db->checkSecurity();
 

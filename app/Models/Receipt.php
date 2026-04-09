@@ -54,9 +54,41 @@ class Receipt extends BaseModel
 
     public function findReceipt(int $id, int $comId): ?array
     {
-        $r = mysqli_query($this->conn, "SELECT r.*, i.taxrw, p.tax as po_tax
-            FROM receipt r LEFT JOIN iv i ON r.invoice_id=i.id LEFT JOIN po p ON r.quotation_id=p.id
-            WHERE r.id='" . \sql_int($id) . "' AND r.vender='$comId'");
+        $id = \sql_int($id);
+        $r = mysqli_query($this->conn, "
+            SELECT r.*, i.taxrw, qpo.tax as po_tax,
+                   COALESCE(ic.name_en, qc.name_en) as cust_name,
+                   COALESCE(ic.email, qc.email) as cust_email,
+                   COALESCE(ic.phone, qc.phone) as cust_phone,
+                   COALESCE(ic.fax, qc.fax) as cust_fax,
+                   COALESCE(ic.tax, qc.tax) as cust_tax,
+                   COALESCE(ica.adr_tax, qca.adr_tax) as cust_address,
+                   COALESCE(ica.city_tax, qca.city_tax) as cust_city,
+                   COALESCE(ica.district_tax, qca.district_tax) as cust_district,
+                   COALESCE(ica.province_tax, qca.province_tax) as cust_province,
+                   COALESCE(ica.zip_tax, qca.zip_tax) as cust_zip,
+                   vc.name_en as vendor_name, vc.logo as vendor_logo,
+                   vc.phone as vendor_phone, vc.fax as vendor_fax,
+                   vc.email as vendor_email, vc.tax as vendor_tax,
+                   va.adr_tax as vendor_address, va.city_tax as vendor_city,
+                   va.district_tax as vendor_district, va.province_tax as vendor_province,
+                   va.zip_tax as vendor_zip,
+                   COALESCE(ipo.tax, qpo.tax) as source_doc_no,
+                   COALESCE(ipo.date, qpo.date) as source_doc_date
+            FROM receipt r
+            LEFT JOIN iv i ON r.invoice_id = i.id
+            LEFT JOIN po qpo ON r.quotation_id = qpo.id
+            LEFT JOIN po ipo ON r.invoice_id = ipo.id
+            LEFT JOIN pr ipr ON ipo.ref = ipr.id
+            LEFT JOIN company ic ON ipr.cus_id = ic.id
+            LEFT JOIN company_addr ica ON ic.id = ica.com_id AND ica.deleted_at IS NULL
+            LEFT JOIN pr qpr ON qpo.ref = qpr.id
+            LEFT JOIN company qc ON qpr.cus_id = qc.id
+            LEFT JOIN company_addr qca ON qc.id = qca.com_id AND qca.deleted_at IS NULL
+            LEFT JOIN company vc ON r.vender = vc.id
+            LEFT JOIN company_addr va ON vc.id = va.com_id AND va.deleted_at IS NULL
+            WHERE r.id='$id' AND r.vender='$comId'
+        ");
         return ($r && mysqli_num_rows($r) > 0) ? mysqli_fetch_assoc($r) : null;
     }
 

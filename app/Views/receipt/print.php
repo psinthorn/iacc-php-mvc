@@ -15,13 +15,22 @@ ob_start();
  * Professional design matching Invoice template
  * Supports receipts from quotations, invoices, or manual entry
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
 require_once("inc/payment-method-helper.php");
 
+// $config may not be in scope when included via controller (require_once already loaded by index.php)
+if (!isset($config)) {
+    $config = [
+        'hostname' => getenv('DB_HOST') ?: 'mysql',
+        'username' => getenv('DB_USERNAME') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: 'root',
+        'dbname'   => getenv('DB_DATABASE') ?: 'iacc',
+    ];
+}
 $db = new DbConn($config);
 $db->checkSecurity();
 
@@ -43,12 +52,17 @@ $filename = $data['rep_rw'];
 $source_type = $data['source_type'] ?? 'manual';
 $include_vat = $data['include_vat'] ?? 1;
 
-// Fetch vendor info
+// Fetch vendor info - use LEFT JOIN and get current/latest valid address
 $vender = mysqli_fetch_array(mysqli_query($db->conn, "
-    SELECT name_en, adr_tax, city_tax, district_tax, province_tax, tax, zip_tax, fax, phone, email, logo, term 
+    SELECT company.name_en, company_addr.adr_tax, company_addr.city_tax, company_addr.district_tax, 
+           company_addr.province_tax, company.tax, company_addr.zip_tax, company.fax, company.phone, 
+           company.email, company.logo, company.term 
     FROM company 
-    JOIN company_addr ON company.id = company_addr.com_id 
-    WHERE company.id = '".$com_id."' AND valid_end = '0000-00-00'
+    LEFT JOIN company_addr ON company.id = company_addr.com_id 
+        AND company_addr.deleted_at IS NULL
+    WHERE company.id = '".$com_id."'
+    ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+    LIMIT 1
 "));
 
 // Get logo
@@ -78,8 +92,10 @@ if ($source_type === 'quotation' && !empty($data['quotation_id'])) {
         FROM po
         JOIN pr ON po.ref = pr.id
         JOIN company ON pr.cus_id = company.id
-        LEFT JOIN company_addr ON company.id = company_addr.com_id AND company_addr.valid_end = '0000-00-00'
+        LEFT JOIN company_addr ON company.id = company_addr.com_id AND company_addr.deleted_at IS NULL
         WHERE po.id = '".$data['quotation_id']."' AND pr.ven_id = '".$com_id."' AND po.status = '1'
+        ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+        LIMIT 1
     ");
     
     if (mysqli_num_rows($qa_query) > 0) {
@@ -125,9 +141,11 @@ elseif ($source_type === 'invoice' && !empty($data['invoice_id'])) {
         FROM po
         JOIN pr ON po.ref = pr.id
         JOIN company ON pr.cus_id = company.id
-        LEFT JOIN company_addr ON company.id = company_addr.com_id AND company_addr.valid_end = '0000-00-00'
+        LEFT JOIN company_addr ON company.id = company_addr.com_id AND company_addr.deleted_at IS NULL
         JOIN iv ON po.id = iv.tex
         WHERE po.id = '".$data['invoice_id']."' AND pr.ven_id = '".$com_id."'
+        ORDER BY (company_addr.valid_end = '0000-00-00' OR company_addr.valid_end = '9999-12-31') DESC, company_addr.valid_start DESC
+        LIMIT 1
     ");
     
     if (mysqli_num_rows($inv_query) > 0) {
@@ -360,9 +378,7 @@ $html = '
     <tr>
         <td class="info-left">
             <div class="rec-box">
-                <div class="rec-num">REC-'.htmlspecialchars($data['rep_rw']).' <span class="status status-'.strtolower($data['status'] ?? 'confirmed').'">'.htmlspecialchars($status_display).'</span>
-                    <span class="source-tag source-'.$source_type.'">'.htmlspecialchars($source_display).'</span>
-                </div>
+                <div class="rec-num">REC-'.htmlspecialchars($data['rep_rw']).'</div>
                 <div class="rec-meta">Date: '.htmlspecialchars($data['createdate']).($source_doc_no ? ' &nbsp;|&nbsp; Ref: '.htmlspecialchars($source_doc_no) : '').'</div>
             </div>
             <table>

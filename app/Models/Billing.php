@@ -21,7 +21,8 @@ class Billing extends BaseModel
             JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
             LEFT JOIN billing_items bi ON bi.inv_id=iv.id
             LEFT JOIN billing b ON bi.bil_id=b.bil_id
-            WHERE pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId')";
+            WHERE iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
+            AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId')";
         $r = mysqli_query($this->conn, $sql);
         return $r ? mysqli_fetch_assoc($r) : ['total'=>0,'with_billing'=>0,'without_billing'=>0,'total_amount'=>0];
     }
@@ -34,7 +35,8 @@ class Billing extends BaseModel
             JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
             LEFT JOIN billing_items bi ON bi.inv_id=iv.id
             LEFT JOIN billing b ON bi.bil_id=b.bil_id
-            WHERE pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $conds";
+            WHERE iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
+            AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $conds";
         $r = mysqli_query($this->conn, $sql);
         return $r ? intval(mysqli_fetch_assoc($r)['total']) : 0;
     }
@@ -52,7 +54,8 @@ class Billing extends BaseModel
             JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
             LEFT JOIN billing_items bi ON bi.inv_id=iv.id
             LEFT JOIN billing b ON bi.bil_id=b.bil_id
-            WHERE pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $conds
+            WHERE iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
+            AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $conds
             ORDER BY COALESCE(b.created_at, iv.createdate) DESC LIMIT $offset, $limit");
     }
 
@@ -90,7 +93,7 @@ class Billing extends BaseModel
             JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
             LEFT JOIN billing_items bi ON bi.inv_id=iv.id
             LEFT JOIN billing b ON bi.bil_id=b.bil_id
-            WHERE iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
+            WHERE iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
             AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond";
 
         $status = $filters['status'] ?? '';
@@ -139,7 +142,7 @@ class Billing extends BaseModel
                 FROM billing b
                 JOIN billing_items bi ON bi.bil_id=b.bil_id
                 JOIN iv ON bi.inv_id=iv.id
-                    AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
+                    AND iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
                 JOIN po ON iv.tex=po.id
                 JOIN pr ON po.ref=pr.id
                 JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
@@ -163,7 +166,8 @@ class Billing extends BaseModel
                 JOIN pr ON po.ref=pr.id
                 JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
                 LEFT JOIN billing_items bi ON bi.inv_id=iv.id
-                WHERE bi.bil_id IS NULL AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond)";
+                WHERE iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
+                AND bi.bil_id IS NULL AND pr.status>=3 AND po.po_id_new='' AND (pr.ven_id='$comId' OR pr.cus_id='$comId') $searchCond $dateCond)";
         }
 
         if (empty($parts)) return [];
@@ -187,7 +191,7 @@ class Billing extends BaseModel
             po.vat, po.dis as discount_pct, po.over as withholding
             FROM billing_items bi
             JOIN iv ON bi.inv_id = iv.id
-                AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
+                AND iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
             JOIN po ON iv.tex = po.id
             JOIN pr ON po.ref = pr.id
             WHERE bi.bil_id = '" . \sql_int($bilId) . "'
@@ -198,7 +202,8 @@ class Billing extends BaseModel
 
     private function buildUnbilledWhere(int $customerId, string $dateFrom = '', string $dateTo = '', string $search = ''): string
     {
-        $where = "(CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)='" . \sql_int($customerId) . "'
+        $where = "iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
+            AND (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)='" . \sql_int($customerId) . "'
             AND po.po_id_new='' AND pr.status>=3
             AND iv.id NOT IN (SELECT inv_id FROM billing_items)";
         if ($dateFrom !== '') {
@@ -251,6 +256,7 @@ class Billing extends BaseModel
             JOIN company ON (CASE WHEN pr.payby>0 THEN pr.payby ELSE pr.cus_id END)=company.id
             WHERE pr.status>=3 AND po.po_id_new='' 
             AND (pr.ven_id='$comId' OR pr.cus_id='$comId')
+            AND iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
             AND iv.id NOT IN (SELECT inv_id FROM billing_items)
             ORDER BY company.name_en");
     }
@@ -348,11 +354,11 @@ class Billing extends BaseModel
             po.vat, po.dis as discount, po.over as withholding
             FROM billing_items bi
             JOIN iv ON bi.inv_id = iv.id
+                AND iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id)
             JOIN po ON iv.tex = po.id
             JOIN pr ON po.ref = pr.id
             WHERE bi.bil_id = '" . \sql_int($bilId) . "'
             AND po.po_id_new = ''
-            AND iv.createdate = (SELECT MAX(iv2.createdate) FROM iv iv2 WHERE iv2.id = iv.id)
             ORDER BY iv.createdate ASC";
         return $this->fetchAll($sql);
     }
@@ -366,7 +372,7 @@ class Billing extends BaseModel
             ca.adr_tax, ca.city_tax, ca.district_tax, ca.province_tax, ca.zip_tax,
             b.logo
             FROM company c
-            LEFT JOIN company_addr ca ON c.id = ca.com_id AND ca.valid_end = '0000-00-00'
+            LEFT JOIN company_addr ca ON c.id = ca.com_id AND ca.deleted_at IS NULL
             LEFT JOIN brand b ON c.id = b.company_id
             WHERE c.id = '" . \sql_int($comId) . "' LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
@@ -379,7 +385,7 @@ class Billing extends BaseModel
             (SELECT SUM((product.price * product.quantity) + (product.valuelabour * product.activelabour * product.quantity) - (product.discount * product.quantity))
              FROM product WHERE product.po_id=po.id) as subtotal,
             po.vat, po.dis as discount, po.over as withholding
-            FROM iv JOIN po ON iv.tex=po.id WHERE iv.id='" . \sql_int($invId) . "' AND po.po_id_new='' LIMIT 1";
+            FROM iv JOIN po ON iv.tex=po.id WHERE iv.id='" . \sql_int($invId) . "' AND iv.tex = (SELECT MAX(iv2.tex) FROM iv iv2 WHERE iv2.id = iv.id) AND po.po_id_new='' LIMIT 1";
         $r = mysqli_query($this->conn, $sql);
         if (!$r || mysqli_num_rows($r) == 0) return 0;
         $d = mysqli_fetch_assoc($r);

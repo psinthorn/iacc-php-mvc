@@ -14,13 +14,21 @@ ob_start();
  * Voucher PDF Generator
  * Professional design matching Receipt/Invoice template
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.current.php");
 require_once("inc/payment-method-helper.php");
 
+if (!isset($config)) {
+    $config = [
+        'hostname' => getenv('DB_HOST') ?: 'mysql',
+        'username' => getenv('DB_USERNAME') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: 'root',
+        'dbname'   => getenv('DB_DATABASE') ?: 'iacc',
+    ];
+}
 $db = new DbConn($config);
 $db->checkSecurity();
 

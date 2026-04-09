@@ -101,6 +101,7 @@ return [
     'rep_make'      => ['ReceiptController', 'make'],   // legacy alias
     'rep_view'      => ['ReceiptController', 'view'],   // legacy alias
     'receipt_store' => ['ReceiptController', 'store'],
+    'receipt_print' => ['ReceiptController', 'print', 'standalone'],
     'rep_print'     => ['ReceiptController', 'print', 'standalone'],
 
     // Billing (Phase 3E)
@@ -309,4 +310,11 @@ return [
     // AJAX Endpoints
     'ajax_options'           => ['AjaxController', 'productOptions', 'standalone'],
     'ajax_mail'              => ['AjaxController', 'emailPreview', 'standalone'],
+
+    // ========== Quick Create (reverse-flow entry points) ==========
+    'qc_index'               => ['QuickCreateController', 'index'],
+    'qc_quotation'           => ['QuickCreateController', 'quotation'],
+    'qc_invoice'             => ['QuickCreateController', 'invoice'],
+    'qc_tax_invoice'         => ['QuickCreateController', 'taxInvoice'],
+    'qc_store'               => ['QuickCreateController', 'store'],
 ];

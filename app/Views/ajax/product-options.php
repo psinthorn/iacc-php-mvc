@@ -1,9 +1,17 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) session_start();
 require_once("inc/sys.configs.php");
 require_once("inc/class.dbconn.php");
 require_once("inc/security.php");
 require_once("inc/class.company_filter.php");
+if (!isset($config)) {
+    $config = [
+        'hostname' => getenv('DB_HOST') ?: 'mysql',
+        'username' => getenv('DB_USERNAME') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: 'root',
+        'dbname'   => getenv('DB_DATABASE') ?: 'iacc',
+    ];
+}
 $db = new DbConn($config);
 // Security already checked in index.php
 
