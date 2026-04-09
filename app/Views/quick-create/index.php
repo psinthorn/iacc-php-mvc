@@ -177,7 +177,7 @@ $isThaiLang = (isset($_SESSION['lang']) && $_SESSION['lang'] == 1);
 <?php if (!empty($_SESSION['flash_success'])): ?>
     <div class="alert alert-success alert-dismissible" style="border-radius:12px;">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
-        <i class="fa fa-check-circle"></i> <?= htmlspecialchars($_SESSION['flash_success']) ?>
+        <i class="fa fa-check-circle"></i> <?= $_SESSION['flash_success'] ?>
     </div>
     <?php unset($_SESSION['flash_success']); ?>
 <?php endif; ?>

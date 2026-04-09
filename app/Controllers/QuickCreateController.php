@@ -89,13 +89,8 @@ class QuickCreateController extends BaseController
         if ($result['success']) {
             $_SESSION['flash_success'] = $this->getSuccessMessage($entryType, $result['data']);
 
-            // Redirect to the appropriate view page
-            match ($entryType) {
-                'quotation'   => $this->redirect('po_view', ['id' => $result['data']['po_id']]),
-                'invoice'     => $this->redirect('po_view', ['id' => $result['data']['po_id']]),
-                'tax_invoice' => $this->redirect('po_view', ['id' => $result['data']['po_id']]),
-                default       => $this->redirect('qc_index'),
-            };
+            // Redirect back to the same Quick Create form so user can create another
+            $this->redirect('qc_' . $entryType);
         } else {
             $_SESSION['flash_error'] = $result['error'] ?? 'Failed to create documents. Please try again.';
             $this->redirect('qc_' . $entryType);
@@ -107,10 +102,14 @@ class QuickCreateController extends BaseController
      */
     private function getSuccessMessage(string $entryType, array $data): string
     {
+        $poId = intval($data['po_id'] ?? 0);
+        $poNumber = (date("y") + 43) . str_pad($poId, 6, '0', STR_PAD_LEFT);
+        $poLink = '<a href="index.php?page=po_view&id=' . $poId . '" style="color:#065f46;font-weight:600;text-decoration:underline;">View PO ' . $poNumber . ' &rarr;</a>';
+        
         return match ($entryType) {
-            'quotation'   => 'Quotation created successfully. PR #' . $data['pr_id'] . ' auto-generated.',
-            'invoice'     => 'Invoice created successfully. PR #' . $data['pr_id'] . ', PO #' . $data['po_id'] . ', Delivery auto-generated.',
-            'tax_invoice' => 'Tax Invoice ' . ($data['taxrw'] ?? '') . ' created successfully. All upstream documents auto-generated.',
+            'quotation'   => 'Quotation <strong>' . $poNumber . '</strong> created successfully! ' . $poLink,
+            'invoice'     => 'Invoice <strong>' . $poNumber . '</strong> created successfully! ' . $poLink,
+            'tax_invoice' => 'Tax Invoice <strong>' . ($data['taxrw'] ?? $poNumber) . '</strong> created successfully! ' . $poLink,
             default       => 'Documents created successfully.',
         };
     }

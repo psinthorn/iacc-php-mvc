@@ -157,6 +157,14 @@ $_date = explode("-", date("d-m-Y"));
 .quick-create-page .btn-cust-toggle:hover:not(.active) { background: #f3f4f6; }
 </style>
 
+<?php if (!empty($_SESSION['flash_success'])): ?>
+    <div class="alert alert-success alert-dismissible" style="border-radius:12px;background:#ecfdf5;border-color:#a7f3d0;color:#065f46;">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <i class="fa fa-check-circle"></i> <?= $_SESSION['flash_success'] ?>
+    </div>
+    <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+
 <?php if (!empty($_SESSION['flash_error'])): ?>
     <div class="alert alert-danger alert-dismissible" style="border-radius:12px;">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -273,6 +281,9 @@ $_date = explode("-", date("d-m-Y"));
         <div class="form-actions" style="border-top:none; margin-top:0; padding-top:0;">
             <a href="index.php?page=qc_index" class="btn btn-default" style="padding:14px 24px; border-radius:10px;">
                 <i class="fa fa-times"></i> <?= $isThaiLang ? 'ยกเลิก' : 'Cancel' ?>
+            </a>
+            <a href="index.php?page=qa_list" class="btn btn-default" style="padding:14px 24px; border-radius:10px; border-color:#667eea; color:#667eea;">
+                <i class="fa fa-list"></i> <?= $isThaiLang ? 'รายการใบเสนอราคา' : 'Quotation List' ?>
             </a>
             <button type="submit" class="btn-submit">
                 <i class="fa fa-bolt"></i> <?= $isThaiLang ? 'สร้างใบเสนอราคา' : 'Create Quotation' ?>
