@@ -152,6 +152,29 @@ docker logs iacc_nginx --tail 50  # Nginx logs
 docker exec -it iacc_mysql mysql -uroot -proot iacc  # MySQL shell
 ```
 
+## cPanel Deployment Gotchas
+
+### 1. `global $config;` in Standalone PDF Views
+When a PDF view is `include`d from a controller, `$config` from `sys.configs.php` is not in scope. The fallback block creates a new config with `'mysql'` hostname which doesn't exist on cPanel.
+
+**Fix**: Every standalone PDF view that creates its own `DbConn` must have:
+```php
+global $config;
+if (!isset($config)) {
+    $config = [ /* fallback */ ];
+}
+```
+
+**Affected files**: `delivery/print.php`, `receipt/print.php`, `voucher/print.php`, any future PDF views.
+
+### 2. Empty-String Fallbacks (`?:` not `??`)
+DB fields may be empty string `''` on cPanel (not NULL). Use `trim($row['field'] ?? '') ?: 'default'` instead of `$row['field'] ?? 'default'`. This caused blank serial numbers where `company.name_sh` was `''`.
+
+### 3. DB Hostname
+- Docker: `mysql` (container name)
+- cPanel: `localhost` (or env `DB_HOST`)
+- `sys.configs.php` falls back to `'mysql'` if no env var set — ensure cPanel has `DB_HOST=localhost` configured
+
 ## File Structure
 
 ```
