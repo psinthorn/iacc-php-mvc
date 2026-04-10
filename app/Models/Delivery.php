@@ -133,20 +133,36 @@ class Delivery extends BaseModel
     public function createDelivery(array $data, int $comId): void
     {
         $sns = $data['sn'] ?? [];
+
+        // Get company short name for no-model serial pattern
+        $comRow = mysqli_fetch_array(mysqli_query($this->conn,
+            "SELECT name_sh FROM company WHERE id='$comId' LIMIT 1"));
+        $comShort = trim($comRow['name_sh'] ?? 'SN');
+        $datePart = date('ymd'); // YYMMDD
+
         $ci = 0;
         foreach ($sns as $sn) {
-            if (empty($sn)) {
-                $ms = mysqli_fetch_array(mysqli_query($this->conn, "SELECT max(id) as ms FROM gen_serial"));
-                $sn = intval($ms['ms'] ?? 0) + 1;
-            }
+            $proId = \sql_int($data['pro_id'][$ci]);
+
             $maxno = mysqli_fetch_array(mysqli_query($this->conn,
                 "SELECT max(s.no) as maxno FROM store s JOIN product p ON s.pro_id=p.pro_id
                  JOIN store_sale ss ON s.id=ss.st_id WHERE ss.own_id='$comId'
-                 AND p.model IN (SELECT model FROM product WHERE pro_id='" . \sql_int($data['pro_id'][$ci]) . "')"));
+                 AND p.model IN (SELECT model FROM product WHERE pro_id='$proId')"));
+            $nextNo = intval($maxno['maxno'] ?? 0) + 1;
+
+            if (empty($sn)) {
+                // Auto-generate serial: {model_name}-{YYMMDD}-{001} or {company_short}-{YYMMDD}-{001}
+                $modelRow = mysqli_fetch_array(mysqli_query($this->conn,
+                    "SELECT m.model_name FROM product p LEFT JOIN model m ON p.model=m.id WHERE p.pro_id='$proId' LIMIT 1"));
+                $modelName = trim($modelRow['model_name'] ?? '');
+                $prefix = $modelName !== '' ? $modelName : $comShort;
+                $paddedNo = str_pad($nextNo, 3, '0', STR_PAD_LEFT);
+                $sn = $prefix . '-' . $datePart . '-' . $paddedNo;
+            }
 
             $argsS = ['table' => 'store'];
             $argsS['columns'] = "company_id, pro_id, s_n, no";
-            $argsS['value'] = "'$comId','" . \sql_int($data['pro_id'][$ci]) . "','$sn','" . (intval($maxno['maxno'] ?? 0) + 1) . "'";
+            $argsS['value'] = "'$comId','$proId','" . mysqli_real_escape_string($this->conn, $sn) . "','$nextNo'";
             $stId = $this->hard->insertDbMax($argsS);
 
             $argsSS = ['table' => 'store_sale'];
