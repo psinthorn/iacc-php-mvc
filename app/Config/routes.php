@@ -93,6 +93,7 @@ return [
     'deliv_edit'    => ['DeliveryController', 'edit'],
     'deliv_view'    => ['DeliveryController', 'view'],
     'deliv_store'   => ['DeliveryController', 'store'],
+    'deliv_print'   => ['DeliveryController', 'print', 'standalone'],
 
     // Receipt (Phase 3E)
     'receipt_list'  => ['ReceiptController', 'index'],

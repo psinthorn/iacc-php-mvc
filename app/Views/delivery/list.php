@@ -125,7 +125,7 @@ $date_preset = $filters['date_preset'] ?? '';
                     <td><?=e($row['deliver_date'])?></td>
                     <td>
                         <a href="index.php?page=deliv_view&id=<?=$row['id']?>" class="action-btn" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
-                        <a href="rec.php?id=<?=$row['id']?>" class="action-btn success" title="Print DN" target="_blank"><i class="fa fa-print"></i></a>
+                        <a href="index.php?page=deliv_print&id=<?=$row['id']?>" class="action-btn success" title="Print DN" target="_blank"><i class="fa fa-print"></i></a>
                     </td>
                 </tr>
                 <?php endforeach; endif;
@@ -140,7 +140,7 @@ $date_preset = $filters['date_preset'] ?? '';
                     <td>
                         <a href="index.php?page=deliv_view&id=<?=$row['deliv_id']?>&modep=ad" class="action-btn" title="<?=$xml->view ?? 'View'?>"><i class="fa fa-eye"></i></a>
                         <a href="index.php?page=deliv_edit&id=<?=$row['deliv_id']?>&modep=ad" class="action-btn warning" title="<?=$xml->edit ?? 'Edit'?>"><i class="fa fa-pencil"></i></a>
-                        <a href="rec.php?id=<?=$row['deliv_id']?>&modep=ad" class="action-btn success" title="Print" target="_blank"><i class="fa fa-print"></i></a>
+                        <a href="index.php?page=deliv_print&id=<?=$row['deliv_id']?>&modep=ad" class="action-btn success" title="Print" target="_blank"><i class="fa fa-print"></i></a>
                     </td>
                 </tr>
                 <?php endforeach; endif;
@@ -177,7 +177,7 @@ $date_preset = $filters['date_preset'] ?? '';
                     <td><?=e($row['deliver_date'])?></td>
                     <td>
                         <a href="index.php?page=deliv_view&id=<?=$row['id']?>" class="action-btn success" title="<?=$xml->receive ?? 'Receive'?>"><i class="fa fa-dropbox"></i></a>
-                        <a href="rec.php?id=<?=$row['id']?>" class="action-btn" title="Print" target="_blank"><i class="fa fa-print"></i></a>
+                        <a href="index.php?page=deliv_print&id=<?=$row['id']?>" class="action-btn" title="Print" target="_blank"><i class="fa fa-print"></i></a>
                     </td>
                 </tr>
                 <?php endforeach; endif;

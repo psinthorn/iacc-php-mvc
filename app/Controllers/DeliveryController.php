@@ -93,6 +93,12 @@ class DeliveryController extends BaseController
         ]);
     }
 
+    public function print(): void
+    {
+        include __DIR__ . '/../Views/delivery/print.php';
+        exit;
+    }
+
     public function store(): void
     {
         $this->verifyCsrf();

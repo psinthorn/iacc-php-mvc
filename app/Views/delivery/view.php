@@ -50,7 +50,7 @@
         </h2>
         <div class="header-actions">
             <a href="index.php?page=deliv_list"><i class="fa fa-arrow-left"></i> <?=$xml->back ?? 'Back'?></a>
-            <a href="rec.php?id=<?=$id?><?=$mode==='ad'?'&modep=ad':''?>" target="_blank"><i class="fa fa-print"></i> <?=$xml->print ?? 'Print'?></a>
+            <a href="index.php?page=deliv_print&id=<?=$id?><?=$mode==='ad'?'&modep=ad':''?>" target="_blank"><i class="fa fa-print"></i> <?=$xml->print ?? 'Print'?></a>
         </div>
     </div>
 
