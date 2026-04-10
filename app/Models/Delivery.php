@@ -137,7 +137,7 @@ class Delivery extends BaseModel
         // Get company short name for no-model serial pattern
         $comRow = mysqli_fetch_array(mysqli_query($this->conn,
             "SELECT name_sh FROM company WHERE id='$comId' LIMIT 1"));
-        $comShort = trim($comRow['name_sh'] ?? 'SN');
+        $comShort = trim($comRow['name_sh'] ?? '') ?: 'SN';
         $datePart = date('ymd'); // YYMMDD
 
         $ci = 0;

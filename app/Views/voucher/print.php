@@ -21,6 +21,8 @@ require_once("inc/security.php");
 require_once("inc/class.current.php");
 require_once("inc/payment-method-helper.php");
 
+// $config is set at global scope by sys.configs.php (loaded in index.php)
+global $config;
 if (!isset($config)) {
     $config = [
         'hostname' => getenv('DB_HOST') ?: 'mysql',
