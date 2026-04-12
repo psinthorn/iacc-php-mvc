@@ -59,6 +59,9 @@ require_once("inc/security.php");
 // Initialize database
 $db = new DbConn($config);
 
+// Module feature gating helper (used by sidebar + controllers)
+require_once("inc/module-helper.php");
+
 // Page routing configuration — loaded from external config
 $routes = require __DIR__ . '/app/Config/routes.php';
 

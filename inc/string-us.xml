@@ -535,4 +535,41 @@
 <linesettings>Settings</linesettings>
 <linewebhooklog>Webhook Log</linewebhooklog>
 
+<!-- Tour Operator Module -->
+<touroperator>Tour Operator</touroperator>
+<tourbookings>Bookings</tourbookings>
+<touragents>Agents</touragents>
+<tourlocations>Locations</tourlocations>
+<tourreports>Reports</tourreports>
+<tourbookingnumber>Booking No.</tourbookingnumber>
+<tourtraveldate>Travel Date</tourtraveldate>
+<tourpaxadult>Adult</tourpaxadult>
+<tourpaxchild>Child</tourpaxchild>
+<tourpaxinfant>Infant</tourpaxinfant>
+<tourtotalpax>Total Pax</tourtotalpax>
+<tourpickuplocation>Pickup Location</tourpickuplocation>
+<tourpickuphotel>Hotel / Resort</tourpickuphotel>
+<tourpickuproom>Room No.</tourpickuproom>
+<tourpickuptime>Pickup Time</tourpickuptime>
+<tourentrancefee>Entrance Fee</tourentrancefee>
+<tourvouchernumber>Voucher No.</tourvouchernumber>
+<tourbookingby>Booked By</tourbookingby>
+<touragent>Agent</touragent>
+<tourcommissiontype>Commission Type</tourcommissiontype>
+<tourcommissionadult>Commission (Adult)</tourcommissionadult>
+<tourcommissionchild>Commission (Child)</tourcommissionchild>
+<tourcontractstart>Contract Start</tourcontractstart>
+<tourcontractend>Contract End</tourcontractend>
+<tourcontactline>LINE ID</tourcontactline>
+<tourcontactwhatsapp>WhatsApp</tourcontactwhatsapp>
+<tourlocationtype>Location Type</tourlocationtype>
+<tourstatusdraft>Draft</tourstatusdraft>
+<tourstatusconfirmed>Confirmed</tourstatusconfirmed>
+<tourstatuscompleted>Completed</tourstatuscompleted>
+<tourstatuscancelled>Cancelled</tourstatuscancelled>
+<tourcheckinlist>Customer Check-in List</tourcheckinlist>
+<tourpickupreport>Pickup Report for Driver</tourpickupreport>
+<tournetrate>Net Rate</tournetrate>
+<tourpercentage>Percentage</tourpercentage>
+
 </note>

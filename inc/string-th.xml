@@ -535,4 +535,41 @@
 <linesettings>ตั้งค่า</linesettings>
 <linewebhooklog>บันทึก Webhook</linewebhooklog>
 
+<!-- Tour Operator Module -->
+<touroperator>ทัวร์โอเปอเรเตอร์</touroperator>
+<tourbookings>การจอง</tourbookings>
+<touragents>ตัวแทน</touragents>
+<tourlocations>สถานที่</tourlocations>
+<tourreports>รายงาน</tourreports>
+<tourbookingnumber>เลขที่จอง</tourbookingnumber>
+<tourtraveldate>วันที่เดินทาง</tourtraveldate>
+<tourpaxadult>ผู้ใหญ่</tourpaxadult>
+<tourpaxchild>เด็ก</tourpaxchild>
+<tourpaxinfant>ทารก</tourpaxinfant>
+<tourtotalpax>จำนวนผู้โดยสารทั้งหมด</tourtotalpax>
+<tourpickuplocation>จุดรับ</tourpickuplocation>
+<tourpickuphotel>โรงแรม / รีสอร์ท</tourpickuphotel>
+<tourpickuproom>ห้องพัก</tourpickuproom>
+<tourpickuptime>เวลารับ</tourpickuptime>
+<tourentrancefee>ค่าเข้าสถานที่</tourentrancefee>
+<tourvouchernumber>เลขที่ Voucher</tourvouchernumber>
+<tourbookingby>ผู้จอง</tourbookingby>
+<touragent>ตัวแทน</touragent>
+<tourcommissiontype>ประเภทค่าคอมมิชชั่น</tourcommissiontype>
+<tourcommissionadult>ค่าคอมมิชชั่น (ผู้ใหญ่)</tourcommissionadult>
+<tourcommissionchild>ค่าคอมมิชชั่น (เด็ก)</tourcommissionchild>
+<tourcontractstart>วันเริ่มสัญญา</tourcontractstart>
+<tourcontractend>วันสิ้นสุดสัญญา</tourcontractend>
+<tourcontactline>LINE ID</tourcontactline>
+<tourcontactwhatsapp>WhatsApp</tourcontactwhatsapp>
+<tourlocationtype>ประเภทสถานที่</tourlocationtype>
+<tourstatusdraft>ร่าง</tourstatusdraft>
+<tourstatusconfirmed>ยืนยันแล้ว</tourstatusconfirmed>
+<tourstatuscompleted>เสร็จสิ้น</tourstatuscompleted>
+<tourstatuscancelled>ยกเลิก</tourstatuscancelled>
+<tourcheckinlist>รายชื่อเช็คอินลูกค้า</tourcheckinlist>
+<tourpickupreport>รายงานรับส่งสำหรับคนขับ</tourpickupreport>
+<tournetrate>ราคาเน็ต</tournetrate>
+<tourpercentage>เปอร์เซ็นต์</tourpercentage>
+
 </note>
