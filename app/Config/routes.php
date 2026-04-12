@@ -328,4 +328,10 @@ return [
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],
     'tour_location_delete'   => ['TourLocationController', 'delete'],
+    'tour_booking_list'      => ['TourBookingController', 'index'],
+    'tour_booking_make'      => ['TourBookingController', 'make'],
+    'tour_booking_view'      => ['TourBookingController', 'view'],
+    'tour_booking_store'     => ['TourBookingController', 'store'],
+    'tour_booking_delete'    => ['TourBookingController', 'delete'],
+    'tour_booking_calendar'  => ['TourBookingController', 'calendar', 'standalone'],
 ];
