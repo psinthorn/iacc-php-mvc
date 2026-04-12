@@ -318,4 +318,14 @@ return [
     'qc_invoice'             => ['QuickCreateController', 'invoice'],
     'qc_tax_invoice'         => ['QuickCreateController', 'taxInvoice'],
     'qc_store'               => ['QuickCreateController', 'store'],
+
+    // ========== Tour Operator Module ==========
+    'tour_agent_list'        => ['TourAgentController', 'index'],
+    'tour_agent_make'        => ['TourAgentController', 'make'],
+    'tour_agent_store'       => ['TourAgentController', 'store'],
+    'tour_agent_delete'      => ['TourAgentController', 'delete'],
+    'tour_location_list'     => ['TourLocationController', 'index'],
+    'tour_location_make'     => ['TourLocationController', 'make'],
+    'tour_location_store'    => ['TourLocationController', 'store'],
+    'tour_location_delete'   => ['TourLocationController', 'delete'],
 ];
