@@ -257,6 +257,22 @@ class TourBookingController extends BaseController
         }
     }
 
+    // ─── Print Voucher PDF ─────────────────────────────────────
+
+    public function print(): void
+    {
+        $this->guardModule();
+
+        $id = intval($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            $this->redirect('tour_booking_list');
+            return;
+        }
+
+        include __DIR__ . '/../Views/tour-booking/print.php';
+        exit;
+    }
+
     // ─── Calendar JSON ─────────────────────────────────────────
 
     public function calendar(): void

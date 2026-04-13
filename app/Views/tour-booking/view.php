@@ -98,6 +98,9 @@ $messages = [
                 <a href="index.php?page=tour_booking_make&id=<?= $booking['id'] ?>" class="btn-header btn-header-primary">
                     <i class="fa fa-pencil"></i> <?= $isThai ? 'แก้ไข' : 'Edit' ?>
                 </a>
+                <a href="index.php?page=tour_booking_print&id=<?= $booking['id'] ?>" target="_blank" class="btn-header btn-header-primary">
+                    <i class="fa fa-print"></i> <?= $isThai ? 'พิมพ์ Voucher' : 'Print Voucher' ?>
+                </a>
             </div>
         </div>
     </div>
