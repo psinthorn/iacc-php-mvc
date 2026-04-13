@@ -336,4 +336,7 @@ return [
     'tour_booking_generate'  => ['TourBookingController', 'generateDocuments'],
     'tour_booking_calendar'  => ['TourBookingController', 'calendar', 'standalone'],
     'tour_booking_print'     => ['TourBookingController', 'print', 'standalone'],
+    'tour_report'            => ['TourReportController', 'index'],
+    'tour_report_checkin'    => ['TourReportController', 'checkinPrint', 'standalone'],
+    'tour_report_pickup'     => ['TourReportController', 'pickupPrint', 'standalone'],
 ];
