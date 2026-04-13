@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\TourBooking;
+use App\Services\TourBookingService;
 
 class TourBookingController extends BaseController
 {
@@ -227,6 +228,32 @@ class TourBookingController extends BaseController
             $this->redirect('tour_booking_list', ['msg' => 'deleted']);
         } else {
             $this->redirect('tour_booking_list', ['msg' => 'not_found']);
+        }
+    }
+
+    // ─── Generate Documents ───────────────────────────────────
+
+    public function generateDocuments(): void
+    {
+        $this->guardModule();
+        $this->verifyCsrf();
+
+        $comId = $this->user['com_id'];
+        $id = intval($_POST['id'] ?? 0);
+
+        $booking = $this->bookingModel->findBooking($id, $comId);
+        if (!$booking) {
+            $this->redirect('tour_booking_list', ['msg' => 'not_found']);
+            return;
+        }
+
+        $service = new TourBookingService();
+        $result = $service->generateDocuments($booking, $comId);
+
+        if ($result['success']) {
+            $this->redirect('tour_booking_view', ['id' => $id, 'msg' => 'docs_generated']);
+        } else {
+            $this->redirect('tour_booking_view', ['id' => $id, 'msg' => 'docs_error']);
         }
     }
 

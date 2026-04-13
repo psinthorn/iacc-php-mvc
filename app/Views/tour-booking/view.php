@@ -34,8 +34,10 @@ $custName = ($isThai && !empty($booking['customer_name_th'])) ? $booking['custom
 $agentName = ($isThai && !empty($booking['agent_name_th'])) ? $booking['agent_name_th'] : ($booking['agent_name'] ?: '-');
 
 $messages = [
-    'created' => ['✅', $isThai ? 'สร้างการจองสำเร็จ' : 'Booking created successfully'],
-    'updated' => ['✅', $isThai ? 'อัพเดทสำเร็จ' : 'Booking updated successfully'],
+    'created'        => ['✅', $isThai ? 'สร้างการจองสำเร็จ' : 'Booking created successfully'],
+    'updated'        => ['✅', $isThai ? 'อัพเดทสำเร็จ' : 'Booking updated successfully'],
+    'docs_generated' => ['✅', $isThai ? 'สร้างเอกสารสำเร็จ (PR, PO, ใบส่งของ, ใบแจ้งหนี้)' : 'Documents generated (PR, PO, Delivery, Invoice)'],
+    'docs_error'     => ['⚠️', $isThai ? 'สร้างเอกสารไม่สำเร็จ' : 'Failed to generate documents'],
 ];
 ?>
 
@@ -313,7 +315,14 @@ $messages = [
                 </a>
                 <?php endif; ?>
                 <?php if (!$hasDoc): ?>
-                <p class="doc-empty"><?= $isThai ? 'ยังไม่มีเอกสารที่เชื่อมโยง (สร้างได้จากเมนู Generate Documents)' : 'No linked documents yet (Generate via Phase 4)' ?></p>
+                <form method="post" action="index.php?page=tour_booking_generate" style="display:inline;" onsubmit="return confirm('<?= $isThai ? 'สร้างเอกสาร PR, PO, ใบส่งของ, ใบแจ้งหนี้ จากการจองนี้?' : 'Generate PR, PO, Delivery, and Invoice from this booking?' ?>')">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="id" value="<?= $booking['id'] ?>">
+                    <button type="submit" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:#0d9488; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                        <i class="fa fa-magic"></i> <?= $isThai ? 'สร้างเอกสาร' : 'Generate Documents' ?>
+                    </button>
+                </form>
+                <p class="doc-empty" style="margin-top:8px;"><?= $isThai ? 'จะสร้าง PR → PO → ใบส่งของ → ใบแจ้งหนี้ อัตโนมัติ' : 'Will auto-create PR → PO → Delivery → Invoice' ?></p>
                 <?php endif; ?>
             </div>
         </div>

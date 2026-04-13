@@ -333,5 +333,6 @@ return [
     'tour_booking_view'      => ['TourBookingController', 'view'],
     'tour_booking_store'     => ['TourBookingController', 'store'],
     'tour_booking_delete'    => ['TourBookingController', 'delete'],
+    'tour_booking_generate'  => ['TourBookingController', 'generateDocuments'],
     'tour_booking_calendar'  => ['TourBookingController', 'calendar', 'standalone'],
 ];
