@@ -354,6 +354,27 @@ include_once 'inc/top-navbar.php';
                         </ul>
                     </li>
 
+                    <!-- Tour Operator (module-gated) -->
+                    <?php if (function_exists('isModuleEnabled') && isModuleEnabled(intval($_SESSION['com_id'] ?? 0), 'tour_operator')): ?>
+                    <li>
+                        <a href="#"><i class="fa fa-map"></i> <?=$xml->touroperator ?? 'Tour Operator'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="index.php?page=tour_booking_list"><i class="fa fa-calendar-check-o"></i> <?=$xml->tourbookings ?? 'Bookings'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_agent_list"><i class="fa fa-handshake-o"></i> <?=$xml->touragents ?? 'Agents'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_location_list"><i class="fa fa-map-marker"></i> <?=$xml->tourlocations ?? 'Locations'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_report"><i class="fa fa-bar-chart"></i> <?=$xml->tourreports ?? 'Reports'?></a>
+                            </li>
+                        </ul>
+                    </li>
+                    <?php endif; ?>
+
                     <?php } ?>
                     
                     <!-- Master Data / Settings -->

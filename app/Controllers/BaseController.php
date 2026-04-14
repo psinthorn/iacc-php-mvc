@@ -53,6 +53,9 @@ class BaseController
         require_once __DIR__ . '/../../inc/class.company_filter.php';
         $this->companyFilter = \CompanyFilter::getInstance();
 
+        // Module feature gating helper
+        require_once __DIR__ . '/../../inc/module-helper.php';
+
         // Load user session data
         $this->user = [
             'id'        => $_SESSION['user_id'] ?? 0,
