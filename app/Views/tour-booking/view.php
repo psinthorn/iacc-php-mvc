@@ -197,8 +197,8 @@ $messages = [
                         <th>#</th>
                         <th><?= $isThai ? 'ประเภท' : 'Type' ?></th>
                         <th><?= $isThai ? 'รายละเอียด' : 'Description' ?></th>
-                        <th class="right"><?= $isThai ? 'จำนวน' : 'Qty' ?></th>
-                        <th class="right"><?= $isThai ? 'ราคา/หน่วย' : 'Unit Price' ?></th>
+                        <th class="right"><?= $isThai ? 'ราคา (ไทย)' : 'Price (Thai)' ?></th>
+                        <th class="right"><?= $isThai ? 'ราคา (ต่างชาติ)' : 'Price (Foreign)' ?></th>
                         <th class="right"><?= $isThai ? 'ยอดรวม' : 'Amount' ?></th>
                     </tr>
                 </thead>
@@ -212,8 +212,8 @@ $messages = [
                             </span>
                         </td>
                         <td><?= htmlspecialchars($item['description']) ?></td>
-                        <td class="right"><?= intval($item['quantity']) ?></td>
-                        <td class="right"><?= number_format($item['unit_price'], 2) ?></td>
+                        <td class="right"><?= number_format(floatval($item['price_thai'] ?? 0), 2) ?></td>
+                        <td class="right"><?= number_format(floatval($item['price_foreigner'] ?? 0), 2) ?></td>
                         <td class="right" style="font-weight:600;"><?= number_format($item['amount'], 2) ?></td>
                     </tr>
                     <?php endforeach; ?>
@@ -239,42 +239,6 @@ $messages = [
             </div>
         </div>
 
-        <!-- Passengers -->
-        <?php if (!empty($booking['pax'])): ?>
-        <div class="vw-card">
-            <h3><i class="fa fa-users"></i> <?= $isThai ? 'รายชื่อผู้เดินทาง' : 'Passenger List' ?> (<?= count($booking['pax']) ?>)</h3>
-            <table class="vw-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th><?= $isThai ? 'ประเภท' : 'Type' ?></th>
-                        <th><?= $isThai ? 'ชื่อ-นามสกุล' : 'Full Name' ?></th>
-                        <th><?= $isThai ? 'สัญชาติ' : 'Nationality' ?></th>
-                        <th><?= $isThai ? 'พาสปอร์ต' : 'Passport #' ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($booking['pax'] as $idx => $p):
-                        $paxColors = ['adult' => '#0d9488', 'child' => '#f59e0b', 'infant' => '#ec4899'];
-                        $pc = $paxColors[$p['pax_type']] ?? '#64748b';
-                    ?>
-                    <tr>
-                        <td><?= $idx + 1 ?></td>
-                        <td>
-                            <span class="pax-badge" style="background: <?= $pc ?>18; color: <?= $pc ?>;">
-                                <?= $paxTypeLabels[$p['pax_type']] ?? $p['pax_type'] ?>
-                            </span>
-                        </td>
-                        <td style="font-weight:500;"><?= htmlspecialchars($p['full_name']) ?></td>
-                        <td><?= htmlspecialchars($p['nationality'] ?: '-') ?></td>
-                        <td><?= htmlspecialchars($p['passport_number'] ?: '-') ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <?php endif; ?>
-
         <!-- Remark -->
         <?php if (!empty($booking['remark'])): ?>
         <div class="vw-card">
@@ -292,21 +256,21 @@ $messages = [
                 if (!empty($booking['pr_id'])):
                     $hasDoc = true;
                 ?>
-                <a href="index.php?page=pr&id=<?= $booking['pr_id'] ?>" class="doc-link" style="color:#6366f1;">
+                <a href="index.php?page=pr_view&id=<?= $booking['pr_id'] ?>" class="doc-link" style="color:#6366f1;">
                     <i class="fa fa-file-text-o"></i> PR #<?= $booking['pr_id'] ?>
                 </a>
                 <?php endif; ?>
                 <?php if (!empty($booking['po_id'])):
                     $hasDoc = true;
                 ?>
-                <a href="index.php?page=po&id=<?= $booking['po_id'] ?>" class="doc-link" style="color:#0d9488;">
+                <a href="index.php?page=po_view&id=<?= $booking['po_id'] ?>" class="doc-link" style="color:#0d9488;">
                     <i class="fa fa-file-o"></i> PO #<?= $booking['po_id'] ?>
                 </a>
                 <?php endif; ?>
                 <?php if (!empty($booking['invoice_id'])):
                     $hasDoc = true;
                 ?>
-                <a href="index.php?page=iv&id=<?= $booking['invoice_id'] ?>" class="doc-link" style="color:#f59e0b;">
+                <a href="index.php?page=compl_view&id=<?= $booking['invoice_id'] ?>" class="doc-link" style="color:#f59e0b;">
                     <i class="fa fa-file-text"></i> Invoice #<?= $booking['invoice_id'] ?>
                 </a>
                 <?php endif; ?>

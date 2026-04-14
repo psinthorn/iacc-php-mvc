@@ -284,23 +284,35 @@ class TourBooking extends BaseModel
         mysqli_query($this->conn, "DELETE FROM tour_booking_items WHERE booking_id = $bid");
 
         foreach ($items as $item) {
-            $amount = floatval($item['quantity'] ?? 1) * floatval($item['unit_price'] ?? 0);
+            $priceThai     = floatval($item['price_thai'] ?? 0);
+            $priceForeign  = floatval($item['price_foreigner'] ?? 0);
+            $qtyThai       = intval($item['qty_thai'] ?? 0);
+            $qtyForeigner  = intval($item['qty_foreigner'] ?? 0);
+            $amount        = ($qtyThai * $priceThai) + ($qtyForeigner * $priceForeign);
+            // Keep legacy fields for backward compat
+            $quantity  = $qtyThai + $qtyForeigner;
+            $unitPrice = $quantity > 0 ? ($amount / $quantity) : 0;
+
             $vals = sprintf(
-                "'%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+                "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
                 $bid,
                 sql_escape($item['item_type'] ?? 'tour'),
                 sql_escape($item['description'] ?? ''),
                 intval($item['contract_rate_id'] ?? 0),
                 sql_escape($item['rate_label'] ?? ''),
-                intval($item['quantity'] ?? 1),
-                floatval($item['unit_price'] ?? 0),
+                $quantity,
+                $unitPrice,
+                $priceThai,
+                $priceForeign,
+                $qtyThai,
+                $qtyForeigner,
                 $amount,
                 sql_escape($item['notes'] ?? '')
             );
 
             $args = [];
             $args['table'] = 'tour_booking_items';
-            $args['columns'] = 'booking_id, item_type, description, contract_rate_id, rate_label, quantity, unit_price, amount, notes';
+            $args['columns'] = 'booking_id, item_type, description, contract_rate_id, rate_label, quantity, unit_price, price_thai, price_foreigner, qty_thai, qty_foreigner, amount, notes';
             $args['value'] = $vals;
             $this->hard->insertDB($args);
         }
@@ -329,9 +341,10 @@ class TourBooking extends BaseModel
 
         foreach ($paxList as $pax) {
             $vals = sprintf(
-                "'%s','%s','%s','%s','%s','%s'",
+                "'%s','%s','%s','%s','%s','%s','%s'",
                 $bid,
                 sql_escape($pax['pax_type'] ?? 'adult'),
+                intval($pax['is_thai'] ?? 0),
                 sql_escape($pax['full_name'] ?? ''),
                 sql_escape($pax['nationality'] ?? ''),
                 sql_escape($pax['passport_number'] ?? ''),
@@ -340,7 +353,7 @@ class TourBooking extends BaseModel
 
             $args = [];
             $args['table'] = 'tour_booking_pax';
-            $args['columns'] = 'booking_id, pax_type, full_name, nationality, passport_number, notes';
+            $args['columns'] = 'booking_id, pax_type, is_thai, full_name, nationality, passport_number, notes';
             $args['value'] = $vals;
             $this->hard->insertDB($args);
         }
@@ -431,6 +444,125 @@ class TourBooking extends BaseModel
         $rows = [];
         while ($result && $row = mysqli_fetch_assoc($result)) {
             $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    // ─── Customer Search (AJAX) ────────────────────────────────
+
+    /**
+     * Search customers by name for autocomplete
+     */
+    public function searchCustomers(int $comId, string $term, int $limit = 15): array
+    {
+        $s = sql_escape(trim($term));
+        $sql = "SELECT id, name_en, name_th, phone, email
+                FROM company
+                WHERE company_id = " . intval($comId) . "
+                  AND customer = '1'
+                  AND deleted_at IS NULL
+                  AND (name_en LIKE '%$s%' OR name_th LIKE '%$s%' OR phone LIKE '%$s%' OR email LIKE '%$s%')
+                ORDER BY name_en
+                LIMIT " . intval($limit);
+
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    /**
+     * Quick-create a customer record
+     */
+    public function quickCreateCustomer(int $comId, string $nameEn, string $phone = ''): int
+    {
+        $vals = sprintf(
+            "'%s','%s','%s','1'",
+            intval($comId),
+            sql_escape($nameEn),
+            sql_escape($phone)
+        );
+
+        $args = [];
+        $args['table'] = 'company';
+        $args['columns'] = 'company_id, name_en, phone, customer';
+        $args['value'] = $vals;
+        return intval($this->hard->insertDbMax($args));
+    }
+
+    /**
+     * Search products (type + model tables) for company
+     */
+    public function searchProducts(int $comId, string $term, int $limit = 15): array
+    {
+        $s = sql_escape(trim($term));
+        $cid = intval($comId);
+        $lim = intval($limit);
+
+        // Search model table first (actual products with prices)
+        $sql = "SELECT m.id, m.model_name as name, CONCAT(t.name, COALESCE(CONCAT(' - ', m.des), '')) as des,
+                       t.name as category_name, m.price
+                FROM model m
+                LEFT JOIN type t ON m.type_id = t.id
+                WHERE m.company_id = $cid
+                  AND m.deleted_at IS NULL
+                  AND (m.model_name LIKE '%$s%' OR m.des LIKE '%$s%' OR t.name LIKE '%$s%')
+                ORDER BY m.model_name
+                LIMIT $lim";
+
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $row['source'] = 'model';
+            $rows[] = $row;
+        }
+
+        // Also search type table (categories) if not enough results
+        if (count($rows) < $lim) {
+            $remaining = $lim - count($rows);
+            $sql2 = "SELECT t.id, t.name, t.des, c.name as category_name, 0 as price
+                     FROM type t
+                     LEFT JOIN category c ON t.cat_id = c.id
+                     WHERE t.company_id = $cid
+                       AND t.deleted_at IS NULL
+                       AND (t.name LIKE '%$s%' OR t.des LIKE '%$s%')
+                     ORDER BY t.name
+                     LIMIT $remaining";
+
+            $result2 = mysqli_query($this->conn, $sql2);
+            while ($result2 && $row2 = mysqli_fetch_assoc($result2)) {
+                $row2['source'] = 'type';
+                $rows[] = $row2;
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Search staff (user table) for company
+     */
+    public function searchStaff(int $comId, string $term, int $limit = 15): array
+    {
+        $s = sql_escape(trim($term));
+        $sql = "SELECT usr_id, name, surname, email, phone
+                FROM user
+                WHERE com_id = " . intval($comId) . "
+                  AND (name LIKE '%$s%' OR surname LIKE '%$s%' OR email LIKE '%$s%')
+                ORDER BY name
+                LIMIT " . intval($limit);
+
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = [
+                'id'   => $row['usr_id'],
+                'name' => trim($row['name'] . ' ' . $row['surname']),
+                'email' => $row['email'],
+                'phone' => $row['phone'],
+            ];
         }
         return $rows;
     }

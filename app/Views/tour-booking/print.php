@@ -248,8 +248,8 @@ if (!empty($items)) {
         <th style="width:30px;">#</th>
         <th style="width:65px;">' . ($isThai ? 'ประเภท' : 'Type') . '</th>
         <th>' . ($isThai ? 'รายละเอียด' : 'Description') . '</th>
-        <th class="right" style="width:40px;">' . ($isThai ? 'จำนวน' : 'Qty') . '</th>
-        <th class="right" style="width:80px;">' . ($isThai ? 'ราคา/หน่วย' : 'Unit Price') . '</th>
+        <th class="right" style="width:80px;">' . ($isThai ? 'ราคา(ไทย)' : 'Thai Price') . '</th>
+        <th class="right" style="width:80px;">' . ($isThai ? 'ราคา(ต่างชาติ)' : 'Foreign Price') . '</th>
         <th class="right" style="width:80px;">' . ($isThai ? 'ยอดรวม' : 'Amount') . '</th>
     </tr>';
 
@@ -259,8 +259,8 @@ if (!empty($items)) {
             <td class="center">' . ($idx + 1) . '</td>
             <td><span class="type-badge" style="background:#e0f2f1; color:#009688;">' . htmlspecialchars($typeLabel) . '</span></td>
             <td>' . htmlspecialchars($item['description']) . (!empty($item['notes']) ? '<br><span style="color:#999; font-size:9px;">' . htmlspecialchars($item['notes']) . '</span>' : '') . '</td>
-            <td class="right">' . intval($item['quantity']) . '</td>
-            <td class="right">' . number_format(floatval($item['unit_price']), 2) . '</td>
+            <td class="right">' . number_format(floatval($item['price_thai'] ?? 0), 2) . '</td>
+            <td class="right">' . number_format(floatval($item['price_foreigner'] ?? 0), 2) . '</td>
             <td class="right" style="font-weight:bold;">' . number_format(floatval($item['amount']), 2) . '</td>
         </tr>';
     }
@@ -279,31 +279,6 @@ if (!empty($items)) {
         $html .= '<tr><td>VAT</td><td class="right">' . number_format(floatval($booking['vat']), 2) . '</td></tr>';
     }
     $html .= '<tr class="grand"><td>' . ($isThai ? 'ยอดรวมทั้งหมด' : 'Grand Total') . '</td><td class="right">฿' . number_format(floatval($booking['total_amount']), 2) . '</td></tr>';
-    $html .= '</table>';
-}
-
-// ── Passenger List ───────────────────────────
-if (!empty($paxList)) {
-    $html .= '<div class="section-title">' . ($isThai ? 'รายชื่อผู้เดินทาง' : 'Passenger List') . '</div>';
-    $html .= '<table class="pax-table">';
-    $html .= '<tr>
-        <th style="width:30px;">#</th>
-        <th style="width:60px;">' . ($isThai ? 'ประเภท' : 'Type') . '</th>
-        <th>' . ($isThai ? 'ชื่อ-นามสกุล' : 'Full Name') . '</th>
-        <th style="width:90px;">' . ($isThai ? 'สัญชาติ' : 'Nationality') . '</th>
-        <th style="width:100px;">' . ($isThai ? 'พาสปอร์ต' : 'Passport #') . '</th>
-    </tr>';
-
-    foreach ($paxList as $idx => $p) {
-        $pLabel = $paxTypeLabels[$p['pax_type']] ?? $p['pax_type'];
-        $html .= '<tr>
-            <td class="center">' . ($idx + 1) . '</td>
-            <td>' . htmlspecialchars($pLabel) . '</td>
-            <td style="font-weight:bold;">' . htmlspecialchars($p['full_name']) . '</td>
-            <td>' . htmlspecialchars($p['nationality'] ?: '-') . '</td>
-            <td>' . htmlspecialchars($p['passport_number'] ?: '-') . '</td>
-        </tr>';
-    }
     $html .= '</table>';
 }
 

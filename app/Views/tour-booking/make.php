@@ -79,6 +79,30 @@ $pax   = $booking['pax'] ?? [];
     .bk-row.cols-2, .bk-row.cols-3, .bk-row.cols-4 { grid-template-columns: 1fr; }
     .dyn-table { font-size: 11px; }
 }
+
+/* Customer autocomplete */
+.ac-wrap { position: relative; }
+.ac-wrap input[type="text"] { width: 100%; }
+.ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.1); display: none; }
+.ac-list.show { display: block; }
+.ac-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f8fafc; }
+.ac-item:hover, .ac-item.active { background: #f0fdfa; color: #0d9488; }
+.ac-item .sub { font-size: 11px; color: #94a3b8; }
+.ac-item.create-new { color: #0d9488; font-weight: 600; border-top: 1px solid #e2e8f0; }
+.ac-item.create-new i { margin-right: 4px; }
+.ac-selected { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; background: #f0fdfa; border: 1px solid #0d9488; border-radius: 8px; font-size: 13px; color: #0d9488; font-weight: 600; }
+.ac-selected .ac-clear { cursor: pointer; color: #ef4444; font-size: 14px; }
+
+/* Quick create modal */
+.qc-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 10050; }
+.qc-overlay.show { display: flex; align-items: center; justify-content: center; }
+.qc-modal { background: white; border-radius: 14px; padding: 28px; width: 400px; max-width: 90vw; }
+.qc-modal h4 { margin: 0 0 16px; font-size: 16px; color: #1e293b; }
+.qc-modal .bk-field { margin-bottom: 12px; }
+.qc-modal .qc-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.qc-modal .qc-btn { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+.qc-modal .qc-btn-save { background: #0d9488; color: white; }
+.qc-modal .qc-btn-cancel { background: #f1f5f9; color: #64748b; }
 </style>
 
 <div class="master-data-container">
@@ -137,14 +161,31 @@ $pax   = $booking['pax'] ?? [];
                 <div class="bk-row cols-3">
                     <div class="bk-field">
                         <label><?= $isThai ? 'ลูกค้า' : 'Customer' ?></label>
-                        <select name="customer_id">
-                            <option value="0"><?= $isThai ? '-- เลือก --' : '-- Select --' ?></option>
-                            <?php foreach ($customers as $c): ?>
-                            <option value="<?= $c['id'] ?>" <?= intval($booking['customer_id'] ?? 0) === intval($c['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($c['name_en']) ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <input type="hidden" name="customer_id" id="customer_id" value="<?= intval($booking['customer_id'] ?? 0) ?>">
+                        <?php
+                        $preselectedName = '';
+                        if (!empty($booking['customer_id'])) {
+                            foreach ($customers as $c) {
+                                if (intval($c['id']) === intval($booking['customer_id'])) {
+                                    $preselectedName = $c['name_en'];
+                                    break;
+                                }
+                            }
+                        }
+                        ?>
+                        <div class="ac-wrap" id="customerAcWrap">
+                            <?php if (!empty($preselectedName)): ?>
+                            <div class="ac-selected" id="customerSelected">
+                                <?= htmlspecialchars($preselectedName) ?>
+                                <span class="ac-clear" onclick="clearCustomer()">&times;</span>
+                            </div>
+                            <input type="text" id="customerSearch" placeholder="<?= $isThai ? 'พิมพ์ค้นหาลูกค้า...' : 'Type to search customer...' ?>" style="display:none;" autocomplete="off">
+                            <?php else: ?>
+                            <div class="ac-selected" id="customerSelected" style="display:none;"></div>
+                            <input type="text" id="customerSearch" placeholder="<?= $isThai ? 'พิมพ์ค้นหาลูกค้า...' : 'Type to search customer...' ?>" autocomplete="off">
+                            <?php endif; ?>
+                            <div class="ac-list" id="customerAcList"></div>
+                        </div>
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'ตัวแทน' : 'Agent' ?></label>
@@ -159,22 +200,27 @@ $pax   = $booking['pax'] ?? [];
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'ผู้จอง' : 'Booking By' ?></label>
-                        <input type="text" name="booking_by" value="<?= htmlspecialchars($booking['booking_by'] ?? '') ?>">
+                        <div class="ac-wrap">
+                            <input type="text" name="booking_by" id="bookingBySearch" autocomplete="off"
+                                   value="<?= htmlspecialchars($booking['booking_by'] ?? '') ?>"
+                                   placeholder="<?= $isThai ? 'พิมพ์ชื่อพนักงาน...' : 'Type staff name...' ?>">
+                            <div class="ac-list" id="bookingByAcList"></div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="bk-row cols-4">
                     <div class="bk-field">
                         <label><?= $isThai ? 'ผู้ใหญ่' : 'Adults' ?></label>
-                        <input type="number" name="pax_adult" min="0" value="<?= intval($booking['pax_adult'] ?? 0) ?>">
+                        <input type="number" name="pax_adult" min="0" value="<?= intval($booking['pax_adult'] ?? 0) ?>" onchange="syncPaxQty()">
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'เด็ก' : 'Children' ?></label>
-                        <input type="number" name="pax_child" min="0" value="<?= intval($booking['pax_child'] ?? 0) ?>">
+                        <input type="number" name="pax_child" min="0" value="<?= intval($booking['pax_child'] ?? 0) ?>" onchange="syncPaxQty()">
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'ทารก' : 'Infants' ?></label>
-                        <input type="number" name="pax_infant" min="0" value="<?= intval($booking['pax_infant'] ?? 0) ?>">
+                        <input type="number" name="pax_infant" min="0" value="<?= intval($booking['pax_infant'] ?? 0) ?>" onchange="syncPaxQty()">
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'สกุลเงิน' : 'Currency' ?></label>
@@ -221,13 +267,18 @@ $pax   = $booking['pax'] ?? [];
             <div class="bk-card">
                 <h3><i class="fa fa-list"></i> <?= $isThai ? 'รายการ' : 'Items' ?></h3>
 
+                <div style="margin-bottom:12px; padding:8px 14px; background:#f0fdfa; border-radius:8px; font-size:12px; color:#0d9488;">
+                    <i class="fa fa-info-circle"></i>
+                    <?= $isThai ? 'จำนวนผู้เดินทาง' : 'Total Pax' ?>: <strong id="displayPaxCount">0</strong>
+                </div>
+
                 <table class="dyn-table" id="itemsTable">
                     <thead>
                         <tr>
                             <th style="width:120px;"><?= $isThai ? 'ประเภท' : 'Type' ?></th>
                             <th><?= $isThai ? 'รายละเอียด' : 'Description' ?></th>
-                            <th style="width:60px;"><?= $isThai ? 'จำนวน' : 'Qty' ?></th>
-                            <th style="width:110px;"><?= $isThai ? 'ราคาต่อหน่วย' : 'Unit Price' ?></th>
+                            <th style="width:110px;"><?= $isThai ? 'ราคา (ไทย)' : 'Price (Thai)' ?></th>
+                            <th style="width:110px;"><?= $isThai ? 'ราคา (ต่างชาติ)' : 'Price (Foreign)' ?></th>
                             <th style="width:110px;"><?= $isThai ? 'ยอดรวม' : 'Amount' ?></th>
                             <th style="width:32px;"></th>
                         </tr>
@@ -245,11 +296,13 @@ $pax   = $booking['pax'] ?? [];
                                     <input type="hidden" name="item_contract_rate_id[]" value="<?= intval($item['contract_rate_id'] ?? 0) ?>">
                                     <input type="hidden" name="item_rate_label[]" value="<?= htmlspecialchars($item['rate_label'] ?? '') ?>">
                                     <input type="hidden" name="item_notes[]" value="<?= htmlspecialchars($item['notes'] ?? '') ?>">
+                                    <input type="hidden" name="item_qty_thai[]" class="qty-thai" value="<?= intval($item['qty_thai'] ?? 0) ?>">
+                                    <input type="hidden" name="item_qty_foreigner[]" class="qty-foreigner" value="<?= intval($item['qty_foreigner'] ?? 0) ?>">
                                 </td>
-                                <td><input type="text" name="item_description[]" value="<?= htmlspecialchars($item['description']) ?>"></td>
-                                <td><input type="number" name="item_quantity[]" class="num-input" min="1" value="<?= intval($item['quantity']) ?>" onchange="calcRow(this)"></td>
-                                <td><input type="number" name="item_unit_price[]" class="num-input" step="0.01" min="0" value="<?= number_format($item['unit_price'], 2, '.', '') ?>" onchange="calcRow(this)"></td>
-                                <td><input type="text" name="item_amount[]" class="num-input" value="<?= number_format($item['amount'], 2, '.', '') ?>" readonly tabindex="-1" style="background:#f8fafc;"></td>
+                                <td><div class="ac-wrap"><input type="text" name="item_description[]" class="prod-search" autocomplete="off" value="<?= htmlspecialchars($item['description']) ?>" placeholder="<?= $isThai ? 'ค้นหาสินค้า...' : 'Search product...' ?>"><div class="ac-list prod-ac-list"></div></div></td>
+                                <td><input type="number" name="item_price_thai[]" class="num-input price-thai" step="0.01" min="0" value="<?= number_format(floatval($item['price_thai'] ?? 0), 2, '.', '') ?>" onchange="calcRow(this)"></td>
+                                <td><input type="number" name="item_price_foreigner[]" class="num-input price-foreign" step="0.01" min="0" value="<?= number_format(floatval($item['price_foreigner'] ?? 0), 2, '.', '') ?>" onchange="calcRow(this)"></td>
+                                <td><input type="text" name="item_amount[]" class="num-input" value="<?= number_format(floatval($item['amount'] ?? 0), 2, '.', '') ?>" readonly tabindex="-1" style="background:#f8fafc;"></td>
                                 <td><button type="button" class="btn-rm-row" onclick="removeRow(this, 'item')"><i class="fa fa-times"></i></button></td>
                             </tr>
                             <?php endforeach; ?>
@@ -264,10 +317,12 @@ $pax   = $booking['pax'] ?? [];
                                     <input type="hidden" name="item_contract_rate_id[]" value="0">
                                     <input type="hidden" name="item_rate_label[]" value="">
                                     <input type="hidden" name="item_notes[]" value="">
+                                    <input type="hidden" name="item_qty_thai[]" class="qty-thai" value="0">
+                                    <input type="hidden" name="item_qty_foreigner[]" class="qty-foreigner" value="0">
                                 </td>
-                                <td><input type="text" name="item_description[]" value=""></td>
-                                <td><input type="number" name="item_quantity[]" class="num-input" min="1" value="1" onchange="calcRow(this)"></td>
-                                <td><input type="number" name="item_unit_price[]" class="num-input" step="0.01" min="0" value="0.00" onchange="calcRow(this)"></td>
+                                <td><div class="ac-wrap"><input type="text" name="item_description[]" class="prod-search" autocomplete="off" value="" placeholder="<?= $isThai ? 'ค้นหาสินค้า...' : 'Search product...' ?>"><div class="ac-list prod-ac-list"></div></div></td>
+                                <td><input type="number" name="item_price_thai[]" class="num-input price-thai" step="0.01" min="0" value="0.00" onchange="calcRow(this)"></td>
+                                <td><input type="number" name="item_price_foreigner[]" class="num-input price-foreign" step="0.01" min="0" value="0.00" onchange="calcRow(this)"></td>
                                 <td><input type="text" name="item_amount[]" class="num-input" value="0.00" readonly tabindex="-1" style="background:#f8fafc;"></td>
                                 <td><button type="button" class="btn-rm-row" onclick="removeRow(this, 'item')"><i class="fa fa-times"></i></button></td>
                             </tr>
@@ -295,60 +350,7 @@ $pax   = $booking['pax'] ?? [];
                 </div>
             </div>
 
-            <!-- Section 4: Passengers -->
-            <div class="bk-card">
-                <h3><i class="fa fa-users"></i> <?= $isThai ? 'ผู้เดินทาง' : 'Passengers' ?></h3>
-
-                <table class="dyn-table" id="paxTable">
-                    <thead>
-                        <tr>
-                            <th style="width:100px;"><?= $isThai ? 'ประเภท' : 'Type' ?></th>
-                            <th><?= $isThai ? 'ชื่อ-นามสกุล' : 'Full Name' ?></th>
-                            <th style="width:120px;"><?= $isThai ? 'สัญชาติ' : 'Nationality' ?></th>
-                            <th style="width:140px;"><?= $isThai ? 'เลขพาสปอร์ต' : 'Passport #' ?></th>
-                            <th style="width:32px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="paxBody">
-                        <?php if (!empty($pax)): ?>
-                            <?php foreach ($pax as $p): ?>
-                            <tr class="pax-row">
-                                <td>
-                                    <select name="pax_type[]">
-                                        <?php foreach ($paxTypes as $k => $l): ?>
-                                        <option value="<?= $k ?>" <?= $p['pax_type'] === $k ? 'selected' : '' ?>><?= $l ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <input type="hidden" name="pax_notes[]" value="<?= htmlspecialchars($p['notes'] ?? '') ?>">
-                                </td>
-                                <td><input type="text" name="pax_full_name[]" value="<?= htmlspecialchars($p['full_name']) ?>"></td>
-                                <td><input type="text" name="pax_nationality[]" value="<?= htmlspecialchars($p['nationality'] ?? '') ?>"></td>
-                                <td><input type="text" name="pax_passport[]" value="<?= htmlspecialchars($p['passport_number'] ?? '') ?>"></td>
-                                <td><button type="button" class="btn-rm-row" onclick="removeRow(this, 'pax')"><i class="fa fa-times"></i></button></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr class="pax-row">
-                                <td>
-                                    <select name="pax_type[]">
-                                        <?php foreach ($paxTypes as $k => $l): ?>
-                                        <option value="<?= $k ?>"><?= $l ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <input type="hidden" name="pax_notes[]" value="">
-                                </td>
-                                <td><input type="text" name="pax_full_name[]" value=""></td>
-                                <td><input type="text" name="pax_nationality[]" value=""></td>
-                                <td><input type="text" name="pax_passport[]" value=""></td>
-                                <td><button type="button" class="btn-rm-row" onclick="removeRow(this, 'pax')"><i class="fa fa-times"></i></button></td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-                <button type="button" class="btn-add-row" onclick="addPaxRow()"><i class="fa fa-plus"></i> <?= $isThai ? 'เพิ่มผู้เดินทาง' : 'Add Passenger' ?></button>
-            </div>
-
-            <!-- Section 5: Remark -->
+            <!-- Section 4: Remark -->
             <div class="bk-card">
                 <h3><i class="fa fa-sticky-note-o"></i> <?= $isThai ? 'หมายเหตุ' : 'Remark' ?></h3>
                 <div class="bk-field">
@@ -367,11 +369,32 @@ $pax   = $booking['pax'] ?? [];
     </form>
 </div>
 
+<!-- Quick Create Customer Modal -->
+<div class="qc-overlay" id="qcOverlay">
+    <div class="qc-modal">
+        <h4><i class="fa fa-user-plus" style="color:#0d9488;"></i> <?= $isThai ? 'สร้างลูกค้าใหม่' : 'Create New Customer' ?></h4>
+        <div class="bk-field">
+            <label><?= $isThai ? 'ชื่อลูกค้า' : 'Customer Name' ?> <span class="req">*</span></label>
+            <input type="text" id="qcName" placeholder="<?= $isThai ? 'ชื่อลูกค้า' : 'Customer name' ?>">
+        </div>
+        <div class="bk-field">
+            <label><?= $isThai ? 'เบอร์โทร' : 'Phone' ?></label>
+            <input type="text" id="qcPhone" placeholder="<?= $isThai ? 'เบอร์โทรศัพท์' : 'Phone number' ?>">
+        </div>
+        <div class="qc-actions">
+            <button type="button" class="qc-btn qc-btn-cancel" onclick="closeQcModal()"><?= $isThai ? 'ยกเลิก' : 'Cancel' ?></button>
+            <button type="button" class="qc-btn qc-btn-save" onclick="saveQuickCustomer()"><?= $isThai ? 'สร้าง' : 'Create' ?></button>
+        </div>
+    </div>
+</div>
+
 <script>
-// ─── Item Type options template ────────────────────────────
+// ─── Config ────────────────────────────────────────────────
 var itemTypeOptions = <?= json_encode(array_map(function($k, $l) { return '<option value="' . $k . '">' . $l . '</option>'; }, array_keys($itemTypes), $itemTypes)) ?>;
 var paxTypeOptions = <?= json_encode(array_map(function($k, $l) { return '<option value="' . $k . '">' . $l . '</option>'; }, array_keys($paxTypes), $paxTypes)) ?>;
+var csrfToken = '<?= csrf_token() ?>';
 
+// ─── Item Rows ─────────────────────────────────────────────
 function addItemRow() {
     var tbody = document.getElementById('itemsBody');
     var tr = document.createElement('tr');
@@ -379,42 +402,55 @@ function addItemRow() {
     tr.innerHTML = '<td><select name="item_type[]">' + itemTypeOptions.join('') + '</select>' +
         '<input type="hidden" name="item_contract_rate_id[]" value="0">' +
         '<input type="hidden" name="item_rate_label[]" value="">' +
-        '<input type="hidden" name="item_notes[]" value=""></td>' +
-        '<td><input type="text" name="item_description[]" value=""></td>' +
-        '<td><input type="number" name="item_quantity[]" class="num-input" min="1" value="1" onchange="calcRow(this)"></td>' +
-        '<td><input type="number" name="item_unit_price[]" class="num-input" step="0.01" min="0" value="0.00" onchange="calcRow(this)"></td>' +
+        '<input type="hidden" name="item_notes[]" value="">' +
+        '<input type="hidden" name="item_qty_thai[]" class="qty-thai" value="0">' +
+        '<input type="hidden" name="item_qty_foreigner[]" class="qty-foreigner" value="0"></td>' +
+        '<td><div class="ac-wrap"><input type="text" name="item_description[]" class="prod-search" autocomplete="off" value="" placeholder="<?= $isThai ? 'ค้นหาสินค้า...' : 'Search product...' ?>"><div class="ac-list prod-ac-list"></div></div></td>' +
+        '<td><input type="number" name="item_price_thai[]" class="num-input price-thai" step="0.01" min="0" value="0.00" onchange="calcRow(this)"></td>' +
+        '<td><input type="number" name="item_price_foreigner[]" class="num-input price-foreign" step="0.01" min="0" value="0.00" onchange="calcRow(this)"></td>' +
         '<td><input type="text" name="item_amount[]" class="num-input" value="0.00" readonly tabindex="-1" style="background:#f8fafc;"></td>' +
         '<td><button type="button" class="btn-rm-row" onclick="removeRow(this,\'item\')"><i class="fa fa-times"></i></button></td>';
     tbody.appendChild(tr);
-}
-
-function addPaxRow() {
-    var tbody = document.getElementById('paxBody');
-    var tr = document.createElement('tr');
-    tr.className = 'pax-row';
-    tr.innerHTML = '<td><select name="pax_type[]">' + paxTypeOptions.join('') + '</select>' +
-        '<input type="hidden" name="pax_notes[]" value=""></td>' +
-        '<td><input type="text" name="pax_full_name[]" value=""></td>' +
-        '<td><input type="text" name="pax_nationality[]" value=""></td>' +
-        '<td><input type="text" name="pax_passport[]" value=""></td>' +
-        '<td><button type="button" class="btn-rm-row" onclick="removeRow(this,\'pax\')"><i class="fa fa-times"></i></button></td>';
-    tbody.appendChild(tr);
+    syncPaxQty(); // sync qty fields
 }
 
 function removeRow(btn, type) {
-    var tbody = type === 'item' ? document.getElementById('itemsBody') : document.getElementById('paxBody');
+    if (type !== 'item') return;
+    var tbody = document.getElementById('itemsBody');
     if (tbody.rows.length > 1) {
         btn.closest('tr').remove();
-        if (type === 'item') calcTotals();
+        calcTotals();
     }
 }
 
-function calcRow(el) {
-    var row = el.closest('tr');
-    var qty = parseFloat(row.querySelector('[name="item_quantity[]"]').value) || 0;
-    var price = parseFloat(row.querySelector('[name="item_unit_price[]"]').value) || 0;
-    row.querySelector('[name="item_amount[]"]').value = (qty * price).toFixed(2);
+// ─── Pax Qty Sync (from header pax fields) ─────────
+function syncPaxQty() {
+    var adults = parseInt(document.querySelector('[name="pax_adult"]').value) || 0;
+    var children = parseInt(document.querySelector('[name="pax_child"]').value) || 0;
+    var infants = parseInt(document.querySelector('[name="pax_infant"]').value) || 0;
+    var totalCount = adults + children + infants;
+
+    document.getElementById('displayPaxCount').textContent = totalCount;
+
+    // Update hidden qty fields on all item rows
+    document.querySelectorAll('#itemsBody .qty-thai').forEach(function(el) { el.value = totalCount; });
+    document.querySelectorAll('#itemsBody .qty-foreigner').forEach(function(el) { el.value = totalCount; });
+
+    // Recalculate all item amounts
+    document.querySelectorAll('#itemsBody .item-row').forEach(function(row) {
+        var priceThai = parseFloat(row.querySelector('.price-thai').value) || 0;
+        var priceForeign = parseFloat(row.querySelector('.price-foreign').value) || 0;
+        var amount = (totalCount * priceThai) + (totalCount * priceForeign);
+        row.querySelector('[name="item_amount[]"]').value = amount.toFixed(2);
+    });
+
     calcTotals();
+}
+
+// ─── Row Calculation ───────────────────────────────────────
+function calcRow(el) {
+    // When a price changes, recalculate using pax counts
+    syncPaxQty();
 }
 
 function calcTotals() {
@@ -431,6 +467,209 @@ function calcTotals() {
     document.getElementById('total_amount').value = total.toFixed(2);
 }
 
-// Initial calc on page load
-document.addEventListener('DOMContentLoaded', function() { calcTotals(); });
+// ─── Customer Autocomplete ─────────────────────────────────
+var acTimer = null;
+var acInput = document.getElementById('customerSearch');
+var acList = document.getElementById('customerAcList');
+
+if (acInput) {
+    acInput.addEventListener('input', function() {
+        clearTimeout(acTimer);
+        var q = this.value.trim();
+        if (q.length < 1) { acList.classList.remove('show'); return; }
+        acTimer = setTimeout(function() {
+            fetch('index.php?page=tour_booking_customer_search&q=' + encodeURIComponent(q))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var html = '';
+                    data.forEach(function(c) {
+                        var sub = [c.phone, c.email].filter(Boolean).join(' | ');
+                        html += '<div class="ac-item" onclick="selectCustomer(' + c.id + ', \'' + escHtml(c.name_en) + '\')">'
+                            + escHtml(c.name_en)
+                            + (sub ? ' <span class="sub">' + escHtml(sub) + '</span>' : '')
+                            + '</div>';
+                    });
+                    html += '<div class="ac-item create-new" onclick="openQcModal()"><i class="fa fa-plus"></i> <?= $isThai ? "สร้างลูกค้าใหม่" : "Create New Customer" ?></div>';
+                    acList.innerHTML = html;
+                    acList.classList.add('show');
+                });
+        }, 250);
+    });
+
+    acInput.addEventListener('blur', function() {
+        setTimeout(function() { acList.classList.remove('show'); }, 200);
+    });
+
+    acInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 1 && acList.innerHTML) acList.classList.add('show');
+    });
+}
+
+function selectCustomer(id, name) {
+    document.getElementById('customer_id').value = id;
+    var sel = document.getElementById('customerSelected');
+    sel.innerHTML = escHtml(name) + ' <span class="ac-clear" onclick="clearCustomer()">&times;</span>';
+    sel.style.display = '';
+    acInput.style.display = 'none';
+    acList.classList.remove('show');
+}
+
+function clearCustomer() {
+    document.getElementById('customer_id').value = '0';
+    document.getElementById('customerSelected').style.display = 'none';
+    acInput.value = '';
+    acInput.style.display = '';
+    acInput.focus();
+}
+
+function escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+// ─── Quick Create Customer Modal ───────────────────────────
+function openQcModal() {
+    acList.classList.remove('show');
+    document.getElementById('qcName').value = acInput.value.trim();
+    document.getElementById('qcPhone').value = '';
+    document.getElementById('qcOverlay').classList.add('show');
+    document.getElementById('qcName').focus();
+}
+
+function closeQcModal() {
+    document.getElementById('qcOverlay').classList.remove('show');
+}
+
+function saveQuickCustomer() {
+    var name = document.getElementById('qcName').value.trim();
+    var phone = document.getElementById('qcPhone').value.trim();
+    if (!name) { document.getElementById('qcName').focus(); return; }
+
+    fetch('index.php?page=tour_booking_customer_create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'name=' + encodeURIComponent(name) + '&phone=' + encodeURIComponent(phone) + '&csrf_token=' + encodeURIComponent(csrfToken)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            selectCustomer(data.id, data.name);
+            closeQcModal();
+        }
+    });
+}
+
+// ─── Booking By Autocomplete ───────────────────────────────
+var bbTimer = null;
+var bbInput = document.getElementById('bookingBySearch');
+var bbList = document.getElementById('bookingByAcList');
+
+if (bbInput) {
+    bbInput.addEventListener('input', function() {
+        clearTimeout(bbTimer);
+        var q = this.value.trim();
+        if (q.length < 1) { bbList.classList.remove('show'); return; }
+        bbTimer = setTimeout(function() {
+            fetch('index.php?page=tour_booking_staff_search&q=' + encodeURIComponent(q))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var html = '';
+                    data.forEach(function(u) {
+                        var sub = [u.email, u.phone].filter(Boolean).join(' | ');
+                        html += '<div class="ac-item" data-name="' + escHtml(u.name) + '">'
+                            + escHtml(u.name)
+                            + (sub ? ' <span class="sub">' + escHtml(sub) + '</span>' : '')
+                            + '</div>';
+                    });
+                    if (!html) html = '<div class="ac-item" style="color:#999;pointer-events:none;"><?= $isThai ? "ไม่พบผลลัพธ์" : "No results" ?></div>';
+                    bbList.innerHTML = html;
+                    bbList.classList.add('show');
+                });
+        }, 250);
+    });
+
+    bbList.addEventListener('click', function(e) {
+        var item = e.target.closest('.ac-item');
+        if (item && item.dataset.name) {
+            bbInput.value = item.dataset.name;
+            bbList.classList.remove('show');
+        }
+    });
+
+    bbInput.addEventListener('blur', function() {
+        setTimeout(function() { bbList.classList.remove('show'); }, 200);
+    });
+
+    bbInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 1 && bbList.innerHTML) bbList.classList.add('show');
+    });
+}
+
+// ─── Product Search (event delegation for dynamic rows) ────
+var prodTimer = null;
+
+document.getElementById('itemsBody').addEventListener('input', function(e) {
+    if (!e.target.classList.contains('prod-search')) return;
+    clearTimeout(prodTimer);
+    var input = e.target;
+    var acList = input.nextElementSibling;
+    var q = input.value.trim();
+    if (q.length < 1) { acList.classList.remove('show'); return; }
+    prodTimer = setTimeout(function() {
+        fetch('index.php?page=tour_booking_product_search&q=' + encodeURIComponent(q))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var html = '';
+                data.forEach(function(p) {
+                    var sub = [p.category_name, p.des].filter(Boolean).join(' | ');
+                    var priceAttr = parseFloat(p.price) > 0 ? ' data-price="' + parseFloat(p.price).toFixed(2) + '"' : '';
+                    var priceTag = parseFloat(p.price) > 0 ? ' <span class="sub" style="color:#0d9488;font-weight:600;">฿' + parseFloat(p.price).toLocaleString() + '</span>' : '';
+                    html += '<div class="ac-item" data-name="' + escHtml(p.name) + '"' + priceAttr + '>'
+                        + escHtml(p.name) + priceTag
+                        + (sub ? ' <span class="sub">' + escHtml(sub) + '</span>' : '')
+                        + '</div>';
+                });
+                if (!html) html = '<div class="ac-item" style="color:#999;pointer-events:none;"><?= $isThai ? "ไม่พบสินค้า" : "No products found" ?></div>';
+                acList.innerHTML = html;
+                acList.classList.add('show');
+            });
+    }, 250);
+});
+
+document.getElementById('itemsBody').addEventListener('click', function(e) {
+    var item = e.target.closest('.ac-item');
+    if (!item || !item.dataset.name) return;
+    var acList = item.closest('.prod-ac-list');
+    if (!acList) return;
+    var input = acList.previousElementSibling;
+    var row = item.closest('tr');
+    input.value = item.dataset.name;
+    acList.classList.remove('show');
+    // Auto-fill price if available
+    if (item.dataset.price && row) {
+        var priceThai = row.querySelector('.price-thai');
+        if (priceThai && (parseFloat(priceThai.value) === 0 || !priceThai.value)) {
+            priceThai.value = item.dataset.price;
+            syncPaxQty();
+        }
+    }
+});
+
+document.getElementById('itemsBody').addEventListener('focusin', function(e) {
+    if (!e.target.classList.contains('prod-search')) return;
+    var acList = e.target.nextElementSibling;
+    if (e.target.value.trim().length >= 1 && acList.innerHTML) acList.classList.add('show');
+});
+
+document.getElementById('itemsBody').addEventListener('focusout', function(e) {
+    if (!e.target.classList.contains('prod-search')) return;
+    var acList = e.target.nextElementSibling;
+    setTimeout(function() { acList.classList.remove('show'); }, 200);
+});
+
+// ─── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    syncPaxQty();
+});
 </script>

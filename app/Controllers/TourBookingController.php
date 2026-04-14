@@ -160,25 +160,11 @@ class TourBookingController extends BaseController
                     'description'      => $desc,
                     'contract_rate_id' => intval($_POST['item_contract_rate_id'][$i] ?? 0),
                     'rate_label'       => trim($_POST['item_rate_label'][$i] ?? ''),
-                    'quantity'         => intval($_POST['item_quantity'][$i] ?? 1),
-                    'unit_price'       => floatval($_POST['item_unit_price'][$i] ?? 0),
+                    'price_thai'       => floatval($_POST['item_price_thai'][$i] ?? 0),
+                    'price_foreigner'  => floatval($_POST['item_price_foreigner'][$i] ?? 0),
+                    'qty_thai'         => intval($_POST['item_qty_thai'][$i] ?? 0),
+                    'qty_foreigner'    => intval($_POST['item_qty_foreigner'][$i] ?? 0),
                     'notes'            => trim($_POST['item_notes'][$i] ?? ''),
-                ];
-            }
-        }
-
-        // Parse passengers from form arrays
-        $paxList = [];
-        if (isset($_POST['pax_full_name']) && is_array($_POST['pax_full_name'])) {
-            foreach ($_POST['pax_full_name'] as $i => $name) {
-                $name = trim($name);
-                if (empty($name)) continue; // skip empty rows
-                $paxList[] = [
-                    'pax_type'        => $_POST['pax_type'][$i] ?? 'adult',
-                    'full_name'       => $name,
-                    'nationality'     => trim($_POST['pax_nationality'][$i] ?? ''),
-                    'passport_number' => trim($_POST['pax_passport'][$i] ?? ''),
-                    'notes'           => trim($_POST['pax_notes'][$i] ?? ''),
                 ];
             }
         }
@@ -200,9 +186,8 @@ class TourBookingController extends BaseController
                 $bookingId = $this->bookingModel->createBooking($data);
             }
 
-            // Save items and pax
+            // Save items
             $this->bookingModel->saveBookingItems($bookingId, $items);
-            $this->bookingModel->saveBookingPax($bookingId, $paxList);
 
             mysqli_commit($this->bookingModel->getConnection());
 
@@ -310,6 +295,87 @@ class TourBookingController extends BaseController
 
         header('Content-Type: application/json');
         echo json_encode($events);
+        exit;
+    }
+
+    // ─── Customer Search (AJAX) ────────────────────────────────
+
+    public function customerSearch(): void
+    {
+        $this->guardModule();
+
+        $comId = $this->user['com_id'];
+        $term  = trim($_GET['q'] ?? '');
+
+        $results = [];
+        if (strlen($term) >= 1) {
+            $results = $this->bookingModel->searchCustomers($comId, $term);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
+    }
+
+    // ─── Customer Quick Create (AJAX POST) ─────────────────────
+
+    public function customerCreate(): void
+    {
+        $this->guardModule();
+        $this->verifyCsrf();
+
+        $comId = $this->user['com_id'];
+        $name  = trim($_POST['name'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+
+        if (empty($name)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Name is required']);
+            exit;
+        }
+
+        $id = $this->bookingModel->quickCreateCustomer($comId, $name, $phone);
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $id > 0, 'id' => $id, 'name' => $name, 'phone' => $phone]);
+        exit;
+    }
+
+    // ─── Product Search (AJAX) ─────────────────────────────────
+
+    public function productSearch(): void
+    {
+        $this->guardModule();
+
+        $comId = $this->user['com_id'];
+        $term  = trim($_GET['q'] ?? '');
+
+        $results = [];
+        if (strlen($term) >= 1) {
+            $results = $this->bookingModel->searchProducts($comId, $term);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
+    }
+
+    // ─── Staff Search for Booking By (AJAX) ────────────────────
+
+    public function staffSearch(): void
+    {
+        $this->guardModule();
+
+        $comId = $this->user['com_id'];
+        $term  = trim($_GET['q'] ?? '');
+
+        $results = [];
+        if (strlen($term) >= 1) {
+            $results = $this->bookingModel->searchStaff($comId, $term);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($results);
         exit;
     }
 }

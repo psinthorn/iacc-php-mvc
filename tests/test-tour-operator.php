@@ -207,13 +207,13 @@ test('Booking total_pax computed', intval($booking['total_pax']) === 5, 'total_p
 
 // Save items
 $items = [
-    ['item_type' => 'tour', 'description' => 'Island Tour', 'contract_rate_id' => 0, 'rate_label' => '', 'quantity' => 5, 'unit_price' => 800],
-    ['item_type' => 'transfer', 'description' => 'Hotel Pickup', 'contract_rate_id' => 0, 'rate_label' => '', 'quantity' => 1, 'unit_price' => 1000],
+    ['item_type' => 'tour', 'description' => 'Island Tour', 'contract_rate_id' => 0, 'rate_label' => '', 'price_thai' => 500, 'price_foreigner' => 800, 'qty_thai' => 2, 'qty_foreigner' => 3],
+    ['item_type' => 'transfer', 'description' => 'Hotel Pickup', 'contract_rate_id' => 0, 'rate_label' => '', 'price_thai' => 200, 'price_foreigner' => 200, 'qty_thai' => 2, 'qty_foreigner' => 3],
 ];
 $bookingModel->saveBookingItems($bookingId, $items);
 $savedItems = $bookingModel->getBookingItems($bookingId);
 test('Booking items saved', count($savedItems) === 2, 'count=' . count($savedItems));
-test('Booking item amount calc', floatval($savedItems[0]['amount']) === 4000.00, 'amount=' . ($savedItems[0]['amount'] ?? 'NULL'));
+test('Booking item amount calc', floatval($savedItems[0]['amount']) === 3400.00, 'amount=' . ($savedItems[0]['amount'] ?? 'NULL'));
 
 // Save pax
 $paxList = [
@@ -336,7 +336,7 @@ echo "<h2>7. Delete-and-Reinsert Pattern</h2>";
 
 // Overwrite items with fewer items
 $newItems = [
-    ['item_type' => 'tour', 'description' => 'Updated Tour', 'contract_rate_id' => 0, 'rate_label' => '', 'quantity' => 3, 'unit_price' => 900],
+    ['item_type' => 'tour', 'description' => 'Updated Tour', 'contract_rate_id' => 0, 'rate_label' => '', 'price_thai' => 600, 'price_foreigner' => 900, 'qty_thai' => 1, 'qty_foreigner' => 2],
 ];
 $bookingModel->saveBookingItems($bookingId, $newItems);
 $afterItems = $bookingModel->getBookingItems($bookingId);
