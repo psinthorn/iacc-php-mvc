@@ -92,7 +92,7 @@ class TourAgentProfile extends BaseModel
     {
         $sql = "INSERT INTO tour_agent_profiles 
                 (company_ref_id, company_id, commission_type, commission_adult, commission_child,
-                 contract_start, contract_end, contact_line, contact_whatsapp, contact_person, contact_email, website, notes)
+                 contract_start, contract_end, contact_line, contact_whatsapp, contact_person, contact_mobile, contact_email, website, notes)
                 VALUES (
                     '" . \sql_int($data['company_ref_id']) . "',
                     '" . \sql_int($data['company_id']) . "',
@@ -104,6 +104,7 @@ class TourAgentProfile extends BaseModel
                     " . (!empty($data['contact_line']) ? "'" . \sql_escape($data['contact_line']) . "'" : "NULL") . ",
                     " . (!empty($data['contact_whatsapp']) ? "'" . \sql_escape($data['contact_whatsapp']) . "'" : "NULL") . ",
                     " . (!empty($data['contact_person']) ? "'" . \sql_escape($data['contact_person']) . "'" : "NULL") . ",
+                    " . (!empty($data['contact_mobile']) ? "'" . \sql_escape($data['contact_mobile']) . "'" : "NULL") . ",
                     " . (!empty($data['contact_email']) ? "'" . \sql_escape($data['contact_email']) . "'" : "NULL") . ",
                     " . (!empty($data['website']) ? "'" . \sql_escape($data['website']) . "'" : "NULL") . ",
                     " . (!empty($data['notes']) ? "'" . \sql_escape($data['notes']) . "'" : "NULL") . "
@@ -128,6 +129,7 @@ class TourAgentProfile extends BaseModel
                     contact_line = " . (!empty($data['contact_line']) ? "'" . \sql_escape($data['contact_line']) . "'" : "NULL") . ",
                     contact_whatsapp = " . (!empty($data['contact_whatsapp']) ? "'" . \sql_escape($data['contact_whatsapp']) . "'" : "NULL") . ",
                     contact_person = " . (!empty($data['contact_person']) ? "'" . \sql_escape($data['contact_person']) . "'" : "NULL") . ",
+                    contact_mobile = " . (!empty($data['contact_mobile']) ? "'" . \sql_escape($data['contact_mobile']) . "'" : "NULL") . ",
                     contact_email = " . (!empty($data['contact_email']) ? "'" . \sql_escape($data['contact_email']) . "'" : "NULL") . ",
                     website = " . (!empty($data['website']) ? "'" . \sql_escape($data['website']) . "'" : "NULL") . ",
                     notes = " . (!empty($data['notes']) ? "'" . \sql_escape($data['notes']) . "'" : "NULL") . "

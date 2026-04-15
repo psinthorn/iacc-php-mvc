@@ -111,6 +111,7 @@ class TourAgentController extends BaseController
             'contact_line'      => trim($_POST['contact_line'] ?? ''),
             'contact_whatsapp'  => trim($_POST['contact_whatsapp'] ?? ''),
             'contact_person'    => trim($_POST['contact_person'] ?? ''),
+            'contact_mobile'    => trim($_POST['contact_mobile'] ?? ''),
             'contact_email'     => trim($_POST['contact_email'] ?? ''),
             'website'           => trim($_POST['website'] ?? ''),
             'notes'             => trim($_POST['notes'] ?? ''),

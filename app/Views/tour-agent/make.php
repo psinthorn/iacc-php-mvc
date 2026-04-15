@@ -297,6 +297,10 @@ $messages = [
                     <label><?= $isThai ? 'ชื่อผู้ติดต่อ' : 'Contact Person' ?></label>
                     <input type="text" name="contact_person" value="<?= htmlspecialchars($isEdit ? ($profile['contact_person'] ?? '') : '') ?>" placeholder="<?= $isThai ? 'ชื่อ-นามสกุล' : 'Full name' ?>">
                 </div>
+                <div class="form-group">
+                    <label><?= $isThai ? 'มือถือ' : 'Mobile' ?></label>
+                    <input type="tel" name="contact_mobile" value="<?= htmlspecialchars($isEdit ? ($profile['contact_mobile'] ?? '') : '') ?>" placeholder="+66812345678">
+                </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
