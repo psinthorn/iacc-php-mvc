@@ -294,6 +294,12 @@ $messages = [
 
             <div class="form-row">
                 <div class="form-group">
+                    <label><?= $isThai ? 'ชื่อผู้ติดต่อ' : 'Contact Person' ?></label>
+                    <input type="text" name="contact_person" value="<?= htmlspecialchars($isEdit ? ($profile['contact_person'] ?? '') : '') ?>" placeholder="<?= $isThai ? 'ชื่อ-นามสกุล' : 'Full name' ?>">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label><?= $xml->tourcontactline ?? 'LINE ID' ?></label>
                     <input type="text" name="contact_line" value="<?= htmlspecialchars($isEdit ? ($profile['contact_line'] ?? '') : '') ?>" placeholder="@agent-line">
                 </div>

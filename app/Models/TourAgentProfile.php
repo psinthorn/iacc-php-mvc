@@ -124,6 +124,7 @@ class TourAgentProfile extends BaseModel
                     contract_end = " . (!empty($data['contract_end']) ? "'" . \sql_escape($data['contract_end']) . "'" : "NULL") . ",
                     contact_line = " . (!empty($data['contact_line']) ? "'" . \sql_escape($data['contact_line']) . "'" : "NULL") . ",
                     contact_whatsapp = " . (!empty($data['contact_whatsapp']) ? "'" . \sql_escape($data['contact_whatsapp']) . "'" : "NULL") . ",
+                    contact_person = " . (!empty($data['contact_person']) ? "'" . \sql_escape($data['contact_person']) . "'" : "NULL") . ",
                     notes = " . (!empty($data['notes']) ? "'" . \sql_escape($data['notes']) . "'" : "NULL") . "
                 WHERE id = '$id' AND company_id = '$comId' AND deleted_at IS NULL";
         return mysqli_query($this->conn, $sql);

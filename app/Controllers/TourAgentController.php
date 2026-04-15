@@ -110,6 +110,7 @@ class TourAgentController extends BaseController
             'contract_end'      => trim($_POST['contract_end'] ?? ''),
             'contact_line'      => trim($_POST['contact_line'] ?? ''),
             'contact_whatsapp'  => trim($_POST['contact_whatsapp'] ?? ''),
+            'contact_person'    => trim($_POST['contact_person'] ?? ''),
             'notes'             => trim($_POST['notes'] ?? ''),
         ];
 
