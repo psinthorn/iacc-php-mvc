@@ -75,7 +75,14 @@ class TourAgentController extends BaseController
         $vendors = $this->model->getAvailableVendors($comId);
         $message = $_GET['msg'] ?? '';
 
-        $this->render('tour-agent/make', compact('profile', 'vendors', 'message'));
+        // Load models grouped by type and existing contract rates
+        $modelsByType = $this->model->getModelsGroupedByType($comId);
+        $contractRates = [];
+        if ($profile) {
+            $contractRates = $this->model->getContractRates($profile['company_ref_id'], $comId);
+        }
+
+        $this->render('tour-agent/make', compact('profile', 'vendors', 'message', 'modelsByType', 'contractRates'));
     }
 
     /**
@@ -124,6 +131,11 @@ class TourAgentController extends BaseController
             }
             $this->model->createProfile($data);
             $msg = 'created';
+        }
+
+        // Save contract rates if provided
+        if (!empty($_POST['rates']) && is_array($_POST['rates'])) {
+            $this->model->saveContractRates($data['company_ref_id'], $comId, $_POST['rates']);
         }
 
         $this->redirect('tour_agent_list', ['msg' => $msg]);
