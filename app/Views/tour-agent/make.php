@@ -300,6 +300,16 @@ $messages = [
             </div>
             <div class="form-row">
                 <div class="form-group">
+                    <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
+                    <input type="email" name="contact_email" value="<?= htmlspecialchars($isEdit ? ($profile['contact_email'] ?? '') : '') ?>" placeholder="agent@example.com">
+                </div>
+                <div class="form-group">
+                    <label><?= $isThai ? 'เว็บไซต์' : 'Website' ?></label>
+                    <input type="url" name="website" value="<?= htmlspecialchars($isEdit ? ($profile['website'] ?? '') : '') ?>" placeholder="https://www.example.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label><?= $xml->tourcontactline ?? 'LINE ID' ?></label>
                     <input type="text" name="contact_line" value="<?= htmlspecialchars($isEdit ? ($profile['contact_line'] ?? '') : '') ?>" placeholder="@agent-line">
                 </div>
