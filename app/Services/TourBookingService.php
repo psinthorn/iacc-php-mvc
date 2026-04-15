@@ -45,11 +45,14 @@ class TourBookingService
             $userId    = intval($_SESSION['user_id'] ?? 0);
             $bookingNo = $booking['booking_number'] ?? '';
 
-            // Step 1: Auto-create PR
-            $prId = $this->createPR($bookingNo, $cusId, $venId, $comId, $userId);
+            // Fetch full customer info
+            $customerInfo = $this->getCustomerInfo($cusId);
 
-            // Step 2: Create PO with booking items as products
-            $poId = $this->createPO($booking, $prId, $comId);
+            // Step 1: Auto-create PR (with customer info in description)
+            $prId = $this->createPR($bookingNo, $cusId, $venId, $comId, $userId, $customerInfo);
+
+            // Step 2: Create PO with booking items as products (+ customer info line)
+            $poId = $this->createPO($booking, $prId, $comId, $customerInfo);
 
             // Step 3: Update PR status → 2 (Confirmed)
             $this->updatePRStatus($prId, '2');
@@ -90,14 +93,15 @@ class TourBookingService
     //  Private helpers — each uses isolated $args arrays
     // ─────────────────────────────────────────────────────────────
 
-    private function createPR(string $bookingNo, int $cusId, int $venId, int $comId, int $userId): int
+    private function createPR(string $bookingNo, int $cusId, int $venId, int $comId, int $userId, array $customerInfo = []): int
     {
         $name = \sql_escape('Tour: ' . $bookingNo);
+        $des  = \sql_escape($this->formatCustomerInfo($customerInfo));
 
         $args = [];
         $args['table'] = 'pr';
         $args['columns'] = "company_id, name, des, usr_id, cus_id, ven_id, date, status, cancel, auto_generated, mailcount, payby, deleted_at";
-        $args['value'] = "'$comId','$name','','$userId','$cusId','$venId','" . date('Y-m-d') . "','0','0','1','0','0',NULL";
+        $args['value'] = "'$comId','$name','$des','$userId','$cusId','$venId','" . date('Y-m-d') . "','0','0','1','0','0',NULL";
         $prId = $this->hard->insertDbMax($args);
 
         if (!$prId) {
@@ -106,7 +110,7 @@ class TourBookingService
         return $prId;
     }
 
-    private function createPO(array $booking, int $prId, int $comId): int
+    private function createPO(array $booking, int $prId, int $comId, array $customerInfo = []): int
     {
         $args = [];
         $args['table'] = 'po';
@@ -128,12 +132,12 @@ class TourBookingService
         }
 
         // Insert booking items as product rows
-        $this->insertProducts($booking, $poId, $comId);
+        $this->insertProducts($booking, $poId, $comId, $customerInfo);
 
         return $poId;
     }
 
-    private function insertProducts(array $booking, int $poId, int $comId): void
+    private function insertProducts(array $booking, int $poId, int $comId, array $customerInfo = []): void
     {
         $items = $booking['items'] ?? [];
         if (empty($items)) {
@@ -147,14 +151,14 @@ class TourBookingService
         }
 
         foreach ($items as $item) {
-            $des = \sql_escape($item['description'] ?? '');
+            $des = $this->buildRichDescription($item);
             $qty = floatval($item['quantity'] ?? 1);
             $price = floatval($item['unit_price'] ?? 0);
 
             $args = [];
             $args['table'] = 'product';
             $args['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
-            $args['value'] = "'$comId','$poId','$price','0','0','0','1','$qty','1','0','$des','0','0','0','1970-01-01','0',NULL";
+            $args['value'] = "'$comId','$poId','$price','0','0','0','1','$qty','1','0','" . \sql_escape($des) . "','0','0','0','1970-01-01','0',NULL";
             $this->hard->insertDB($args);
         }
 
@@ -167,35 +171,60 @@ class TourBookingService
             $args['value'] = "'$comId','$poId','$entrance','0','0','0','1','1','1','0','Entrance Fee','0','0','0','1970-01-01','0',NULL";
             $this->hard->insertDB($args);
         }
+
+        // Add customer info as final product line
+        if (!empty($customerInfo)) {
+            $cusDesc = \sql_escape("Customer Information\n" . $this->formatCustomerInfo($customerInfo));
+            $args = [];
+            $args['table'] = 'product';
+            $args['columns'] = "company_id, po_id, price, discount, ban_id, model, type, quantity, pack_quantity, so_id, des, activelabour, valuelabour, vo_id, vo_warranty, re_id, deleted_at";
+            $args['value'] = "'$comId','$poId','0','0','0','0','1','0','1','0','$cusDesc','0','0','0','1970-01-01','0',NULL";
+            $this->hard->insertDB($args);
+        }
+    }
+
+    /**
+     * Build rich description with product/model info and pax breakdown lines
+     */
+    private function buildRichDescription(array $item): string
+    {
+        $lines = [];
+
+        // Line 1: Description | Model Name | Model Description
+        $header = trim($item['description'] ?? '');
+        if (!empty($item['model_name'])) {
+            $header .= ' | ' . $item['model_name'];
+        }
+        if (!empty($item['model_des'])) {
+            $header .= ' | ' . $item['model_des'];
+        }
+        $lines[] = $header;
+
+        // Pax breakdown lines
+        $paxLines = [];
+        if (!empty($item['pax_lines_json'])) {
+            $paxLines = is_string($item['pax_lines_json'])
+                ? (json_decode($item['pax_lines_json'], true) ?: [])
+                : $item['pax_lines_json'];
+        }
+        foreach ($paxLines as $pl) {
+            $type  = ($pl['type'] ?? 'adult') === 'child' ? 'Child' : 'Adult';
+            $nat   = ($pl['nat'] ?? 'thai') === 'foreigner' ? 'Foreign' : 'Thai';
+            $qty   = intval($pl['qty'] ?? 0);
+            $price = floatval($pl['price'] ?? 0);
+            $total = $qty * $price;
+            if ($qty > 0) {
+                $lines[] = sprintf('%s/%s x%d @%s = %s', $type, $nat, $qty, number_format($price, 2), number_format($total, 2));
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     private function createDelivery(int $poId, int $comId): int
     {
-        // Create store + store_sale entries for products
-        $products = $this->fetchAll("SELECT pro_id, model FROM product WHERE po_id='$poId' AND deleted_at IS NULL");
-
-        $comRow = mysqli_fetch_assoc(mysqli_query($this->conn,
-            "SELECT name_sh FROM company WHERE id='$comId' LIMIT 1"));
-        $comShort = trim($comRow['name_sh'] ?? '') ?: 'SN';
-        $datePart = date('ymd');
-
-        foreach ($products as $idx => $p) {
-            $proId = intval($p['pro_id']);
-            $paddedNo = str_pad($idx + 1, 3, '0', STR_PAD_LEFT);
-            $sn = $comShort . '-' . $datePart . '-' . $paddedNo;
-
-            $argsS = [];
-            $argsS['table'] = 'store';
-            $argsS['columns'] = "company_id, pro_id, s_n, no";
-            $argsS['value'] = "'$comId','$proId','" . \sql_escape($sn) . "','" . ($idx + 1) . "'";
-            $stId = $this->hard->insertDbMax($argsS);
-
-            $argsSS = [];
-            $argsSS['table'] = 'store_sale';
-            $argsSS['columns'] = "st_id, warranty, sale, own_id";
-            $argsSS['value'] = "'$stId','" . date("Y-m-d", strtotime("+1 year")) . "','0','$comId'";
-            $this->hard->insertDB($argsSS);
-        }
+        // Tour services are not physical inventory — skip store/store_sale creation
+        // Just create the delivery record directly
 
         $args = [];
         $args['table'] = 'deliver';
@@ -211,19 +240,19 @@ class TourBookingService
 
     private function createInvoice(int $poId, int $comId, int $venId): int
     {
-        $maxiv = mysqli_fetch_assoc(mysqli_query($this->conn,
-            "SELECT max(id) as max_id FROM iv WHERE cus_id='$venId'"));
-        $newId = intval($maxiv['max_id'] ?? 0) + 1;
-
         $args = [];
         $args['table'] = 'iv';
-        $args['columns'] = "id, company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, auto_generated, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date";
-        $args['value'] = "'$newId','$comId','$poId','$venId','" . date("Y-m-d") . "','" .
-            (date("y") + 43) . str_pad($newId, 6, '0', STR_PAD_LEFT) .
-            "','0','0','" . date("Y-m-d") . "','0','1','0','0',NULL,'pending',NULL,NULL,'0.00',NULL";
-        $this->hard->insertDB($args);
+        $newId = $this->hard->Maxid('iv');
+        $taxNumber = (date("y") + 43) . str_pad($newId, 6, '0', STR_PAD_LEFT);
 
-        return $newId;
+        $args['columns'] = "company_id, tex, cus_id, createdate, taxrw, texiv, texiv_rw, texiv_create, status_iv, auto_generated, countmailinv, countmailtax, deleted_at, payment_status, payment_gateway, payment_order_id, paid_amount, paid_date";
+        $args['value'] = "'$comId','$poId','$venId','" . date("Y-m-d") . "','$taxNumber','0','0','" . date("Y-m-d") . "','0','1','0','0',NULL,'pending',NULL,NULL,'0.00',NULL";
+        $ivId = $this->hard->insertDbMax($args);
+
+        if (!$ivId) {
+            throw new \RuntimeException('Failed to create Invoice');
+        }
+        return $ivId;
     }
 
     private function updatePRStatus(int $prId, string $status): void
@@ -239,6 +268,35 @@ class TourBookingService
             $prId, $poId, $ivId, $delivId, $bookingId
         );
         mysqli_query($this->conn, $sql);
+    }
+
+    private function getCustomerInfo(int $cusId): array
+    {
+        if ($cusId <= 0) return [];
+        $cusId = intval($cusId);
+        $result = mysqli_query($this->conn,
+            "SELECT name_en, name_th, name_sh, contact, email, phone, fax, tax FROM company WHERE id='$cusId' LIMIT 1");
+        if ($result && $row = mysqli_fetch_assoc($result)) {
+            return $row;
+        }
+        return [];
+    }
+
+    private function formatCustomerInfo(array $info): string
+    {
+        if (empty($info)) return '';
+        $lines = [];
+        $name = trim($info['name_en'] ?? '');
+        if (!empty($info['name_th'])) {
+            $name .= ' (' . trim($info['name_th']) . ')';
+        }
+        if ($name) $lines[] = 'Customer: ' . $name;
+        if (!empty(trim($info['contact'] ?? ''))) $lines[] = 'Contact: ' . trim($info['contact']);
+        if (!empty(trim($info['phone'] ?? '')))   $lines[] = 'Phone: ' . trim($info['phone']);
+        if (!empty(trim($info['email'] ?? '')))   $lines[] = 'Email: ' . trim($info['email']);
+        if (!empty(trim($info['fax'] ?? '')))     $lines[] = 'Fax: ' . trim($info['fax']);
+        if (!empty(trim($info['tax'] ?? '')))     $lines[] = 'Tax ID: ' . trim($info['tax']);
+        return implode("\n", $lines);
     }
 
     private function fetchAll(string $sql): array

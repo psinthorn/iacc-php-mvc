@@ -57,9 +57,13 @@ if (!$result || mysqli_num_rows($result) != 1) {
 }
 $booking = mysqli_fetch_assoc($result);
 
-// ── Fetch items ─────────────────────────────────────────────
+// ── Fetch items with type + model info ──────────────────────
 $items = [];
-$itemResult = mysqli_query($db->conn, "SELECT * FROM tour_booking_items WHERE booking_id = " . sql_int($id) . " ORDER BY id");
+$itemResult = mysqli_query($db->conn, "SELECT bi.*, t.name AS type_name, m.model_name, m.des AS model_des
+    FROM tour_booking_items bi
+    LEFT JOIN type t ON bi.product_type_id = t.id
+    LEFT JOIN model m ON bi.model_id = m.id
+    WHERE bi.booking_id = " . sql_int($id) . " ORDER BY bi.id");
 while ($itemResult && $row = mysqli_fetch_assoc($itemResult)) {
     $items[] = $row;
 }
@@ -112,6 +116,7 @@ $statusLabels = [
 ];
 
 $travelDate = !empty($booking['travel_date']) ? date('d/m/Y', strtotime($booking['travel_date'])) : '-';
+$bookingDate = !empty($booking['booking_date']) ? date('d/m/Y', strtotime($booking['booking_date'])) : '-';
 $pickupTime = !empty($booking['pickup_time']) ? date('H:i', strtotime($booking['pickup_time'])) : '-';
 
 $address = trim(implode(', ', array_filter([
@@ -186,16 +191,22 @@ $stColor = $statusColor[$booking['status']] ?? '#94a3b8';
 $html .= '<div class="section-title">' . ($isThai ? 'ข้อมูลการจอง' : 'Booking Information') . '</div>';
 $html .= '<table class="info">';
 $html .= '<tr>
+    <td class="label">' . ($isThai ? 'วันที่จอง' : 'Booking Date') . '</td>
+    <td>' . $bookingDate . '</td>
+    <td class="label">' . ($isThai ? 'วันเดินทาง' : 'Trip Date') . '</td>
+    <td><strong>' . $travelDate . '</strong></td>
+</tr>';
+$html .= '<tr>
     <td class="label">' . ($isThai ? 'เลขที่จอง' : 'Booking No.') . '</td>
     <td><strong>' . htmlspecialchars($booking['booking_number']) . '</strong></td>
     <td class="label">' . ($isThai ? 'สถานะ' : 'Status') . '</td>
     <td><span class="status-label" style="background:' . $stColor . '22; color:' . $stColor . ';">' . $statusLabel . '</span></td>
 </tr>';
 $html .= '<tr>
-    <td class="label">' . ($isThai ? 'วันเดินทาง' : 'Travel Date') . '</td>
-    <td><strong>' . $travelDate . '</strong></td>
     <td class="label">' . ($isThai ? 'เลข Voucher' : 'Voucher No.') . '</td>
     <td>' . htmlspecialchars($booking['voucher_number'] ?: '-') . '</td>
+    <td class="label">' . ($isThai ? 'สกุลเงิน' : 'Currency') . '</td>
+    <td>' . htmlspecialchars($booking['currency']) . '</td>
 </tr>';
 $html .= '<tr>
     <td class="label">' . ($isThai ? 'ลูกค้า' : 'Customer') . '</td>
@@ -248,19 +259,58 @@ if (!empty($items)) {
         <th style="width:30px;">#</th>
         <th style="width:65px;">' . ($isThai ? 'ประเภท' : 'Type') . '</th>
         <th>' . ($isThai ? 'รายละเอียด' : 'Description') . '</th>
-        <th class="right" style="width:80px;">' . ($isThai ? 'ราคา(ไทย)' : 'Thai Price') . '</th>
-        <th class="right" style="width:80px;">' . ($isThai ? 'ราคา(ต่างชาติ)' : 'Foreign Price') . '</th>
-        <th class="right" style="width:80px;">' . ($isThai ? 'ยอดรวม' : 'Amount') . '</th>
+        <th class="right" style="width:90px;">' . ($isThai ? 'ยอดรวม' : 'Amount') . '</th>
     </tr>';
 
     foreach ($items as $idx => $item) {
         $typeLabel = $itemTypeLabels[$item['item_type']] ?? $item['item_type'];
+
+        // Build rich description
+        $descHtml = htmlspecialchars($item['description']);
+        if (!empty($item['model_name'])) {
+            $descHtml .= ' | <strong>' . htmlspecialchars($item['model_name']) . '</strong>';
+        }
+        if (!empty($item['model_des'])) {
+            $descHtml .= ' | ' . htmlspecialchars($item['model_des']);
+        }
+        if (!empty($item['notes'])) {
+            $descHtml .= '<br><span style="color:#999; font-size:9px;">' . htmlspecialchars($item['notes']) . '</span>';
+        }
+
+        // Pax breakdown sub-table
+        $paxLines = json_decode($item['pax_lines_json'] ?? '[]', true) ?: [];
+        if (!empty($paxLines)) {
+            $descHtml .= '<table style="width:100%; margin-top:4px; border-collapse:collapse;">';
+            $descHtml .= '<tr style="background:#f1f5f9;">
+                <td style="padding:2px 4px; font-size:9px; font-weight:bold; color:#475569;">' . ($isThai ? 'ประเภท' : 'Type') . '</td>
+                <td style="padding:2px 4px; font-size:9px; font-weight:bold; color:#475569;">' . ($isThai ? 'สัญชาติ' : 'Nationality') . '</td>
+                <td style="padding:2px 4px; font-size:9px; font-weight:bold; color:#475569; text-align:center;">' . ($isThai ? 'จำนวน' : 'Qty') . '</td>
+                <td style="padding:2px 4px; font-size:9px; font-weight:bold; color:#475569; text-align:right;">' . ($isThai ? 'ราคา' : 'Price') . '</td>
+                <td style="padding:2px 4px; font-size:9px; font-weight:bold; color:#475569; text-align:right;">' . ($isThai ? 'รวม' : 'Total') . '</td>
+            </tr>';
+            foreach ($paxLines as $pl) {
+                $pType = ($pl['type'] ?? 'adult') === 'child' ? ($isThai ? 'เด็ก' : 'Child') : ($isThai ? 'ผู้ใหญ่' : 'Adult');
+                $pNat  = ($pl['nat'] ?? 'thai') === 'foreigner' ? ($isThai ? 'ต่างชาติ' : 'Foreign') : ($isThai ? 'ไทย' : 'Thai');
+                $pQty  = intval($pl['qty'] ?? 0);
+                $pPrice = floatval($pl['price'] ?? 0);
+                $pTotal = $pQty * $pPrice;
+                if ($pQty > 0) {
+                    $descHtml .= '<tr>
+                        <td style="padding:2px 4px; font-size:9px;">' . $pType . '</td>
+                        <td style="padding:2px 4px; font-size:9px;">' . $pNat . '</td>
+                        <td style="padding:2px 4px; font-size:9px; text-align:center;">×' . $pQty . '</td>
+                        <td style="padding:2px 4px; font-size:9px; text-align:right;">@' . number_format($pPrice, 2) . '</td>
+                        <td style="padding:2px 4px; font-size:9px; text-align:right; font-weight:bold;">= ' . number_format($pTotal, 2) . '</td>
+                    </tr>';
+                }
+            }
+            $descHtml .= '</table>';
+        }
+
         $html .= '<tr>
             <td class="center">' . ($idx + 1) . '</td>
             <td><span class="type-badge" style="background:#e0f2f1; color:#009688;">' . htmlspecialchars($typeLabel) . '</span></td>
-            <td>' . htmlspecialchars($item['description']) . (!empty($item['notes']) ? '<br><span style="color:#999; font-size:9px;">' . htmlspecialchars($item['notes']) . '</span>' : '') . '</td>
-            <td class="right">' . number_format(floatval($item['price_thai'] ?? 0), 2) . '</td>
-            <td class="right">' . number_format(floatval($item['price_foreigner'] ?? 0), 2) . '</td>
+            <td>' . $descHtml . '</td>
             <td class="right" style="font-weight:bold;">' . number_format(floatval($item['amount']), 2) . '</td>
         </tr>';
     }
@@ -279,6 +329,38 @@ if (!empty($items)) {
         $html .= '<tr><td>VAT</td><td class="right">' . number_format(floatval($booking['vat']), 2) . '</td></tr>';
     }
     $html .= '<tr class="grand"><td>' . ($isThai ? 'ยอดรวมทั้งหมด' : 'Grand Total') . '</td><td class="right">฿' . number_format(floatval($booking['total_amount']), 2) . '</td></tr>';
+    $html .= '</table>';
+}
+
+// ── Customer Information ─────────────────────
+$cusInfo = [];
+if (!empty($booking['customer_id'])) {
+    $cusResult = mysqli_query($db->conn, "SELECT name_en, name_th, contact, email, phone, fax, tax FROM company WHERE id = " . sql_int($booking['customer_id']) . " LIMIT 1");
+    if ($cusResult && $cr = mysqli_fetch_assoc($cusResult)) $cusInfo = $cr;
+}
+// Per-booking contact info (from tour_booking_contacts)
+$bkContact = [];
+$bcResult = mysqli_query($db->conn, "SELECT * FROM tour_booking_contacts WHERE booking_id = " . intval($booking['id']) . " LIMIT 1");
+if ($bcResult && $bcr = mysqli_fetch_assoc($bcResult)) $bkContact = $bcr;
+if (!empty($cusInfo)) {
+    $html .= '<div class="section-title">' . ($isThai ? 'ข้อมูลลูกค้า' : 'Customer Information') . '</div>';
+    $html .= '<table class="info">';
+    $cusNameFull = ($isThai && !empty($cusInfo['name_th'])) ? $cusInfo['name_th'] : ($cusInfo['name_en'] ?? '-');
+    $contactPerson = trim($bkContact['contact_name'] ?? '') ?: trim($cusInfo['contact'] ?? '') ?: '-';
+    $contactPhone  = trim($bkContact['mobile'] ?? '') ?: trim($cusInfo['phone'] ?? '') ?: '-';
+    $contactEmail  = trim($bkContact['email'] ?? '') ?: trim($cusInfo['email'] ?? '') ?: '-';
+    $html .= '<tr><td class="label">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</td><td><strong>' . htmlspecialchars($cusNameFull) . '</strong></td>';
+    $html .= '<td class="label">' . ($isThai ? 'ผู้ติดต่อ' : 'Contact') . '</td><td>' . htmlspecialchars($contactPerson) . '</td></tr>';
+    $html .= '<tr><td class="label">' . ($isThai ? 'โทรศัพท์' : 'Phone') . '</td><td>' . htmlspecialchars($contactPhone) . '</td>';
+    $html .= '<td class="label">' . ($isThai ? 'อีเมล' : 'Email') . '</td><td>' . htmlspecialchars($contactEmail) . '</td></tr>';
+    if (!empty(trim($bkContact['gender'] ?? '')) || !empty(trim($bkContact['nationality'] ?? ''))) {
+        $genderLabel = !empty($bkContact['gender']) ? ucfirst($bkContact['gender']) : '-';
+        $natLabel    = !empty($bkContact['nationality']) ? $bkContact['nationality'] : '-';
+        $html .= '<tr><td class="label">' . ($isThai ? 'เพศ' : 'Gender') . '</td><td>' . htmlspecialchars($genderLabel) . '</td>';
+        $html .= '<td class="label">' . ($isThai ? 'สัญชาติ' : 'Nationality') . '</td><td>' . htmlspecialchars($natLabel) . '</td></tr>';
+    }
+    $html .= '<tr><td class="label">' . ($isThai ? 'แฟกซ์' : 'Fax') . '</td><td>' . htmlspecialchars(trim($cusInfo['fax'] ?? '') ?: '-') . '</td>';
+    $html .= '<td class="label">' . ($isThai ? 'เลขประจำตัวผู้เสียภาษี' : 'Tax ID') . '</td><td>' . htmlspecialchars(trim($cusInfo['tax'] ?? '') ?: '-') . '</td></tr>';
     $html .= '</table>';
 }
 

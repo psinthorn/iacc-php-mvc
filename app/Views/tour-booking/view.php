@@ -119,8 +119,12 @@ $messages = [
             <h3><i class="fa fa-info-circle"></i> <?= $isThai ? 'ข้อมูลการจอง' : 'Booking Info' ?></h3>
             <div class="vw-grid">
                 <div class="vw-item">
-                    <div class="lbl"><?= $isThai ? 'วันเดินทาง' : 'Travel Date' ?></div>
-                    <div class="val"><i class="fa fa-calendar-o" style="color:#0d9488;"></i> <?= date('d M Y', strtotime($booking['travel_date'])) ?></div>
+                    <div class="lbl"><?= $isThai ? 'วันที่จอง' : 'Booking Date' ?></div>
+                    <div class="val"><i class="fa fa-calendar" style="color:#6366f1;"></i> <?= !empty($booking['booking_date']) ? date('d M Y', strtotime($booking['booking_date'])) : '-' ?></div>
+                </div>
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'วันเดินทาง' : 'Trip Date' ?></div>
+                    <div class="val"><i class="fa fa-plane" style="color:#0d9488;"></i> <?= date('d M Y', strtotime($booking['travel_date'])) ?></div>
                 </div>
                 <div class="vw-item">
                     <div class="lbl"><?= $isThai ? 'ลูกค้า' : 'Customer' ?></div>
@@ -197,8 +201,6 @@ $messages = [
                         <th>#</th>
                         <th><?= $isThai ? 'ประเภท' : 'Type' ?></th>
                         <th><?= $isThai ? 'รายละเอียด' : 'Description' ?></th>
-                        <th class="right"><?= $isThai ? 'ราคา (ไทย)' : 'Price (Thai)' ?></th>
-                        <th class="right"><?= $isThai ? 'ราคา (ต่างชาติ)' : 'Price (Foreign)' ?></th>
                         <th class="right"><?= $isThai ? 'ยอดรวม' : 'Amount' ?></th>
                     </tr>
                 </thead>
@@ -211,10 +213,40 @@ $messages = [
                                 <?= $itemTypeLabels[$item['item_type']] ?? $item['item_type'] ?>
                             </span>
                         </td>
-                        <td><?= htmlspecialchars($item['description']) ?></td>
-                        <td class="right"><?= number_format(floatval($item['price_thai'] ?? 0), 2) ?></td>
-                        <td class="right"><?= number_format(floatval($item['price_foreigner'] ?? 0), 2) ?></td>
-                        <td class="right" style="font-weight:600;"><?= number_format($item['amount'], 2) ?></td>
+                        <td>
+                            <div style="font-weight:600; margin-bottom:4px;">
+                                <?= htmlspecialchars($item['description']) ?>
+                                <?php if (!empty($item['model_name'])): ?>
+                                <span style="color:#64748b; font-weight:500;"> | <?= htmlspecialchars($item['model_name']) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($item['model_des'])): ?>
+                                <span style="color:#94a3b8; font-weight:400;"> | <?= htmlspecialchars($item['model_des']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <?php
+                            $paxLines = json_decode($item['pax_lines_json'] ?? '[]', true) ?: [];
+                            if (!empty($paxLines)):
+                            ?>
+                            <table style="width:auto; border-collapse:collapse; margin-top:4px; font-size:12px;">
+                                <?php foreach ($paxLines as $pl):
+                                    $plType = ($pl['type'] ?? 'adult') === 'child' ? ($isThai ? 'เด็ก' : 'Child') : ($isThai ? 'ผู้ใหญ่' : 'Adult');
+                                    $plNat  = ($pl['nat'] ?? 'thai') === 'foreigner' ? '🌍 ' . ($isThai ? 'ต่างชาติ' : 'Foreign') : '🇹🇭 ' . ($isThai ? 'ไทย' : 'Thai');
+                                    $plQty  = intval($pl['qty'] ?? 0);
+                                    $plPrice = floatval($pl['price'] ?? 0);
+                                    $plTotal = $plQty * $plPrice;
+                                ?>
+                                <tr style="color:#64748b;">
+                                    <td style="padding:2px 8px 2px 0;"><?= $plType ?></td>
+                                    <td style="padding:2px 8px;"><?= $plNat ?></td>
+                                    <td style="padding:2px 8px; text-align:right;">×<?= $plQty ?></td>
+                                    <td style="padding:2px 8px; text-align:right;">@<?= number_format($plPrice, 2) ?></td>
+                                    <td style="padding:2px 0 2px 8px; text-align:right; font-weight:600; color:#0d9488;">= <?= number_format($plTotal, 2) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </table>
+                            <?php endif; ?>
+                        </td>
+                        <td class="right" style="font-weight:600; vertical-align:top;"><?= number_format($item['amount'], 2) ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -76,13 +76,25 @@ class TourBookingController extends BaseController
         $agents    = $this->bookingModel->getAgentDropdown($comId);
         $customers = $this->bookingModel->getCustomerDropdown($comId);
         $locations = $this->bookingModel->getPickupLocations($comId);
+        $types     = $this->bookingModel->getProductTypes($comId);
+        $models    = $this->bookingModel->getProductModels($comId);
+
+        // Group models by type_id for JS cascade
+        $modelsByType = [];
+        foreach ($models as $m) {
+            $tid = $m['type_id'];
+            if (!isset($modelsByType[$tid])) $modelsByType[$tid] = [];
+            $modelsByType[$tid][] = $m;
+        }
 
         $this->render('tour-booking/make', [
-            'booking'   => $booking,
-            'agents'    => $agents,
-            'customers' => $customers,
-            'locations' => $locations,
-            'message'   => $_GET['msg'] ?? '',
+            'booking'        => $booking,
+            'agents'         => $agents,
+            'customers'      => $customers,
+            'locations'      => $locations,
+            'types'          => $types,
+            'models_by_type' => $modelsByType,
+            'message'        => $_GET['msg'] ?? '',
         ]);
     }
 
@@ -118,6 +130,7 @@ class TourBookingController extends BaseController
 
         // Validate required fields
         $travelDate = trim($_POST['travel_date'] ?? '');
+        $bookingDate = trim($_POST['booking_date'] ?? date('Y-m-d'));
         if (empty($travelDate)) {
             $this->redirect('tour_booking_make', ['msg' => 'missing_date']);
             return;
@@ -129,6 +142,7 @@ class TourBookingController extends BaseController
             'customer_id'        => intval($_POST['customer_id'] ?? 0),
             'agent_id'           => intval($_POST['agent_id'] ?? 0),
             'booking_by'         => trim($_POST['booking_by'] ?? ''),
+            'booking_date'       => $bookingDate,
             'travel_date'        => $travelDate,
             'pax_adult'          => intval($_POST['pax_adult'] ?? 0),
             'pax_child'          => intval($_POST['pax_child'] ?? 0),
@@ -155,16 +169,43 @@ class TourBookingController extends BaseController
             foreach ($_POST['item_type'] as $i => $type) {
                 $desc = trim($_POST['item_description'][$i] ?? '');
                 if (empty($desc) && empty($type)) continue; // skip empty rows
+
+                // Parse pax lines from JSON
+                $paxLinesJson = $_POST['item_pax_lines'][$i] ?? '[]';
+                $paxLines = json_decode($paxLinesJson, true) ?: [];
+
+                $priceThai = 0;
+                $priceForeign = 0;
+                $qtyThai = 0;
+                $qtyForeigner = 0;
+                $amount = floatval($_POST['item_amount'][$i] ?? 0);
+
+                foreach ($paxLines as $pl) {
+                    $qty = intval($pl['qty'] ?? 0);
+                    $price = floatval($pl['price'] ?? 0);
+                    $nat = $pl['nat'] ?? 'thai';
+                    if ($nat === 'thai') {
+                        $qtyThai += $qty;
+                        if ($price > $priceThai) $priceThai = $price;
+                    } else {
+                        $qtyForeigner += $qty;
+                        if ($price > $priceForeign) $priceForeign = $price;
+                    }
+                }
+
                 $items[] = [
                     'item_type'        => $type,
                     'description'      => $desc,
                     'contract_rate_id' => intval($_POST['item_contract_rate_id'][$i] ?? 0),
                     'rate_label'       => trim($_POST['item_rate_label'][$i] ?? ''),
-                    'price_thai'       => floatval($_POST['item_price_thai'][$i] ?? 0),
-                    'price_foreigner'  => floatval($_POST['item_price_foreigner'][$i] ?? 0),
-                    'qty_thai'         => intval($_POST['item_qty_thai'][$i] ?? 0),
-                    'qty_foreigner'    => intval($_POST['item_qty_foreigner'][$i] ?? 0),
+                    'price_thai'       => $priceThai,
+                    'price_foreigner'  => $priceForeign,
+                    'qty_thai'         => $qtyThai,
+                    'qty_foreigner'    => $qtyForeigner,
                     'notes'            => trim($_POST['item_notes'][$i] ?? ''),
+                    'product_type_id'  => intval($_POST['item_product_type_id'][$i] ?? 0),
+                    'model_id'         => intval($_POST['item_model_id'][$i] ?? 0),
+                    'pax_lines_json'   => $paxLinesJson,
                 ];
             }
         }
@@ -188,6 +229,16 @@ class TourBookingController extends BaseController
 
             // Save items
             $this->bookingModel->saveBookingItems($bookingId, $items);
+
+            // Save per-booking contact info (module-isolated)
+            $contactData = [
+                'contact_name' => trim($_POST['contact_name'] ?? ''),
+                'mobile'       => trim($_POST['contact_mobile'] ?? ''),
+                'email'        => trim($_POST['contact_email'] ?? ''),
+                'gender'       => trim($_POST['contact_gender'] ?? ''),
+                'nationality'  => trim($_POST['contact_nationality'] ?? ''),
+            ];
+            $this->bookingModel->saveBookingContact($bookingId, $contactData);
 
             mysqli_commit($this->bookingModel->getConnection());
 
@@ -337,7 +388,12 @@ class TourBookingController extends BaseController
         $id = $this->bookingModel->quickCreateCustomer($comId, $name, $phone);
 
         header('Content-Type: application/json');
-        echo json_encode(['success' => $id > 0, 'id' => $id, 'name' => $name, 'phone' => $phone]);
+        echo json_encode([
+            'success' => $id > 0,
+            'id'      => $id,
+            'name'    => $name,
+            'phone'   => $phone,
+        ]);
         exit;
     }
 
