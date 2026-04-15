@@ -472,10 +472,10 @@ tests/                        <span class="comment"># E2E test suites</span></pr
             <p><?= $t['migrations_desc'] ?></p>
             <table class="dev-table">
                 <tr><th><?= $t['th_path'] ?></th><th><?= $t['th_style'] ?></th><th><?= $t['th_use'] ?></th></tr>
-                <tr><td><code>database/migrations/NNN_name.sql</code></td><td>Simple (IF NOT EXISTS)</td><td>MySQL 8+ or phpMyAdmin</td></tr>
-                <tr><td><code>migrations/NNN_name.sql</code></td><td>Stored procedure</td><td>MySQL 5.7 CLI (idempotent)</td></tr>
+                <tr><td><code>database/migrations/NNN_name.sql</code></td><td>Simple (IF NOT EXISTS)</td><td>MySQL 5.7+ / phpMyAdmin</td></tr>
+                <tr><td><code>database/migrations/legacy_NNN_name.sql</code></td><td>Stored procedure (legacy)</td><td>MySQL 5.7 CLI (idempotent)</td></tr>
             </table>
-            <p><?= $t['migrations_current'] ?> <code>mysql -u root -p iacc &lt; migrations/NNN.sql</code></p>
+            <p><?= $t['migrations_current'] ?> <code>mysql -u root -p iacc &lt; database/migrations/NNN.sql</code></p>
         </div>
     </div>
 
@@ -632,7 +632,7 @@ docker compose up -d
 docker compose down
 
 <span class="comment"># Run migration</span>
-docker exec iacc_mysql mysql -uroot -proot iacc < migrations/NNN.sql
+docker exec iacc_mysql mysql -uroot -proot iacc < database/migrations/NNN.sql
 
 <span class="comment"># PHP syntax check</span>
 docker exec iacc_php php -l /var/www/html/app/Controllers/MyController.php

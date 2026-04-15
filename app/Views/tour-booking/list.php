@@ -144,7 +144,8 @@ $statusConfig = [
         <thead>
             <tr>
                 <th><?= $isThai ? 'เลขจอง' : 'Booking #' ?></th>
-                <th><?= $isThai ? 'วันเดินทาง' : 'Travel Date' ?></th>
+                <th><?= $isThai ? 'วันที่จอง' : 'Booking Date' ?></th>
+                <th><?= $isThai ? 'วันเดินทาง' : 'Trip Date' ?></th>
                 <th><?= $isThai ? 'ลูกค้า' : 'Customer' ?></th>
                 <th><?= $isThai ? 'ตัวแทน' : 'Agent' ?></th>
                 <th style="text-align:center;"><?= $isThai ? 'ผู้เดินทาง' : 'Pax' ?></th>
@@ -164,7 +165,11 @@ $statusConfig = [
                     <a href="index.php?page=tour_booking_view&id=<?= $b['id'] ?>" class="bk-number"><?= htmlspecialchars($b['booking_number']) ?></a>
                 </td>
                 <td>
-                    <i class="fa fa-calendar-o" style="color:#94a3b8;"></i>
+                    <i class="fa fa-calendar" style="color:#6366f1;"></i>
+                    <?= !empty($b['booking_date']) ? date('d M Y', strtotime($b['booking_date'])) : '-' ?>
+                </td>
+                <td>
+                    <i class="fa fa-plane" style="color:#0d9488;"></i>
                     <?= date('d M Y', strtotime($b['travel_date'])) ?>
                 </td>
                 <td><?= htmlspecialchars($custName) ?></td>

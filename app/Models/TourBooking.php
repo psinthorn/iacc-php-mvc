@@ -133,8 +133,9 @@ class TourBooking extends BaseModel
         $booking = $result ? mysqli_fetch_assoc($result) : null;
 
         if ($booking) {
-            $booking['items'] = $this->getBookingItems(intval($booking['id']));
-            $booking['pax']   = $this->getBookingPax(intval($booking['id']));
+            $booking['items']   = $this->getBookingItems(intval($booking['id']));
+            $booking['pax']     = $this->getBookingPax(intval($booking['id']));
+            $booking['contact'] = $this->getBookingContact(intval($booking['id']));
         }
 
         return $booking ?: null;
@@ -176,16 +177,17 @@ class TourBooking extends BaseModel
 
     public function createBooking(array $data): int
     {
-        $cols = "company_id, booking_number, customer_id, agent_id, booking_by, travel_date,
+        $cols = "company_id, booking_number, booking_date, customer_id, agent_id, booking_by, travel_date,
                  pax_adult, pax_child, pax_infant,
                  pickup_location_id, pickup_hotel, pickup_room, pickup_time,
                  voucher_number, entrance_fee, subtotal, discount, vat, total_amount, currency,
                  status, remark, created_by";
 
         $vals = sprintf(
-            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
             intval($data['company_id']),
             sql_escape($data['booking_number']),
+            sql_escape($data['booking_date'] ?? date('Y-m-d')),
             intval($data['customer_id'] ?? 0),
             intval($data['agent_id'] ?? 0),
             sql_escape($data['booking_by'] ?? ''),
@@ -225,7 +227,7 @@ class TourBooking extends BaseModel
     public function updateBooking(int $id, array $data, int $comId): bool
     {
         $set = sprintf(
-            "customer_id='%s', agent_id='%s', booking_by='%s', travel_date='%s',
+            "customer_id='%s', agent_id='%s', booking_by='%s', booking_date='%s', travel_date='%s',
              pax_adult='%s', pax_child='%s', pax_infant='%s',
              pickup_location_id='%s', pickup_hotel='%s', pickup_room='%s', pickup_time='%s',
              voucher_number='%s', entrance_fee='%s', subtotal='%s', discount='%s', vat='%s', total_amount='%s',
@@ -233,6 +235,7 @@ class TourBooking extends BaseModel
             intval($data['customer_id'] ?? 0),
             intval($data['agent_id'] ?? 0),
             sql_escape($data['booking_by'] ?? ''),
+            sql_escape($data['booking_date'] ?? date('Y-m-d')),
             sql_escape($data['travel_date']),
             intval($data['pax_adult'] ?? 0),
             intval($data['pax_child'] ?? 0),
@@ -266,7 +269,12 @@ class TourBooking extends BaseModel
 
     public function getBookingItems(int $bookingId): array
     {
-        $sql = "SELECT * FROM tour_booking_items WHERE booking_id = " . intval($bookingId) . " ORDER BY id";
+        $sql = "SELECT bi.*, t.name AS type_name, m.model_name, m.des AS model_des
+                FROM tour_booking_items bi
+                LEFT JOIN type t ON bi.product_type_id = t.id
+                LEFT JOIN model m ON bi.model_id = m.id
+                WHERE bi.booking_id = " . intval($bookingId) . "
+                ORDER BY bi.id";
         $result = mysqli_query($this->conn, $sql);
         $rows = [];
         while ($result && $row = mysqli_fetch_assoc($result)) {
@@ -293,8 +301,12 @@ class TourBooking extends BaseModel
             $quantity  = $qtyThai + $qtyForeigner;
             $unitPrice = $quantity > 0 ? ($amount / $quantity) : 0;
 
+            $productTypeId = intval($item['product_type_id'] ?? 0);
+            $modelId       = intval($item['model_id'] ?? 0);
+            $paxJson       = sql_escape($item['pax_lines_json'] ?? '[]');
+
             $vals = sprintf(
-                "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+                "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
                 $bid,
                 sql_escape($item['item_type'] ?? 'tour'),
                 sql_escape($item['description'] ?? ''),
@@ -307,12 +319,15 @@ class TourBooking extends BaseModel
                 $qtyThai,
                 $qtyForeigner,
                 $amount,
-                sql_escape($item['notes'] ?? '')
+                sql_escape($item['notes'] ?? ''),
+                $productTypeId,
+                $modelId,
+                $paxJson
             );
 
             $args = [];
             $args['table'] = 'tour_booking_items';
-            $args['columns'] = 'booking_id, item_type, description, contract_rate_id, rate_label, quantity, unit_price, price_thai, price_foreigner, qty_thai, qty_foreigner, amount, notes';
+            $args['columns'] = 'booking_id, item_type, description, contract_rate_id, rate_label, quantity, unit_price, price_thai, price_foreigner, qty_thai, qty_foreigner, amount, notes, product_type_id, model_id, pax_lines_json';
             $args['value'] = $vals;
             $this->hard->insertDB($args);
         }
@@ -413,7 +428,7 @@ class TourBooking extends BaseModel
      */
     public function getCustomerDropdown(int $comId): array
     {
-        $sql = "SELECT id, name_en, name_th 
+        $sql = "SELECT id, name_en, name_th, contact, phone, email 
                 FROM company 
                 WHERE company_id = " . intval($comId) . "
                   AND customer = '1'
@@ -448,6 +463,44 @@ class TourBooking extends BaseModel
         return $rows;
     }
 
+    /**
+     * Get product types (categories) for dropdown
+     */
+    public function getProductTypes(int $comId): array
+    {
+        $sql = "SELECT id, name, des
+                FROM type
+                WHERE company_id = " . intval($comId) . "
+                  AND deleted_at IS NULL
+                ORDER BY name";
+
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    /**
+     * Get product models with prices for cascading dropdown
+     */
+    public function getProductModels(int $comId): array
+    {
+        $sql = "SELECT m.id, m.type_id, m.model_name, m.des, m.price
+                FROM model m
+                WHERE m.company_id = " . intval($comId) . "
+                  AND m.deleted_at IS NULL
+                ORDER BY m.type_id, m.model_name";
+
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
     // ─── Customer Search (AJAX) ────────────────────────────────
 
     /**
@@ -456,7 +509,7 @@ class TourBooking extends BaseModel
     public function searchCustomers(int $comId, string $term, int $limit = 15): array
     {
         $s = sql_escape(trim($term));
-        $sql = "SELECT id, name_en, name_th, phone, email
+        $sql = "SELECT id, name_en, name_th, contact, phone, email
                 FROM company
                 WHERE company_id = " . intval($comId) . "
                   AND customer = '1'
@@ -474,7 +527,7 @@ class TourBooking extends BaseModel
     }
 
     /**
-     * Quick-create a customer record
+     * Quick-create a customer record (core company table — name + phone only)
      */
     public function quickCreateCustomer(int $comId, string $nameEn, string $phone = ''): int
     {
@@ -490,6 +543,45 @@ class TourBooking extends BaseModel
         $args['columns'] = 'company_id, name_en, phone, customer';
         $args['value'] = $vals;
         return intval($this->hard->insertDbMax($args));
+    }
+
+    // ─── Tour Booking Contacts ──────────────────────────────────
+
+    /**
+     * Save per-booking contact info (module-isolated table)
+     */
+    public function saveBookingContact(int $bookingId, array $data): void
+    {
+        $bid = intval($bookingId);
+        // Upsert: delete existing then insert
+        mysqli_query($this->conn, "DELETE FROM tour_booking_contacts WHERE booking_id = $bid");
+
+        $vals = sprintf(
+            "'%s','%s','%s','%s','%s','%s'",
+            $bid,
+            sql_escape($data['contact_name'] ?? ''),
+            sql_escape($data['mobile'] ?? ''),
+            sql_escape($data['email'] ?? ''),
+            sql_escape($data['gender'] ?? ''),
+            sql_escape($data['nationality'] ?? '')
+        );
+
+        $args = [];
+        $args['table'] = 'tour_booking_contacts';
+        $args['columns'] = 'booking_id, contact_name, mobile, email, gender, nationality';
+        $args['value'] = $vals;
+        $this->hard->insertDB($args);
+    }
+
+    /**
+     * Get per-booking contact info
+     */
+    public function getBookingContact(int $bookingId): ?array
+    {
+        $sql = "SELECT * FROM tour_booking_contacts WHERE booking_id = " . intval($bookingId) . " LIMIT 1";
+        $result = mysqli_query($this->conn, $sql);
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+        return $row ?: null;
     }
 
     /**
