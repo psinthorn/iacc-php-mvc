@@ -362,6 +362,18 @@
 <aisettings>AI Settings</aisettings>
 <aidocumentation>AI Documentation</aidocumentation>
 <admin>Admin</admin>
+<modulemanager>Module Manager</modulemanager>
+<modulemanagerdesc>Enable/disable modules per company, manage plans and validity</modulemanagerdesc>
+<activemodules>Active</activemodules>
+<modulesettings>Module Settings</modulesettings>
+<usagelimit>Usage Limit</usagelimit>
+<emptyforunlimited>empty = unlimited</emptyforunlimited>
+<usagecount>Current Usage</usagecount>
+<validfrom>Valid From</validfrom>
+<validto>Valid To</validto>
+<searchcompany>Search company...</searchcompany>
+<nocompanyfound>No companies found</nocompanyfound>
+<editsettings>Edit settings</editsettings>
 <auditlog>Audit Log</auditlog>
 <edits>Edits</edits>
 <monitoring>Monitoring</monitoring>

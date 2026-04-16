@@ -319,6 +319,11 @@ return [
     'qc_tax_invoice'         => ['QuickCreateController', 'taxInvoice'],
     'qc_store'               => ['QuickCreateController', 'store'],
 
+    // ========== Module Manager (Super Admin) ==========
+    'module_manager'         => ['ModuleManagerController', 'index'],
+    'module_manager_toggle'  => ['ModuleManagerController', 'toggle', 'standalone'],
+    'module_manager_update'  => ['ModuleManagerController', 'update', 'standalone'],
+
     // ========== Tour Operator Module ==========
     'tour_agent_list'        => ['TourAgentController', 'index'],
     'tour_agent_make'        => ['TourAgentController', 'make'],
