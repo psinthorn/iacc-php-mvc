@@ -74,7 +74,7 @@ $html = '
     .header .subtitle { font-size: 11px; color: #555; }
     .company-name { font-size: 13px; font-weight: bold; }
     .group-header { background: #009688; color: white; padding: 5px 10px; font-size: 12px; font-weight: bold; margin: 10px 0 4px; border-radius: 3px; }
-    table.pickup { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+    table.pickup { width: 100%; border-collapse: collapse; margin-bottom: 6px; table-layout: fixed; }
     table.pickup th { background: #f1f5f9; color: #475569; padding: 5px 6px; font-size: 9px; text-align: left; text-transform: uppercase; letter-spacing: 0.03em; border: 1px solid #e2e8f0; }
     table.pickup td { padding: 5px 6px; font-size: 10px; border: 1px solid #e2e8f0; vertical-align: top; }
     .right { text-align: right; }
@@ -107,13 +107,13 @@ $thRow = '<tr>
     <th style="width:42px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
     <th style="width:120px;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
     <th style="width:30px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th style="width:140px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
+    <th style="width:160px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
     <th class="center" style="width:55px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
-    <th style="width:40px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
     <th style="width:70px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
-    <th style="width:80px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
-    <th style="width:60px;">' . ($isThai ? 'ทะเบียนรถ' : 'Vehicle') . '</th>
-    <th style="width:60px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
+    <th style="width:55px;">' . ($isThai ? 'ทะเบียนรถ' : 'Vehicle') . '</th>
+    <th style="width:55px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
 </tr>';
 
 if (!empty($groups)) {
@@ -132,7 +132,7 @@ if (!empty($groups)) {
             $globalNum++;
             $custName = ($isThai && !empty($b['customer_name_th'])) ? $b['customer_name_th'] : ($b['customer_name'] ?: '-');
             $agName   = ($isThai && !empty($b['agent_name_th'])) ? $b['agent_name_th'] : ($b['agent_name'] ?: '-');
-            $agName   = mb_substr($agName, 0, 18);
+            $agName   = mb_substr($agName, 0, 14);
             $pickupTime = !empty($b['pickup_time']) ? date('H:i', strtotime($b['pickup_time'])) : '-';
             $hotel = $b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-');
             $phone = $b['customer_phone'] ?: '';
