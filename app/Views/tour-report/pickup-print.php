@@ -107,9 +107,9 @@ $thRow = '<tr>
     <th style="width:42px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
     <th style="width:120px;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
     <th style="width:30px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th style="width:100px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
+    <th style="width:120px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
     <th class="center" style="width:55px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
+    <th style="width:50px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
     <th style="width:70px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
     <th style="width:80px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
     <th style="width:60px;">' . ($isThai ? 'ทะเบียนรถ' : 'Vehicle') . '</th>
