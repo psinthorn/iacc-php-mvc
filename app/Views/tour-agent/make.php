@@ -171,7 +171,29 @@ $messages = [
 
         <!-- Section 5: Contact Channels -->
         <div class="form-card">
-            <h3><i class="fa fa-comments-o"></i> <?= $isThai ? 'ช่องทางติดต่อ' : 'Contact Channels' ?></h3>
+            <h3><i class="fa fa-comments-o"></i> <?= $isThai ? 'ข้อมูลติดต่อ' : 'Contact Information' ?></h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><?= $xml->contactperson ?? 'Contact Person' ?></label>
+                    <input type="text" name="contact_person" value="<?= htmlspecialchars($isEdit ? ($profile['contact_person'] ?? '') : '') ?>" placeholder="<?= $isThai ? 'ชื่อผู้ติดต่อ' : 'Contact person name' ?>">
+                </div>
+                <div class="form-group">
+                    <label><?= $xml->email ?? 'Email' ?></label>
+                    <input type="email" name="contact_email" value="<?= htmlspecialchars($isEdit ? ($profile['contact_email'] ?? '') : '') ?>" placeholder="agent@example.com">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><?= $xml->phone ?? 'Phone' ?></label>
+                    <input type="text" name="contact_phone" value="<?= htmlspecialchars($isEdit ? ($profile['contact_phone'] ?? '') : '') ?>" placeholder="02-xxx-xxxx">
+                </div>
+                <div class="form-group">
+                    <label><?= $xml->fax ?? 'Fax' ?></label>
+                    <input type="text" name="contact_fax" value="<?= htmlspecialchars($isEdit ? ($profile['contact_fax'] ?? '') : '') ?>" placeholder="02-xxx-xxxx">
+                </div>
+            </div>
 
             <div class="form-row">
                 <div class="form-group">
