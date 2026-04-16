@@ -38,21 +38,7 @@ $messages = [
 .btn-cancel { padding: 12px 32px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
 .btn-cancel:hover { background: #e2e8f0; }
 .vendor-info { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin-top: 8px; font-size: 13px; color: #0f766e; display: none; }
-/* Rate grid */
-.rate-grid { display: flex; flex-direction: column; gap: 14px; }
-.rate-section-label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-.rate-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
-.rate-field label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 500; }
-.rate-field input { width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; box-sizing: border-box; height: 38px; }
-.rate-field input:focus { border-color: #0d9488; box-shadow: 0 0 0 2px rgba(13,148,136,0.1); outline: none; }
-.rate-field input:disabled { background: #f8fafc; color: #cbd5e1; }
-/* Default rate fields — highlighted */
-.rate-defaults { grid-template-columns: 1fr 1fr; margin-bottom: 6px; }
-.rate-field-default input { border-color: #0d9488; background: #f0fdfa; font-weight: 600; }
-.rate-field-default label { color: #0f766e; font-weight: 600; }
-.rate-override-label { font-size: 11px; color: #94a3b8; margin: 4px 0 6px; font-style: italic; }
-.rate-overrides input { background: #fff; }
-@media (max-width: 768px) { .rate-inputs { grid-template-columns: 1fr 1fr; } .rate-defaults { grid-template-columns: 1fr 1fr; } }
+/* Rate grid — no longer used here, moved to contract-make.php */
 </style>
 
 <div class="master-data-container">
@@ -161,129 +147,24 @@ $messages = [
             </div>
         </div>
 
-        <!-- Section 4: Contract Rates (per product model) -->
-        <?php if ($isEdit && !empty($modelsByType)): ?>
+        <!-- Section 4: Contracts Link -->
+        <?php if ($isEdit): ?>
         <div class="form-card">
-            <h3><i class="fa fa-money"></i> <?= $isThai ? 'อัตราสัญญา (ตามสินค้า)' : 'Contract Rates (by Product)' ?></h3>
-            <p style="font-size:13px;color:#64748b;margin:0 0 16px;">
-                <?= $isThai ? 'กำหนดราคาสำหรับไทย/ต่างชาติ แยกผู้ใหญ่/เด็ก และค่าเข้าชม ต่อสินค้าแต่ละรายการ' : 'Set Thai/Foreigner pricing for Adult/Child with optional entrance fees per product.' ?>
-            </p>
-
-            <!-- Models grouped by Type -->
-            <?php foreach ($modelsByType as $typeGroup): ?>
-            <div class="type-group" style="margin-bottom:16px;">
-                <div class="type-header" onclick="toggleType(this)" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-weight:600;font-size:14px;color:#334155;">
-                        <i class="fa fa-folder-o"></i> <?= htmlspecialchars($typeGroup['type_name']) ?>
-                        <span style="font-size:12px;color:#94a3b8;font-weight:400;margin-left:8px;">(<?= count($typeGroup['models']) ?> <?= $isThai ? 'สินค้า' : 'products' ?>)</span>
-                    </span>
-                    <i class="fa fa-chevron-down type-chevron" style="color:#94a3b8;transition:transform .2s;"></i>
-                </div>
-                <div class="type-models" style="display:none;padding:12px 0 0;">
-                    <?php foreach ($typeGroup['models'] as $model):
-                        $mid = (int)$model['id'];
-                        $mr = $contractRates[$mid] ?? null;
-                        $hasCustom = ($mr !== null);
-                    ?>
-                    <div class="rate-card model-rate-card" style="background:<?= $hasCustom ? '#fff' : '#fafafa' ?>;border:1px solid <?= $hasCustom ? '#0d9488' : '#e2e8f0' ?>;border-radius:10px;padding:16px;margin-bottom:10px;<?= $hasCustom ? '' : 'opacity:0.7;' ?>">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:<?= $hasCustom ? '12px' : '0' ?>;">
-                            <div>
-                                <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:500;">
-                                    <input type="checkbox" class="model-rate-toggle" data-model-id="<?= $mid ?>"
-                                           <?= $hasCustom ? 'checked' : '' ?>
-                                           onchange="toggleModelRate(this, <?= $mid ?>)">
-                                    <?= htmlspecialchars($model['model_name']) ?>
-                                </label>
-                                <?php if (!$hasCustom): ?>
-                                <span style="font-size:11px;color:#94a3b8;margin-left:8px;"><i class="fa fa-info-circle"></i> <?= $isThai ? 'ใช้อัตราเริ่มต้น' : 'Using default rate' ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="model-rate-type" style="<?= $hasCustom ? '' : 'display:none;' ?>">
-                                <select name="rates[<?= $mid ?>][rate_type]" class="rate-type-select" style="padding:4px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;" <?= $hasCustom ? '' : 'disabled' ?>>
-                                    <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>>Net Rate (฿)</option>
-                                    <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <input type="hidden" name="rates[<?= $mid ?>][model_id]" value="<?= $mid ?>" <?= $hasCustom ? '' : 'disabled' ?>>
-                        <div class="model-rate-fields" style="<?= $hasCustom ? '' : 'display:none;' ?>">
-                            <div class="rate-grid">
-                                <div class="rate-section">
-                                    <div class="rate-section-label"><?= $isThai ? 'ค่าบริการ' : 'Service Rate' ?></div>
-                                    <div class="rate-inputs rate-defaults">
-                                        <div class="rate-field rate-field-default">
-                                            <label><?= $isThai ? 'ผู้ใหญ่ (เริ่มต้น)' : 'Adult (Default)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][adult_default]" step="0.01" min="0" value="<?= $mr['adult_default'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> class="default-rate-input" data-target="adult" data-card="<?= $mid ?>">
-                                        </div>
-                                        <div class="rate-field rate-field-default">
-                                            <label><?= $isThai ? 'เด็ก (เริ่มต้น)' : 'Child (Default)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][child_default]" step="0.01" min="0" value="<?= $mr['child_default'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> class="default-rate-input" data-target="child" data-card="<?= $mid ?>">
-                                        </div>
-                                    </div>
-                                    <div class="rate-override-label"><?= $isThai ? 'ระบุแยกตามสัญชาติ (ถ้าต่างจากค่าเริ่มต้น)' : 'Override by nationality (if different from default)' ?></div>
-                                    <div class="rate-inputs rate-overrides">
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'ผู้ใหญ่ (ไทย)' : 'Adult (Thai)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][adult_thai]" step="0.01" min="0" value="<?= $mr['adult_thai'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'ผู้ใหญ่ (ต่างชาติ)' : 'Adult (Foreigner)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][adult_foreigner]" step="0.01" min="0" value="<?= $mr['adult_foreigner'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'เด็ก (ไทย)' : 'Child (Thai)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][child_thai]" step="0.01" min="0" value="<?= $mr['child_thai'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'เด็ก (ต่างชาติ)' : 'Child (Foreigner)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][child_foreigner]" step="0.01" min="0" value="<?= $mr['child_foreigner'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="rate-section">
-                                    <div class="rate-section-label"><?= $isThai ? 'ค่าเข้าชม (ถ้ามี)' : 'Entrance Fee (if any)' ?></div>
-                                    <div class="rate-inputs rate-defaults">
-                                        <div class="rate-field rate-field-default">
-                                            <label><?= $isThai ? 'ผู้ใหญ่ (เริ่มต้น)' : 'Adult (Default)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][entrance_adult_default]" step="0.01" min="0" value="<?= $mr['entrance_adult_default'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> class="default-rate-input" data-target="entrance_adult" data-card="<?= $mid ?>">
-                                        </div>
-                                        <div class="rate-field rate-field-default">
-                                            <label><?= $isThai ? 'เด็ก (เริ่มต้น)' : 'Child (Default)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][entrance_child_default]" step="0.01" min="0" value="<?= $mr['entrance_child_default'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> class="default-rate-input" data-target="entrance_child" data-card="<?= $mid ?>">
-                                        </div>
-                                    </div>
-                                    <div class="rate-override-label"><?= $isThai ? 'ระบุแยกตามสัญชาติ (ถ้าต่างจากค่าเริ่มต้น)' : 'Override by nationality (if different from default)' ?></div>
-                                    <div class="rate-inputs rate-overrides">
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'ผู้ใหญ่ (ไทย)' : 'Adult (Thai)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][entrance_adult_thai]" step="0.01" min="0" value="<?= $mr['entrance_adult_thai'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'ผู้ใหญ่ (ต่างชาติ)' : 'Adult (Foreigner)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][entrance_adult_foreigner]" step="0.01" min="0" value="<?= $mr['entrance_adult_foreigner'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'เด็ก (ไทย)' : 'Child (Thai)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][entrance_child_thai]" step="0.01" min="0" value="<?= $mr['entrance_child_thai'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                        <div class="rate-field">
-                                            <label><?= $isThai ? 'เด็ก (ต่างชาติ)' : 'Child (Foreigner)' ?></label>
-                                            <input type="number" name="rates[<?= $mid ?>][entrance_child_foreigner]" step="0.01" min="0" value="<?= $mr['entrance_child_foreigner'] ?? '0.00' ?>" <?= $hasCustom ? '' : 'disabled' ?> placeholder="0 = <?= $isThai ? 'ใช้ค่าเริ่มต้น' : 'use default' ?>">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+            <h3><i class="fa fa-file-text-o"></i> <?= $isThai ? 'สัญญาและอัตราค่าบริการ' : 'Contracts & Rates' ?></h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+                <p style="font-size:13px;color:#64748b;margin:0;">
+                    <?= $isThai ? 'จัดการสัญญา ประเภทสินค้า และอัตราค่าบริการสำหรับตัวแทนนี้' : 'Manage contracts, product types, and service rates for this agent.' ?>
+                </p>
+                <a href="index.php?page=agent_contract_list&agent_id=<?= $profile['company_ref_id'] ?>" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:#0d9488;color:#fff;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;">
+                    <i class="fa fa-file-text-o"></i> <?= $isThai ? 'จัดการสัญญา' : 'Manage Contracts' ?>
+                    <i class="fa fa-arrow-right" style="margin-left:4px;"></i>
+                </a>
             </div>
-            <?php endforeach; ?>
         </div>
-        <?php elseif (!$isEdit): ?>
+        <?php else: ?>
         <div class="form-card" style="background:#f8fafc;border:1px dashed #cbd5e1;">
             <p style="text-align:center;color:#94a3b8;margin:0;padding:20px 0;">
-                <i class="fa fa-info-circle"></i> <?= $isThai ? 'บันทึกโปรไฟล์ก่อนเพื่อกำหนดอัตราสัญญา' : 'Save the profile first to configure contract rates.' ?>
+                <i class="fa fa-info-circle"></i> <?= $isThai ? 'บันทึกโปรไฟล์ก่อนเพื่อจัดการสัญญา' : 'Save the profile first to manage contracts.' ?>
             </p>
         </div>
         <?php endif; ?>
@@ -363,65 +244,5 @@ document.getElementById('commType').addEventListener('change', function() {
     document.getElementById('commChildHelp').textContent = isNet
         ? (thLang ? 'จำนวนเงิน เช่น 300.00 = 300 บาท' : 'Amount e.g. 300.00 = 300 THB')
         : (thLang ? 'เปอร์เซ็นต์ เช่น 5.00 = 5%' : 'Percentage e.g. 5.00 = 5%');
-});
-
-// Contract Rate: toggle type group accordion
-function toggleType(el) {
-    var models = el.nextElementSibling;
-    var chevron = el.querySelector('.type-chevron');
-    if (models.style.display === 'none') {
-        models.style.display = 'block';
-        chevron.style.transform = 'rotate(180deg)';
-    } else {
-        models.style.display = 'none';
-        chevron.style.transform = '';
-    }
-}
-
-// Contract Rate: toggle model custom rate on/off
-function toggleModelRate(cb, modelId) {
-    var card = cb.closest('.model-rate-card');
-    var fields = card.querySelector('.model-rate-fields');
-    var typeDiv = card.querySelector('.model-rate-type');
-    var inputs = card.querySelectorAll('input[type="number"], select[name*="rate_type"], input[type="hidden"][name*="model_id"]');
-    if (cb.checked) {
-        fields.style.display = 'block';
-        typeDiv.style.display = '';
-        card.style.opacity = '1';
-        card.style.borderColor = '#0d9488';
-        card.style.background = '#fff';
-        inputs.forEach(function(inp) { inp.disabled = false; });
-    } else {
-        fields.style.display = 'none';
-        typeDiv.style.display = 'none';
-        card.style.opacity = '0.7';
-        card.style.borderColor = '#e2e8f0';
-        card.style.background = '#fafafa';
-        inputs.forEach(function(inp) { inp.disabled = true; });
-        cb.disabled = false; // keep checkbox itself enabled
-    }
-}
-
-// Auto-fill: when default field changes, fill blank override fields as hint
-document.querySelectorAll('.default-rate-input').forEach(function(inp) {
-    inp.addEventListener('input', function() {
-        var card = this.dataset.card;
-        var target = this.dataset.target; // 'adult', 'child', 'entrance_adult', 'entrance_child'
-        var val = parseFloat(this.value) || 0;
-        var thaiField, foreignField;
-        if (card === '0') {
-            thaiField = document.querySelector('input[name="rates[0][' + target + '_thai]"]');
-            foreignField = document.querySelector('input[name="rates[0][' + target + '_foreigner]"]');
-        } else {
-            thaiField = document.querySelector('input[name="rates[' + card + '][' + target + '_thai]"]');
-            foreignField = document.querySelector('input[name="rates[' + card + '][' + target + '_foreigner]"]');
-        }
-        if (thaiField && (parseFloat(thaiField.value) === 0 || thaiField.value === '' || thaiField.value === '0.00')) {
-            thaiField.value = val > 0 ? val.toFixed(2) : '0.00';
-        }
-        if (foreignField && (parseFloat(foreignField.value) === 0 || foreignField.value === '' || foreignField.value === '0.00')) {
-            foreignField.value = val > 0 ? val.toFixed(2) : '0.00';
-        }
-    });
 });
 </script>

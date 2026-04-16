@@ -110,7 +110,18 @@ class TourAgentProfile extends BaseModel
                     " . (!empty($data['notes']) ? "'" . \sql_escape($data['notes']) . "'" : "NULL") . "
                 )";
         mysqli_query($this->conn, $sql);
-        return mysqli_insert_id($this->conn);
+        $profileId = mysqli_insert_id($this->conn);
+
+        // Auto-create a default contract for the new agent
+        if ($profileId > 0) {
+            $contractModel = new AgentContract();
+            $contractModel->createDefaultContract(
+                (int)$data['company_ref_id'],
+                (int)$data['company_id']
+            );
+        }
+
+        return $profileId;
     }
 
     /**
