@@ -96,21 +96,12 @@ class TourAgentController extends BaseController
         $data = [
             'company_ref_id'    => intval($_POST['company_ref_id'] ?? 0),
             'company_id'        => $comId,
-            'commission_type'   => $_POST['commission_type'] ?? 'percentage',
-            'commission_adult'  => floatval($_POST['commission_adult'] ?? 0),
-            'commission_child'  => floatval($_POST['commission_child'] ?? 0),
-            'contract_start'    => trim($_POST['contract_start'] ?? ''),
-            'contract_end'      => trim($_POST['contract_end'] ?? ''),
             'contact_person'    => trim($_POST['contact_person'] ?? ''),
             'contact_email'     => trim($_POST['contact_email'] ?? ''),
             'contact_phone'     => trim($_POST['contact_phone'] ?? ''),
             'contact_fax'       => trim($_POST['contact_fax'] ?? ''),
             'contact_line'      => trim($_POST['contact_line'] ?? ''),
             'contact_whatsapp'  => trim($_POST['contact_whatsapp'] ?? ''),
-            'contact_person'    => trim($_POST['contact_person'] ?? ''),
-            'contact_mobile'    => trim($_POST['contact_mobile'] ?? ''),
-            'contact_email'     => trim($_POST['contact_email'] ?? ''),
-            'website'           => trim($_POST['website'] ?? ''),
             'notes'             => trim($_POST['notes'] ?? ''),
         ];
 

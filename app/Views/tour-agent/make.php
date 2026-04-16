@@ -105,52 +105,10 @@ $messages = [
             <?php endif; ?>
         </div>
 
-        <!-- Section 2: Commission -->
-        <div class="form-card">
-            <h3><i class="fa fa-percent"></i> <?= $isThai ? 'ค่าคอมมิชชั่น' : 'Commission' ?></h3>
-
-            <div class="form-group">
-                <label><?= $xml->tourcommissiontype ?? ($isThai ? 'ประเภท' : 'Type') ?></label>
-                <select name="commission_type" id="commType">
-                    <option value="percentage" <?= ($isEdit && $profile['commission_type'] === 'percentage') ? 'selected' : '' ?>><?= $xml->tourpercentage ?? ($isThai ? 'เปอร์เซ็นต์ (%)' : 'Percentage (%)') ?></option>
-                    <option value="net_rate" <?= ($isEdit && $profile['commission_type'] === 'net_rate') ? 'selected' : '' ?>><?= $xml->tournetrate ?? ($isThai ? 'ราคาเน็ต (บาท)' : 'Net Rate (THB)') ?></option>
-                </select>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label><?= $xml->tourcommissionadult ?? ($isThai ? 'ค่าคอมมิชชั่น (ผู้ใหญ่)' : 'Commission (Adult)') ?></label>
-                    <input type="number" name="commission_adult" step="0.01" min="0" value="<?= $isEdit ? $profile['commission_adult'] : '0.00' ?>">
-                    <div class="help" id="commAdultHelp"><?= $isThai ? 'เปอร์เซ็นต์ เช่น 10.00 = 10%' : 'Percentage e.g. 10.00 = 10%' ?></div>
-                </div>
-                <div class="form-group">
-                    <label><?= $xml->tourcommissionchild ?? ($isThai ? 'ค่าคอมมิชชั่น (เด็ก)' : 'Commission (Child)') ?></label>
-                    <input type="number" name="commission_child" step="0.01" min="0" value="<?= $isEdit ? $profile['commission_child'] : '0.00' ?>">
-                    <div class="help" id="commChildHelp"><?= $isThai ? 'เปอร์เซ็นต์ เช่น 5.00 = 5%' : 'Percentage e.g. 5.00 = 5%' ?></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 3: Contract -->
-        <div class="form-card">
-            <h3><i class="fa fa-calendar"></i> <?= $isThai ? 'สัญญา' : 'Contract' ?></h3>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label><?= $xml->tourcontractstart ?? ($isThai ? 'วันเริ่มสัญญา' : 'Contract Start') ?></label>
-                    <input type="date" name="contract_start" value="<?= $isEdit ? ($profile['contract_start'] ?? '') : '' ?>">
-                </div>
-                <div class="form-group">
-                    <label><?= $xml->tourcontractend ?? ($isThai ? 'วันสิ้นสุดสัญญา' : 'Contract End') ?></label>
-                    <input type="date" name="contract_end" value="<?= $isEdit ? ($profile['contract_end'] ?? '') : '' ?>">
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 4: Contracts Link -->
+        <!-- Section 2: Contract Information -->
         <?php if ($isEdit): ?>
         <div class="form-card">
-            <h3><i class="fa fa-file-text-o"></i> <?= $isThai ? 'สัญญาและอัตราค่าบริการ' : 'Contracts & Rates' ?></h3>
+            <h3><i class="fa fa-file-text-o"></i> <?= $isThai ? 'ข้อมูลสัญญา' : 'Contract Information' ?></h3>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
                 <p style="font-size:13px;color:#64748b;margin:0;">
                     <?= $isThai ? 'จัดการสัญญา ประเภทสินค้า และอัตราค่าบริการสำหรับตัวแทนนี้' : 'Manage contracts, product types, and service rates for this agent.' ?>
@@ -162,10 +120,13 @@ $messages = [
             </div>
         </div>
         <?php else: ?>
-        <div class="form-card" style="background:#f8fafc;border:1px dashed #cbd5e1;">
-            <p style="text-align:center;color:#94a3b8;margin:0;padding:20px 0;">
-                <i class="fa fa-info-circle"></i> <?= $isThai ? 'บันทึกโปรไฟล์ก่อนเพื่อจัดการสัญญา' : 'Save the profile first to manage contracts.' ?>
-            </p>
+        <div class="form-card" style="background:#f0fdfa;border:1px solid #99f6e4;">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 0;">
+                <i class="fa fa-info-circle" style="color:#0d9488;font-size:18px;"></i>
+                <p style="font-size:13px;color:#0f766e;margin:0;">
+                    <?= $isThai ? 'สัญญาเริ่มต้นจะถูกสร้างให้อัตโนมัติหลังบันทึก สามารถแก้ไขอัตราค่าบริการได้ภายหลัง' : 'A default contract will be auto-created after saving. You can edit rates and terms later.' ?>
+                </p>
+            </div>
         </div>
         <?php endif; ?>
 
@@ -235,16 +196,4 @@ function showVendorInfo(sel) {
     if (parts.length) { info.innerHTML = parts.join(' &nbsp;|&nbsp; '); info.style.display = 'block'; }
     else { info.style.display = 'none'; }
 }
-
-// Update help text based on commission type
-document.getElementById('commType').addEventListener('change', function() {
-    var isNet = this.value === 'net_rate';
-    var thLang = <?= json_encode($isThai) ?>;
-    document.getElementById('commAdultHelp').textContent = isNet
-        ? (thLang ? 'จำนวนเงิน เช่น 500.00 = 500 บาท' : 'Amount e.g. 500.00 = 500 THB')
-        : (thLang ? 'เปอร์เซ็นต์ เช่น 10.00 = 10%' : 'Percentage e.g. 10.00 = 10%');
-    document.getElementById('commChildHelp').textContent = isNet
-        ? (thLang ? 'จำนวนเงิน เช่น 300.00 = 300 บาท' : 'Amount e.g. 300.00 = 300 THB')
-        : (thLang ? 'เปอร์เซ็นต์ เช่น 5.00 = 5%' : 'Percentage e.g. 5.00 = 5%');
-});
 </script>
