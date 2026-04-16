@@ -132,6 +132,7 @@ if (!empty($groups)) {
             $globalNum++;
             $custName = ($isThai && !empty($b['customer_name_th'])) ? $b['customer_name_th'] : ($b['customer_name'] ?: '-');
             $agName   = ($isThai && !empty($b['agent_name_th'])) ? $b['agent_name_th'] : ($b['agent_name'] ?: '-');
+            $agName   = mb_substr($agName, 0, 18);
             $pickupTime = !empty($b['pickup_time']) ? date('H:i', strtotime($b['pickup_time'])) : '-';
             $hotel = $b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-');
             $phone = $b['customer_phone'] ?: '';
