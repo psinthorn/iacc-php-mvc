@@ -169,7 +169,7 @@ $messages = [
         </div>
         <?php endif; ?>
 
-        <!-- Section 5: Contact Channels -->
+        <!-- Section 5: Contact Information -->
         <div class="form-card">
             <h3><i class="fa fa-comments-o"></i> <?= $isThai ? 'ข้อมูลติดต่อ' : 'Contact Information' ?></h3>
 
@@ -195,26 +195,6 @@ $messages = [
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label><?= $isThai ? 'ชื่อผู้ติดต่อ' : 'Contact Person' ?></label>
-                    <input type="text" name="contact_person" value="<?= htmlspecialchars($isEdit ? ($profile['contact_person'] ?? '') : '') ?>" placeholder="<?= $isThai ? 'ชื่อ-นามสกุล' : 'Full name' ?>">
-                </div>
-                <div class="form-group">
-                    <label><?= $isThai ? 'มือถือ' : 'Mobile' ?></label>
-                    <input type="tel" name="contact_mobile" value="<?= htmlspecialchars($isEdit ? ($profile['contact_mobile'] ?? '') : '') ?>" placeholder="+66812345678">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
-                    <input type="email" name="contact_email" value="<?= htmlspecialchars($isEdit ? ($profile['contact_email'] ?? '') : '') ?>" placeholder="agent@example.com">
-                </div>
-                <div class="form-group">
-                    <label><?= $isThai ? 'เว็บไซต์' : 'Website' ?></label>
-                    <input type="url" name="website" value="<?= htmlspecialchars($isEdit ? ($profile['website'] ?? '') : '') ?>" placeholder="https://www.example.com">
-                </div>
-            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label><?= $xml->tourcontactline ?? 'LINE ID' ?></label>
