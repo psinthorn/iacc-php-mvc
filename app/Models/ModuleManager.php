@@ -8,9 +8,27 @@ class ModuleManager extends BaseModel
 
     /** Known modules with metadata */
     public const MODULES = [
-        'tour_operator' => ['name' => 'Tour Operator', 'icon' => 'fa-map', 'description' => 'Bookings, agents, locations, reports'],
-        'sales_channel' => ['name' => 'Sales Channel API', 'icon' => 'fa-plug', 'description' => 'REST API, webhooks, order sync'],
-        'line_oa'       => ['name' => 'LINE OA', 'icon' => 'fa-comment', 'description' => 'LINE messaging, auto-replies, orders'],
+        'tour_operator' => [
+            'name' => 'Tour Operator',
+            'icon' => 'fa-map',
+            'color' => '#16a085',
+            'description' => 'Bookings, agents, locations, reports',
+            'manage_url' => 'index.php?page=tour_booking_list',
+        ],
+        'sales_channel' => [
+            'name' => 'Sales Channel API',
+            'icon' => 'fa-plug',
+            'color' => '#8e44ad',
+            'description' => 'REST API, webhooks, order sync',
+            'manage_url' => 'index.php?page=api_dashboard',
+        ],
+        'line_oa' => [
+            'name' => 'LINE OA',
+            'icon' => 'fa-comment',
+            'color' => '#00b900',
+            'description' => 'LINE messaging, auto-replies, orders',
+            'manage_url' => 'index.php?page=line_dashboard',
+        ],
     ];
 
     /** Valid plan types */
@@ -152,6 +170,16 @@ class ModuleManager extends BaseModel
                 FROM company_modules";
         $result = mysqli_query($this->conn, $sql);
         return $result ? mysqli_fetch_assoc($result) : ['total_companies' => 0, 'active_modules' => 0, 'trial_count' => 0, 'expired_count' => 0];
+    }
+
+    /**
+     * Get total company count (including those without modules)
+     */
+    public function getTotalCompanyCount(): int
+    {
+        $sql = "SELECT COUNT(*) as cnt FROM company WHERE deleted_at IS NULL AND company_id = 0";
+        $result = mysqli_query($this->conn, $sql);
+        return $result ? intval(mysqli_fetch_assoc($result)['cnt']) : 0;
     }
 
     /**

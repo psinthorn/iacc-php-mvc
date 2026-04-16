@@ -410,6 +410,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=audit_log"><i class="fa fa-history"></i> <?=$xml->auditlog ?? 'Audit Log'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=module_manager"><i class="fa fa-cubes"></i> <?=$xml->modulemanager ?? 'Module Manager'?></a>
+                            </li>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=payment_method_list"><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></a>
@@ -423,10 +426,6 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <li>
                                 <a href="index.php?page=currency_list"><i class="fa fa-money"></i> <?=$xml->currencymanage ?? 'Currency'?></a>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
-                                <a href="index.php?page=module_manager"><i class="fa fa-cubes"></i> <?=$xml->modulemanager ?? 'Module Manager'?></a>
                             </li>
                         </ul>
                     </li>

@@ -34,10 +34,11 @@ class ModuleManagerController extends BaseController
         $search = trim($_GET['search'] ?? '');
         $companies = $this->model->getCompaniesWithModules($search);
         $stats = $this->model->getStats();
+        $totalCompanies = $this->model->getTotalCompanyCount();
         $modules = ModuleManager::MODULES;
         $plans = ModuleManager::PLANS;
 
-        $this->render('module-manager/list', compact('companies', 'stats', 'modules', 'plans', 'search'));
+        $this->render('module-manager/list', compact('companies', 'stats', 'totalCompanies', 'modules', 'plans', 'search'));
     }
 
     /**
