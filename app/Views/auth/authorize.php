@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Get user record (don't check password in SQL anymore)
-    $query = mysqli_query($db->conn, "SELECT a.id, a.password, a.level, a.lang, a.company_id, c.name_en as company_name 
+    $query = mysqli_query($db->conn, "SELECT a.id, a.name, a.password, a.level, a.lang, a.company_id, c.name_en as company_name 
                                        FROM authorize a 
                                        LEFT JOIN company c ON a.company_id = c.id 
                                        WHERE a.email='" . $user_email . "'");
@@ -66,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		    
 		    $_SESSION['user_email'] = $_POST['m_user'];
 		    $_SESSION['user_id'] = $tmp['id'];
+		    $_SESSION['user_name'] = $tmp['name'] ?? '';
 		    $_SESSION['user_level'] = $tmp['level'];
 		    $_SESSION['lang'] = $tmp['lang'];
 		    

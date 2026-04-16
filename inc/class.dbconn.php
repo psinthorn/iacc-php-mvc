@@ -74,6 +74,7 @@ class DbConn {
 		if ($userData) {
 			$_SESSION['user_id'] = $userData['user_id'];
 			$_SESSION['user_email'] = $userData['email'];
+			$_SESSION['user_name'] = $userData['name'] ?? '';
 			$_SESSION['user_level'] = $userData['level'];
 			$_SESSION['lang'] = $userData['lang'];
 			

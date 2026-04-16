@@ -327,12 +327,12 @@ $pax   = $booking['pax'] ?? [];
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'ผู้จอง' : 'Booking By' ?></label>
-                        <div class="ac-wrap">
-                            <input type="text" name="booking_by" id="bookingBySearch" autocomplete="off"
-                                   value="<?= htmlspecialchars($booking['booking_by'] ?? '') ?>"
-                                   placeholder="<?= $isThai ? 'พิมพ์ชื่อพนักงาน...' : 'Type staff name...' ?>">
-                            <div class="ac-list" id="bookingByAcList"></div>
-                        </div>
+                        <?php
+                            $loggedInDisplay = trim(($_SESSION['user_name'] ?? '') . '') ?: ($_SESSION['user_email'] ?? '');
+                            $bookingByValue = $isEdit ? ($booking['booking_by'] ?? $loggedInDisplay) : $loggedInDisplay;
+                        ?>
+                        <input type="text" name="booking_by" value="<?= htmlspecialchars($bookingByValue) ?>" readonly
+                               style="background:#f1f5f9;cursor:default;">
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'สกุลเงิน' : 'Currency' ?></label>
