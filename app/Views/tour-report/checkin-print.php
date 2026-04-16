@@ -112,9 +112,7 @@ $thRow = '<tr>
     <th style="width:55px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
     <th style="width:50px;">' . ($isThai ? 'ผู้จอง' : 'Book By') . '</th>
     <th class="right" style="width:55px;">' . ($isThai ? 'ค่าเข้าชม' : 'Entrance') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
-    <th style="width:90px;">' . ($isThai ? 'ชื่อ (เขียน)' : 'Name') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'ลายเซ็น' : 'Signature') . '</th>
+    <th style="width:140px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
 </tr>';
 
 $globalNum = 0;
@@ -148,17 +146,14 @@ if (!empty($direct)) {
             <td>' . $pickupTime . '</td>
             <td>' . htmlspecialchars($b['booking_by'] ?: '-') . '</td>
             <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
-            <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 30)) . '</td>
-            <td></td>
-            <td></td>
+            <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 50)) . '</td>
         </tr>';
 
-        // Blank rows for handwritten names/signatures (total_pax rows)
+        // Blank rows for handwritten signatures (total_pax rows)
         for ($i = 0; $i < $b['total_pax']; $i++) {
             $html .= '<tr class="blank">
                 <td></td><td></td><td></td><td></td><td></td><td></td>
                 <td></td><td></td><td></td><td></td><td></td><td></td>
-                <td></td><td></td>
             </tr>';
         }
     }
@@ -203,16 +198,13 @@ if (!empty($agent)) {
                 <td>' . $pickupTime . '</td>
                 <td>' . htmlspecialchars($b['booking_by'] ?: '-') . '</td>
                 <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
-                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 30)) . '</td>
-                <td></td>
-                <td></td>
+                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 50)) . '</td>
             </tr>';
 
             for ($i = 0; $i < $b['total_pax']; $i++) {
                 $html .= '<tr class="blank">
                     <td></td><td></td><td></td><td></td><td></td><td></td>
                     <td></td><td></td><td></td><td></td><td></td><td></td>
-                    <td></td><td></td>
                 </tr>';
             }
         }
