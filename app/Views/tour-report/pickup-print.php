@@ -122,7 +122,7 @@ if (!empty($groups)) {
         $groupPax = 0;
         foreach ($bookings as $b) $groupPax += $b['total_pax'];
 
-        $icon = $grouping === 'location' ? '📍' : '🕐';
+        $icon = $grouping === 'location' ? '&#9679;' : '&#9679;';
         $html .= '<div class="group-header">' . $icon . ' ' . htmlspecialchars($groupKey) . ' (' . count($bookings) . ' ' . ($isThai ? 'รายการ' : 'bookings') . ', ' . $groupPax . ' pax)</div>';
         $html .= '<table class="pickup">';
         $html .= $thRow;
