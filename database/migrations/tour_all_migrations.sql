@@ -207,3 +207,7 @@ CREATE TABLE IF NOT EXISTS tour_booking_contacts (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_booking_id (booking_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Add driver and vehicle columns to tour_bookings (2026-04-16)
+ALTER TABLE tour_bookings
+  ADD COLUMN driver_name VARCHAR(100) DEFAULT NULL AFTER remark,
+  ADD COLUMN vehicle_no VARCHAR(50) DEFAULT NULL AFTER driver_name;
