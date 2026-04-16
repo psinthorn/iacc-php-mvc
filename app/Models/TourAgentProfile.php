@@ -76,7 +76,7 @@ class TourAgentProfile extends BaseModel
     {
         $comId = \sql_int($comId);
         $sql = "SELECT c.id, c.name_en, c.name_th, c.contact, c.phone, c.email,
-                       c.customer, c.vender, c.company_type,
+                       c.customer, c.vender,
                        (SELECT tap.id FROM tour_agent_profiles tap 
                         WHERE tap.company_ref_id = c.id AND tap.company_id = '$comId' AND tap.deleted_at IS NULL) as profile_id
                 FROM company c
