@@ -68,6 +68,7 @@ $groupLabel = $grouping === 'location'
 // ── Build HTML ──────────────────────────────────────────────
 $html = '
 <style>
+    @page { size: A4 landscape; }
     body { font-family: garuda, Arial, sans-serif; font-size: 10px; color: #333; }
     .header { text-align: center; margin-bottom: 10px; }
     .header .title { font-size: 18px; font-weight: bold; color: #009688; margin: 4px 0; }
@@ -177,7 +178,7 @@ require_once 'vendor/autoload.php';
 
 $mpdf = new \Mpdf\Mpdf([
     'mode'             => 'utf-8',
-    'format'           => 'A4',
+    'format'           => 'A4-L',
     'default_font'     => 'garuda',
     'margin_left'      => 12,
     'margin_right'     => 12,
