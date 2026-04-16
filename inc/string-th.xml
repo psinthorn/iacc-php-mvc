@@ -362,6 +362,19 @@
 <aisettings>ตั้งค่า AI</aisettings>
 <aidocumentation>เอกสาร AI</aidocumentation>
 <admin>ผู้ดูแลระบบ</admin>
+<modulemanager>จัดการโมดูล</modulemanager>
+<modulemanagerdesc>เปิด/ปิดโมดูลแต่ละบริษัท จัดการแผนและวันหมดอายุ</modulemanagerdesc>
+<activemodules>ใช้งาน</activemodules>
+<modulesettings>ตั้งค่าโมดูล</modulesettings>
+<usagelimit>ขีดจำกัดการใช้งาน</usagelimit>
+<emptyforunlimited>ว่าง = ไม่จำกัด</emptyforunlimited>
+<usagecount>การใช้งานปัจจุบัน</usagecount>
+<validfrom>วันที่เริ่มต้น</validfrom>
+<validto>วันที่สิ้นสุด</validto>
+<searchcompany>ค้นหาบริษัท...</searchcompany>
+<nocompanyfound>ไม่พบบริษัท</nocompanyfound>
+<editsettings>แก้ไขการตั้งค่า</editsettings>
+<manage>จัดการ</manage>
 <auditlog>บันทึกการตรวจสอบ</auditlog>
 <edits>การแก้ไข</edits>
 <monitoring>การตรวจสอบ</monitoring>
