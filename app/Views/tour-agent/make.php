@@ -28,6 +28,12 @@ $messages = [
     width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px;
     font-size: 14px; outline: none; box-sizing: border-box; height: 44px; min-height: 44px;
 }
+.agent-filter {
+    padding: 6px 16px; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #fff;
+    font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s;
+}
+.agent-filter:hover { border-color: #0d9488; color: #0d9488; }
+.agent-filter.active { background: #0d9488; color: #fff; border-color: #0d9488; }
 .form-group textarea { height: auto; min-height: 80px; resize: vertical; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
@@ -81,18 +87,27 @@ $messages = [
             <?php else: ?>
             <div class="form-group">
                 <label><?= $isThai ? 'เลือกบริษัทตัวแทน (ลูกค้า/Vendor)' : 'Select Agent (Customer / Vendor)' ?> *</label>
+                <div style="display:flex;gap:6px;margin-bottom:10px;">
+                    <button type="button" class="agent-filter active" data-filter="all" onclick="filterAgents('all',this)"><?= $isThai ? 'ทั้งหมด' : 'All' ?></button>
+                    <button type="button" class="agent-filter" data-filter="vendor" onclick="filterAgents('vendor',this)">Vendor</button>
+                    <button type="button" class="agent-filter" data-filter="customer" onclick="filterAgents('customer',this)"><?= $isThai ? 'ลูกค้า' : 'Customer' ?></button>
+                </div>
                 <select name="company_ref_id" id="vendorSelect" required onchange="showVendorInfo(this)">
                     <option value=""><?= $isThai ? '-- เลือกบริษัท --' : '-- Select Company --' ?></option>
                     <?php foreach ($vendors as $v):
+                        $isCustomer = !empty($v['customer']);
+                        $isVendor   = !empty($v['vender']);
                         $type = [];
-                        if (!empty($v['customer'])) $type[] = $isThai ? 'ลูกค้า' : 'Customer';
-                        if (!empty($v['vender']))   $type[] = 'Vendor';
+                        if ($isCustomer) $type[] = $isThai ? 'ลูกค้า' : 'Customer';
+                        if ($isVendor)   $type[] = 'Vendor';
                         $badge = $type ? ' [' . implode('/', $type) . ']' : '';
                     ?>
                     <option value="<?= $v['id'] ?>"
                         data-contact="<?= htmlspecialchars($v['contact'] ?? '') ?>"
                         data-phone="<?= htmlspecialchars($v['phone'] ?? '') ?>"
                         data-email="<?= htmlspecialchars($v['email'] ?? '') ?>"
+                        data-customer="<?= $isCustomer ? '1' : '0' ?>"
+                        data-vendor="<?= $isVendor ? '1' : '0' ?>"
                         <?= $v['profile_id'] ? 'disabled' : '' ?>>
                         <?= htmlspecialchars($v['name_en']) ?><?= $badge ?>
                         <?= $v['profile_id'] ? ($isThai ? ' (มีโปรไฟล์แล้ว)' : ' (has profile)') : '' ?>
@@ -195,5 +210,20 @@ function showVendorInfo(sel) {
     if (opt.dataset.email) parts.push('<i class="fa fa-envelope"></i> ' + opt.dataset.email);
     if (parts.length) { info.innerHTML = parts.join(' &nbsp;|&nbsp; '); info.style.display = 'block'; }
     else { info.style.display = 'none'; }
+}
+
+function filterAgents(type, btn) {
+    document.querySelectorAll('.agent-filter').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var sel = document.getElementById('vendorSelect');
+    var opts = sel.querySelectorAll('option[value]');
+    sel.value = '';
+    var info = document.getElementById('vendorInfo');
+    if (info) info.style.display = 'none';
+    opts.forEach(function(opt) {
+        if (type === 'all') { opt.style.display = ''; }
+        else if (type === 'vendor') { opt.style.display = opt.dataset.vendor === '1' ? '' : 'none'; }
+        else if (type === 'customer') { opt.style.display = opt.dataset.customer === '1' ? '' : 'none'; }
+    });
 }
 </script>
