@@ -40,7 +40,7 @@ $pax   = $booking['pax'] ?? [];
 
 <style>
 /* ─── Form Layout ──────────────────────────────────────── */
-.bk-form { max-width: 980px; margin: 0 auto; }
+.bk-form { max-width: 1400px; margin: 0 auto; }
 .bk-card { background: white; border-radius: 14px; padding: 28px 28px 24px; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .bk-card h3 { font-size: 15px; font-weight: 700; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 2px solid #f1f5f9; color: #1e293b; display: flex; align-items: center; gap: 8px; }
 .bk-card h3 i { color: #0d9488; font-size: 16px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: #f0fdfa; border-radius: 8px; }
