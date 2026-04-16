@@ -103,15 +103,17 @@ $html .= '</div>';
 
 // Table header
 $thRow = '<tr>
-    <th style="width:25px;">#</th>
-    <th style="width:50px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
-    <th>' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
-    <th style="width:35px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th>' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
-    <th class="center" style="width:60px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
+    <th style="width:22px;">#</th>
+    <th style="width:42px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
+    <th style="width:120px;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
+    <th style="width:30px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
+    <th style="width:100px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
+    <th class="center" style="width:55px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
     <th style="width:70px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
-    <th style="width:80px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
+    <th style="width:80px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
+    <th style="width:60px;">' . ($isThai ? 'ทะเบียนรถ' : 'Vehicle') . '</th>
+    <th style="width:60px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
 </tr>';
 
 if (!empty($groups)) {
@@ -146,6 +148,8 @@ if (!empty($groups)) {
                 <td class="center"><strong>' . $b['total_pax'] . '</strong> <span style="color:#888;">(' . $paxStr . ')</span></td>
                 <td>' . htmlspecialchars($agName) . '</td>
                 <td>' . htmlspecialchars($phone) . '</td>
+                <td>' . htmlspecialchars($b['driver_name'] ?? '') . '</td>
+                <td>' . htmlspecialchars($b['vehicle_no'] ?? '') . '</td>
                 <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 30)) . '</td>
             </tr>';
         }

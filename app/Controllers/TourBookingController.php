@@ -151,6 +151,8 @@ class TourBookingController extends BaseController
             'pickup_hotel'       => trim($_POST['pickup_hotel'] ?? ''),
             'pickup_room'        => trim($_POST['pickup_room'] ?? ''),
             'pickup_time'        => trim($_POST['pickup_time'] ?? ''),
+            'driver_name'        => trim($_POST['driver_name'] ?? ''),
+            'vehicle_no'         => trim($_POST['vehicle_no'] ?? ''),
             'voucher_number'     => trim($_POST['voucher_number'] ?? ''),
             'entrance_fee'       => floatval($_POST['entrance_fee'] ?? 0),
             'subtotal'           => floatval($_POST['subtotal'] ?? 0),

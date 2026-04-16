@@ -512,6 +512,20 @@ $pax   = $booking['pax'] ?? [];
                             <input type="time" name="pickup_time" value="<?= htmlspecialchars($booking['pickup_time'] ?? '') ?>">
                         </div>
                     </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'คนขับ' : 'Driver' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-id-card-o"></i>
+                            <input type="text" name="driver_name" value="<?= htmlspecialchars($booking['driver_name'] ?? '') ?>" placeholder="<?= $isThai ? 'ชื่อคนขับ' : 'Driver name' ?>">
+                        </div>
+                    </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'ทะเบียนรถ' : 'Vehicle No.' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-bus"></i>
+                            <input type="text" name="vehicle_no" value="<?= htmlspecialchars($booking['vehicle_no'] ?? '') ?>" placeholder="<?= $isThai ? 'ทะเบียนรถ' : 'Vehicle number' ?>">
+                        </div>
+                    </div>
                 </div>
             </div>
 
