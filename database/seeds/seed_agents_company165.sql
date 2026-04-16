@@ -6,7 +6,7 @@
 -- Imports:
 --   ~45 agent/hotel companies under company_id=165
 --   Matching company_addr records
---   Contract rates (adult, child, full_moon) per agent
+--   Contract rates (Thai/Foreigner × Adult/Child) per agent
 -- ============================================================
 
 SET @NOW = NOW();
@@ -16,7 +16,7 @@ SET @OWNER = 165;  -- มายสมุย ไอส์แลนด์ทัว
 -- CLEANUP: Remove previous seed data (makes re-runnable)
 -- ============================================================
 DELETE cr FROM contract_rate cr
-  INNER JOIN company c ON cr.customer_id = c.id
+  INNER JOIN company c ON cr.agent_company_id = c.id
   WHERE c.company_id = @OWNER AND c.id != @OWNER;
 
 DELETE ca FROM company_addr ca
@@ -179,184 +179,104 @@ INSERT INTO company_addr (com_id, adr_tax, city_tax, district_tax, province_tax,
 (@ID_WTSND, '124/5 Moo 3, Maret', 'Koh Samui', 'Koh Samui', 'Suratthani', '84310', '124/5 Moo 3, Maret', 'Koh Samui', 'Koh Samui', 'Suratthani', '84310', '2026-01-01', '2027-12-31');
 
 -- ============================================================
--- 3. CONTRACT RATES (adult, child, full_moon per agent)
---    model_id = NULL means "general tour rate" (not product-specific)
+-- 3. CONTRACT RATES (Thai/Foreigner × Adult/Child per agent)
+--    New schema: one row per agent, model_id = NULL = default rate
+--    Old adult rate → adult_thai = adult_foreigner
+--    Old child rate → child_thai = child_foreigner
+--    Entrance fees = 0 (to be set per-product via UI)
 --    Valid: 2026-01-01 to 2026-12-31
 -- ============================================================
-INSERT INTO contract_rate (company_id, vendor_id, customer_id, model_id, rate_label, rate_amount, min_quantity, valid_from, valid_to) VALUES
--- Sunlight Mountain: adult=1800, child=1300, full_moon=1500
-(@OWNER, @OWNER, @ID_SUNMT, NULL, 'adult', 1800.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SUNMT, NULL, 'child', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SUNMT, NULL, 'full_moon', 1500.00, 1, '2026-01-01', '2026-12-31'),
--- Tourgoat Samui: adult=1500, child=1100, full_moon=1000
-(@OWNER, @OWNER, @ID_TRGOT, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TRGOT, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TRGOT, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails HO: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATRHO, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATRHO, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATRHO, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails Br 00003: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATR03, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR03, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR03, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails Br 00030: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATR30, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR30, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR30, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails Br 00035: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATR35, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR35, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR35, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails Br 00036: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATR36, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR36, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR36, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails Br 00045: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATR45, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR45, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR45, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Asian Trails Br 00046: adult=1500, child=1100, full_moon=980
-(@OWNER, @OWNER, @ID_ATR46, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR46, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ATR46, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- Der Asia Tours: adult=1800, child=1300, full_moon=1000
-(@OWNER, @OWNER, @ID_DASIA, NULL, 'adult', 1800.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_DASIA, NULL, 'child', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_DASIA, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Basson Management: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_BASSN, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BASSN, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BASSN, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Central Samui Village: adult=1800, child=1300, full_moon=1500
-(@OWNER, @OWNER, @ID_CSVIL, NULL, 'adult', 1800.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_CSVIL, NULL, 'child', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_CSVIL, NULL, 'full_moon', 1500.00, 1, '2026-01-01', '2026-12-31'),
--- Samui New Star Resort: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_NSTAR, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_NSTAR, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_NSTAR, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Bo Phut Property: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_BOPHT, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BOPHT, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BOPHT, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Blue Straits: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_BLUST, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BLUST, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BLUST, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- The Culture: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_CULTR, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_CULTR, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_CULTR, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Baan Chaweng Beach Resort: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_BCHAW, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BCHAW, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BCHAW, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Siam Travel Center: adult=1680, child=1260, full_moon=980
-(@OWNER, @OWNER, @ID_SIAMTC, NULL, 'adult', 1680.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SIAMTC, NULL, 'child', 1260.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SIAMTC, NULL, 'full_moon', 980.00, 1, '2026-01-01', '2026-12-31'),
--- JTB (Thailand): adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_JTB01, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_JTB01, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_JTB01, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Samui Bayview Villa: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_SBVIL, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SBVIL, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SBVIL, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- บ้านเมษปิติ: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_MESPT, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_MESPT, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_MESPT, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Wik Service: adult=1500, child=1100, full_moon=1000
-(@OWNER, @OWNER, @ID_WIKSR, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_WIKSR, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_WIKSR, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- SIAM DMC: adult=1400, child=1000, full_moon=900
-(@OWNER, @OWNER, @ID_SDMC, NULL, 'adult', 1400.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SDMC, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SDMC, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Pattra Vill Resort: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_PATVL, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_PATVL, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_PATVL, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Dow Samui Travel: adult=1300, child=1000, full_moon=900
-(@OWNER, @OWNER, @ID_DOWSM, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_DOWSM, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_DOWSM, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Inter Glove: adult=1400, child=1100, full_moon=900
-(@OWNER, @OWNER, @ID_INTGL, NULL, 'adult', 1400.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_INTGL, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_INTGL, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Smile Samui Tours: adult=1300, child=1000, full_moon=650
-(@OWNER, @OWNER, @ID_SMILE, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMILE, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMILE, NULL, 'full_moon', 650.00, 1, '2026-01-01', '2026-12-31'),
--- MeeBoone Travel: adult=1100, child=800, full_moon=700
-(@OWNER, @OWNER, @ID_MEEBO, NULL, 'adult', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_MEEBO, NULL, 'child', 800.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_MEEBO, NULL, 'full_moon', 700.00, 1, '2026-01-01', '2026-12-31'),
--- Enjoy 4 Travel: adult=1300, child=1000, full_moon=900
-(@OWNER, @OWNER, @ID_ENJ4T, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ENJ4T, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ENJ4T, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Tour Online SYS: adult=1300, child=1000, full_moon=800
-(@OWNER, @OWNER, @ID_TONLS, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TONLS, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TONLS, NULL, 'full_moon', 800.00, 1, '2026-01-01', '2026-12-31'),
--- Sita Tour: adult=1400 (note: CSV had 1400/1300, using 1400), child=1000, full_moon=800
-(@OWNER, @OWNER, @ID_SITAT, NULL, 'adult', 1400.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SITAT, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SITAT, NULL, 'full_moon', 800.00, 1, '2026-01-01', '2026-12-31'),
--- Sita Tour volume rate: adult=1300 for 10+ pax
-(@OWNER, @OWNER, @ID_SITAT, NULL, 'adult', 1300.00, 10, '2026-01-01', '2026-12-31'),
--- Thai Winery House: adult=1300, child=1000, full_moon=900
-(@OWNER, @OWNER, @ID_TWINE, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TWINE, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TWINE, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Rinny Travel: adult=1300, child=1000, full_moon=900
-(@OWNER, @OWNER, @ID_RINNY, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_RINNY, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_RINNY, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Island Experiences: adult=1200 (no child/full_moon in CSV)
-(@OWNER, @OWNER, @ID_ISLXP, NULL, 'adult', 1200.00, 1, '2026-01-01', '2026-12-31'),
--- Samui Excellent Travel: adult=1300, child=1100, full_moon=800
-(@OWNER, @OWNER, @ID_SMEXC, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMEXC, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMEXC, NULL, 'full_moon', 800.00, 1, '2026-01-01', '2026-12-31'),
--- Backpacker Samui: adult=1200, child=1000 (no full_moon)
-(@OWNER, @OWNER, @ID_BKPKR, NULL, 'adult', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_BKPKR, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- T.J. Air Travel: adult=1300, child=1000 (no full_moon)
-(@OWNER, @OWNER, @ID_TJAIR, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_TJAIR, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Smart Exchange: adult=1500, child=1100 (no full_moon)
-(@OWNER, @OWNER, @ID_SMART, NULL, 'adult', 1500.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMART, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
--- Al's Resort: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_ALSRS, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ALSRS, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_ALSRS, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Samui Merger Travel: adult=1400, child=1100 (no full_moon)
-(@OWNER, @OWNER, @ID_SMRGR, NULL, 'adult', 1400.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMRGR, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
--- Great Day Tour: adult=1400, child=1100 (no full_moon)
-(@OWNER, @OWNER, @ID_GRTDY, NULL, 'adult', 1400.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_GRTDY, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
--- Samui Highlight Travel: adult=1300, child=1000 (no full_moon)
-(@OWNER, @OWNER, @ID_SMHLT, NULL, 'adult', 1300.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMHLT, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- Koh Samui Advisor: adult=1400, child=1100, full_moon=900
-(@OWNER, @OWNER, @ID_KSADV, NULL, 'adult', 1400.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_KSADV, NULL, 'child', 1100.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_KSADV, NULL, 'full_moon', 900.00, 1, '2026-01-01', '2026-12-31'),
--- Samui Insight Travel: adult=1200, child=1000 (no full_moon)
-(@OWNER, @OWNER, @ID_SMINST, NULL, 'adult', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_SMINST, NULL, 'child', 1000.00, 1, '2026-01-01', '2026-12-31'),
--- White Sand Samui Resort: adult=1700, child=1200, full_moon=1000
-(@OWNER, @OWNER, @ID_WTSND, NULL, 'adult', 1700.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_WTSND, NULL, 'child', 1200.00, 1, '2026-01-01', '2026-12-31'),
-(@OWNER, @OWNER, @ID_WTSND, NULL, 'full_moon', 1000.00, 1, '2026-01-01', '2026-12-31');
+INSERT INTO contract_rate (company_id, agent_company_id, model_id, rate_type, adult_default, child_default, adult_thai, adult_foreigner, child_thai, child_foreigner, entrance_adult_default, entrance_child_default, entrance_adult_thai, entrance_adult_foreigner, entrance_child_thai, entrance_child_foreigner, valid_from, valid_to) VALUES
+-- Sunlight Mountain: adult=1800, child=1300
+(@OWNER, @ID_SUNMT, NULL, 'net_rate', 1800.00, 1300.00, 1800.00, 1800.00, 1300.00, 1300.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Tourgoat Samui: adult=1500, child=1100
+(@OWNER, @ID_TRGOT, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails HO: adult=1500, child=1100
+(@OWNER, @ID_ATRHO, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails Br 00003
+(@OWNER, @ID_ATR03, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails Br 00030
+(@OWNER, @ID_ATR30, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails Br 00035
+(@OWNER, @ID_ATR35, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails Br 00036
+(@OWNER, @ID_ATR36, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails Br 00045
+(@OWNER, @ID_ATR45, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Asian Trails Br 00046
+(@OWNER, @ID_ATR46, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Der Asia Tours: adult=1800, child=1300
+(@OWNER, @ID_DASIA, NULL, 'net_rate', 1800.00, 1300.00, 1800.00, 1800.00, 1300.00, 1300.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Basson Management: adult=1700, child=1200
+(@OWNER, @ID_BASSN, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Central Samui Village: adult=1800, child=1300
+(@OWNER, @ID_CSVIL, NULL, 'net_rate', 1800.00, 1300.00, 1800.00, 1800.00, 1300.00, 1300.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Samui New Star Resort: adult=1700, child=1200
+(@OWNER, @ID_NSTAR, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Bo Phut Property: adult=1700, child=1200
+(@OWNER, @ID_BOPHT, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Blue Straits: adult=1700, child=1200
+(@OWNER, @ID_BLUST, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- The Culture: adult=1700, child=1200
+(@OWNER, @ID_CULTR, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Baan Chaweng Beach Resort: adult=1700, child=1200
+(@OWNER, @ID_BCHAW, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Siam Travel Center: adult=1680, child=1260
+(@OWNER, @ID_SIAMTC, NULL, 'net_rate', 1680.00, 1260.00, 1680.00, 1680.00, 1260.00, 1260.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- JTB (Thailand): adult=1700, child=1200
+(@OWNER, @ID_JTB01, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Samui Bayview Villa: adult=1700, child=1200
+(@OWNER, @ID_SBVIL, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- บ้านเมษปิติ: adult=1700, child=1200
+(@OWNER, @ID_MESPT, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Wik Service: adult=1500, child=1100
+(@OWNER, @ID_WIKSR, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- SIAM DMC: adult=1400, child=1000
+(@OWNER, @ID_SDMC, NULL, 'net_rate', 1400.00, 1000.00, 1400.00, 1400.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Pattra Vill Resort: adult=1700, child=1200
+(@OWNER, @ID_PATVL, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Dow Samui Travel: adult=1300, child=1000
+(@OWNER, @ID_DOWSM, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Inter Glove: adult=1400, child=1100
+(@OWNER, @ID_INTGL, NULL, 'net_rate', 1400.00, 1100.00, 1400.00, 1400.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Smile Samui Tours: adult=1300, child=1000
+(@OWNER, @ID_SMILE, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- MeeBoone Travel: adult=1100, child=800
+(@OWNER, @ID_MEEBO, NULL, 'net_rate', 1100.00, 800.00, 1100.00, 1100.00, 800.00, 800.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Enjoy 4 Travel: adult=1300, child=1000
+(@OWNER, @ID_ENJ4T, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Tour Online SYS: adult=1300, child=1000
+(@OWNER, @ID_TONLS, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Sita Tour: adult=1400, child=1000
+(@OWNER, @ID_SITAT, NULL, 'net_rate', 1400.00, 1000.00, 1400.00, 1400.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Thai Winery House: adult=1300, child=1000
+(@OWNER, @ID_TWINE, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Rinny Travel: adult=1300, child=1000
+(@OWNER, @ID_RINNY, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Island Experiences: adult=1200, child=0
+(@OWNER, @ID_ISLXP, NULL, 'net_rate', 1200.00, 0.00, 1200.00, 1200.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Samui Excellent Travel: adult=1300, child=1100
+(@OWNER, @ID_SMEXC, NULL, 'net_rate', 1300.00, 1100.00, 1300.00, 1300.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Backpacker Samui: adult=1200, child=1000
+(@OWNER, @ID_BKPKR, NULL, 'net_rate', 1200.00, 1000.00, 1200.00, 1200.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- T.J. Air Travel: adult=1300, child=1000
+(@OWNER, @ID_TJAIR, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Smart Exchange: adult=1500, child=1100
+(@OWNER, @ID_SMART, NULL, 'net_rate', 1500.00, 1100.00, 1500.00, 1500.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Al's Resort: adult=1700, child=1200
+(@OWNER, @ID_ALSRS, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Samui Merger Travel: adult=1400, child=1100
+(@OWNER, @ID_SMRGR, NULL, 'net_rate', 1400.00, 1100.00, 1400.00, 1400.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Great Day Tour: adult=1400, child=1100
+(@OWNER, @ID_GRTDY, NULL, 'net_rate', 1400.00, 1100.00, 1400.00, 1400.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Samui Highlight Travel: adult=1300, child=1000
+(@OWNER, @ID_SMHLT, NULL, 'net_rate', 1300.00, 1000.00, 1300.00, 1300.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Koh Samui Advisor: adult=1400, child=1100
+(@OWNER, @ID_KSADV, NULL, 'net_rate', 1400.00, 1100.00, 1400.00, 1400.00, 1100.00, 1100.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- Samui Insight Travel: adult=1200, child=1000
+(@OWNER, @ID_SMINST, NULL, 'net_rate', 1200.00, 1000.00, 1200.00, 1200.00, 1000.00, 1000.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31'),
+-- White Sand Samui Resort: adult=1700, child=1200
+(@OWNER, @ID_WTSND, NULL, 'net_rate', 1700.00, 1200.00, 1700.00, 1700.00, 1200.00, 1200.00, 0, 0, 0, 0, 0, 0, '2026-01-01', '2026-12-31');
 
 -- ============================================================
 -- 4. Update company_id=165 type to 'direct' (tour operator)

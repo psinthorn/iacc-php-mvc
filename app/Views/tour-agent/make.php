@@ -38,6 +38,7 @@ $messages = [
 .btn-cancel { padding: 12px 32px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
 .btn-cancel:hover { background: #e2e8f0; }
 .vendor-info { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin-top: 8px; font-size: 13px; color: #0f766e; display: none; }
+/* Rate grid — no longer used here, moved to contract-make.php */
 </style>
 
 <div class="master-data-container">
@@ -69,7 +70,7 @@ $messages = [
 
         <!-- Section 1: Agent Selection -->
         <div class="form-card">
-            <h3><i class="fa fa-building"></i> <?= $isThai ? 'บริษัทตัวแทน' : 'Agent Vendor' ?></h3>
+            <h3><i class="fa fa-building"></i> <?= $isThai ? 'บริษัทตัวแทน' : 'Agent Company' ?></h3>
 
             <?php if ($isEdit): ?>
             <div class="form-group">
@@ -79,21 +80,26 @@ $messages = [
             </div>
             <?php else: ?>
             <div class="form-group">
-                <label><?= $isThai ? 'เลือกบริษัทตัวแทน (Vendor)' : 'Select Agent Vendor' ?> *</label>
+                <label><?= $isThai ? 'เลือกบริษัทตัวแทน (ลูกค้า/Vendor)' : 'Select Agent (Customer / Vendor)' ?> *</label>
                 <select name="company_ref_id" id="vendorSelect" required onchange="showVendorInfo(this)">
-                    <option value=""><?= $isThai ? '-- เลือกตัวแทน --' : '-- Select Vendor --' ?></option>
-                    <?php foreach ($vendors as $v): ?>
+                    <option value=""><?= $isThai ? '-- เลือกบริษัท --' : '-- Select Company --' ?></option>
+                    <?php foreach ($vendors as $v):
+                        $type = [];
+                        if (!empty($v['customer'])) $type[] = $isThai ? 'ลูกค้า' : 'Customer';
+                        if (!empty($v['vender']))   $type[] = 'Vendor';
+                        $badge = $type ? ' [' . implode('/', $type) . ']' : '';
+                    ?>
                     <option value="<?= $v['id'] ?>"
                         data-contact="<?= htmlspecialchars($v['contact'] ?? '') ?>"
                         data-phone="<?= htmlspecialchars($v['phone'] ?? '') ?>"
                         data-email="<?= htmlspecialchars($v['email'] ?? '') ?>"
                         <?= $v['profile_id'] ? 'disabled' : '' ?>>
-                        <?= htmlspecialchars($v['name_en']) ?>
+                        <?= htmlspecialchars($v['name_en']) ?><?= $badge ?>
                         <?= $v['profile_id'] ? ($isThai ? ' (มีโปรไฟล์แล้ว)' : ' (has profile)') : '' ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
-                <div class="help"><?= $isThai ? 'เฉพาะบริษัทที่เป็น Vendor เท่านั้น หากไม่เห็นให้สร้างบริษัทใหม่ในหน้า Master Data > Company' : 'Only companies marked as Vendor appear here. Create new vendors in Master Data > Company.' ?></div>
+                <div class="help"><?= $isThai ? 'เลือกจากบริษัทลูกค้าหรือ Vendor ที่มีอยู่แล้ว หากไม่เห็นให้สร้างบริษัทใหม่ในหน้า Master Data > Company' : 'Select from existing customers or vendors. Create new companies in Master Data > Company.' ?></div>
                 <div class="vendor-info" id="vendorInfo"></div>
             </div>
             <?php endif; ?>
@@ -141,10 +147,52 @@ $messages = [
             </div>
         </div>
 
-        <!-- Section 4: Contact Channels -->
+        <!-- Section 4: Contracts Link -->
+        <?php if ($isEdit): ?>
+        <div class="form-card">
+            <h3><i class="fa fa-file-text-o"></i> <?= $isThai ? 'สัญญาและอัตราค่าบริการ' : 'Contracts & Rates' ?></h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+                <p style="font-size:13px;color:#64748b;margin:0;">
+                    <?= $isThai ? 'จัดการสัญญา ประเภทสินค้า และอัตราค่าบริการสำหรับตัวแทนนี้' : 'Manage contracts, product types, and service rates for this agent.' ?>
+                </p>
+                <a href="index.php?page=agent_contract_list&agent_id=<?= $profile['company_ref_id'] ?>" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:#0d9488;color:#fff;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;">
+                    <i class="fa fa-file-text-o"></i> <?= $isThai ? 'จัดการสัญญา' : 'Manage Contracts' ?>
+                    <i class="fa fa-arrow-right" style="margin-left:4px;"></i>
+                </a>
+            </div>
+        </div>
+        <?php else: ?>
+        <div class="form-card" style="background:#f8fafc;border:1px dashed #cbd5e1;">
+            <p style="text-align:center;color:#94a3b8;margin:0;padding:20px 0;">
+                <i class="fa fa-info-circle"></i> <?= $isThai ? 'บันทึกโปรไฟล์ก่อนเพื่อจัดการสัญญา' : 'Save the profile first to manage contracts.' ?>
+            </p>
+        </div>
+        <?php endif; ?>
+
+        <!-- Section 5: Contact Channels -->
         <div class="form-card">
             <h3><i class="fa fa-comments-o"></i> <?= $isThai ? 'ช่องทางติดต่อ' : 'Contact Channels' ?></h3>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label><?= $isThai ? 'ชื่อผู้ติดต่อ' : 'Contact Person' ?></label>
+                    <input type="text" name="contact_person" value="<?= htmlspecialchars($isEdit ? ($profile['contact_person'] ?? '') : '') ?>" placeholder="<?= $isThai ? 'ชื่อ-นามสกุล' : 'Full name' ?>">
+                </div>
+                <div class="form-group">
+                    <label><?= $isThai ? 'มือถือ' : 'Mobile' ?></label>
+                    <input type="tel" name="contact_mobile" value="<?= htmlspecialchars($isEdit ? ($profile['contact_mobile'] ?? '') : '') ?>" placeholder="+66812345678">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
+                    <input type="email" name="contact_email" value="<?= htmlspecialchars($isEdit ? ($profile['contact_email'] ?? '') : '') ?>" placeholder="agent@example.com">
+                </div>
+                <div class="form-group">
+                    <label><?= $isThai ? 'เว็บไซต์' : 'Website' ?></label>
+                    <input type="url" name="website" value="<?= htmlspecialchars($isEdit ? ($profile['website'] ?? '') : '') ?>" placeholder="https://www.example.com">
+                </div>
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label><?= $xml->tourcontactline ?? 'LINE ID' ?></label>
@@ -157,7 +205,7 @@ $messages = [
             </div>
         </div>
 
-        <!-- Section 5: Notes -->
+        <!-- Section 6: Notes -->
         <div class="form-card">
             <h3><i class="fa fa-sticky-note-o"></i> <?= $isThai ? 'หมายเหตุ' : 'Notes' ?></h3>
             <div class="form-group" style="margin-bottom:0;">
