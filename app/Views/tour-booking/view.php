@@ -38,6 +38,13 @@ $messages = [
     'updated'        => ['✅', $isThai ? 'อัพเดทสำเร็จ' : 'Booking updated successfully'],
     'docs_generated' => ['✅', $isThai ? 'สร้างเอกสารสำเร็จ (PR, PO, ใบส่งของ, ใบแจ้งหนี้)' : 'Documents generated (PR, PO, Delivery, Invoice)'],
     'docs_error'     => ['⚠️', $isThai ? 'สร้างเอกสารไม่สำเร็จ' : 'Failed to generate documents'],
+    'payment_recorded' => ['✅', $isThai ? 'บันทึกการชำระเงินสำเร็จ' : 'Payment recorded successfully'],
+    'payment_deleted'  => ['✅', $isThai ? 'ลบรายการชำระเงินแล้ว' : 'Payment deleted'],
+    'payment_approved' => ['✅', $isThai ? 'อนุมัติการชำระเงินแล้ว' : 'Payment approved'],
+    'payment_rejected' => ['✅', $isThai ? 'ปฏิเสธการชำระเงินแล้ว' : 'Payment rejected'],
+    'refund_recorded'  => ['✅', $isThai ? 'บันทึกการคืนเงินสำเร็จ' : 'Refund recorded'],
+    'payment_error'    => ['⚠️', $isThai ? 'บันทึกการชำระเงินไม่สำเร็จ' : 'Failed to record payment'],
+    'invalid_amount'   => ['⚠️', $isThai ? 'จำนวนเงินไม่ถูกต้อง' : 'Invalid amount'],
 ];
 ?>
 
@@ -269,6 +276,41 @@ $messages = [
                 <?php endif; ?>
                 <div class="row grand"><span><?= $isThai ? 'ยอดรวมทั้งหมด' : 'Grand Total' ?></span><span>฿<?= number_format($booking['total_amount'], 2) ?></span></div>
             </div>
+        </div>
+
+        <!-- Payment Summary -->
+        <?php
+        $payStatus = $booking['payment_status'] ?? 'unpaid';
+        $amountPaid = floatval($booking['amount_paid'] ?? 0);
+        $amountDue = floatval($booking['amount_due'] ?? $booking['total_amount']);
+        $payStatusCfg = [
+            'unpaid'  => ['label' => $isThai ? 'ยังไม่ชำระ' : 'Unpaid',   'color' => '#ef4444', 'bg' => '#fee2e2', 'icon' => 'fa-times-circle'],
+            'deposit' => ['label' => $isThai ? 'ชำระมัดจำ' : 'Deposit',   'color' => '#f59e0b', 'bg' => '#fef3c7', 'icon' => 'fa-clock-o'],
+            'partial' => ['label' => $isThai ? 'ชำระบางส่วน' : 'Partial', 'color' => '#8b5cf6', 'bg' => '#ede9fe', 'icon' => 'fa-adjust'],
+            'paid'    => ['label' => $isThai ? 'ชำระแล้ว' : 'Paid',       'color' => '#059669', 'bg' => '#d1fae5', 'icon' => 'fa-check-circle'],
+            'refunded'=> ['label' => $isThai ? 'คืนเงินแล้ว' : 'Refunded','color' => '#6366f1', 'bg' => '#e0e7ff', 'icon' => 'fa-undo'],
+        ];
+        $psCfg = $payStatusCfg[$payStatus] ?? $payStatusCfg['unpaid'];
+        ?>
+        <div class="vw-card">
+            <h3><i class="fa fa-money"></i> <?= $isThai ? 'การชำระเงิน' : 'Payment' ?></h3>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px;">
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'สถานะการชำระ' : 'Payment Status' ?></div>
+                    <div><span class="status-badge" style="background:<?= $psCfg['bg'] ?>;color:<?= $psCfg['color'] ?>;"><i class="fa <?= $psCfg['icon'] ?>"></i> <?= $psCfg['label'] ?></span></div>
+                </div>
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'ชำระแล้ว' : 'Amount Paid' ?></div>
+                    <div class="val" style="color:#059669;">฿<?= number_format($amountPaid, 2) ?></div>
+                </div>
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'คงเหลือ' : 'Balance Due' ?></div>
+                    <div class="val" style="color:<?= $amountDue > 0 ? '#ef4444' : '#059669' ?>;">฿<?= number_format($amountDue, 2) ?></div>
+                </div>
+            </div>
+            <a href="index.php?page=tour_booking_payments&booking_id=<?= $booking['id'] ?>" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#0d9488; color:white; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none;">
+                <i class="fa fa-credit-card"></i> <?= $isThai ? 'จัดการชำระเงิน' : 'Manage Payments' ?>
+            </a>
         </div>
 
         <!-- Remark -->
