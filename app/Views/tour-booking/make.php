@@ -7,6 +7,10 @@
 
 $isThai    = ($_SESSION['lang'] ?? '0') === '1';
 $isEdit    = !empty($booking);
+
+$loggedInDisplay = trim($_SESSION['user_name'] ?? '') ?: ($_SESSION['user_email'] ?? '');
+$bookingByValue  = $isEdit ? ($booking['booking_by'] ?? $loggedInDisplay) : $loggedInDisplay;
+
 $pageTitle = $isEdit
     ? ($isThai ? 'แก้ไขการจอง' : 'Edit Booking') . ' — ' . htmlspecialchars($booking['booking_number'] ?? '')
     : ($isThai ? 'สร้างการจองใหม่' : 'New Booking');
@@ -44,6 +48,9 @@ $pax   = $booking['pax'] ?? [];
 .bk-card { background: white; border-radius: 14px; padding: 28px 28px 24px; border: 1px solid #e2e8f0; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .bk-card h3 { font-size: 15px; font-weight: 700; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 2px solid #f1f5f9; color: #1e293b; display: flex; align-items: center; gap: 8px; }
 .bk-card h3 i { color: #0d9488; font-size: 16px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: #f0fdfa; border-radius: 8px; }
+.bk-card h3 .h3-right { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #64748b; }
+.bk-card h3 .h3-right select { height: 34px; padding: 4px 32px 4px 10px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 13px; font-family: inherit; color: #1e293b; background: #fff; cursor: pointer; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; transition: border-color 0.2s; }
+.bk-card h3 .h3-right select:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
 .bk-row { display: grid; gap: 18px; margin-bottom: 18px; }
 .bk-row:last-child { margin-bottom: 0; }
 .bk-row.cols-2 { grid-template-columns: 1fr 1fr; }
@@ -184,7 +191,7 @@ $pax   = $booking['pax'] ?? [];
 
 /* ─── Quick Create Modal ──────────────────────────────── */
 .qc-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 10050; }
-.qc-overlay.show { display: flex; align-items: center; justify-content: center; }
+.qc-overlay.active { display: flex; align-items: center; justify-content: center; }
 .qc-modal { background: white; border-radius: 16px; padding: 32px; width: 600px; max-width: 92vw; box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
 .qc-modal h4 { margin: 0 0 20px; font-size: 17px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .qc-modal .bk-field { margin-bottom: 14px; }
@@ -291,17 +298,6 @@ $pax   = $booking['pax'] ?? [];
                         </div>
                     </div>
                     <div class="bk-field">
-                        <label><?= $isThai ? 'สถานะ' : 'Status' ?></label>
-                        <div class="bk-input-icon">
-                            <i class="fa fa-flag"></i>
-                            <select name="status">
-                                <?php foreach ($statusOptions as $key => $label): ?>
-                                <option value="<?= $key ?>" <?= ($booking['status'] ?? 'draft') === $key ? 'selected' : '' ?>><?= $label ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="bk-field">
                         <label><?= $isThai ? 'เลข Voucher' : 'Voucher Number' ?></label>
                         <div class="bk-input-icon">
                             <i class="fa fa-ticket"></i>
@@ -311,43 +307,6 @@ $pax   = $booking['pax'] ?? [];
                 </div>
 
                 <div class="bk-row cols-3">
-                    <div class="bk-field">
-                        <label><?= $isThai ? 'ตัวแทน' : 'Agent' ?></label>
-                        <div class="bk-input-icon">
-                            <i class="fa fa-building-o"></i>
-                            <select name="agent_id">
-                                <option value="0"><?= $isThai ? '-- ไม่มี --' : '-- None --' ?></option>
-                                <?php foreach ($agents as $a): ?>
-                                <option value="<?= $a['id'] ?>" <?= intval($booking['agent_id'] ?? 0) === intval($a['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($a['name_en']) ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="bk-field">
-                        <label><?= $isThai ? 'ผู้จอง' : 'Booking By' ?></label>
-                        <?php
-                            $loggedInDisplay = trim(($_SESSION['user_name'] ?? '') . '') ?: ($_SESSION['user_email'] ?? '');
-                            $bookingByValue = $isEdit ? ($booking['booking_by'] ?? $loggedInDisplay) : $loggedInDisplay;
-                        ?>
-                        <input type="text" name="booking_by" value="<?= htmlspecialchars($bookingByValue) ?>" readonly
-                               style="background:#f1f5f9;cursor:default;">
-                    </div>
-                    <div class="bk-field">
-                        <label><?= $isThai ? 'สกุลเงิน' : 'Currency' ?></label>
-                        <div class="bk-input-icon">
-                            <i class="fa fa-money"></i>
-                            <select name="currency">
-                                <option value="THB" <?= ($booking['currency'] ?? 'THB') === 'THB' ? 'selected' : '' ?>>THB ฿</option>
-                                <option value="USD" <?= ($booking['currency'] ?? '') === 'USD' ? 'selected' : '' ?>>USD $</option>
-                                <option value="EUR" <?= ($booking['currency'] ?? '') === 'EUR' ? 'selected' : '' ?>>EUR €</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bk-row cols-4">
                     <div class="bk-field">
                         <label><?= $isThai ? 'ผู้ใหญ่' : 'Adults' ?></label>
                         <div class="bk-input-icon">
@@ -369,6 +328,9 @@ $pax   = $booking['pax'] ?? [];
                             <input type="number" name="pax_infant" min="0" value="<?= intval($booking['pax_infant'] ?? 0) ?>" onchange="syncPaxQty()">
                         </div>
                     </div>
+                </div>
+
+                <div class="bk-row cols-3">
                     <div class="bk-field">
                         <label><?= $isThai ? 'สกุลเงิน' : 'Currency' ?></label>
                         <div class="bk-input-icon">
@@ -380,75 +342,115 @@ $pax   = $booking['pax'] ?? [];
                             </select>
                         </div>
                     </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'สถานะ' : 'Status' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-flag"></i>
+                            <select name="status">
+                                <?php foreach ($statusOptions as $key => $label): ?>
+                                <option value="<?= $key ?>" <?= ($booking['status'] ?? 'draft') === $key ? 'selected' : '' ?>><?= $label ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'ผู้บันทึก' : 'Booking By' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-user-circle-o"></i>
+                            <input type="text" name="booking_by" value="<?= htmlspecialchars($bookingByValue) ?>" readonly style="background:#f1f5f9;cursor:default;">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Section 2: Customer Info -->
+            <!-- Section 2: Agent -->
+            <div class="bk-card">
+                <h3><i class="fa fa-building-o"></i> <?= $isThai ? 'ข้อมูลตัวแทน' : 'Agent Info' ?></h3>
+                <?php
+                $agentId = intval($booking['agent_id'] ?? 0);
+                $agentName = '';
+                if ($agentId > 0) {
+                    foreach ($agents as $a) {
+                        if (intval($a['id']) === $agentId) { $agentName = $a['name_en']; break; }
+                    }
+                }
+                ?>
+                <!-- Smart search: find existing agent or create new -->
+                <input type="hidden" name="agent_id" id="agent_id" value="<?= $agentId ?>">
+                <div class="bk-row cols-1">
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'ค้นหาตัวแทน' : 'Search Agent' ?></label>
+                        <div class="ac-wrap" id="agentAcWrap">
+                            <?php if ($agentId > 0 && $agentName): ?>
+                            <div class="ac-selected" id="agentSelected">
+                                <?= htmlspecialchars($agentName) ?>
+                                <span class="ac-clear" onclick="clearAgent()">&times;</span>
+                            </div>
+                            <input type="text" id="agentSearch" placeholder="<?= $isThai ? 'พิมพ์ชื่อตัวแทน...' : 'Type agent name...' ?>" style="display:none;" autocomplete="off">
+                            <?php else: ?>
+                            <div class="ac-selected" id="agentSelected" style="display:none;"></div>
+                            <input type="text" id="agentSearch" placeholder="<?= $isThai ? 'พิมพ์ชื่อตัวแทน... (ไม่พบ = ไม่มีตัวแทน)' : 'Type agent name... (leave blank = no agent)' ?>" autocomplete="off">
+                            <?php endif; ?>
+                            <div class="ac-list" id="agentAcList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Customer Info -->
             <div class="bk-card">
                 <h3><i class="fa fa-user-circle"></i> <?= $isThai ? 'ข้อมูลลูกค้า' : 'Customer Info' ?></h3>
                 <?php
                 $contact = $booking['contact'] ?? null;
                 $preselectedName = '';
-                $preselectedContact = '';
-                $preselectedPhone = '';
                 $preselectedEmail = '';
+                $preselectedPhone = '';
                 if (!empty($booking['customer_id'])) {
                     foreach ($customers as $c) {
                         if (intval($c['id']) === intval($booking['customer_id'])) {
                             $preselectedName = $c['name_en'];
-                            $preselectedContact = $c['contact'] ?? '';
-                            $preselectedPhone = $c['phone'] ?? '';
                             $preselectedEmail = $c['email'] ?? '';
+                            $preselectedPhone = $c['phone'] ?? '';
                             break;
                         }
                     }
                 }
                 // Per-booking contact overrides (from tour_booking_contacts)
-                $bkContact = $contact['contact_name'] ?? $preselectedContact;
-                $bkMobile  = $contact['mobile'] ?? $preselectedPhone;
-                $bkEmail   = $contact['email'] ?? $preselectedEmail;
-                $bkGender  = $contact['gender'] ?? '';
-                $bkNational = $contact['nationality'] ?? '';
+                $bkName      = $contact['contact_name'] ?? $preselectedName;
+                $bkEmail     = $contact['email'] ?? $preselectedEmail;
+                $bkMobile    = $contact['mobile'] ?? $preselectedPhone;
+                $bkGender    = $contact['gender'] ?? '';
+                $bkNational  = $contact['nationality'] ?? '';
+                $bkMessengers = $contact['contact_messengers'] ?? '';
                 ?>
-                <div class="bk-row cols-3">
+                <!-- Smart search: find existing customer or create new -->
+                <input type="hidden" name="customer_id" id="customer_id" value="<?= intval($booking['customer_id'] ?? 0) ?>">
+                <div class="bk-row cols-1" style="margin-bottom:4px;">
                     <div class="bk-field">
-                        <label><?= $isThai ? 'ลูกค้า' : 'Customer' ?></label>
-                        <input type="hidden" name="customer_id" id="customer_id" value="<?= intval($booking['customer_id'] ?? 0) ?>">
+                        <label><?= $isThai ? 'ค้นหาลูกค้า' : 'Search Customer' ?></label>
                         <div class="ac-wrap" id="customerAcWrap">
                             <?php if (!empty($preselectedName)): ?>
                             <div class="ac-selected" id="customerSelected">
                                 <?= htmlspecialchars($preselectedName) ?>
                                 <span class="ac-clear" onclick="clearCustomer()">&times;</span>
                             </div>
-                            <input type="text" id="customerSearch" placeholder="<?= $isThai ? 'พิมพ์ค้นหาลูกค้า...' : 'Type to search customer...' ?>" style="display:none;" autocomplete="off">
+                            <input type="text" id="customerSearch" placeholder="<?= $isThai ? 'พิมพ์ชื่อลูกค้า...' : 'Type customer name...' ?>" style="display:none;" autocomplete="off">
                             <?php else: ?>
                             <div class="ac-selected" id="customerSelected" style="display:none;"></div>
-                            <input type="text" id="customerSearch" placeholder="<?= $isThai ? 'พิมพ์ค้นหาลูกค้า...' : 'Type to search customer...' ?>" autocomplete="off">
+                            <input type="text" id="customerSearch" placeholder="<?= $isThai ? 'พิมพ์ชื่อลูกค้า... (ไม่พบ = สร้างใหม่)' : 'Type customer name... (not found = create new)' ?>" autocomplete="off">
                             <?php endif; ?>
                             <div class="ac-list" id="customerAcList"></div>
                         </div>
                     </div>
-                    <div class="bk-field">
-                        <label><?= $isThai ? 'ผู้ติดต่อ' : 'Contact Person' ?></label>
-                        <div class="bk-input-icon">
-                            <i class="fa fa-id-card-o"></i>
-                            <input type="text" name="contact_name" id="cusContact" value="<?= htmlspecialchars($bkContact) ?>" placeholder="<?= $isThai ? 'ชื่อผู้ติดต่อ' : 'Contact person' ?>">
-                        </div>
-                    </div>
-                    <div class="bk-field">
-                        <label><?= $isThai ? 'เบอร์โทร' : 'Mobile' ?></label>
-                        <div class="bk-input-icon">
-                            <i class="fa fa-mobile" style="font-size:18px;"></i>
-                            <input type="text" name="contact_mobile" id="cusPhone" value="<?= htmlspecialchars($bkMobile) ?>" placeholder="<?= $isThai ? 'เบอร์โทรศัพท์' : 'Phone number' ?>">
-                        </div>
-                    </div>
                 </div>
+
+                <!-- Row 1: Customer Name | Gender | Nationality -->
                 <div class="bk-row cols-3">
                     <div class="bk-field">
-                        <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
+                        <label><?= $isThai ? 'ชื่อลูกค้า' : 'Customer Name' ?></label>
                         <div class="bk-input-icon">
-                            <i class="fa fa-envelope-o"></i>
-                            <input type="text" name="contact_email" id="cusEmail" value="<?= htmlspecialchars($bkEmail) ?>" placeholder="<?= $isThai ? 'อีเมล' : 'Email address' ?>">
+                            <i class="fa fa-user"></i>
+                            <input type="text" name="contact_name" id="cusName" value="<?= htmlspecialchars($bkName) ?>" placeholder="<?= $isThai ? 'ชื่อลูกค้า' : 'Customer name' ?>">
                         </div>
                     </div>
                     <div class="bk-field">
@@ -468,6 +470,99 @@ $pax   = $booking['pax'] ?? [];
                         <div class="bk-input-icon">
                             <i class="fa fa-globe"></i>
                             <input type="text" name="contact_nationality" id="cusNationality" value="<?= htmlspecialchars($bkNational) ?>" placeholder="<?= $isThai ? 'เช่น Thai, American' : 'e.g. Thai, American' ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Email | Mobile | Messengers -->
+                <div class="bk-row cols-3">
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-envelope-o"></i>
+                            <input type="text" name="contact_email" id="cusEmail" value="<?= htmlspecialchars($bkEmail) ?>" placeholder="<?= $isThai ? 'อีเมล' : 'Email' ?>">
+                        </div>
+                    </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'เบอร์โทร' : 'Mobile' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-mobile" style="font-size:18px;"></i>
+                            <input type="text" name="contact_mobile" id="cusPhone" value="<?= htmlspecialchars($bkMobile) ?>" placeholder="<?= $isThai ? 'เบอร์โทร' : 'Phone number' ?>">
+                        </div>
+                    </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'ไลน์ / WhatsApp / อื่นๆ' : 'Messengers (Line/WhatsApp/etc)' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-comments-o"></i>
+                            <input type="text" name="contact_messengers" id="cusMessengers" value="<?= htmlspecialchars($bkMessengers) ?>" placeholder="<?= $isThai ? 'Line: @user, WhatsApp: +668xxx' : 'Line: @user, WhatsApp: +668xxx' ?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Sales Rep Info -->
+            <div class="bk-card">
+                <h3><i class="fa fa-handshake-o"></i> <?= $isThai ? 'ข้อมูลพนักงานขาย' : 'Sales Rep Info' ?></h3>
+                <?php
+                $salesRepId = intval($booking['sales_rep_id'] ?? 0);
+                $salesRepName = '';
+                $salesRepEmail = '';
+                $salesRepPhone = '';
+                $salesRepMessengers = '';
+                if ($salesRepId > 0) {
+                    foreach ($agents as $a) {
+                        if (intval($a['id']) === $salesRepId) {
+                            $salesRepName = $a['name_en'];
+                            $salesRepEmail = $a['contact_email'] ?? '';
+                            $salesRepPhone = $a['contact_mobile'] ?? '';
+                            $salesRepMessengers = trim(($a['contact_line'] ?? '') . ', ' . ($a['contact_whatsapp'] ?? ''), ', ');
+                            break;
+                        }
+                    }
+                }
+                ?>
+                <!-- Smart search: find existing sales rep or create new -->
+                <input type="hidden" name="sales_rep_id" id="sales_rep_id" value="<?= $salesRepId ?>">
+                <div class="bk-row cols-1" style="margin-bottom:4px;">
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'ค้นหาพนักงานขาย' : 'Search Sales Rep' ?></label>
+                        <div class="ac-wrap" id="salesRepAcWrap">
+                            <?php if ($salesRepId > 0 && $salesRepName): ?>
+                            <div class="ac-selected" id="salesRepSelected">
+                                <?= htmlspecialchars($salesRepName) ?>
+                                <span class="ac-clear" onclick="clearSalesRep()">&times;</span>
+                            </div>
+                            <input type="text" id="salesRepSearch" placeholder="<?= $isThai ? 'พิมพ์ชื่อพนักงานขาย...' : 'Type sales rep name...' ?>" style="display:none;" autocomplete="off">
+                            <?php else: ?>
+                            <div class="ac-selected" id="salesRepSelected" style="display:none;"></div>
+                            <input type="text" id="salesRepSearch" placeholder="<?= $isThai ? 'พิมพ์ชื่อพนักงานขาย... (ไม่พบ = สร้างใหม่)' : 'Type sales rep name... (not found = create new)' ?>" autocomplete="off">
+                            <?php endif; ?>
+                            <div class="ac-list" id="salesRepAcList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Email | Mobile | Messengers (auto-filled, editable) -->
+                <div class="bk-row cols-3">
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-envelope-o"></i>
+                            <input type="text" name="sales_rep_email" id="salesRepEmail" value="<?= htmlspecialchars($salesRepEmail) ?>" placeholder="<?= $isThai ? 'อีเมล' : 'Email' ?>">
+                        </div>
+                    </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'เบอร์โทร' : 'Mobile' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-mobile" style="font-size:18px;"></i>
+                            <input type="text" name="sales_rep_mobile" id="salesRepMobile" value="<?= htmlspecialchars($salesRepPhone) ?>" placeholder="<?= $isThai ? 'เบอร์โทร' : 'Phone' ?>">
+                        </div>
+                    </div>
+                    <div class="bk-field">
+                        <label><?= $isThai ? 'ไลน์ / WhatsApp / อื่นๆ' : 'Messengers (Line/WhatsApp/etc)' ?></label>
+                        <div class="bk-input-icon">
+                            <i class="fa fa-comments-o"></i>
+                            <input type="text" name="sales_rep_messengers" id="salesRepMessengers" value="<?= htmlspecialchars($salesRepMessengers) ?>" placeholder="<?= $isThai ? 'Line: @user, WhatsApp: +668xxx' : 'Line: @user, WhatsApp: +668xxx' ?>">
                         </div>
                     </div>
                 </div>
@@ -741,7 +836,7 @@ $pax   = $booking['pax'] ?? [];
 
 <!-- Quick Create Customer Modal -->
 <div class="qc-overlay" id="qcOverlay">
-    <div class="qc-modal" style="width:420px;">
+    <div class="qc-modal" style="width:500px;">
         <h4><i class="fa fa-user-plus" style="color:#0d9488;"></i> <?= $isThai ? 'สร้างลูกค้าใหม่' : 'Create New Customer' ?></h4>
         <div class="bk-field" style="margin-bottom:14px;">
             <label><?= $isThai ? 'ชื่อลูกค้า' : 'Customer Name' ?> <span class="req">*</span></label>
@@ -757,9 +852,55 @@ $pax   = $booking['pax'] ?? [];
                 <input type="text" id="qcPhone" placeholder="<?= $isThai ? 'เบอร์โทรศัพท์' : 'Phone number' ?>">
             </div>
         </div>
+        <div class="bk-field" style="margin-bottom:14px;">
+            <label><?= $isThai ? 'ไลน์ / WhatsApp / อื่นๆ' : 'Line / WhatsApp / Messengers' ?></label>
+            <div class="bk-input-icon">
+                <i class="fa fa-comments-o"></i>
+                <input type="text" id="qcMessengers" placeholder="<?= $isThai ? 'Line: @user, WhatsApp: +668xxx' : 'Line: @user, WhatsApp: +668xxx' ?>">
+            </div>
+        </div>
         <div class="qc-actions">
             <button type="button" class="qc-btn qc-btn-cancel" onclick="closeQcModal()"><?= $isThai ? 'ยกเลิก' : 'Cancel' ?></button>
             <button type="button" class="qc-btn qc-btn-save" onclick="saveQuickCustomer()"><?= $isThai ? 'สร้าง' : 'Create' ?></button>
+        </div>
+    </div>
+</div>
+
+<!-- Sales Rep Creation Modal -->
+<div class="qc-overlay" id="srOverlay">
+    <div class="qc-modal" style="width:500px;">
+        <h4><i class="fa fa-user-plus" style="color:#0d9488;"></i> <?= $isThai ? 'สร้างพนักงานขายใหม่' : 'Create New Sales Rep' ?></h4>
+        <div class="bk-field" style="margin-bottom:14px;">
+            <label><?= $isThai ? 'ชื่อพนักงานขาย' : 'Sales Rep Name' ?> <span class="req">*</span></label>
+            <div class="bk-input-icon">
+                <i class="fa fa-user"></i>
+                <input type="text" id="srModalName" placeholder="<?= $isThai ? 'ชื่อพนักงานขาย' : 'Sales rep name' ?>">
+            </div>
+        </div>
+        <div class="bk-field" style="margin-bottom:14px;">
+            <label><?= $isThai ? 'อีเมล' : 'Email' ?></label>
+            <div class="bk-input-icon">
+                <i class="fa fa-envelope-o"></i>
+                <input type="text" id="srModalEmail" placeholder="<?= $isThai ? 'อีเมล' : 'Email' ?>">
+            </div>
+        </div>
+        <div class="bk-field" style="margin-bottom:14px;">
+            <label><?= $isThai ? 'เบอร์โทร' : 'Phone' ?></label>
+            <div class="bk-input-icon">
+                <i class="fa fa-mobile" style="font-size:18px;"></i>
+                <input type="text" id="srModalPhone" placeholder="<?= $isThai ? 'เบอร์โทรศัพท์' : 'Phone number' ?>">
+            </div>
+        </div>
+        <div class="bk-field" style="margin-bottom:14px;">
+            <label><?= $isThai ? 'ไลน์ / WhatsApp / อื่นๆ' : 'Messengers (Line/WhatsApp/etc)' ?></label>
+            <div class="bk-input-icon">
+                <i class="fa fa-comments-o"></i>
+                <input type="text" id="srModalMessengers" placeholder="<?= $isThai ? 'Line: @user, WhatsApp: +668xxx' : 'Line: @user, WhatsApp: +668xxx' ?>">
+            </div>
+        </div>
+        <div class="qc-actions">
+            <button type="button" class="qc-btn qc-btn-cancel" onclick="closeSrModal()"><?= $isThai ? 'ยกเลิก' : 'Cancel' ?></button>
+            <button type="button" class="qc-btn qc-btn-save" onclick="saveSalesRep()"><?= $isThai ? 'สร้าง' : 'Create' ?></button>
         </div>
     </div>
 </div>
@@ -1030,7 +1171,7 @@ if (acInput) {
                             + (sub ? ' <span class="sub">' + escHtml(sub) + '</span>' : '')
                             + '</div>';
                     });
-                    html += '<div class="ac-item create-new" onclick="openQcModal()"><i class="fa fa-plus"></i> <?= $isThai ? "สร้างลูกค้าใหม่" : "Create New Customer" ?></div>';
+                    html += '<div class="ac-item create-new" onclick="openCreateCustomerModal()"><i class="fa fa-plus"></i> <?= $isThai ? "สร้างลูกค้าใหม่" : "Create New Customer" ?></div>';
                     acList.innerHTML = html;
                     acList.classList.add('show');
                 });
@@ -1046,6 +1187,132 @@ if (acInput) {
     });
 }
 
+// ─── Agent Autocomplete (Smart Search) ─────────────────────
+var agTimer = null;
+var agInput = document.getElementById('agentSearch');
+var agList  = document.getElementById('agentAcList');
+var agCache = {};
+
+if (agInput) {
+    agInput.addEventListener('input', function() {
+        clearTimeout(agTimer);
+        var q = this.value.trim();
+        if (q.length < 1) { agList.classList.remove('show'); return; }
+        agTimer = setTimeout(function() {
+            fetch('index.php?page=tour_booking_agent_search&q=' + encodeURIComponent(q))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var html = '';
+                    data.forEach(function(a) {
+                        var sub = [a.contact_mobile, a.contact_email].filter(Boolean).join(' | ');
+                        agCache[a.id] = { email: a.contact_email || '', phone: a.contact_mobile || '' };
+                        html += '<div class="ac-item" onclick="selectAgent(' + a.id + ', \'' + escHtml(a.name_en) + '\')">'
+                            + escHtml(a.name_en)
+                            + (sub ? ' <span class="sub">' + escHtml(sub) + '</span>' : '')
+                            + '</div>';
+                    });
+                    agList.innerHTML = html;
+                    agList.classList.add('show');
+                });
+        }, 250);
+    });
+
+    agInput.addEventListener('blur', function() {
+        setTimeout(function() { agList.classList.remove('show'); }, 200);
+    });
+
+    agInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 1 && agList.innerHTML) agList.classList.add('show');
+    });
+}
+
+function selectAgent(id, name) {
+    document.getElementById('agent_id').value = id;
+    var sel = document.getElementById('agentSelected');
+    sel.innerHTML = escHtml(name) + ' <span class="ac-clear" onclick="clearAgent()">&times;</span>';
+    sel.style.display = '';
+    agInput.style.display = 'none';
+    agList.classList.remove('show');
+}
+
+function clearAgent() {
+    document.getElementById('agent_id').value = '0';
+    document.getElementById('agentSelected').style.display = 'none';
+    agInput.value = '';
+    agInput.style.display = '';
+    agInput.focus();
+}
+
+// ─── Sales Rep Autocomplete (Smart Search) ─────────────────
+var srTimer = null;
+var srInput = document.getElementById('salesRepSearch');
+var srList = document.getElementById('salesRepAcList');
+var srCache = {};
+
+if (srInput) {
+    srInput.addEventListener('input', function() {
+        clearTimeout(srTimer);
+        var q = this.value.trim();
+        if (q.length < 1) { srList.classList.remove('show'); return; }
+        srTimer = setTimeout(function() {
+            fetch('index.php?page=tour_booking_sales_rep_search&q=' + encodeURIComponent(q))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var html = '';
+                    data.forEach(function(a) {
+                        var sub = [a.contact_mobile, a.contact_email].filter(Boolean).join(' | ');
+                        srCache[a.id] = {
+                            email: a.contact_email || '',
+                            phone: a.contact_mobile || '',
+                            messengers: a.contact_messengers || ''
+                        };
+                        html += '<div class="ac-item" onclick="selectSalesRep(' + a.id + ', \'' + escHtml(a.name_en) + '\')">'
+                            + escHtml(a.name_en)
+                            + (sub ? ' <span class="sub">' + escHtml(sub) + '</span>' : '')
+                            + '</div>';
+                    });
+                    html += '<div class="ac-item create-new" onclick="openCreateSalesRepModal()"><i class="fa fa-plus"></i> <?= $isThai ? "สร้างพนักงานขายใหม่" : "Create New Sales Rep" ?></div>';
+                    srList.innerHTML = html;
+                    srList.classList.add('show');
+                });
+        }, 250);
+    });
+
+    srInput.addEventListener('blur', function() {
+        setTimeout(function() { srList.classList.remove('show'); }, 200);
+    });
+
+    srInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 1 && srList.innerHTML) srList.classList.add('show');
+    });
+}
+
+function selectSalesRep(id, name, info) {
+    document.getElementById('sales_rep_id').value = id;
+    var sel = document.getElementById('salesRepSelected');
+    sel.innerHTML = escHtml(name) + ' <span class="ac-clear" onclick="clearSalesRep()">&times;</span>';
+    sel.style.display = '';
+    srInput.style.display = 'none';
+    srList.classList.remove('show');
+    // Auto-fill sales rep contact info
+    var info_data = info || srCache[id] || {};
+    document.getElementById('salesRepEmail').value = info_data.email || '';
+    document.getElementById('salesRepMobile').value = info_data.phone || '';
+    document.getElementById('salesRepMessengers').value = info_data.messengers || '';
+}
+
+function clearSalesRep() {
+    document.getElementById('sales_rep_id').value = '0';
+    document.getElementById('salesRepSelected').style.display = 'none';
+    srInput.value = '';
+    srInput.style.display = '';
+    srInput.focus();
+    // Clear auto-filled fields
+    document.getElementById('salesRepEmail').value = '';
+    document.getElementById('salesRepMobile').value = '';
+    document.getElementById('salesRepMessengers').value = '';
+}
+
 function selectCustomer(id, name, info) {
     document.getElementById('customer_id').value = id;
     var sel = document.getElementById('customerSelected');
@@ -1053,11 +1320,11 @@ function selectCustomer(id, name, info) {
     sel.style.display = '';
     acInput.style.display = 'none';
     acList.classList.remove('show');
-    // Auto-fill contact info from company master (contact, phone, email only)
+    // Auto-fill customer contact info from company master
     var ci = info || customerCache[id] || {};
-    document.getElementById('cusContact').value = ci.contact || '';
-    document.getElementById('cusPhone').value = ci.phone || '';
+    document.getElementById('cusName').value = name;
     document.getElementById('cusEmail').value = ci.email || '';
+    document.getElementById('cusPhone').value = ci.phone || '';
 }
 
 function clearCustomer() {
@@ -1066,10 +1333,10 @@ function clearCustomer() {
     acInput.value = '';
     acInput.style.display = '';
     acInput.focus();
-    // Clear auto-filled fields (contact, phone, email)
-    document.getElementById('cusContact').value = '';
-    document.getElementById('cusPhone').value = '';
+    // Clear auto-filled fields
+    document.getElementById('cusName').value = '';
     document.getElementById('cusEmail').value = '';
+    document.getElementById('cusPhone').value = '';
 }
 
 function escHtml(s) {
@@ -1079,21 +1346,72 @@ function escHtml(s) {
 }
 
 // ─── Quick Create Customer Modal ───────────────────────────
-function openQcModal() {
+function openCreateCustomerModal() {
     acList.classList.remove('show');
-    document.getElementById('qcName').value = acInput.value.trim();
+    document.getElementById('qcName').value = acInput ? acInput.value.trim() : '';
     document.getElementById('qcPhone').value = '';
-    document.getElementById('qcOverlay').classList.add('show');
+    document.getElementById('qcMessengers').value = '';
+    document.getElementById('qcOverlay').classList.add('active');
     document.getElementById('qcName').focus();
 }
 
+// ─── Create New Sales Rep Modal ────────────────────────────
+function openCreateSalesRepModal() {
+    srList.classList.remove('show');
+    document.getElementById('srModalName').value = srInput.value.trim();
+    document.getElementById('srModalEmail').value = '';
+    document.getElementById('srModalPhone').value = '';
+    document.getElementById('srModalMessengers').value = '';
+    document.getElementById('srOverlay').classList.add('active');
+    document.getElementById('srModalName').focus();
+}
+
+function closeSrModal() {
+    document.getElementById('srOverlay').classList.remove('active');
+}
+
+function saveSalesRep() {
+    var name = document.getElementById('srModalName').value.trim();
+    var email = document.getElementById('srModalEmail').value.trim();
+    var phone = document.getElementById('srModalPhone').value.trim();
+    var messengers = document.getElementById('srModalMessengers').value.trim();
+    if (!name) { document.getElementById('srModalName').focus(); return; }
+    
+    fetch('index.php?page=tour_booking_sales_rep_create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'name=' + encodeURIComponent(name)
+            + '&email=' + encodeURIComponent(email)
+            + '&phone=' + encodeURIComponent(phone)
+            + '&messengers=' + encodeURIComponent(messengers)
+            + '&csrf_token=' + encodeURIComponent(csrfToken)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            selectSalesRep(data.id, data.name, {
+                email: data.email || '',
+                phone: data.phone || '',
+                messengers: data.messengers || ''
+            });
+            closeSrModal();
+        } else {
+            alert(data.message || '<?= $isThai ? "เกิดข้อผิดพลาด" : "Error occurred" ?>');
+        }
+    })
+    .catch(function(err) {
+        alert('<?= $isThai ? "เกิดข้อผิดพลาด" : "Error occurred" ?>');
+    });
+}
+
 function closeQcModal() {
-    document.getElementById('qcOverlay').classList.remove('show');
+    document.getElementById('qcOverlay').classList.remove('active');
 }
 
 function saveQuickCustomer() {
-    var name = document.getElementById('qcName').value.trim();
-    var phone = document.getElementById('qcPhone').value.trim();
+    var name       = document.getElementById('qcName').value.trim();
+    var phone      = document.getElementById('qcPhone').value.trim();
+    var messengers = document.getElementById('qcMessengers').value.trim();
     if (!name) { document.getElementById('qcName').focus(); return; }
 
     fetch('index.php?page=tour_booking_customer_create', {
@@ -1101,6 +1419,7 @@ function saveQuickCustomer() {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'name=' + encodeURIComponent(name)
             + '&phone=' + encodeURIComponent(phone)
+            + '&messengers=' + encodeURIComponent(messengers)
             + '&csrf_token=' + encodeURIComponent(csrfToken)
     })
     .then(function(r) { return r.json(); })
@@ -1111,8 +1430,16 @@ function saveQuickCustomer() {
                 phone: data.phone || '',
                 email: ''
             });
+            // Pre-fill messengers into the contact form
+            if (messengers) document.getElementById('cusMessengers').value = messengers;
+            if (phone)      document.getElementById('cusPhone').value = phone;
             closeQcModal();
+        } else {
+            alert(data.error || '<?= $isThai ? "เกิดข้อผิดพลาด" : "Error occurred" ?>');
         }
+    })
+    .catch(function() {
+        alert('<?= $isThai ? "เกิดข้อผิดพลาด กรุณาลองใหม่" : "Error occurred. Please try again." ?>');
     });
 }
 

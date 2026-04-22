@@ -48,6 +48,18 @@ class PaymentGateway
     }
 
     /**
+     * Enable or disable a gateway (set is_active on payment_method)
+     */
+    public function toggleActive(int $gatewayId, int $companyId, bool $active): bool
+    {
+        $v   = $active ? 1 : 0;
+        $gid = intval($gatewayId);
+        $cid = intval($companyId);
+        $sql = "UPDATE payment_method SET is_active = $v WHERE id = $gid AND company_id = $cid AND is_gateway = 1";
+        return (bool) mysqli_query($this->conn, $sql);
+    }
+
+    /**
      * Save gateway config (upsert each key/value pair)
      */
     public function saveConfig(int $gatewayId, int $companyId, array $configs): bool

@@ -61,6 +61,30 @@ class StripeService {
     }
     
     /**
+     * Reload config for a specific company (multi-tenant support)
+     */
+    public function loadConfigForCompany(int $companyId): void {
+        $sql = "SELECT gc.config_key, gc.config_value
+                FROM payment_gateway_config gc
+                JOIN payment_method pm ON gc.payment_method_id = pm.id
+                WHERE pm.code = 'stripe' AND pm.is_active = 1
+                  AND pm.company_id = $companyId AND gc.company_id = $companyId";
+        $result = mysqli_query($this->conn, $sql);
+        if (!$result || mysqli_num_rows($result) === 0) {
+            throw new \Exception('Stripe not configured for this company');
+        }
+        $config = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $config[$row['config_key']] = $row['config_value'];
+        }
+        $this->publishableKey  = $config['publishable_key'] ?? '';
+        $this->secretKey       = $config['secret_key'] ?? '';
+        $this->webhookSecret   = $config['webhook_secret'] ?? '';
+        $this->mode            = $config['mode'] ?? 'test';
+        $this->currency        = $config['currency'] ?? 'thb';
+    }
+
+    /**
      * Make API Request to Stripe
      */
     private function makeRequest($endpoint, $method = 'GET', $data = null) {

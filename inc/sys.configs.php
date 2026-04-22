@@ -58,6 +58,11 @@ $config["container_manager"] = "off";    // Container Manager (default OFF for s
 // Runtime settings file path
 define('DOCKER_SETTINGS_FILE', dirname(__FILE__) . '/docker-settings.json');
 
+// Payment link signing secret — change this to a random string per deployment
+if (!defined('PAYMENT_LINK_SECRET')) {
+    define('PAYMENT_LINK_SECRET', 'iacc-bk-pay-' . (defined('DB_NAME') ? DB_NAME : 'default'));
+}
+
 /**
  * Get Docker tools setting (from file or default config)
  * @param string $key 'docker_tools' or 'container_manager'

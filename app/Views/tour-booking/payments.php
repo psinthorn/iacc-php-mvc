@@ -2,7 +2,7 @@
 /**
  * Tour Booking — Payments tab / page
  *
- * Variables: $booking, $payments, $summary
+ * Variables: $booking, $payments, $summary, $gateways, $flash
  */
 use App\Models\TourBookingPayment;
 
@@ -12,8 +12,8 @@ $typeLabels   = TourBookingPayment::getTypeLabels($isThai);
 $statusCfg    = TourBookingPayment::getStatusConfig($isThai);
 
 $totalAmount = floatval($booking['total_amount'] ?? 0);
-$amountPaid  = floatval($booking['amount_paid'] ?? 0);
-$amountDue   = floatval($booking['amount_due'] ?? $totalAmount);
+$amountPaid  = floatval($summary['net_paid'] ?? $booking['amount_paid'] ?? 0);
+$amountDue   = max(0.0, $totalAmount - $amountPaid);
 $payStatus   = $booking['payment_status'] ?? 'unpaid';
 $psCfg       = $statusCfg[$payStatus] ?? $statusCfg['pending'] ?? ['label' => ucfirst($payStatus), 'color' => '#64748b', 'bg' => '#f1f5f9', 'icon' => 'fa-circle'];
 
@@ -24,7 +24,22 @@ $paymentStatusLabels = [
     'paid'    => ['label' => $isThai ? 'ชำระแล้ว' : 'Paid',       'color' => '#059669', 'bg' => '#d1fae5', 'icon' => 'fa-check-circle'],
     'refunded'=> ['label' => $isThai ? 'คืนเงินแล้ว' : 'Refunded','color' => '#6366f1', 'bg' => '#e0e7ff', 'icon' => 'fa-undo'],
 ];
-$psCfg = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
+$psCfg    = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
+$gateways = $gateways ?? [];
+$flash    = $flash ?? null;
+
+// Generate shareable payment link
+use App\Controllers\BookingPayController;
+$payLink = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+         . '://' . $_SERVER['HTTP_HOST']
+         . '/index.php?page=booking_pay&id=' . $booking['id']
+         . '&token=' . BookingPayController::makeToken(intval($booking['id']), intval($booking['company_id']));
+
+$gwMeta = [
+    'stripe'    => ['icon' => 'fa-cc-stripe',  'label' => 'Stripe',    'color' => '#635bff', 'bg' => '#f0efff'],
+    'paypal'    => ['icon' => 'fa-paypal',      'label' => 'PayPal',    'color' => '#0070ba', 'bg' => '#e8f4fd'],
+    'promptpay' => ['icon' => 'fa-qrcode',      'label' => 'PromptPay', 'color' => '#0891b2', 'bg' => '#ecfeff'],
+];
 ?>
 
 <link rel="stylesheet" href="css/master-data.css">
@@ -78,6 +93,19 @@ $psCfg = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
 
 .slip-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid #e2e8f0; }
 
+/* Gateway buttons */
+.gw-section { margin-bottom: 16px; }
+.gw-section h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; margin: 0 0 10px; }
+.gw-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.gw-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; border: 1.5px solid; cursor: pointer; transition: all 0.15s; background: white; }
+.gw-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+
+/* Flash */
+.pay-flash { display: flex; align-items: center; gap: 10px; padding: 13px 18px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; }
+.pay-flash.success { background: #f0fdf4; border-left: 4px solid #10b981; color: #065f46; }
+.pay-flash.error   { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+.pay-flash.warning { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+
 .action-bar { display: flex; gap: 10px; margin-top: 20px; }
 .action-bar a { padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; display: inline-flex; align-items: center; gap: 6px; }
 .btn-back { background: white; color: #64748b; border: 1px solid #e2e8f0; }
@@ -94,6 +122,11 @@ $psCfg = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
     <div class="header-content">
         <h2><i class="fa fa-money"></i> <?= $isThai ? 'การชำระเงิน' : 'Payments' ?> — <?= htmlspecialchars($booking['booking_number'] ?? '') ?></h2>
         <div class="header-actions">
+            <?php if (($booking['status'] ?? 'draft') !== 'draft'): ?>
+            <button class="btn-header-outline" onclick="copyPayLink()" id="copyLinkBtn" title="<?= $amountDue > 0 ? 'Copy payment link for customer' : 'Booking is fully paid' ?>">
+                <i class="fa fa-link"></i> <?= $isThai ? 'ลิงก์ชำระ' : 'Payment Link' ?>
+            </button>
+            <?php endif; ?>
             <button class="btn-header-primary" onclick="openPaymentModal('payment')"><i class="fa fa-plus"></i> <?= $isThai ? 'บันทึกการชำระ' : 'Record Payment' ?></button>
             <button class="btn-header-outline" onclick="openPaymentModal('refund')"><i class="fa fa-undo"></i> <?= $isThai ? 'คืนเงิน' : 'Refund' ?></button>
         </div>
@@ -101,6 +134,35 @@ $psCfg = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
 </div>
 
 <div class="pay-container">
+
+    <!-- Draft notice -->
+    <?php if (($booking['status'] ?? 'draft') === 'draft'): ?>
+    <div style="display:flex; align-items:flex-start; gap:12px; background:#fef9c3; border:1.5px solid #fde047; border-radius:12px; padding:14px 18px; margin-bottom:20px;">
+        <i class="fa fa-lock" style="font-size:20px; color:#ca8a04; flex-shrink:0; margin-top:1px;"></i>
+        <div>
+            <div style="font-size:14px; font-weight:700; color:#854d0e; margin-bottom:4px;">
+                <?= $isThai ? 'บุ๊กกิ้งอยู่ในสถานะ ฉบับร่าง' : 'Booking is in Draft status' ?>
+            </div>
+            <div style="font-size:13px; color:#92400e; line-height:1.6;">
+                <?= $isThai
+                    ? 'ลิงก์ชำระเงินสำหรับลูกค้าจะพร้อมใช้งานเมื่อสถานะเป็น <strong>ยืนยัน</strong> — คุณยังสามารถบันทึกการชำระเงินด้วยตนเองได้'
+                    : 'The customer payment link becomes available once the booking is <strong>Confirmed</strong>. You can still record payments manually.' ?>
+                &nbsp;<a href="index.php?page=tour_booking_make&id=<?= $booking['id'] ?>" style="color:#ca8a04; font-weight:700; text-decoration:underline;">
+                    <?= $isThai ? 'อัปเดตสถานะ →' : 'Update status →' ?>
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Flash -->
+    <?php if ($flash): ?>
+    <div class="pay-flash <?= htmlspecialchars($flash['type']) ?>">
+        <i class="fa fa-<?= $flash['type'] === 'success' ? 'check-circle' : ($flash['type'] === 'warning' ? 'exclamation-triangle' : 'times-circle') ?>"></i>
+        <?= htmlspecialchars($flash['msg']) ?>
+    </div>
+    <?php endif; ?>
+
     <!-- Summary Stats -->
     <div class="pay-summary">
         <div class="pay-stat">
@@ -124,6 +186,78 @@ $psCfg = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
             </div>
         </div>
     </div>
+
+    <!-- Online Payment Gateways -->
+    <?php if (!empty($gateways) && $amountDue > 0): ?>
+    <div class="pay-card">
+        <h3><i class="fa fa-credit-card"></i> <?= $isThai ? 'ชำระออนไลน์' : 'Pay Online' ?></h3>
+        <div class="gw-section">
+            <div class="gw-section" style="font-size:13px; color:#64748b; margin-bottom:12px;">
+                <?= $isThai ? 'ยอดค้างชำระ' : 'Amount due' ?>:
+                <strong style="color:#ef4444; font-size:15px;">฿<?= number_format($amountDue, 2) ?></strong>
+                &nbsp;—&nbsp;
+                <?= $isThai ? 'เลือกช่องทางชำระ:' : 'Select a payment gateway:' ?>
+            </div>
+            <div class="gw-buttons">
+            <?php foreach ($gateways as $gw):
+                $code = strtolower($gw['code']);
+                $meta = $gwMeta[$code] ?? ['icon' => 'fa-plug', 'label' => $gw['name'], 'color' => '#64748b', 'bg' => '#f1f5f9'];
+            ?>
+            <form method="post" action="index.php?page=tour_booking_payment_checkout">
+                <?= csrf_field() ?>
+                <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                <input type="hidden" name="gateway" value="<?= $code ?>">
+                <input type="hidden" name="amount" value="<?= $amountDue ?>">
+                <input type="hidden" name="payment_type" value="full">
+                <button type="submit" class="gw-btn"
+                        style="color:<?= $meta['color'] ?>; border-color:<?= $meta['color'] ?>; background:<?= $meta['bg'] ?>;">
+                    <i class="fa <?= $meta['icon'] ?>" style="font-size:16px;"></i>
+                    <?= $isThai ? 'ชำระด้วย ' : 'Pay with ' ?><?= htmlspecialchars($meta['label']) ?>
+                </button>
+            </form>
+            <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- Custom amount override -->
+        <details style="margin-top:12px;">
+            <summary style="font-size:12px; color:#94a3b8; cursor:pointer;"><?= $isThai ? 'ชำระบางส่วน / มัดจำ' : 'Pay partial / deposit' ?></summary>
+            <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:420px;">
+                <div>
+                    <label style="font-size:11px; font-weight:600; color:#475569; display:block; margin-bottom:4px;"><?= $isThai ? 'จำนวนเงิน' : 'Amount' ?></label>
+                    <input type="number" id="gwCustomAmount" step="0.01" min="1" max="<?= $amountDue ?>" value="<?= $amountDue ?>"
+                           style="width:100%; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:600; color:#475569; display:block; margin-bottom:4px;"><?= $isThai ? 'ประเภท' : 'Type' ?></label>
+                    <select id="gwCustomType" style="width:100%; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; height:36px; box-sizing:border-box;">
+                        <option value="full"><?= $isThai ? 'ชำระเต็มจำนวน' : 'Full Payment' ?></option>
+                        <option value="deposit"><?= $isThai ? 'มัดจำ' : 'Deposit' ?></option>
+                        <option value="partial"><?= $isThai ? 'บางส่วน' : 'Partial' ?></option>
+                    </select>
+                </div>
+            </div>
+            <div class="gw-buttons" style="margin-top:10px;">
+            <?php foreach ($gateways as $gw):
+                $code = strtolower($gw['code']);
+                $meta = $gwMeta[$code] ?? ['icon' => 'fa-plug', 'label' => $gw['name'], 'color' => '#64748b', 'bg' => '#f1f5f9'];
+            ?>
+            <form method="post" action="index.php?page=tour_booking_payment_checkout" class="gw-partial-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                <input type="hidden" name="gateway" value="<?= $code ?>">
+                <input type="hidden" name="amount" class="gw-amount-field" value="<?= $amountDue ?>">
+                <input type="hidden" name="payment_type" class="gw-type-field" value="full">
+                <button type="submit" class="gw-btn"
+                        style="color:<?= $meta['color'] ?>; border-color:<?= $meta['color'] ?>; background:<?= $meta['bg'] ?>; font-size:12px; padding:8px 14px;">
+                    <i class="fa <?= $meta['icon'] ?>"></i> <?= htmlspecialchars($meta['label']) ?>
+                </button>
+            </form>
+            <?php endforeach; ?>
+            </div>
+        </details>
+    </div>
+    <?php endif; ?>
 
     <!-- Payment History -->
     <div class="pay-card">
@@ -340,6 +474,26 @@ $psCfg = $paymentStatusLabels[$payStatus] ?? $paymentStatusLabels['unpaid'];
 </div>
 
 <script>
+var PAYMENT_LINK = <?= json_encode($payLink) ?>;
+
+function copyPayLink() {
+    navigator.clipboard.writeText(PAYMENT_LINK).then(function() {
+        var btn = document.getElementById('copyLinkBtn');
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-check"></i> <?= $isThai ? 'คัดลอกแล้ว!' : 'Copied!' ?>';
+        btn.style.background = '#d1fae5';
+        btn.style.color = '#059669';
+        setTimeout(function() {
+            btn.innerHTML = orig;
+            btn.style.background = '';
+            btn.style.color = '';
+        }, 2500);
+    }).catch(function() {
+        // Fallback: show link in a prompt
+        prompt('Copy this payment link:', PAYMENT_LINK);
+    });
+}
+
 function openPaymentModal(type) {
     if (type === 'refund') {
         document.getElementById('refundModal').classList.add('active');
@@ -361,4 +515,20 @@ document.querySelectorAll('.pay-modal-overlay').forEach(function(el) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closePaymentModal();
 });
+
+// Sync partial amount/type fields across partial gateway forms
+(function() {
+    var amountInput = document.getElementById('gwCustomAmount');
+    var typeSelect  = document.getElementById('gwCustomType');
+    if (!amountInput || !typeSelect) return;
+
+    function syncPartial() {
+        var amt  = amountInput.value;
+        var type = typeSelect.value;
+        document.querySelectorAll('.gw-amount-field').forEach(function(el) { el.value = amt; });
+        document.querySelectorAll('.gw-type-field').forEach(function(el)  { el.value = type; });
+    }
+    amountInput.addEventListener('input', syncPartial);
+    typeSelect.addEventListener('change', syncPartial);
+})();
 </script>
