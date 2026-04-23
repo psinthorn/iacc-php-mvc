@@ -105,7 +105,7 @@ $html .= '</div>';
 $thRow = '<tr>
     <th style="width:22px;">#</th>
     <th style="width:95px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
-    <th style="width:120px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
+    <th style="width:300px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
     <th style="width:38px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
     <th class="center" style="width:28px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
     <th class="center" style="width:28px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
