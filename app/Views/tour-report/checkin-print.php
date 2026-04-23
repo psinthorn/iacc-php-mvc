@@ -111,7 +111,7 @@ $thRow = '<tr>
     <th style="width:90px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
     <th style="width:40px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
     <th style="width:55px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
-    <th style="width:50px;">' . ($isThai ? 'ผู้จอง' : 'Book By') . '</th>
+    <th style="width:50px;">' . ($isThai ? 'เซลล์' : 'Sale Rep') . '</th>
     <th class="right" style="width:55px;">' . ($isThai ? 'ค่าเข้าชม' : 'Entrance') . '</th>
     <th style="width:140px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
 </tr>';
@@ -145,7 +145,7 @@ if (!empty($direct)) {
             <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
             <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
             <td>' . $pickupTime . '</td>
-            <td>' . htmlspecialchars($b['booking_by'] ?: '-') . '</td>
+            <td>' . htmlspecialchars($b['sales_rep_name'] ?: '-') . '</td>
             <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
             <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 50)) . '</td>
         </tr>';
@@ -197,7 +197,7 @@ if (!empty($agent)) {
                 <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
                 <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
                 <td>' . $pickupTime . '</td>
-                <td>' . htmlspecialchars($b['booking_by'] ?: '-') . '</td>
+                <td>' . htmlspecialchars($b['sales_rep_name'] ?: '-') . '</td>
                 <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
                 <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 50)) . '</td>
             </tr>';
