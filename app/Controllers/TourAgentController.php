@@ -45,12 +45,14 @@ class TourAgentController extends BaseController
         $filters = [
             'search'          => $this->inputStr('search'),
             'commission_type' => $this->inputStr('commission_type'),
+            'contract_status' => $this->inputStr('contract_status'),
         ];
 
         $profiles = $this->model->getProfiles($comId, $filters);
-        $message = $_GET['msg'] ?? '';
+        $stats    = $this->model->getStats($comId);
+        $message  = $_GET['msg'] ?? '';
 
-        $this->render('tour-agent/list', compact('profiles', 'filters', 'message'));
+        $this->render('tour-agent/list', compact('profiles', 'filters', 'stats', 'message'));
     }
 
     /**

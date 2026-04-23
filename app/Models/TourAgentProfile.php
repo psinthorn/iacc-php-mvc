@@ -28,6 +28,14 @@ class TourAgentProfile extends BaseModel
         if (!empty($filters['commission_type'])) {
             $conds .= " AND tap.commission_type = '" . \sql_escape($filters['commission_type']) . "'";
         }
+        if (!empty($filters['contract_status'])) {
+            $today = date('Y-m-d');
+            if ($filters['contract_status'] === 'active') {
+                $conds .= " AND (tap.contract_end IS NULL OR tap.contract_end >= '$today')";
+            } elseif ($filters['contract_status'] === 'expired') {
+                $conds .= " AND (tap.contract_end IS NOT NULL AND tap.contract_end < '$today')";
+            }
+        }
 
         $sql = "SELECT tap.*, c.name_en, c.name_th, c.contact, c.phone, c.email, c.fax
                 FROM tour_agent_profiles tap
@@ -36,6 +44,33 @@ class TourAgentProfile extends BaseModel
                 $conds
                 ORDER BY c.name_en ASC";
         return $this->fetchAll($sql);
+    }
+
+    /**
+     * Get counts for stat cards and filter tabs
+     */
+    public function getStats(int $comId): array
+    {
+        $comId = \sql_int($comId);
+        $today = date('Y-m-d');
+        $sql = "SELECT
+                  COUNT(*) AS total,
+                  SUM(tap.commission_type = 'net_rate') AS net_rate,
+                  SUM(tap.commission_type = 'percentage') AS percentage,
+                  SUM(tap.contract_end IS NULL OR tap.contract_end >= '$today') AS active,
+                  SUM(tap.contract_end IS NOT NULL AND tap.contract_end < '$today') AS expired
+                FROM tour_agent_profiles tap
+                JOIN company c ON tap.company_ref_id = c.id
+                WHERE tap.company_id = '$comId' AND tap.deleted_at IS NULL";
+        $r = mysqli_query($this->conn, $sql);
+        $row = $r ? mysqli_fetch_assoc($r) : [];
+        return [
+            'total'      => (int)($row['total']      ?? 0),
+            'net_rate'   => (int)($row['net_rate']   ?? 0),
+            'percentage' => (int)($row['percentage'] ?? 0),
+            'active'     => (int)($row['active']     ?? 0),
+            'expired'    => (int)($row['expired']    ?? 0),
+        ];
     }
 
     /**

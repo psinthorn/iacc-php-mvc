@@ -33,11 +33,24 @@ $messages = [
 .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; font-size: 13px; text-decoration: none; }
 .action-btn:hover { background: #4f46e5; color: white; border-color: #4f46e5; }
 .action-btn.danger:hover { background: #ef4444; border-color: #ef4444; }
-.filter-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-.filter-bar input, .filter-bar select { height: 38px; padding: 0 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; }
-.filter-bar input[type="text"] { min-width: 220px; }
 .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
 .empty-state i { font-size: 48px; display: block; margin-bottom: 16px; }
+/* Filter bar — matches company list style */
+.search-section { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-tab { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #64748b; background: #f1f5f9; border: 2px solid transparent; text-decoration: none; transition: all 0.2s ease; }
+.filter-tab:hover { background: #e2e8f0; color: #475569; text-decoration: none; }
+.filter-tab.active { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); color: #fff; }
+.filter-tab.active.net { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); }
+.filter-tab.active.pct { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.filter-tab.active.expired { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.tab-count { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.filter-tab:not(.active) .tab-count { background: #e2e8f0; color: #64748b; }
+.action-toolbar { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; }
+.action-buttons-group { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.btn-clear { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #ef4444; background: #fef2f2; border: 2px solid #fecaca; text-decoration: none; }
+.btn-clear:hover { background: #fee2e2; border-color: #fca5a5; text-decoration: none; color: #dc2626; }
+@media (max-width: 768px) { .action-toolbar { flex-direction: column; align-items: stretch; } .filter-tabs { overflow-x: auto; flex-wrap: nowrap; } }
 </style>
 
 <div class="master-data-container">
@@ -52,9 +65,6 @@ $messages = [
                 <a href="index.php?page=tour_booking_list" class="btn-header btn-header-outline">
                     <i class="fa fa-arrow-left"></i> <?= $isThai ? 'การจอง' : 'Bookings' ?>
                 </a>
-                <a href="index.php?page=tour_agent_make" class="btn-header btn-header-primary">
-                    <i class="fa fa-plus"></i> <?= $isThai ? 'เพิ่มตัวแทน' : 'Add Agent' ?>
-                </a>
             </div>
         </div>
     </div>
@@ -66,20 +76,100 @@ $messages = [
     </div>
     <?php endif; ?>
 
-    <!-- Filters -->
-    <form method="get" class="filter-bar">
-        <input type="hidden" name="page" value="tour_agent_list">
-        <input type="text" name="search" placeholder="<?= $isThai ? 'ค้นหาชื่อ, โทร...' : 'Search name, phone...' ?>" value="<?= htmlspecialchars($filters['search'] ?? '') ?>">
-        <select name="commission_type">
-            <option value=""><?= $isThai ? 'ประเภทคอมฯ ทั้งหมด' : 'All Commission Types' ?></option>
-            <option value="percentage" <?= ($filters['commission_type'] ?? '') === 'percentage' ? 'selected' : '' ?>><?= $xml->tourpercentage ?? 'Percentage' ?></option>
-            <option value="net_rate" <?= ($filters['commission_type'] ?? '') === 'net_rate' ? 'selected' : '' ?>><?= $xml->tournetrate ?? 'Net Rate' ?></option>
-        </select>
-        <button type="submit" class="action-btn" style="width:auto; padding:0 16px;"><i class="fa fa-search"></i></button>
-        <?php if (!empty($filters['search']) || !empty($filters['commission_type'])): ?>
-        <a href="index.php?page=tour_agent_list" class="action-btn" style="width:auto; padding:0 16px; font-size:12px;"><i class="fa fa-times"></i></a>
-        <?php endif; ?>
-    </form>
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card primary">
+            <i class="fa fa-handshake-o stat-icon"></i>
+            <div class="stat-value"><?= $stats['total'] ?></div>
+            <div class="stat-label"><?= $isThai ? 'ตัวแทนทั้งหมด' : 'Total Agents' ?></div>
+        </div>
+        <div class="stat-card info">
+            <i class="fa fa-tag stat-icon"></i>
+            <div class="stat-value"><?= $stats['net_rate'] ?></div>
+            <div class="stat-label"><?= $isThai ? 'Net Rate' : 'Net Rate' ?></div>
+        </div>
+        <div class="stat-card warning">
+            <i class="fa fa-percent stat-icon"></i>
+            <div class="stat-value"><?= $stats['percentage'] ?></div>
+            <div class="stat-label"><?= $isThai ? 'คอมมิชชั่น %' : 'Percentage' ?></div>
+        </div>
+        <div class="stat-card success">
+            <i class="fa fa-check-circle stat-icon"></i>
+            <div class="stat-value"><?= $stats['active'] ?></div>
+            <div class="stat-label"><?= $isThai ? 'สัญญามีผล' : 'Active Contracts' ?></div>
+        </div>
+    </div>
+
+    <!-- Search + Filter Tabs -->
+    <?php
+    $search         = $filters['search'] ?? '';
+    $commType       = $filters['commission_type'] ?? '';
+    $contractStatus = $filters['contract_status'] ?? '';
+    $hasFilter      = $search !== '' || $commType !== '' || $contractStatus !== '';
+    $baseUrl        = 'index.php?page=tour_agent_list';
+    ?>
+    <div class="action-toolbar">
+        <div class="search-section">
+            <div class="md-search-box md-search-has-btn" style="max-width:500px;">
+                <i class="fa fa-search md-search-icon"></i>
+                <form method="get" action="">
+                    <input type="hidden" name="page" value="tour_agent_list">
+                    <input type="hidden" name="commission_type" value="<?= htmlspecialchars($commType) ?>">
+                    <input type="hidden" name="contract_status" value="<?= htmlspecialchars($contractStatus) ?>">
+                    <input type="text" class="md-search-input" name="search"
+                           placeholder="<?= $isThai ? 'ค้นหาชื่อ, โทร...' : 'Search name, phone...' ?>"
+                           value="<?= htmlspecialchars($search) ?>"
+                           autocomplete="off">
+                    <button type="submit" class="md-search-btn"><i class="fa fa-arrow-right"></i></button>
+                </form>
+            </div>
+
+            <div class="filter-tabs">
+                <a href="<?= $baseUrl ?>&search=<?= urlencode($search) ?>"
+                   class="filter-tab <?= ($commType === '' && $contractStatus === '') ? 'active' : '' ?>">
+                    <i class="fa fa-th-list"></i>
+                    <span><?= $isThai ? 'ทั้งหมด' : 'All' ?></span>
+                    <span class="tab-count"><?= $stats['total'] ?></span>
+                </a>
+                <a href="<?= $baseUrl ?>&search=<?= urlencode($search) ?>&commission_type=net_rate"
+                   class="filter-tab <?= $commType === 'net_rate' ? 'active net' : '' ?>">
+                    <i class="fa fa-tag"></i>
+                    <span><?= $isThai ? 'Net Rate' : 'Net Rate' ?></span>
+                    <span class="tab-count"><?= $stats['net_rate'] ?></span>
+                </a>
+                <a href="<?= $baseUrl ?>&search=<?= urlencode($search) ?>&commission_type=percentage"
+                   class="filter-tab <?= $commType === 'percentage' ? 'active pct' : '' ?>">
+                    <i class="fa fa-percent"></i>
+                    <span><?= $isThai ? 'คอมมิชชั่น %' : 'Percentage' ?></span>
+                    <span class="tab-count"><?= $stats['percentage'] ?></span>
+                </a>
+                <a href="<?= $baseUrl ?>&search=<?= urlencode($search) ?>&contract_status=active"
+                   class="filter-tab <?= $contractStatus === 'active' ? 'active' : '' ?>">
+                    <i class="fa fa-check-circle"></i>
+                    <span><?= $isThai ? 'สัญญามีผล' : 'Active' ?></span>
+                    <span class="tab-count"><?= $stats['active'] ?></span>
+                </a>
+                <a href="<?= $baseUrl ?>&search=<?= urlencode($search) ?>&contract_status=expired"
+                   class="filter-tab <?= $contractStatus === 'expired' ? 'active expired' : '' ?>">
+                    <i class="fa fa-times-circle"></i>
+                    <span><?= $isThai ? 'หมดสัญญา' : 'Expired' ?></span>
+                    <span class="tab-count"><?= $stats['expired'] ?></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="action-buttons-group">
+            <?php if ($hasFilter): ?>
+            <a href="<?= $baseUrl ?>" class="btn-clear">
+                <i class="fa fa-times"></i>
+                <span><?= $isThai ? 'ล้าง' : 'Clear' ?></span>
+            </a>
+            <?php endif; ?>
+            <a href="index.php?page=tour_agent_make" class="btn btn-add">
+                <i class="fa fa-plus"></i> <?= $isThai ? 'เพิ่มตัวแทน' : 'Add Agent' ?>
+            </a>
+        </div>
+    </div>
 
     <!-- Table -->
     <div style="background:white; border-radius:14px; border:1px solid #e2e8f0; overflow-x:auto;">
