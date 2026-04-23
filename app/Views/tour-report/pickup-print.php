@@ -147,7 +147,7 @@ if (!empty($groups)) {
                 <td class="center"><strong>' . $b['total_pax'] . '</strong> <span style="color:#888;">(' . $paxStr . ')</span></td>
                 <td>' . htmlspecialchars($phone) . '</td>
                 <td>' . htmlspecialchars($b['driver_name'] ?? '') . '</td>
-                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 30)) . '</td>
+                <td></td>
             </tr>';
         }
         $html .= '</table>';
