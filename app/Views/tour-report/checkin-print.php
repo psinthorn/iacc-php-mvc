@@ -149,13 +149,6 @@ if (!empty($direct)) {
             <td></td>
         </tr>';
 
-        // Blank rows for handwritten signatures (total_pax rows)
-        for ($i = 0; $i < $b['total_pax']; $i++) {
-            $html .= '<tr class="blank">
-                <td></td><td></td><td></td><td></td><td></td><td></td>
-                <td></td><td></td><td></td><td></td><td></td>
-            </tr>';
-        }
     }
     $html .= '</table>';
 }
@@ -200,12 +193,6 @@ if (!empty($agent)) {
                 <td></td>
             </tr>';
 
-            for ($i = 0; $i < $b['total_pax']; $i++) {
-                $html .= '<tr class="blank">
-                    <td></td><td></td><td></td><td></td><td></td><td></td>
-                    <td></td><td></td><td></td><td></td><td></td>
-                </tr>';
-            }
         }
         $html .= '</table>';
     }
