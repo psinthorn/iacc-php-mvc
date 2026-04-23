@@ -104,13 +104,13 @@ $html .= '</div>';
 // Columns: # | Hotel | Customer | Room | Adult | Child | Agent | Pickup | Sale Rep | Entrance | Signature/Remark
 $thRow = '<tr>
     <th style="width:22px;">#</th>
-    <th style="width:95px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
-    <th style="width:300px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
-    <th style="width:38px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th class="center" style="width:28px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
-    <th class="center" style="width:28px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
+    <th style="width:360px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
+    <th style="width:28px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
+    <th class="center" style="width:20px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
+    <th class="center" style="width:20px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
     <th style="width:80px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
-    <th style="width:48px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
+    <th style="width:36px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
     <th style="width:50px;">' . ($isThai ? 'เซลล์' : 'Sale Rep') . '</th>
     <th class="right" style="width:50px;">' . ($isThai ? 'ค่าเข้าชม' : 'Entrance') . '</th>
     <th style="width:145px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
