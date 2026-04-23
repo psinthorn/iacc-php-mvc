@@ -147,8 +147,8 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label><i class="fa fa-cube"></i> <?=$xml->type ?? 'Product Type'?> <span class="text-danger">*</span></label>
-                <select class="form-control" name="type" required onchange="loadBrands(this.value)">
+                <label><i class="fa fa-cube"></i> <?=$xml->type ?? 'Product Type'?><?php if (!$edit_data): ?> <span class="text-danger">*</span><?php endif; ?></label>
+                <select class="form-control" name="type" id="typeSelect" <?=$edit_data ? '' : 'required'?> onchange="loadBrands(this.value)">
                     <option value="">-- <?=$xml->select ?? 'Select'?> <?=$xml->type ?? 'Type'?> --</option>
                     <?php foreach ($types as $t): ?>
                     <option value="<?=$t['id']?>" <?=($edit_data['type_id'] ?? 0) == $t['id'] ? 'selected' : ''?>><?=htmlspecialchars($t['name'])?></option>
@@ -156,8 +156,8 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 </select>
             </div>
             <div class="form-group">
-                <label><i class="fa fa-bookmark"></i> <?=$xml->brand ?? 'Brand'?> <span class="text-danger">*</span></label>
-                <select class="form-control" id="brand" name="brand" required>
+                <label><i class="fa fa-bookmark"></i> <?=$xml->brand ?? 'Brand'?><?php if (!$edit_data): ?> <span class="text-danger">*</span><?php endif; ?></label>
+                <select class="form-control" id="brand" name="brand" <?=$edit_data ? '' : 'required'?>>
                     <option value="">-- <?=$xml->select ?? 'Select'?> <?=$xml->type ?? 'Type'?> first --</option>
                     <?php if ($edit_data): foreach ($brands as $b): ?>
                     <option value="<?=$b['id']?>" <?=($edit_data['brand_id'] ?? 0) == $b['id'] ? 'selected' : ''?>><?=htmlspecialchars($b['brand_name'])?></option>
@@ -278,6 +278,23 @@ document.addEventListener('DOMContentLoaded', function() {
         form.scrollIntoView({ behavior:'smooth', block:'start' });
         var inp = document.getElementById('model_name');
         if (inp) setTimeout(() => inp.focus(), 300);
+
+        // In edit mode: pre-load brands for the already-selected type
+        var typeSelect = document.getElementById('typeSelect');
+        var brandSelect = document.getElementById('brand');
+        if (typeSelect && typeSelect.value && brandSelect) {
+            var currentBrandId = brandSelect.value; // capture before replacing
+            fetch('index.php?page=mo_list_brands&q=' + typeSelect.value)
+                .then(r => r.text())
+                .then(html => {
+                    brandSelect.innerHTML = html;
+                    // Re-select the current brand after loading filtered list
+                    if (currentBrandId) {
+                        var opt = brandSelect.querySelector('option[value="' + currentBrandId + '"]');
+                        if (opt) opt.selected = true;
+                    }
+                });
+        }
     }
 });
 </script>

@@ -95,13 +95,16 @@ class ModelController extends BaseController
                 ]);
                 break;
 
-            case 'E': // Edit (only name, des, price — not type/brand)
+            case 'E': // Edit
                 if ($id > 0) {
-                    $this->model->update($id, [
+                    $data = [
                         'model_name' => $modelName,
                         'des'        => $des,
                         'price'      => $price,
-                    ]);
+                    ];
+                    if ($typeId > 0)  $data['type_id']  = $typeId;
+                    if ($brandId > 0) $data['brand_id'] = $brandId;
+                    $this->model->update($id, $data);
                 }
                 break;
 
