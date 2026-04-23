@@ -380,4 +380,5 @@ return [
     'tour_report'            => ['TourReportController', 'index'],
     'tour_report_checkin'    => ['TourReportController', 'checkinPrint', 'standalone'],
     'tour_report_pickup'     => ['TourReportController', 'pickupPrint', 'standalone'],
+    'tour_report_insurance'  => ['TourReportController', 'insurancePrint', 'standalone'],
 ];

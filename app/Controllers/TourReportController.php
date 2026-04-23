@@ -53,4 +53,14 @@ class TourReportController extends BaseController
         include __DIR__ . '/../Views/tour-report/pickup-print.php';
         exit;
     }
+
+    // ─── Passenger Accident Insurance PDF ─────────────────────
+
+    public function insurancePrint(): void
+    {
+        $this->guardModule();
+
+        include __DIR__ . '/../Views/tour-report/insurance-print.php';
+        exit;
+    }
 }
