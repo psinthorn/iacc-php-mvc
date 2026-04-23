@@ -1,98 +1,110 @@
 <?php
 /**
  * Type (Product) List View
- * 
- * Variables provided by TypeController::index():
- *   $items          - array of type rows (with cat_name, brand_count)
- *   $total_items    - total type count
- *   $item_count     - count of items on current page
- *   $pagination     - pagination data array
- *   $search         - current search term
- *   $cat_id         - current category filter
- *   $edit_data      - type being edited (or null)
- *   $edit_brand_ids - brand IDs associated with edit type
- *   $show_form      - whether to show the inline form
- *   $categories     - all categories for dropdown/filter
- *   $brands         - all brands for checkboxes
- *   $query_params   - current GET params
- *   $xml            - i18n strings
  */
 require_once __DIR__ . '/../../../inc/pagination.php';
+
+$search    = $search ?? '';
+$status    = $status ?? '';
+$hasFilter = $search !== '' || $status !== '' || $cat_id > 0;
+$baseUrl   = '?page=type';
 ?>
 <link rel="stylesheet" href="css/master-data.css">
+<style>
+.search-section{display:flex;flex-direction:column;gap:16px;flex:1}.filter-tabs{display:flex;gap:8px;flex-wrap:wrap}.filter-tab{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;color:#64748b;background:#f1f5f9;border:2px solid transparent;text-decoration:none;transition:all .2s}.filter-tab:hover{background:#e2e8f0;color:#475569;text-decoration:none}.filter-tab.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}.filter-tab.active.act{background:linear-gradient(135deg,#10b981,#059669)}.filter-tab.active.ina{background:linear-gradient(135deg,#f59e0b,#d97706)}.tab-count{background:rgba(255,255,255,.2);padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}.filter-tab:not(.active) .tab-count{background:#e2e8f0;color:#64748b}.action-buttons-group{display:flex;gap:10px;align-items:center;flex-shrink:0}.btn-clear{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;color:#ef4444;background:#fef2f2;border:2px solid #fecaca;text-decoration:none}.btn-clear:hover{background:#fee2e2;text-decoration:none;color:#dc2626}
+.md-toggle{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}.md-toggle input{opacity:0;width:0;height:0}.md-toggle-track{position:absolute;inset:0;background:#cbd5e1;border-radius:22px;cursor:pointer;transition:.2s}.md-toggle input:checked + .md-toggle-track{background:#10b981}.md-toggle-thumb{position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;pointer-events:none}.md-toggle input:checked ~ .md-toggle-thumb{transform:translateX(18px)}.row-inactive td{opacity:.5}
+.badge-cat{background:#e9ecef;color:#495057;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.cat-filter-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cat-select{padding:6px 12px;border-radius:10px;border:2px solid #e2e8f0;font-size:14px;color:#475569;background:#f8fafc;cursor:pointer}
+.cat-select:focus{outline:none;border-color:#667eea}
+</style>
 
 <div class="master-data-container">
 
-<!-- Page Header -->
 <div class="master-data-header">
-    <h2><i class="fa fa-cube"></i> <?=$xml->product ?? 'Product Management'?></h2>
-    <div>
-        <span class="text-muted">Master Data</span>
-    </div>
+    <h2><i class="fa fa-cube"></i> <?=$xml->product ?? 'Product Type Management'?></h2>
+    <div><span class="text-muted">Master Data</span></div>
 </div>
 
-<!-- Statistics Cards -->
 <div class="stats-row">
     <div class="stat-card primary">
         <i class="fa fa-cube stat-icon"></i>
-        <div class="stat-value"><?=$total_items?></div>
-        <div class="stat-label"><?=$xml->total ?? 'Total'?> <?=$xml->products ?? 'Products'?></div>
+        <div class="stat-value"><?=$stats['total']?></div>
+        <div class="stat-label"><?=$xml->total ?? 'Total'?> <?=$xml->products ?? 'Types'?></div>
     </div>
     <div class="stat-card success">
         <i class="fa fa-check-circle stat-icon"></i>
-        <div class="stat-value"><?=$item_count?></div>
-        <div class="stat-label"><?=$xml->showing ?? 'Showing'?></div>
+        <div class="stat-value"><?=$stats['active']?></div>
+        <div class="stat-label"><?=$xml->active ?? 'Active'?></div>
+    </div>
+    <div class="stat-card warning">
+        <i class="fa fa-pause-circle stat-icon"></i>
+        <div class="stat-value"><?=$stats['inactive']?></div>
+        <div class="stat-label"><?=$xml->inactive ?? 'Inactive'?></div>
     </div>
 </div>
 
-<!-- Action Toolbar -->
 <div class="action-toolbar">
-    <div class="search-box" style="display:flex;gap:10px;max-width:500px;">
-        <div style="position:relative;flex:1;">
-            <form method="get" action="" style="margin:0;" id="searchForm">
-                <i class="fa fa-search"></i>
+    <div class="search-section">
+        <div class="md-search-box md-search-has-btn" style="max-width:500px;">
+            <i class="fa fa-search md-search-icon"></i>
+            <form method="get" action="">
                 <input type="hidden" name="page" value="type">
+                <input type="hidden" name="status" value="<?=htmlspecialchars($status)?>">
                 <input type="hidden" name="cat_id" value="<?=$cat_id?>">
-                <input type="text" class="form-control" name="search" 
-                       placeholder="<?=$xml->search ?? 'Search'?> <?=$xml->product ?? 'product'?>..." 
-                       value="<?=htmlspecialchars($search)?>" 
-                       onchange="this.form.submit()">
+                <input type="text" class="md-search-input" name="search"
+                       placeholder="<?=$xml->search ?? 'Search'?> type..."
+                       value="<?=htmlspecialchars($search)?>" autocomplete="off">
+                <button type="submit" class="md-search-btn"><i class="fa fa-arrow-right"></i></button>
             </form>
         </div>
-        <select class="form-control" style="width:150px;" onchange="window.location='?page=type&cat_id='+this.value+'&search=<?=urlencode($search)?>'">
-            <option value="0"><?=$xml->all ?? 'All'?> <?=$xml->category ?? 'Categories'?></option>
-            <?php foreach ($categories as $cat): ?>
-            <option value="<?=$cat['id']?>" <?=$cat_id == $cat['id'] ? 'selected' : ''?>><?=htmlspecialchars($cat['cat_name'])?></option>
-            <?php endforeach; ?>
-        </select>
+        <div class="cat-filter-wrap">
+            <div class="filter-tabs">
+                <a href="<?=$baseUrl?>&cat_id=<?=$cat_id?>&search=<?=urlencode($search)?>" class="filter-tab <?=$status==='' ? 'active' : ''?>">
+                    <i class="fa fa-th-list"></i><span><?=$xml->all ?? 'All'?></span><span class="tab-count"><?=$stats['total']?></span>
+                </a>
+                <a href="<?=$baseUrl?>&cat_id=<?=$cat_id?>&search=<?=urlencode($search)?>&status=active" class="filter-tab <?=$status==='active' ? 'active act' : ''?>">
+                    <i class="fa fa-check-circle"></i><span><?=$xml->active ?? 'Active'?></span><span class="tab-count"><?=$stats['active']?></span>
+                </a>
+                <a href="<?=$baseUrl?>&cat_id=<?=$cat_id?>&search=<?=urlencode($search)?>&status=inactive" class="filter-tab <?=$status==='inactive' ? 'active ina' : ''?>">
+                    <i class="fa fa-pause-circle"></i><span><?=$xml->inactive ?? 'Inactive'?></span><span class="tab-count"><?=$stats['inactive']?></span>
+                </a>
+            </div>
+            <select class="cat-select" onchange="window.location='<?=$baseUrl?>&status=<?=urlencode($status)?>&search=<?=urlencode($search)?>&cat_id='+this.value">
+                <option value="0"><?=$xml->all ?? 'All'?> <?=$xml->category ?? 'Categories'?></option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?=$cat['id']?>" <?=$cat_id == $cat['id'] ? 'selected' : ''?>><?=htmlspecialchars($cat['cat_name'])?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
     </div>
-    <div>
-        <?php if (!empty($search) || $cat_id > 0): ?>
-        <a href="?page=type" class="btn btn-default"><i class="fa fa-times"></i> <?=$xml->clear ?? 'Clear'?></a>
+    <div class="action-buttons-group">
+        <?php if ($hasFilter): ?>
+        <a href="<?=$baseUrl?>" class="btn-clear"><i class="fa fa-times"></i> <?=$xml->clear ?? 'Clear'?></a>
         <?php endif; ?>
-        <a href="?page=type&new=1" class="btn btn-add"><i class="fa fa-plus"></i> <?=$xml->create ?? 'Add New'?></a>
+        <a href="<?=$baseUrl?>&new=1" class="btn btn-add"><i class="fa fa-plus"></i> <?=$xml->create ?? 'Add New'?></a>
         <a href="index.php?page=master_data_guide" class="btn btn-info" style="border-radius:20px;"><i class="fa fa-book"></i> <?=$xml->guide ?? 'Guide'?></a>
     </div>
 </div>
 
-<!-- Inline Create/Edit Form -->
+<!-- Inline Form -->
 <div class="inline-form-container <?=$show_form ? 'active' : ''?>" id="formContainer">
     <div class="form-header">
-        <h4><i class="fa fa-<?=$edit_data ? 'edit' : 'plus-circle'?>"></i> <?=$edit_data ? ($xml->edit ?? 'Edit') : ($xml->create ?? 'Create New')?> <?=$xml->product ?? 'Product'?></h4>
-        <a href="?page=type" class="btn-close-form">&times;</a>
+        <h4><i class="fa fa-<?=$edit_data ? 'edit' : 'plus-circle'?>"></i> <?=$edit_data ? ($xml->edit ?? 'Edit') : ($xml->create ?? 'Create New')?> <?=$xml->product ?? 'Type'?></h4>
+        <a href="<?=$baseUrl?>" class="btn-close-form">&times;</a>
     </div>
     <form action="index.php?page=type_store" method="post" id="productForm">
         <?=csrf_field()?>
         <div class="form-row">
             <div class="form-group">
-                <label for="type_name"><i class="fa fa-tag"></i> <?=$xml->name ?? 'Name'?> <span class="text-danger">*</span></label>
+                <label><i class="fa fa-tag"></i> <?=$xml->name ?? 'Name'?> <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="type_name" name="type_name" required
-                       placeholder="<?=$xml->enter ?? 'Enter'?> <?=$xml->product ?? 'product'?> <?=$xml->name ?? 'name'?>..."
+                       placeholder="Enter type name..."
                        value="<?=htmlspecialchars($edit_data['name'] ?? '')?>">
             </div>
             <div class="form-group">
-                <label for="cat_id"><i class="fa fa-folder"></i> <?=$xml->category ?? 'Category'?> <span class="text-danger">*</span></label>
-                <select class="form-control" id="cat_id" name="cat_id" required>
+                <label><i class="fa fa-folder"></i> <?=$xml->category ?? 'Category'?> <span class="text-danger">*</span></label>
+                <select class="form-control" name="cat_id" required>
                     <option value="">-- <?=$xml->select ?? 'Select'?> <?=$xml->category ?? 'Category'?> --</option>
                     <?php foreach ($categories as $cat): ?>
                     <option value="<?=$cat['id']?>" <?=($edit_data['cat_id'] ?? 0) == $cat['id'] ? 'selected' : ''?>><?=htmlspecialchars($cat['cat_name'])?></option>
@@ -102,16 +114,16 @@ require_once __DIR__ . '/../../../inc/pagination.php';
         </div>
         <div class="form-row">
             <div class="form-group" style="width:100%;">
-                <label for="des"><i class="fa fa-info-circle"></i> <?=$xml->description ?? 'Description'?></label>
-                <textarea class="form-control" id="des" name="des" rows="2"
-                       placeholder="<?=$xml->enter ?? 'Enter'?> <?=$xml->description ?? 'description'?>..."><?=htmlspecialchars($edit_data['des'] ?? '')?></textarea>
+                <label><i class="fa fa-info-circle"></i> <?=$xml->description ?? 'Description'?></label>
+                <textarea class="form-control" name="des" rows="2"
+                       placeholder="Enter description..."><?=htmlspecialchars($edit_data['des'] ?? '')?></textarea>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group" style="width:100%;">
                 <label><i class="fa fa-bookmark"></i> <?=$xml->brandonthistype ?? 'Associated Brands'?></label>
                 <div style="display:flex;flex-wrap:wrap;gap:10px;padding:10px;background:#f8f9fa;border-radius:8px;max-height:150px;overflow-y:auto;">
-                    <?php foreach ($brands as $brand): 
+                    <?php foreach ($brands as $brand):
                         $checked = in_array($brand['id'], $edit_brand_ids) ? 'checked' : '';
                     ?>
                     <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:5px 10px;background:white;border-radius:5px;border:1px solid #ddd;">
@@ -126,16 +138,12 @@ require_once __DIR__ . '/../../../inc/pagination.php';
             <input type="hidden" name="method" value="<?=$edit_data ? 'E' : 'A'?>">
             <input type="hidden" name="page" value="type">
             <input type="hidden" name="id" value="<?=$edit_data['id'] ?? ''?>">
-            <button type="submit" class="btn btn-save">
-                <i class="fa fa-<?=$edit_data ? 'save' : 'plus'?>"></i> 
-                <?=$edit_data ? ($xml->save ?? 'Save Changes') : ($xml->add ?? 'Add Product')?>
-            </button>
-            <a href="?page=type" class="btn btn-cancel"><?=$xml->cancel ?? 'Cancel'?></a>
+            <button type="submit" class="btn btn-save"><i class="fa fa-<?=$edit_data ? 'save' : 'plus'?>"></i> <?=$edit_data ? ($xml->save ?? 'Save Changes') : ($xml->add ?? 'Add Type')?></button>
+            <a href="<?=$baseUrl?>" class="btn btn-cancel"><?=$xml->cancel ?? 'Cancel'?></a>
         </div>
     </form>
 </div>
 
-<!-- Data Table -->
 <div class="master-data-table">
     <?php if ($item_count > 0): ?>
     <table class="table table-hover">
@@ -144,76 +152,78 @@ require_once __DIR__ . '/../../../inc/pagination.php';
                 <th width="50">#</th>
                 <th><?=$xml->name ?? 'Name'?></th>
                 <th><?=$xml->category ?? 'Category'?></th>
-                <th width="100"><?=$xml->brand ?? 'Brands'?></th>
-                <th width="120"><?=$xml->actions ?? 'Actions'?></th>
+                <th width="80"><?=$xml->brand ?? 'Brands'?></th>
+                <th width="80" class="text-center"><?=$xml->active ?? 'Active'?></th>
+                <th width="100"><?=$xml->actions ?? 'Actions'?></th>
             </tr>
         </thead>
         <tbody>
-            <?php 
-            $row_num = $pagination['offset'];
-            foreach ($items as $data): 
+            <?php $row_num = $pagination['offset'];
+            foreach ($items as $data):
                 $row_num++;
+                $isActive = intval($data['is_active'] ?? 1);
             ?>
-            <tr>
+            <tr class="<?=$isActive ? '' : 'row-inactive'?>" id="row-type-<?=$data['id']?>">
                 <td class="text-muted"><?=$row_num?></td>
                 <td>
                     <span class="item-name"><?=htmlspecialchars($data['name'])?></span>
                     <?php if ($data['des']): ?>
-                    <br><small class="item-desc"><?=htmlspecialchars(substr($data['des'], 0, 50))?><?=strlen($data['des']) > 50 ? '...' : ''?></small>
+                    <br><small class="item-desc"><?=htmlspecialchars(mb_strimwidth($data['des'], 0, 60, '…'))?></small>
                     <?php endif; ?>
                 </td>
-                <td>
-                    <span class="badge badge-default" style="background:#e9ecef;color:#495057;"><?=htmlspecialchars($data['cat_name'])?></span>
-                </td>
-                <td>
-                    <span class="badge badge-info"><?=$data['brand_count']?></span>
+                <td><span class="badge-cat"><?=htmlspecialchars($data['cat_name'])?></span></td>
+                <td><span class="badge badge-info"><?=$data['brand_count']?></span></td>
+                <td class="text-center">
+                    <label class="md-toggle">
+                        <input type="checkbox" <?=$isActive ? 'checked' : ''?>
+                               onchange="mdToggle('type_toggle', <?=$data['id']?>, this)">
+                        <div class="md-toggle-track"></div>
+                        <div class="md-toggle-thumb"></div>
+                    </label>
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <a href="?page=type&edit=<?=$data['id']?>" class="btn btn-edit" title="<?=$xml->edit ?? 'Edit'?>">
-                            <i class="fa fa-pencil"></i>
-                        </a>
-                        <a href="?page=type_delete&id=<?=$data['id']?>" 
-                           class="btn btn-delete" title="<?=$xml->delete ?? 'Delete'?>"
-                           onclick="return confirm('<?=$xml->confirm_delete ?? 'Are you sure you want to delete this item?'?>');">
-                            <i class="fa fa-trash"></i>
-                        </a>
+                        <a href="<?=$baseUrl?>&edit=<?=$data['id']?>" class="btn btn-edit"><i class="fa fa-pencil"></i></a>
+                        <a href="?page=type_delete&id=<?=$data['id']?>" class="btn btn-delete"
+                           onclick="return confirm('Delete this type?');"><i class="fa fa-trash"></i></a>
                     </div>
                 </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    
-    <!-- Pagination -->
-    <?php 
-    $paginationParams = $query_params;
-    unset($paginationParams['p']);
-    echo render_pagination($pagination, '?page=type', $paginationParams, 'p'); 
-    ?>
-    
+    <?php $paginationParams = $query_params; unset($paginationParams['p']);
+    echo render_pagination($pagination, '?page=type', $paginationParams, 'p'); ?>
     <?php else: ?>
-    <!-- Empty State -->
     <div class="empty-state">
         <i class="fa fa-cube"></i>
-        <h4><?=$xml->no_data ?? 'No Products Found'?></h4>
-        <p><?=$xml->no_data_desc ?? 'Start by creating your first product'?></p>
-        <a href="?page=type&new=1" class="btn btn-add"><i class="fa fa-plus"></i> <?=$xml->create ?? 'Add Product'?></a>
+        <h4><?=$xml->no_data ?? 'No Types Found'?></h4>
+        <p><?=$xml->no_data_desc ?? 'Start by creating your first type'?></p>
+        <a href="<?=$baseUrl?>&new=1" class="btn btn-add"><i class="fa fa-plus"></i> <?=$xml->create ?? 'Add Type'?></a>
     </div>
     <?php endif; ?>
 </div>
-
-</div><!-- /.master-data-container -->
+</div>
 
 <script>
+function mdToggle(route, id, cb) {
+    var active = cb.checked ? 1 : 0;
+    var row = document.getElementById('row-' + route.replace('_toggle','') + '-' + id) || cb.closest('tr');
+    var fd = new FormData();
+    fd.append('id', id); fd.append('active', active);
+    fd.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+    fetch('index.php?page=' + route, { method:'POST', body:fd })
+        .then(r => r.json())
+        .then(d => { if (!d.success) { cb.checked = !cb.checked; return; }
+            row && row.classList.toggle('row-inactive', !d.active); })
+        .catch(() => { cb.checked = !cb.checked; });
+}
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('formContainer');
     if (form && form.classList.contains('active')) {
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        var nameInput = document.getElementById('type_name');
-        if (nameInput) {
-            setTimeout(function() { nameInput.focus(); }, 300);
-        }
+        form.scrollIntoView({ behavior:'smooth', block:'start' });
+        var inp = document.getElementById('type_name');
+        if (inp) setTimeout(() => inp.focus(), 300);
     }
 });
 </script>

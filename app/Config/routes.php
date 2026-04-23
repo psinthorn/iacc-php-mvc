@@ -19,22 +19,26 @@ return [
     'category_form'   => ['CategoryController', 'form'],
     'category_store'  => ['CategoryController', 'store'],
     'category_delete' => ['CategoryController', 'delete'],
-    
+    'category_toggle' => ['CategoryController', 'toggle'],
+
     // Brand
     'brand'           => ['BrandController', 'index'],
     'brand_form'      => ['BrandController', 'form'],
     'brand_store'     => ['BrandController', 'store'],
     'brand_delete'    => ['BrandController', 'delete'],
-    
+    'brand_toggle'    => ['BrandController', 'toggle'],
+
     // Type
     'type'            => ['TypeController', 'index'],
     'type_store'      => ['TypeController', 'store'],
     'type_delete'     => ['TypeController', 'delete'],
-    
+    'type_toggle'     => ['TypeController', 'toggle'],
+
     // Model
     'mo_list'         => ['ModelController', 'index'],
     'mo_list_store'   => ['ModelController', 'store'],
     'mo_list_delete'  => ['ModelController', 'delete'],
+    'mo_list_toggle'  => ['ModelController', 'toggle'],
     'mo_list_brands'  => ['ModelController', 'getBrands'],
     
     // Payment Method

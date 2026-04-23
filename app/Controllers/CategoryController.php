@@ -29,11 +29,12 @@ class CategoryController extends BaseController
     {
         // Get search/pagination params
         $search      = trim($this->input('search', ''));
+        $status      = $this->input('status', '');
         $currentPage = max(1, $this->inputInt('p', 1));
         $perPage     = 15;
 
         // Fetch paginated data
-        $result = $this->category->getPaginated($search, $currentPage, $perPage);
+        $result = $this->category->getPaginated($search, $currentPage, $perPage, $status);
 
         // Check for edit mode
         $editId   = $this->inputInt('edit', 0);
@@ -43,13 +44,14 @@ class CategoryController extends BaseController
         }
         $showForm = isset($_GET['new']) || $editData !== null;
 
-        // Render view
         $this->render('category/list', [
             'items'       => $result['items'],
             'total_items' => $result['total'],
             'item_count'  => $result['count'],
             'pagination'  => $result['pagination'],
+            'stats'       => $this->category->getStats(),
             'search'      => $search,
+            'status'      => $status,
             'edit_data'   => $editData,
             'show_form'   => $showForm,
             'query_params'=> $_GET,
@@ -122,6 +124,21 @@ class CategoryController extends BaseController
         }
 
         $this->redirect('category');
+    }
+
+    /**
+     * AJAX toggle is_active
+     * Route: ?page=category_toggle  POST {id, active, csrf_token}
+     */
+    public function toggle(): void
+    {
+        $this->verifyCsrf();
+        $id     = $this->inputInt('id', 0);
+        $active = intval($this->input('active', '1'));
+        $ok     = $id > 0 && $this->category->toggle($id, $active);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $ok, 'active' => $active]);
+        exit;
     }
 
     /**

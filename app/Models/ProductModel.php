@@ -16,7 +16,7 @@ class ProductModel extends BaseModel
     /**
      * Get paginated models with type name and brand name
      */
-    public function getPaginated(string $search = '', int $page = 1, int $perPage = 15, int $typeId = 0, int $brandId = 0): array
+    public function getPaginated(string $search = '', int $page = 1, int $perPage = 15, int $typeId = 0, int $brandId = 0, string $status = ''): array
     {
         $alias = 'm';
         $filterWhere = $this->companyFilter->whereCompanyFilter($alias);
@@ -26,47 +26,51 @@ class ProductModel extends BaseModel
             $escaped = \sql_escape($search);
             $searchCond = " AND (m.model_name LIKE '%$escaped%' OR type.name LIKE '%$escaped%' OR brand.brand_name LIKE '%$escaped%')";
         }
-        if ($typeId > 0) {
-            $searchCond .= " AND m.type_id = '" . \sql_int($typeId) . "'";
-        }
-        if ($brandId > 0) {
-            $searchCond .= " AND m.brand_id = '" . \sql_int($brandId) . "'";
-        }
+        if ($typeId > 0)            $searchCond .= " AND m.type_id = '" . \sql_int($typeId) . "'";
+        if ($brandId > 0)           $searchCond .= " AND m.brand_id = '" . \sql_int($brandId) . "'";
+        if ($status === 'active')   $searchCond .= " AND m.is_active = 1";
+        if ($status === 'inactive') $searchCond .= " AND m.is_active = 0";
 
         $join = "JOIN type ON m.type_id = type.id JOIN brand ON m.brand_id = brand.id";
 
-        // Count total
         $countSql = "SELECT COUNT(*) as total FROM `{$this->table}` $alias $join $filterWhere $searchCond";
         $countResult = mysqli_query($this->conn, $countSql);
         $total = $countResult ? intval(mysqli_fetch_assoc($countResult)['total']) : 0;
 
-        // Pagination
         require_once __DIR__ . '/../../inc/pagination.php';
         $pagination = paginate($total, $perPage, $page);
         $offset = $pagination['offset'];
 
-        // Fetch with type and brand names
-        $sql = "SELECT m.id, m.model_name, m.type_id, m.brand_id, m.price, m.des,
+        $sql = "SELECT m.id, m.model_name, m.type_id, m.brand_id, m.price, m.des, m.is_active,
                 type.name as type_name, brand.brand_name
-                FROM `{$this->table}` $alias $join $filterWhere $searchCond 
-                ORDER BY m.id DESC LIMIT $offset, $perPage";
+                FROM `{$this->table}` $alias $join $filterWhere $searchCond
+                ORDER BY m.model_name ASC LIMIT $offset, $perPage";
 
         $result = mysqli_query($this->conn, $sql);
         $items = [];
-        $count = 0;
         if ($result) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $items[] = $row;
-                $count++;
-            }
+            while ($row = mysqli_fetch_assoc($result)) $items[] = $row;
         }
 
-        return [
-            'items'      => $items,
-            'total'      => $total,
-            'count'      => $count,
-            'pagination' => $pagination,
-        ];
+        return ['items' => $items, 'total' => $total, 'count' => count($items), 'pagination' => $pagination];
+    }
+
+    public function getStats(): array
+    {
+        $filterWhere = $this->companyFilter->whereCompanyFilter();
+        $sql = "SELECT COUNT(*) AS total, SUM(is_active=1) AS active, SUM(is_active=0) AS inactive
+                FROM `{$this->table}` $filterWhere";
+        $r = mysqli_query($this->conn, $sql);
+        $row = $r ? mysqli_fetch_assoc($r) : [];
+        return ['total' => (int)($row['total']??0), 'active' => (int)($row['active']??0), 'inactive' => (int)($row['inactive']??0)];
+    }
+
+    public function toggle(int $id, int $active): bool
+    {
+        $id = \sql_int($id);
+        $active = $active ? 1 : 0;
+        $filterWhere = $this->companyFilter->andCompanyFilter();
+        return (bool) mysqli_query($this->conn, "UPDATE `{$this->table}` SET is_active=$active WHERE id=$id $filterWhere");
     }
 
     /**
