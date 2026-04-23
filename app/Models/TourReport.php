@@ -48,14 +48,11 @@ class TourReport extends BaseModel
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        cust.phone AS customer_phone,
                        agt.name_en AS agent_name, agt.name_th AS agent_name_th,
-                       loc.name AS pickup_location_name,
-                       sr_co.name_en AS sales_rep_name
+                       loc.name AS pickup_location_name
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
                 LEFT JOIN tour_locations loc ON b.pickup_location_id = loc.id
-                LEFT JOIN tour_agent_profiles sr ON b.sales_rep_id = sr.id
-                LEFT JOIN company sr_co ON sr.company_ref_id = sr_co.id
                 WHERE $where
                 ORDER BY b.pickup_time ASC, b.id ASC";
 
@@ -136,14 +133,11 @@ class TourReport extends BaseModel
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        cust.phone AS customer_phone,
                        agt.name_en AS agent_name, agt.name_th AS agent_name_th,
-                       loc.name AS pickup_location_name,
-                       sr_co.name_en AS sales_rep_name
+                       loc.name AS pickup_location_name
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
                 LEFT JOIN tour_locations loc ON b.pickup_location_id = loc.id
-                LEFT JOIN tour_agent_profiles sr ON b.sales_rep_id = sr.id
-                LEFT JOIN company sr_co ON sr.company_ref_id = sr_co.id
                 WHERE $where
                 ORDER BY $orderBy";
 
