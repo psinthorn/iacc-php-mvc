@@ -222,6 +222,7 @@ class TourAgentProfile extends BaseModel
                 FROM model m
                 JOIN type t ON m.type_id = t.id
                 WHERE m.company_id = '$comId' AND m.deleted_at IS NULL AND t.deleted_at IS NULL
+                  AND m.is_active = 1 AND t.is_active = 1
                 ORDER BY t.name ASC, m.model_name ASC";
         $rows = $this->fetchAll($sql);
 

@@ -499,6 +499,7 @@ class TourBooking extends BaseModel
                 FROM type
                 WHERE company_id = " . intval($comId) . "
                   AND deleted_at IS NULL
+                  AND is_active = 1
                 ORDER BY name";
 
         $result = mysqli_query($this->conn, $sql);
@@ -518,6 +519,7 @@ class TourBooking extends BaseModel
                 FROM model m
                 WHERE m.company_id = " . intval($comId) . "
                   AND m.deleted_at IS NULL
+                  AND m.is_active = 1
                 ORDER BY m.type_id, m.model_name";
 
         $result = mysqli_query($this->conn, $sql);
@@ -695,6 +697,7 @@ class TourBooking extends BaseModel
                 LEFT JOIN type t ON m.type_id = t.id
                 WHERE m.company_id = $cid
                   AND m.deleted_at IS NULL
+                  AND m.is_active = 1
                   AND (m.model_name LIKE '%$s%' OR m.des LIKE '%$s%' OR t.name LIKE '%$s%')
                 ORDER BY m.model_name
                 LIMIT $lim";
@@ -714,6 +717,7 @@ class TourBooking extends BaseModel
                      LEFT JOIN category c ON t.cat_id = c.id
                      WHERE t.company_id = $cid
                        AND t.deleted_at IS NULL
+                       AND t.is_active = 1
                        AND (t.name LIKE '%$s%' OR t.des LIKE '%$s%')
                      ORDER BY t.name
                      LIMIT $remaining";
