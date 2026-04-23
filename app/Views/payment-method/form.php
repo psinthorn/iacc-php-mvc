@@ -80,6 +80,12 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
         </div>
     </div>
 
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+    <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 20px; border-radius:8px; margin-bottom:20px; font-size:14px; color:#991b1b;">
+        <i class="fa fa-exclamation-triangle" style="margin-right:6px;"></i> <?= htmlspecialchars($_SESSION['flash_error']) ?>
+    </div>
+    <?php unset($_SESSION['flash_error']); endif; ?>
+
     <form method="post" action="index.php?page=payment_method_store" id="paymentMethodForm">
         <?=csrf_field()?>
         <input type="hidden" name="mode" value="<?=$mode?>">

@@ -584,5 +584,27 @@
 <tourpickupreport>Pickup Report for Driver</tourpickupreport>
 <tournetrate>Net Rate</tournetrate>
 <tourpercentage>Percentage</tourpercentage>
+<!-- Tour Booking Payments -->
+<tourpayments>Payments</tourpayments>
+<tourpaymentstatus>Payment Status</tourpaymentstatus>
+<tourpaymentrecord>Record Payment</tourpaymentrecord>
+<tourpaymentmethod>Payment Method</tourpaymentmethod>
+<tourpaymenttype>Payment Type</tourpaymenttype>
+<tourpaymentamount>Amount</tourpaymentamount>
+<tourpaymentdate>Payment Date</tourpaymentdate>
+<tourpaymentref>Reference</tourpaymentref>
+<tourpaymentslip>Payment Slip</tourpaymentslip>
+<tourpaymentnotes>Notes</tourpaymentnotes>
+<tourpaymentapprove>Approve</tourpaymentapprove>
+<tourpaymentreject>Reject</tourpaymentreject>
+<tourpaymentrefund>Refund</tourpaymentrefund>
+<tourpaymenthistory>Payment History</tourpaymenthistory>
+<tourpaymentbalance>Balance Due</tourpaymentbalance>
+<tourpaymentpaid>Amount Paid</tourpaymentpaid>
+<tourpaymentunpaid>Unpaid</tourpaymentunpaid>
+<tourpaymentdeposit>Deposit</tourpaymentdeposit>
+<tourpaymentpartial>Partial</tourpaymentpartial>
+<tourpaymentfull>Full Payment</tourpaymentfull>
+<tourpaymentmanage>Manage Payments</tourpaymentmanage>
 
 </note>

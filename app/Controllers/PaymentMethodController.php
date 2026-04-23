@@ -105,15 +105,33 @@ class PaymentMethodController extends BaseController
         ];
 
         if ($mode === 'E' && $id > 0) {
-            $this->paymentMethod->update($id, $data);
-            $_SESSION['flash_success'] = 'Payment method updated successfully.';
+            try {
+                $this->paymentMethod->update($id, $data);
+                $_SESSION['flash_success'] = 'Payment method updated successfully.';
+                $this->redirect('payment_method_list');
+            } catch (\mysqli_sql_exception $e) {
+                if ($e->getCode() == 1062) {
+                    $_SESSION['flash_error'] = 'Code "' . htmlspecialchars($data['code']) . '" is already used. Please choose a different code.';
+                    $this->redirect('payment_method', ['mode' => 'E', 'id' => $id]);
+                } else {
+                    throw $e;
+                }
+            }
         } else {
             $data['company_id'] = $companyId;
-            $this->paymentMethod->create($data);
-            $_SESSION['flash_success'] = 'Payment method created successfully.';
+            try {
+                $this->paymentMethod->create($data);
+                $_SESSION['flash_success'] = 'Payment method created successfully.';
+                $this->redirect('payment_method_list');
+            } catch (\mysqli_sql_exception $e) {
+                if ($e->getCode() == 1062) {
+                    $_SESSION['flash_error'] = 'Code "' . htmlspecialchars($data['code']) . '" is already used. Please choose a different code.';
+                    $this->redirect('payment_method', ['mode' => 'A']);
+                } else {
+                    throw $e;
+                }
+            }
         }
-
-        $this->redirect('payment_method_list');
     }
 
     /**

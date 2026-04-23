@@ -28,6 +28,34 @@ class PayPalService {
     }
     
     /**
+     * Reload config for a specific company (multi-tenant support)
+     */
+    public function loadConfigForCompany(int $companyId): void {
+        $sql = "SELECT gc.config_key, gc.config_value
+                FROM payment_gateway_config gc
+                JOIN payment_method pm ON gc.payment_method_id = pm.id
+                WHERE pm.code = 'paypal' AND pm.is_active = 1
+                  AND pm.company_id = $companyId AND gc.company_id = $companyId";
+        $result = mysqli_query($this->conn, $sql);
+        if (!$result || mysqli_num_rows($result) === 0) {
+            throw new \Exception('PayPal not configured for this company');
+        }
+        $config = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $config[$row['config_key']] = $row['config_value'];
+        }
+        $this->clientId     = $config['client_id'] ?? '';
+        $this->clientSecret = $config['client_secret'] ?? '';
+        $this->mode         = $config['mode'] ?? 'sandbox';
+        $this->returnUrl    = $config['return_url'] ?? '';
+        $this->cancelUrl    = $config['cancel_url'] ?? '';
+        $this->webhookId    = $config['webhook_id'] ?? '';
+        $this->baseUrl      = $this->mode === 'live'
+            ? 'https://api-m.paypal.com'
+            : 'https://api-m.sandbox.paypal.com';
+    }
+
+    /**
      * Load configuration from database
      */
     private function loadConfig() {
