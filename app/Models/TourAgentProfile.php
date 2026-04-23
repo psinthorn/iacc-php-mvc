@@ -218,7 +218,7 @@ class TourAgentProfile extends BaseModel
     public function getModelsGroupedByType(int $comId): array
     {
         $comId = \sql_int($comId);
-        $sql = "SELECT m.id, m.model_name, m.price, t.id AS type_id, t.name AS type_name
+        $sql = "SELECT m.id, m.model_name, m.des AS description, m.price, t.id AS type_id, t.name AS type_name
                 FROM model m
                 JOIN type t ON m.type_id = t.id
                 WHERE m.company_id = '$comId' AND m.deleted_at IS NULL AND t.deleted_at IS NULL

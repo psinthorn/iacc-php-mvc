@@ -217,6 +217,11 @@ $messages = [
                                            onchange="toggleModelRate(this, <?= $mid ?>)">
                                     <?= htmlspecialchars($model['model_name']) ?>
                                 </label>
+                                <?php if (!empty($model['description'])): ?>
+                                <div style="font-size:12px;color:#64748b;margin-top:4px;margin-left:24px;line-height:1.4;">
+                                    <?= nl2br(htmlspecialchars(mb_strimwidth($model['description'], 0, 160, '…'))) ?>
+                                </div>
+                                <?php endif; ?>
                                 <?php if (!$hasCustom): ?>
                                 <span style="font-size:11px;color:#94a3b8;margin-left:8px;"><i class="fa fa-info-circle"></i> <?= $isThai ? 'ยังไม่กำหนดอัตรา' : 'No rate set' ?></span>
                                 <?php endif; ?>
