@@ -137,8 +137,8 @@ class Type extends BaseModel
             $brandId = \sql_int($brandId);
             if ($brandId > 0) {
                 $companyVal = $companyId > 0 ? "'$companyId'" : 'NULL';
-                mysqli_query($this->conn, 
-                    "INSERT INTO map_type_to_brand VALUES(NULL, $companyVal, '" . \sql_int($typeId) . "', '$brandId')");
+                mysqli_query($this->conn,
+                    "INSERT INTO map_type_to_brand (id, company_id, type_id, brand_id) VALUES(NULL, $companyVal, '" . \sql_int($typeId) . "', '$brandId')");
             }
         }
     }
