@@ -201,24 +201,24 @@ class TourReport extends BaseModel
 
         if (empty($types)) return [];
 
-        // Models used in booking items, linked to those types
+        // All active models belonging to those types (not just ones used in bookings)
         $typeIds = implode(',', array_keys($types));
-        $sqlModels = "SELECT DISTINCT m.id, m.model_name, m.type_id
-                      FROM tour_booking_items bi
-                      JOIN tour_bookings b ON bi.booking_id = b.id
-                      JOIN model m ON bi.model_id = m.id
-                      WHERE b.company_id = $cid
-                        AND b.deleted_at IS NULL
-                        AND bi.item_type = 'tour'
-                        AND bi.model_id > 0
-                        AND m.type_id IN ($typeIds)
-                      ORDER BY m.model_name ASC";
+        $sqlModels = "SELECT m.id, m.model_name, m.des, m.type_id
+                      FROM model m
+                      WHERE m.type_id IN ($typeIds)
+                        AND m.is_active = 1
+                        AND m.deleted_at IS NULL
+                      ORDER BY m.type_id, m.model_name ASC";
 
         $result2 = mysqli_query($this->conn, $sqlModels);
         while ($result2 && $row = mysqli_fetch_assoc($result2)) {
             $tid = $row['type_id'];
             if (isset($types[$tid])) {
-                $types[$tid]['models'][] = ['id' => $row['id'], 'name' => $row['model_name']];
+                $types[$tid]['models'][] = [
+                    'id'  => $row['id'],
+                    'name' => $row['model_name'],
+                    'des' => $row['des'] ?? '',
+                ];
             }
         }
 

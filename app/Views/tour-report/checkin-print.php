@@ -36,8 +36,7 @@ $isThai  = ($_SESSION['lang'] ?? '0') === '1';
 // Params
 $tourDate     = trim($_GET['tour_date'] ?? '');
 $section      = trim($_GET['section'] ?? 'all');
-$tourActivity     = trim($_GET['activity'] ?? '');
-$tourActivityName = $reportModel->resolveActivityLabel($tourActivity);
+$tourActivity = trim($_GET['activity'] ?? '');
 
 if (empty($tourDate)) {
     http_response_code(400);
@@ -48,7 +47,8 @@ if (empty($tourDate)) {
 require_once("app/Models/BaseModel.php");
 require_once("app/Models/TourReport.php");
 
-$reportModel = new \App\Models\TourReport();
+$reportModel      = new \App\Models\TourReport();
+$tourActivityName = $reportModel->resolveActivityLabel($tourActivity);
 $data = $reportModel->getCheckinData($com_id, $tourDate, $section, $tourActivity);
 $direct = $data['direct'];
 $agent  = $data['agent'];

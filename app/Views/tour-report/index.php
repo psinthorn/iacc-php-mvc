@@ -124,8 +124,8 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                             <?= htmlspecialchars($type['name']) ?> (<?= $isThai ? 'ทั้งหมด' : 'All' ?>)
                         </option>
                         <?php foreach ($type['models'] as $model): ?>
-                        <option value="model:<?= intval($model['id']) ?>" style="padding-left:8px;">
-                            &nbsp;&nbsp;↳ <?= htmlspecialchars($model['name']) ?>
+                        <option value="model:<?= intval($model['id']) ?>">
+                            &nbsp;&nbsp;↳ <?= htmlspecialchars($model['name']) ?><?= !empty($model['des']) ? ' — ' . htmlspecialchars($model['des']) : '' ?>
                         </option>
                         <?php endforeach; ?>
                     </optgroup>
