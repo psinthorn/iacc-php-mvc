@@ -355,8 +355,9 @@ class TourReport extends BaseModel
             return $r ? $r['name'] : '';
         }
         if ($kind === 'model') {
-            $r = mysqli_fetch_assoc(mysqli_query($this->conn, "SELECT model_name FROM model WHERE id = $id LIMIT 1"));
-            return $r ? $r['model_name'] : '';
+            $r = mysqli_fetch_assoc(mysqli_query($this->conn, "SELECT model_name, des FROM model WHERE id = $id LIMIT 1"));
+            if (!$r) return '';
+            return !empty($r['des']) ? $r['model_name'] . ' — ' . $r['des'] : $r['model_name'];
         }
         return '';
     }
