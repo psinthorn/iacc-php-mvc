@@ -90,6 +90,116 @@ class TourReport extends BaseModel
         return ['direct' => $direct, 'agent' => $agent];
     }
 
+    // ─── Insurance Report Data ─────────────────────────────────
+
+    /**
+     * Get per-passenger rows for Passenger Accident Insurance PDF.
+     * Each row = one pax from tour_booking_pax (or a blank stub if none recorded).
+     *
+     * @return array flat list of rows: booking info + pax info merged
+     */
+    public function getInsuranceData(int $comId, string $tourDate, string $section = 'all', string $tourActivity = ''): array
+    {
+        $cid  = intval($comId);
+        $date = sql_escape($tourDate);
+
+        $where = "b.company_id = $cid
+                  AND b.travel_date = '$date'
+                  AND b.status IN ('confirmed','completed')
+                  AND b.deleted_at IS NULL";
+
+        if (!empty($tourActivity) && strpos($tourActivity, ':') !== false) {
+            [$kind, $fid] = explode(':', $tourActivity, 2);
+            $fid = intval($fid);
+            if ($kind === 'type' && $fid > 0) {
+                $where .= " AND b.id IN (
+                    SELECT booking_id FROM tour_booking_items
+                    WHERE item_type = 'tour' AND product_type_id = $fid
+                )";
+            } elseif ($kind === 'model' && $fid > 0) {
+                $where .= " AND b.id IN (
+                    SELECT booking_id FROM tour_booking_items
+                    WHERE item_type = 'tour' AND model_id = $fid
+                )";
+            }
+        }
+
+        // Fetch bookings first
+        $sqlBookings = "SELECT b.id, b.agent_id, b.customer_id,
+                               b.pickup_hotel, b.pickup_room, b.pickup_location_id,
+                               b.pax_adult, b.pax_child, b.pax_infant,
+                               cust.name_en AS customer_name, cust.email AS customer_email,
+                               agt.name_en AS agent_name, agt.name_th AS agent_name_th,
+                               loc.name AS pickup_location_name
+                        FROM tour_bookings b
+                        LEFT JOIN company cust ON cust.id = b.customer_id
+                        LEFT JOIN company agt  ON agt.id = b.agent_id
+                        LEFT JOIN tour_locations loc ON loc.id = b.pickup_location_id
+                        WHERE $where
+                        ORDER BY b.id ASC";
+
+        $res      = mysqli_query($this->conn, $sqlBookings);
+        $bookings = [];
+        $bookingIds = [];
+        while ($res && $row = mysqli_fetch_assoc($res)) {
+            $row['total_pax'] = intval($row['pax_adult']) + intval($row['pax_child']) + intval($row['pax_infant']);
+            $bookings[$row['id']] = $row;
+            $bookingIds[] = intval($row['id']);
+        }
+
+        if (empty($bookingIds)) {
+            return ['rows' => [], 'total_pax' => 0];
+        }
+
+        // Fetch pax records
+        $idList = implode(',', $bookingIds);
+        $sqlPax = "SELECT booking_id, full_name, nationality, pax_type
+                   FROM tour_booking_pax
+                   WHERE booking_id IN ($idList)
+                   ORDER BY booking_id ASC, id ASC";
+
+        $resPax = mysqli_query($this->conn, $sqlPax);
+        $paxByBooking = [];
+        while ($resPax && $p = mysqli_fetch_assoc($resPax)) {
+            $paxByBooking[intval($p['booking_id'])][] = $p;
+        }
+
+        // Build flat row list — one row per passenger
+        $rows = [];
+        foreach ($bookings as $bid => $b) {
+            $paxList = $paxByBooking[$bid] ?? [];
+            $totalPax = $b['total_pax'] ?: 1;
+
+            if (!empty($paxList)) {
+                foreach ($paxList as $p) {
+                    $rows[] = array_merge($b, [
+                        'pax_full_name'  => $p['full_name'],
+                        'pax_nationality'=> $p['nationality'],
+                        'pax_type'       => $p['pax_type'],
+                    ]);
+                }
+            } else {
+                // No pax records — emit blank stub rows equal to total_pax
+                for ($i = 0; $i < $totalPax; $i++) {
+                    $rows[] = array_merge($b, [
+                        'pax_full_name'  => '',
+                        'pax_nationality'=> '',
+                        'pax_type'       => '',
+                    ]);
+                }
+            }
+        }
+
+        // Filter by section
+        if ($section === 'direct') {
+            $rows = array_filter($rows, fn($r) => empty($r['agent_id']));
+        } elseif ($section === 'agent') {
+            $rows = array_filter($rows, fn($r) => !empty($r['agent_id']));
+        }
+
+        return ['rows' => array_values($rows), 'total_pax' => count($rows)];
+    }
+
     // ─── Pickup Report Data ────────────────────────────────────
 
     /**
