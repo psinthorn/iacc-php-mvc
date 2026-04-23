@@ -1,14 +1,9 @@
 -- ============================================================
 -- Seed: Agent List — Company 165 (My Samui Island Tour)
--- Source: agent_list.xlsx  |  Generated: 2026-04-21
+-- Source: agent_list.xlsx  |  Generated: 2026-04-23
 -- Total agents: 45
 --
--- Columns:
---   company.tax      = Tax ID (if available)
---   commission_adult = NET rate per adult (THB)
---   commission_child = NET rate per child (THB)
---   notes            = Full Moon rate (if available), e.g. 'Full Moon rate: 900'
--- Idempotent: safe to run multiple times (uses WHERE NOT EXISTS guard)
+-- Idempotent: safe to run multiple times (WHERE NOT EXISTS guard)
 -- ============================================================
 
 START TRANSACTION;
@@ -18,8 +13,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Sunlight Mountain Co.,Ltd.', 'Sunlight Mountain Co.,Ltd.', '', '', '', '0845549002275', '', '', '1', '0', '', '077-485745'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Sunlight Mountain Co.,Ltd.' AND vender = '1');
 SET @aid_1 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Sunlight Mountain Co.,Ltd.' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_1, 165, 'net_rate', 1800.00, 1300.00, '077-485745', '123/3  Moo 2, Lipa Noi, Koh Samui, Suratthani   84140', 'Full Moon rate: 1500'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_1, 165, 'net_rate', 1800.00, 1300.00, '123/3  Moo 2, Lipa Noi, Koh Samui, Suratthani   84140 | Full Moon rate: 1500'
 WHERE @aid_1 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_1 AND company_id = 165);
 
@@ -28,8 +23,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Tourgoat Samui Co.,Ltd', 'Tourgoat Samui Co.,Ltd', '', '', '', '0845567023611', '', '', '1', '0', '', '083-5021979'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Tourgoat Samui Co.,Ltd' AND vender = '1');
 SET @aid_2 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Tourgoat Samui Co.,Ltd' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_2, 165, 'net_rate', 1500.00, 1100.00, '083-5021979', '56/2  Moo 5, Maenam,', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_2, 165, 'net_rate', 1500.00, 1100.00, '56/2  Moo 5, Maenam, | Full Moon rate: 1000'
 WHERE @aid_2 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_2 AND company_id = 165);
 
@@ -38,8 +33,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. ( Head Office )', 'Asian Trails Ltd. ( Head Office )', '', '', '', '0105542030326', '', '', '1', '0', '', '02 8202000'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. ( Head Office )' AND vender = '1');
 SET @aid_3 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. ( Head Office )' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_3, 165, 'net_rate', 1500.00, 1100.00, '02 8202000', '183 Regent House 12th Floor, Raddamri Road, Lumpini Pathumwan, Bangkok  10330', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_3, 165, 'net_rate', 1500.00, 1100.00, '183 Regent House 12th Floor, Raddamri Road, Lumpini Pathumwan, Bangkok  10330 | Full Moon rate: 980'
 WHERE @aid_3 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_3 AND company_id = 165);
 
@@ -48,8 +43,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. (Branch 00003)', 'Asian Trails Ltd. (Branch 00003)', '', '', '', '0105542030326', '', '', '1', '0', '', '077-300681'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00003)' AND vender = '1');
 SET @aid_4 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00003)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_4, 165, 'net_rate', 1500.00, 1100.00, '077-300681', '4/128 Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_4, 165, 'net_rate', 1500.00, 1100.00, '4/128 Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_4 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_4 AND company_id = 165);
 
@@ -58,8 +53,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. (Branch 00030)', 'Asian Trails Ltd. (Branch 00030)', '', '', '', '0105542030326', '', '', '1', '0', '', '077-300681'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00030)' AND vender = '1');
 SET @aid_5 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00030)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_5, 165, 'net_rate', 1500.00, 1100.00, '077-300681', '86  Moo 3, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_5, 165, 'net_rate', 1500.00, 1100.00, '86  Moo 3, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_5 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_5 AND company_id = 165);
 
@@ -68,8 +63,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. (Branch 00035)', 'Asian Trails Ltd. (Branch 00035)', '', '', '', '0105542030326', '', '', '1', '0', '', '077-300681'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00035)' AND vender = '1');
 SET @aid_6 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00035)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_6, 165, 'net_rate', 1500.00, 1100.00, '077-300681', '14/3  Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_6, 165, 'net_rate', 1500.00, 1100.00, '14/3  Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_6 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_6 AND company_id = 165);
 
@@ -78,8 +73,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. (Branch 00036)', 'Asian Trails Ltd. (Branch 00036)', '', '', '', '0105542030326', '', '', '1', '0', '', '077-300681'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00036)' AND vender = '1');
 SET @aid_7 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00036)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_7, 165, 'net_rate', 1500.00, 1100.00, '077-300681', '11/34  Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_7, 165, 'net_rate', 1500.00, 1100.00, '11/34  Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_7 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_7 AND company_id = 165);
 
@@ -88,8 +83,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. (Branch 00045)', 'Asian Trails Ltd. (Branch 00045)', '', '', '', '0105542030326', '', '', '1', '0', '', '077-300681'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00045)' AND vender = '1');
 SET @aid_8 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00045)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_8, 165, 'net_rate', 1500.00, 1100.00, '077-300681', '155/4  Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_8, 165, 'net_rate', 1500.00, 1100.00, '155/4  Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_8 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_8 AND company_id = 165);
 
@@ -98,8 +93,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Asian Trails Ltd. (Branch 00046)', 'Asian Trails Ltd. (Branch 00046)', '', '', '', '0105542030326', '', '', '1', '0', '', '077-300681'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00046)' AND vender = '1');
 SET @aid_9 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Asian Trails Ltd. (Branch 00046)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_9, 165, 'net_rate', 1500.00, 1100.00, '077-300681', '9/99  Moo 5, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_9, 165, 'net_rate', 1500.00, 1100.00, '9/99  Moo 5, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_9 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_9 AND company_id = 165);
 
@@ -108,8 +103,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Der Asia Tours Co.,Ltd. (Branch 0004)', 'Der Asia Tours Co.,Ltd. (Branch 0004)', '', '', '', '0105531039602', '', '', '1', '0', '', '077 601350-52'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Der Asia Tours Co.,Ltd. (Branch 0004)' AND vender = '1');
 SET @aid_10 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Der Asia Tours Co.,Ltd. (Branch 0004)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_10, 165, 'net_rate', 1800.00, 1300.00, '077 601350-52', '14/66-67  Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_10, 165, 'net_rate', 1800.00, 1300.00, '14/66-67  Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_10 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_10 AND company_id = 165);
 
@@ -118,8 +113,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Basson Management Co.,Ltd. ( Head Office )', 'Basson Management Co.,Ltd. ( Head Office )', '', '', '', '0845560004475', '', '', '1', '0', '', '077-419094'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Basson Management Co.,Ltd. ( Head Office )' AND vender = '1');
 SET @aid_11 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Basson Management Co.,Ltd. ( Head Office )' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_11, 165, 'net_rate', 1700.00, 1200.00, '077-419094', '156/3 Moo 4,  Maret, Koh Samui, Suratthani 84310', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_11, 165, 'net_rate', 1700.00, 1200.00, '156/3 Moo 4,  Maret, Koh Samui, Suratthani 84310 | Full Moon rate: 1000'
 WHERE @aid_11 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_11 AND company_id = 165);
 
@@ -128,8 +123,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Central Samui Village Co.,Ltd.', 'Central Samui Village Co.,Ltd.', '', '', '', '0105532066786', '', '', '1', '0', '', '077-424020'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Central Samui Village Co.,Ltd.' AND vender = '1');
 SET @aid_12 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Central Samui Village Co.,Ltd.' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_12, 165, 'net_rate', 1800.00, 1300.00, '077-424020', '111 Moo 2,  Maret Natien Beach,', 'Full Moon rate: 1500'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_12, 165, 'net_rate', 1800.00, 1300.00, '111 Moo 2,  Maret Natien Beach, | Full Moon rate: 1500'
 WHERE @aid_12 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_12 AND company_id = 165);
 
@@ -138,8 +133,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Samui New Star Resort Ltd.,Part.', 'Samui New Star Resort Ltd.,Part.', '', '', '', '0843535000150', '', '', '1', '0', '', '077-414500'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Samui New Star Resort Ltd.,Part.' AND vender = '1');
 SET @aid_13 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Samui New Star Resort Ltd.,Part.' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_13, 165, 'net_rate', 1700.00, 1200.00, '077-414500', '83 Moo 3, Chaweng Noi Beach Road, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_13, 165, 'net_rate', 1700.00, 1200.00, '83 Moo 3, Chaweng Noi Beach Road, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_13 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_13 AND company_id = 165);
 
@@ -148,8 +143,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Bo Phut Property And Resort Co.,Ltd. (Branch 00001)', 'Bo Phut Property And Resort Co.,Ltd. (Branch 00001)', '', '', '', '0105546013779', '', '', '1', '0', '', '077-245777'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Bo Phut Property And Resort Co.,Ltd. (Branch 00001)' AND vender = '1');
 SET @aid_14 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Bo Phut Property And Resort Co.,Ltd. (Branch 00001)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_14, 165, 'net_rate', 1700.00, 1200.00, '077-245777', '12/12 Moo 1,  Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_14, 165, 'net_rate', 1700.00, 1200.00, '12/12 Moo 1,  Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_14 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_14 AND company_id = 165);
 
@@ -158,8 +153,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Blue Straits Co.,Ltd. (Head Office)', 'Blue Straits Co.,Ltd. (Head Office)', '', '', '', '0105565086085', '', '', '1', '0', '', '077-953035'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Blue Straits Co.,Ltd. (Head Office)' AND vender = '1');
 SET @aid_15 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Blue Straits Co.,Ltd. (Head Office)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_15, 165, 'net_rate', 1700.00, 1200.00, '077-953035', '44/133  Moo 1,  Maenam Beach, Koh Samui, Suratthani  84330', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_15, 165, 'net_rate', 1700.00, 1200.00, '44/133  Moo 1,  Maenam Beach, Koh Samui, Suratthani  84330 | Full Moon rate: 1000'
 WHERE @aid_15 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_15 AND company_id = 165);
 
@@ -168,8 +163,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'The Culture Co.Ltd. (Branch 00001)', 'The Culture Co.Ltd. (Branch 00001)', '', '', '', '0105559006121', '', '', '1', '0', '', '077-238823'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'The Culture Co.Ltd. (Branch 00001)' AND vender = '1');
 SET @aid_16 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'The Culture Co.Ltd. (Branch 00001)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_16, 165, 'net_rate', 1700.00, 1200.00, '077-238823', '86 Moo 4, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_16, 165, 'net_rate', 1700.00, 1200.00, '86 Moo 4, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_16 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_16 AND company_id = 165);
 
@@ -178,8 +173,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Baan Chaweng Beach Resort & Spa Co.,Ltd. (Head Office)', 'Baan Chaweng Beach Resort & Spa Co.,Ltd. (Head Office)', '', '', '', '0845546003092', '', '', '1', '0', '', '077-300564'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Baan Chaweng Beach Resort & Spa Co.,Ltd. (Head Office)' AND vender = '1');
 SET @aid_17 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Baan Chaweng Beach Resort & Spa Co.,Ltd. (Head Office)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_17, 165, 'net_rate', 1700.00, 1200.00, '077-300564', '90/1  Moo 2,  Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_17, 165, 'net_rate', 1700.00, 1200.00, '90/1  Moo 2,  Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_17 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_17 AND company_id = 165);
 
@@ -188,8 +183,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Siam Travel Center Co.,Ltd. (Branch 1)', 'Siam Travel Center Co.,Ltd. (Branch 1)', '', '', '', '0845549007978', '', '', '1', '0', '', '077-245555'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Siam Travel Center Co.,Ltd. (Branch 1)' AND vender = '1');
 SET @aid_18 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Siam Travel Center Co.,Ltd. (Branch 1)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_18, 165, 'net_rate', 1680.00, 1260.00, '077-245555', '119/33 Moo 1, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 980'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_18, 165, 'net_rate', 1680.00, 1260.00, '119/33 Moo 1, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 980'
 WHERE @aid_18 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_18 AND company_id = 165);
 
@@ -198,8 +193,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'JTB (Thailand) Ltd. (Branch 00001)', 'JTB (Thailand) Ltd. (Branch 00001)', '', '', '', '0105533128611', '', '', '1', '0', '', '076-261746'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'JTB (Thailand) Ltd. (Branch 00001)' AND vender = '1');
 SET @aid_19 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'JTB (Thailand) Ltd. (Branch 00001)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_19, 165, 'net_rate', 1700.00, 1200.00, '076-261746', '117/8 Moo 5, Chalermprakiet R.9 Rd. Rassada Sub-District, Muang District, Phuket 83000', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_19, 165, 'net_rate', 1700.00, 1200.00, '117/8 Moo 5, Chalermprakiet R.9 Rd. Rassada Sub-District, Muang District, Phuket 83000 | Full Moon rate: 1000'
 WHERE @aid_19 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_19 AND company_id = 165);
 
@@ -208,8 +203,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Samui Bayview Villa And Resort Co.,Ltd. (Branch 0001)', 'Samui Bayview Villa And Resort Co.,Ltd. (Branch 0001)', '', '', '', '0105541072815', '', '', '1', '0', '', '081-0901561'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Samui Bayview Villa And Resort Co.,Ltd. (Branch 0001)' AND vender = '1');
 SET @aid_20 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Samui Bayview Villa And Resort Co.,Ltd. (Branch 0001)' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_20, 165, 'net_rate', 1700.00, 1200.00, '081-0901561', '104 Moo 3, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_20, 165, 'net_rate', 1700.00, 1200.00, '104 Moo 3, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_20 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_20 AND company_id = 165);
 
@@ -218,8 +213,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'บริษัท บ้านเมษปิติ จำกัด', 'บริษัท บ้านเมษปิติ จำกัด', '', '', '', '0845556002951', '', '', '1', '0', '', '077-310420'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'บริษัท บ้านเมษปิติ จำกัด' AND vender = '1');
 SET @aid_21 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'บริษัท บ้านเมษปิติ จำกัด' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_21, 165, 'net_rate', 1700.00, 1200.00, '077-310420', '171 หมู่ 2 ต.บ่อผุด อ.เกาะสมุย จ.สุราษฏร์ธานี  84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_21, 165, 'net_rate', 1700.00, 1200.00, '171 หมู่ 2 ต.บ่อผุด อ.เกาะสมุย จ.สุราษฏร์ธานี  84320 | Full Moon rate: 1000'
 WHERE @aid_21 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_21 AND company_id = 165);
 
@@ -228,8 +223,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Wik Service Co.,Ltd.', 'Wik Service Co.,Ltd.', '', '', '', '0105565066653', '', '', '1', '0', '', '091-9361926'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Wik Service Co.,Ltd.' AND vender = '1');
 SET @aid_22 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Wik Service Co.,Ltd.' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_22, 165, 'net_rate', 1500.00, 1100.00, '091-9361926', '731  Asoke Din Daeng, Din Daeng, Bangkok   10400', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_22, 165, 'net_rate', 1500.00, 1100.00, '731  Asoke Din Daeng, Din Daeng, Bangkok   10400 | Full Moon rate: 1000'
 WHERE @aid_22 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_22 AND company_id = 165);
 
@@ -238,8 +233,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'SIAM DMC Co.,Ltd.', 'SIAM DMC Co.,Ltd.', '', '', '', '', '', '', '1', '0', '', '087-5117486'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'SIAM DMC Co.,Ltd.' AND vender = '1');
 SET @aid_23 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'SIAM DMC Co.,Ltd.' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_23, 165, 'net_rate', 1400.00, 1000.00, '087-5117486', '10/97  The Trendy Building 6 ft. Soi Sukhumvit 13 (Saengchan), Khlong Toei Nuae Wattana, Bangkok.  10110', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_23, 165, 'net_rate', 1400.00, 1000.00, '10/97  The Trendy Building 6 ft. Soi Sukhumvit 13 (Saengchan), Khlong Toei Nuae Wattana, Bangkok.  10110 | Full Moon rate: 900'
 WHERE @aid_23 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_23 AND company_id = 165);
 
@@ -248,8 +243,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Pattra Vill Resort', 'Pattra Vill Resort', '', '', '', '', '', '', '1', '0', '', '077-423505'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Pattra Vill Resort' AND vender = '1');
 SET @aid_24 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Pattra Vill Resort' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_24, 165, 'net_rate', 1700.00, 1200.00, '077-423505', '124/329  Moo 3, Maret, Koh Samui, Suratthani 84310', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_24, 165, 'net_rate', 1700.00, 1200.00, '124/329  Moo 3, Maret, Koh Samui, Suratthani 84310 | Full Moon rate: 1000'
 WHERE @aid_24 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_24 AND company_id = 165);
 
@@ -258,8 +253,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Dow Samui Travel', 'Dow Samui Travel', '', '', '', '', '', '', '1', '0', '', '093 6096287'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Dow Samui Travel' AND vender = '1');
 SET @aid_25 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Dow Samui Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_25, 165, 'net_rate', 1300.00, 1000.00, '093 6096287', '17/8 Moo 2, Chaweng Beach, Koh Samui, Suratthani   84320', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_25, 165, 'net_rate', 1300.00, 1000.00, '17/8 Moo 2, Chaweng Beach, Koh Samui, Suratthani   84320 | Full Moon rate: 900'
 WHERE @aid_25 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_25 AND company_id = 165);
 
@@ -268,8 +263,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Inter Glove', 'Inter Glove', '', '', '', '', '', '', '1', '0', '', '084-1415326'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Inter Glove' AND vender = '1');
 SET @aid_26 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Inter Glove' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_26, 165, 'net_rate', 1400.00, 1100.00, '084-1415326', 'Koh Samui, Suratthani   84320', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_26, 165, 'net_rate', 1400.00, 1100.00, 'Koh Samui, Suratthani   84320 | Full Moon rate: 900'
 WHERE @aid_26 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_26 AND company_id = 165);
 
@@ -278,8 +273,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Smile Samui Tours', 'Smile Samui Tours', '', '', '', '', '', '', '1', '0', '', '081-6762343'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Smile Samui Tours' AND vender = '1');
 SET @aid_27 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Smile Samui Tours' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_27, 165, 'net_rate', 1300.00, 1000.00, '081-6762343', '119/23 Moo 2, Bophut, Koh Samui, Suratthani', 'Full Moon rate: 650'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_27, 165, 'net_rate', 1300.00, 1000.00, '119/23 Moo 2, Bophut, Koh Samui, Suratthani | Full Moon rate: 650'
 WHERE @aid_27 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_27 AND company_id = 165);
 
@@ -288,8 +283,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'MeeBoone Travel & Tour', 'MeeBoone Travel & Tour', '', '', '', '', '', '', '1', '0', '', '077-961297'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'MeeBoone Travel & Tour' AND vender = '1');
 SET @aid_28 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'MeeBoone Travel & Tour' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_28, 165, 'net_rate', 1100.00, 800.00, '077-961297', '38/18 Moo 3, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 700'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_28, 165, 'net_rate', 1100.00, 800.00, '38/18 Moo 3, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 700'
 WHERE @aid_28 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_28 AND company_id = 165);
 
@@ -298,8 +293,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Enjoy 4 Travel', 'Enjoy 4 Travel', '', '', '', '', '', '', '1', '0', '', '081-0808185'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Enjoy 4 Travel' AND vender = '1');
 SET @aid_29 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Enjoy 4 Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_29, 165, 'net_rate', 1300.00, 1000.00, '081-0808185', '101/4  Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_29, 165, 'net_rate', 1300.00, 1000.00, '101/4  Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 900'
 WHERE @aid_29 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_29 AND company_id = 165);
 
@@ -308,8 +303,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Tour Online SYS', 'Tour Online SYS', '', '', '', '', '', '', '1', '0', '', ''
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Tour Online SYS' AND vender = '1');
 SET @aid_30 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Tour Online SYS' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_30, 165, 'net_rate', 1300.00, 1000.00, '', '27/1 Moo 3, Chaweng Beach, Koh Samui, Suratthani   84320', 'Full Moon rate: 800'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_30, 165, 'net_rate', 1300.00, 1000.00, '27/1 Moo 3, Chaweng Beach, Koh Samui, Suratthani   84320 | Full Moon rate: 800'
 WHERE @aid_30 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_30 AND company_id = 165);
 
@@ -318,8 +313,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Sita Tour', 'Sita Tour', '', '', '', '', '', '', '1', '0', '', '081-7192733'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Sita Tour' AND vender = '1');
 SET @aid_31 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Sita Tour' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_31, 165, 'net_rate', 1400.00, 1000.00, '081-7192733', '20/301  Moo 4  Bophut, Koh Samui, Suratthani  84320', 'Full Moon rate: 800'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_31, 165, 'net_rate', 1400.00, 1000.00, '20/301  Moo 4  Bophut, Koh Samui, Suratthani  84320 | Full Moon rate: 800'
 WHERE @aid_31 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_31 AND company_id = 165);
 
@@ -328,8 +323,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Thai Winery House & Tour', 'Thai Winery House & Tour', '', '', '', '', '', '', '1', '0', '', '081-5354873'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Thai Winery House & Tour' AND vender = '1');
 SET @aid_32 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Thai Winery House & Tour' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_32, 165, 'net_rate', 1300.00, 1000.00, '081-5354873', '141/20 Moo 4, Maret, Koh Samui, Suratthani 84320', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_32, 165, 'net_rate', 1300.00, 1000.00, '141/20 Moo 4, Maret, Koh Samui, Suratthani 84320 | Full Moon rate: 900'
 WHERE @aid_32 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_32 AND company_id = 165);
 
@@ -338,8 +333,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Rinny Travel', 'Rinny Travel', '', '', '', '', '', '', '1', '0', '', '087-4940405'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Rinny Travel' AND vender = '1');
 SET @aid_33 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Rinny Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_33, 165, 'net_rate', 1300.00, 1000.00, '087-4940405', '167/7 Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_33, 165, 'net_rate', 1300.00, 1000.00, '167/7 Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 900'
 WHERE @aid_33 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_33 AND company_id = 165);
 
@@ -348,8 +343,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Island Experiences', 'Island Experiences', '', '', '', '', '', '', '1', '0', '', '091-0383460'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Island Experiences' AND vender = '1');
 SET @aid_34 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Island Experiences' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_34, 165, 'net_rate', 1200.00, 0.00, '091-0383460', '64 Moo 1 Fisherman Village, Bophut, Koh Samui, Suratthani   84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_34, 165, 'net_rate', 1200.00, 0.00, '64 Moo 1 Fisherman Village, Bophut, Koh Samui, Suratthani   84320'
 WHERE @aid_34 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_34 AND company_id = 165);
 
@@ -358,8 +353,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Samui Excellent Travel & Tour', 'Samui Excellent Travel & Tour', '', '', '', '', '', '', '1', '0', '', '086-3227658'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Samui Excellent Travel & Tour' AND vender = '1');
 SET @aid_35 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Samui Excellent Travel & Tour' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_35, 165, 'net_rate', 1300.00, 1100.00, '086-3227658', '157/61 Moo 1, Bophut, Koh Samui, Suratthani, 84320', 'Full Moon rate: 800'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_35, 165, 'net_rate', 1300.00, 1100.00, '157/61 Moo 1, Bophut, Koh Samui, Suratthani, 84320 | Full Moon rate: 800'
 WHERE @aid_35 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_35 AND company_id = 165);
 
@@ -368,8 +363,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Backpacker Samui Travel', 'Backpacker Samui Travel', '', '', '', '', '', '', '1', '0', '', '081-4769630'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Backpacker Samui Travel' AND vender = '1');
 SET @aid_36 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Backpacker Samui Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_36, 165, 'net_rate', 1200.00, 1000.00, '081-4769630', '12 Moo 2, Bophut, Koh Samui, Suratthani   84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_36, 165, 'net_rate', 1200.00, 1000.00, '12 Moo 2, Bophut, Koh Samui, Suratthani   84320'
 WHERE @aid_36 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_36 AND company_id = 165);
 
@@ -378,8 +373,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'T.J. Air Travel', 'T.J. Air Travel', '', '', '', '', '', '', '1', '0', '', '089-6520883'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'T.J. Air Travel' AND vender = '1');
 SET @aid_37 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'T.J. Air Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_37, 165, 'net_rate', 1300.00, 1000.00, '089-6520883', '141/28 Moo 4, Lamai Beach, Maret, Koh Samui, Suratthani   84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_37, 165, 'net_rate', 1300.00, 1000.00, '141/28 Moo 4, Lamai Beach, Maret, Koh Samui, Suratthani   84320'
 WHERE @aid_37 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_37 AND company_id = 165);
 
@@ -388,8 +383,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Smart Exchange And Travel', 'Smart Exchange And Travel', '', '', '', '', '', '', '1', '0', '', '085-6199172'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Smart Exchange And Travel' AND vender = '1');
 SET @aid_38 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Smart Exchange And Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_38, 165, 'net_rate', 1500.00, 1100.00, '085-6199172', '18 Moo 2,  Bophut, Koh Samui, Suratthani 84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_38, 165, 'net_rate', 1500.00, 1100.00, '18 Moo 2,  Bophut, Koh Samui, Suratthani 84320'
 WHERE @aid_38 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_38 AND company_id = 165);
 
@@ -398,8 +393,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Al\'s Resort', 'Al\'s Resort', '', '', '', '', '', '', '1', '0', '', '077-300561'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Al\'s Resort' AND vender = '1');
 SET @aid_39 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Al\'s Resort' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_39, 165, 'net_rate', 1700.00, 1200.00, '077-300561', '200  Moo 2, Bophut, Koh Samui, Suratthani 84320', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_39, 165, 'net_rate', 1700.00, 1200.00, '200  Moo 2, Bophut, Koh Samui, Suratthani 84320 | Full Moon rate: 1000'
 WHERE @aid_39 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_39 AND company_id = 165);
 
@@ -408,8 +403,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Samui Merger Travel', 'Samui Merger Travel', '', '', '', '', '', '', '1', '0', '', '077-447396'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Samui Merger Travel' AND vender = '1');
 SET @aid_40 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Samui Merger Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_40, 165, 'net_rate', 1400.00, 1100.00, '077-447396', '26/63 Moo4, Maenam Beach, Koh Samui, Suratthani   84330', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_40, 165, 'net_rate', 1400.00, 1100.00, '26/63 Moo4, Maenam Beach, Koh Samui, Suratthani   84330'
 WHERE @aid_40 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_40 AND company_id = 165);
 
@@ -418,8 +413,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Great Day Tour & Travel', 'Great Day Tour & Travel', '', '', '', '', '', '', '1', '0', '', '082-4145229'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Great Day Tour & Travel' AND vender = '1');
 SET @aid_41 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Great Day Tour & Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_41, 165, 'net_rate', 1400.00, 1100.00, '082-4145229', '25/1 Moo 1, Fisherman Village, Bophut Koh Samui, Suratthani 84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_41, 165, 'net_rate', 1400.00, 1100.00, '25/1 Moo 1, Fisherman Village, Bophut Koh Samui, Suratthani 84320'
 WHERE @aid_41 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_41 AND company_id = 165);
 
@@ -428,8 +423,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Samui Highlight Travel', 'Samui Highlight Travel', '', '', '', '', '', '', '1', '0', '', '089-4744482'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Samui Highlight Travel' AND vender = '1');
 SET @aid_42 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Samui Highlight Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_42, 165, 'net_rate', 1300.00, 1000.00, '089-4744482', '14/72 Moo 2,  Bophut, Koh Samui  Surat Thani  84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_42, 165, 'net_rate', 1300.00, 1000.00, '14/72 Moo 2,  Bophut, Koh Samui  Surat Thani  84320'
 WHERE @aid_42 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_42 AND company_id = 165);
 
@@ -438,8 +433,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Koh Samui Advisor Co.,Ltd.', 'Koh Samui Advisor Co.,Ltd.', '', '', '', '', '', '', '1', '0', '', '065-0509371'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Koh Samui Advisor Co.,Ltd.' AND vender = '1');
 SET @aid_43 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Koh Samui Advisor Co.,Ltd.' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_43, 165, 'net_rate', 1400.00, 1100.00, '065-0509371', '', 'Full Moon rate: 900'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_43, 165, 'net_rate', 1400.00, 1100.00, 'Full Moon rate: 900'
 WHERE @aid_43 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_43 AND company_id = 165);
 
@@ -448,8 +443,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'Samui Insight Travel', 'Samui Insight Travel', '', '', '', '', '', '', '1', '0', '', '081-6937217'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'Samui Insight Travel' AND vender = '1');
 SET @aid_44 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'Samui Insight Travel' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_44, 165, 'net_rate', 1200.00, 1000.00, '081-6937217', '115/33 Moo 6, Bophut, Koh Samui, Suratthani   84320', ''
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_44, 165, 'net_rate', 1200.00, 1000.00, '115/33 Moo 6, Bophut, Koh Samui, Suratthani   84320'
 WHERE @aid_44 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_44 AND company_id = 165);
 
@@ -458,8 +453,8 @@ INSERT INTO `company` (company_id, name_en, name_th, name_sh, contact, fax, tax,
 SELECT 165, 'White Sand Samui Resort', 'White Sand Samui Resort', '', '', '', '', '', '', '1', '0', '', '077-938909'
 WHERE NOT EXISTS (SELECT 1 FROM `company` WHERE company_id = 165 AND name_en = 'White Sand Samui Resort' AND vender = '1');
 SET @aid_45 = (SELECT id FROM `company` WHERE company_id = 165 AND name_en = 'White Sand Samui Resort' AND vender = '1' ORDER BY id DESC LIMIT 1);
-INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, contact_phone, address, notes)
-SELECT @aid_45, 165, 'net_rate', 1700.00, 1200.00, '077-938909', '124/5 Moo 3,  Maret, Koh Samui, Suratthani  84310', 'Full Moon rate: 1000'
+INSERT INTO `tour_agent_profiles` (company_ref_id, company_id, commission_type, commission_adult, commission_child, notes)
+SELECT @aid_45, 165, 'net_rate', 1700.00, 1200.00, '124/5 Moo 3,  Maret, Koh Samui, Suratthani  84310 | Full Moon rate: 1000'
 WHERE @aid_45 IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `tour_agent_profiles` WHERE company_ref_id = @aid_45 AND company_id = 165);
 
