@@ -106,15 +106,12 @@ $html .= '</div>';
 $thRow = '<tr>
     <th style="width:22px;">#</th>
     <th style="width:42px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
-    <th style="width:120px;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
+    <th style="width:140px;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
     <th style="width:30px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th style="width:160px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
+    <th style="width:180px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
     <th class="center" style="width:55px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
-    <th style="width:55px;">' . ($isThai ? 'ทะเบียนรถ' : 'Vehicle') . '</th>
-    <th style="width:55px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
+    <th style="width:80px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
 </tr>';
 
 if (!empty($groups)) {
@@ -131,14 +128,12 @@ if (!empty($groups)) {
 
         foreach ($bookings as $b) {
             $globalNum++;
-            $custName = ($isThai && !empty($b['customer_name_th'])) ? $b['customer_name_th'] : ($b['customer_name'] ?: '-');
-            $agName   = ($isThai && !empty($b['agent_name_th'])) ? $b['agent_name_th'] : ($b['agent_name'] ?: '-');
-            $agName   = mb_substr($agName, 0, 14);
+            $custName   = ($isThai && !empty($b['customer_name_th'])) ? $b['customer_name_th'] : ($b['customer_name'] ?: '-');
             $pickupTime = !empty($b['pickup_time']) ? date('H:i', strtotime($b['pickup_time'])) : '-';
-            $hotel = $b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-');
-            $phone = $b['customer_phone'] ?: '';
-            $paxStr = intval($b['pax_adult']) . 'A';
-            if (intval($b['pax_child']) > 0) $paxStr .= '/' . intval($b['pax_child']) . 'C';
+            $hotel      = $b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-');
+            $phone      = $b['customer_phone'] ?: '';
+            $paxStr     = intval($b['pax_adult']) . 'A';
+            if (intval($b['pax_child'])  > 0) $paxStr .= '/' . intval($b['pax_child'])  . 'C';
             if (intval($b['pax_infant']) > 0) $paxStr .= '/' . intval($b['pax_infant']) . 'I';
 
             $html .= '<tr>
@@ -148,11 +143,8 @@ if (!empty($groups)) {
                 <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
                 <td><strong>' . htmlspecialchars($custName) . '</strong></td>
                 <td class="center"><strong>' . $b['total_pax'] . '</strong> <span style="color:#888;">(' . $paxStr . ')</span></td>
-                <td>' . htmlspecialchars($agName) . '</td>
                 <td>' . htmlspecialchars($phone) . '</td>
-                <td>' . htmlspecialchars($b['driver_name'] ?? '') . '</td>
-                <td>' . htmlspecialchars($b['vehicle_no'] ?? '') . '</td>
-                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 30)) . '</td>
+                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 40)) . '</td>
             </tr>';
         }
         $html .= '</table>';
