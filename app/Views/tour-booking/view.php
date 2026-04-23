@@ -247,11 +247,14 @@ $messages = [
                         <td>
                             <div style="font-weight:600; margin-bottom:4px;">
                                 <?= htmlspecialchars($item['description']) ?>
+                                <?php if (!empty($item['type_name'])): ?>
+                                <span style="color:#0d9488; font-weight:500; font-size:12px; background:#f0fdfa; padding:1px 6px; border-radius:4px; margin-left:4px;"><?= htmlspecialchars($item['type_name']) ?></span>
+                                <?php endif; ?>
                                 <?php if (!empty($item['model_name'])): ?>
                                 <span style="color:#64748b; font-weight:500;"> | <?= htmlspecialchars($item['model_name']) ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($item['model_des'])): ?>
-                                <span style="color:#94a3b8; font-weight:400;"> | <?= htmlspecialchars($item['model_des']) ?></span>
+                                <div style="font-size:12px; color:#94a3b8; font-weight:400; margin-top:2px;"><?= htmlspecialchars($item['model_des']) ?></div>
                                 <?php endif; ?>
                             </div>
                             <?php

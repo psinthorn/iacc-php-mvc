@@ -650,7 +650,7 @@ $pax   = $booking['pax'] ?? [];
                                         <select name="item_product_type_id[]" class="product-type-select" data-idx="<?= $idx ?>">
                                             <option value=""><?= $isThai ? '-- เลือกสินค้า --' : '-- Select Product --' ?></option>
                                             <?php foreach ($types as $t): ?>
-                                            <option value="<?= $t['id'] ?>"><?= htmlspecialchars($t['name']) ?></option>
+                                            <option value="<?= $t['id'] ?>" <?= ($item['product_type_id'] ?? 0) == $t['id'] ? 'selected' : '' ?>><?= htmlspecialchars($t['name']) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -658,6 +658,15 @@ $pax   = $booking['pax'] ?? [];
                                         <label><?= $isThai ? 'โมเดล/แพ็คเกจ' : 'Model / Package' ?></label>
                                         <select name="item_model_id[]" class="model-select" data-idx="<?= $idx ?>">
                                             <option value="0"><?= $isThai ? '-- ไม่ระบุ --' : '-- None --' ?></option>
+                                            <?php
+                                            $itemTypeId = intval($item['product_type_id'] ?? 0);
+                                            $itemModelId = intval($item['model_id'] ?? 0);
+                                            foreach ($models_by_type[$itemTypeId] ?? [] as $m):
+                                            ?>
+                                            <option value="<?= $m['id'] ?>" <?= $itemModelId === intval($m['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($m['model_name']) ?><?= !empty($m['des']) ? ' — ' . htmlspecialchars($m['des']) : '' ?>
+                                            </option>
+                                            <?php endforeach; ?>
                                         </select>
                                     </div>
                                     <div class="bk-field">
