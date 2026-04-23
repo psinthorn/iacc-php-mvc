@@ -102,17 +102,18 @@ if (!empty($tourActivityName)) {
 $html .= '</div>';
 $html .= '</div>';
 
-// Table header
+// Table header — use % widths so every group table renders identically (table-layout:fixed)
+// Total = 100%:  4 + 7 + 22 + 6 + 26 + 8 + 12 + 9 + 6 = 100
 $thRow = '<tr>
-    <th style="width:22px;">#</th>
-    <th style="width:42px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
-    <th style="width:140px;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
-    <th style="width:30px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th style="width:180px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
-    <th class="center" style="width:55px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
-    <th style="width:80px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
-    <th style="width:60px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
+    <th style="width:4%;">#</th>
+    <th style="width:7%;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
+    <th style="width:22%;">' . ($isThai ? 'จุดรับ / โรงแรม' : 'Location / Hotel') . '</th>
+    <th style="width:6%;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
+    <th style="width:26%;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
+    <th class="center" style="width:8%;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
+    <th style="width:12%;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
+    <th style="width:9%;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
+    <th style="width:6%;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
 </tr>';
 
 if (!empty($groups)) {
