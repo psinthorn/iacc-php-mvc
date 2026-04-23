@@ -111,7 +111,8 @@ $thRow = '<tr>
     <th style="width:180px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer') . '</th>
     <th class="center" style="width:55px;">' . ($isThai ? 'จำนวน' : 'Pax') . '</th>
     <th style="width:80px;">' . ($isThai ? 'โทร/ติดต่อ' : 'Phone') . '</th>
-    <th style="width:70px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'คนขับ' : 'Driver') . '</th>
+    <th style="width:60px;">' . ($isThai ? 'หมายเหตุ' : 'Remark') . '</th>
 </tr>';
 
 if (!empty($groups)) {
@@ -144,7 +145,8 @@ if (!empty($groups)) {
                 <td><strong>' . htmlspecialchars($custName) . '</strong></td>
                 <td class="center"><strong>' . $b['total_pax'] . '</strong> <span style="color:#888;">(' . $paxStr . ')</span></td>
                 <td>' . htmlspecialchars($phone) . '</td>
-                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 40)) . '</td>
+                <td>' . htmlspecialchars($b['driver_name'] ?? '') . '</td>
+                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 30)) . '</td>
             </tr>';
         }
         $html .= '</table>';
