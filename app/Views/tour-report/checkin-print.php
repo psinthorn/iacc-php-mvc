@@ -105,10 +105,10 @@ $html .= '</div>';
 $thRow = '<tr>
     <th style="width:22px;">#</th>
     <th style="width:70px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
-    <th style="width:360px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
-    <th style="width:28px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
-    <th class="center" style="width:20px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
-    <th class="center" style="width:20px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
+    <th style="width:383px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
+    <th style="width:15px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
+    <th class="center" style="width:15px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
+    <th class="center" style="width:15px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
     <th style="width:80px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
     <th style="width:36px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
     <th style="width:50px;">' . ($isThai ? 'เซลล์' : 'Sale Rep') . '</th>
