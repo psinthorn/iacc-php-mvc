@@ -76,7 +76,7 @@ $html = '
     table.checkin { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     table.checkin th { background: #f1f5f9; color: #475569; padding: 4px 5px; font-size: 8px; text-align: left; text-transform: uppercase; letter-spacing: 0.03em; border: 1px solid #e2e8f0; }
     table.checkin td { padding: 4px 5px; font-size: 9px; border: 1px solid #e2e8f0; vertical-align: top; }
-    table.checkin tr.blank td { height: 22px; }
+    table.checkin tr.blank td { height: 40px; }
     .right { text-align: right; }
     .center { text-align: center; }
     .summary { margin-top: 8px; font-size: 10px; color: #475569; }
