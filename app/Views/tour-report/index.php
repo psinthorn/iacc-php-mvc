@@ -119,7 +119,7 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                 <select id="rpt_activity">
                     <option value=""><?= $isThai ? '— ทั้งหมด —' : '— All —' ?></option>
                     <?php foreach ($activities as $act): ?>
-                    <option value="<?= htmlspecialchars($act) ?>"><?= htmlspecialchars($act) ?></option>
+                    <option value="<?= intval($act['id']) ?>"><?= htmlspecialchars($act['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

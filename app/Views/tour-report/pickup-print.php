@@ -36,7 +36,12 @@ $isThai  = ($_SESSION['lang'] ?? '0') === '1';
 // Params
 $tourDate     = trim($_GET['tour_date'] ?? '');
 $grouping     = trim($_GET['grouping'] ?? 'time');
-$tourActivity = trim($_GET['activity'] ?? '');
+$tourActivity     = trim($_GET['activity'] ?? '');
+$tourActivityName = '';
+if (!empty($tourActivity) && is_numeric($tourActivity)) {
+    $r = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT name FROM type WHERE id = " . intval($tourActivity) . " LIMIT 1"));
+    $tourActivityName = $r ? $r['name'] : '';
+}
 
 if (empty($tourDate)) {
     http_response_code(400);
@@ -95,8 +100,8 @@ if (!empty($logo)) {
 $html .= '<div class="company-name">' . htmlspecialchars($companyName) . '</div>';
 $html .= '<div class="title">' . ($isThai ? 'รายงานรับลูกค้า (สำหรับคนขับ)' : 'Pickup Report for Driver') . '</div>';
 $html .= '<div class="subtitle">' . ($isThai ? 'วันที่ทัวร์: ' : 'Tour Date: ') . $formattedDate . ' | ' . $groupLabel;
-if (!empty($tourActivity)) {
-    $html .= ' | ' . ($isThai ? 'กิจกรรม: ' : 'Activity: ') . htmlspecialchars($tourActivity);
+if (!empty($tourActivityName)) {
+    $html .= ' | ' . ($isThai ? 'กิจกรรม: ' : 'Activity: ') . htmlspecialchars($tourActivityName);
 }
 $html .= '</div>';
 $html .= '</div>';

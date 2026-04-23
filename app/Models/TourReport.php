@@ -22,17 +22,17 @@ class TourReport extends BaseModel
         $cid  = intval($comId);
         $date = sql_escape($tourDate);
 
-        $where = "b.company_id = $cid 
-                  AND b.travel_date = '$date' 
-                  AND b.status IN ('confirmed','completed') 
+        $where = "b.company_id = $cid
+                  AND b.travel_date = '$date'
+                  AND b.status IN ('confirmed','completed')
                   AND b.deleted_at IS NULL";
 
-        // Optional tour activity filter
-        if (!empty($tourActivity)) {
-            $act = sql_escape(trim($tourActivity));
+        // Optional tour activity filter — filter by product_type_id (integer ID)
+        if (!empty($tourActivity) && is_numeric($tourActivity)) {
+            $typeId = intval($tourActivity);
             $where .= " AND b.id IN (
-                SELECT booking_id FROM tour_booking_items 
-                WHERE item_type = 'tour' AND description LIKE '%$act%'
+                SELECT booking_id FROM tour_booking_items
+                WHERE item_type = 'tour' AND product_type_id = $typeId
             )";
         }
 
@@ -100,11 +100,12 @@ class TourReport extends BaseModel
                   AND b.status IN ('confirmed','completed') 
                   AND b.deleted_at IS NULL";
 
-        if (!empty($tourActivity)) {
-            $act = sql_escape(trim($tourActivity));
+        // Optional tour activity filter — filter by product_type_id (integer ID)
+        if (!empty($tourActivity) && is_numeric($tourActivity)) {
+            $typeId = intval($tourActivity);
             $where .= " AND b.id IN (
-                SELECT booking_id FROM tour_booking_items 
-                WHERE item_type = 'tour' AND description LIKE '%$act%'
+                SELECT booking_id FROM tour_booking_items
+                WHERE item_type = 'tour' AND product_type_id = $typeId
             )";
         }
 
@@ -158,24 +159,27 @@ class TourReport extends BaseModel
     // ─── Tour Activities Dropdown ──────────────────────────────
 
     /**
-     * Get distinct tour activity descriptions for filter dropdown.
+     * Get distinct product types used in tour booking items for filter dropdown.
+     * Returns [{id, name}] from the type table.
      */
     public function getTourActivities(int $comId): array
     {
         $cid = intval($comId);
-        $sql = "SELECT DISTINCT bi.description 
+        $sql = "SELECT DISTINCT t.id, t.name
                 FROM tour_booking_items bi
                 JOIN tour_bookings b ON bi.booking_id = b.id
-                WHERE b.company_id = $cid 
-                  AND b.deleted_at IS NULL 
+                JOIN type t ON bi.product_type_id = t.id
+                WHERE b.company_id = $cid
+                  AND b.deleted_at IS NULL
                   AND bi.item_type = 'tour'
-                  AND bi.description != ''
-                ORDER BY bi.description ASC";
+                  AND bi.product_type_id IS NOT NULL
+                  AND bi.product_type_id > 0
+                ORDER BY t.name ASC";
 
         $result = mysqli_query($this->conn, $sql);
         $rows = [];
         while ($result && $row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row['description'];
+            $rows[] = ['id' => $row['id'], 'name' => $row['name']];
         }
         return $rows;
     }
