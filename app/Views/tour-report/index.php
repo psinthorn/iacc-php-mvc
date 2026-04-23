@@ -118,8 +118,17 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                 <label><?= $isThai ? 'ทัวร์/กิจกรรม (ไม่บังคับ)' : 'Tour/Activity (Optional)' ?></label>
                 <select id="rpt_activity">
                     <option value=""><?= $isThai ? '— ทั้งหมด —' : '— All —' ?></option>
-                    <?php foreach ($activities as $act): ?>
-                    <option value="<?= intval($act['id']) ?>"><?= htmlspecialchars($act['name']) ?></option>
+                    <?php foreach ($activities as $type): ?>
+                    <optgroup label="<?= htmlspecialchars($type['name']) ?>">
+                        <option value="type:<?= intval($type['id']) ?>">
+                            <?= htmlspecialchars($type['name']) ?> (<?= $isThai ? 'ทั้งหมด' : 'All' ?>)
+                        </option>
+                        <?php foreach ($type['models'] as $model): ?>
+                        <option value="model:<?= intval($model['id']) ?>" style="padding-left:8px;">
+                            &nbsp;&nbsp;↳ <?= htmlspecialchars($model['name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </optgroup>
                     <?php endforeach; ?>
                 </select>
             </div>

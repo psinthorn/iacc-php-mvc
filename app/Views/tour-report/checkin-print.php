@@ -37,11 +37,7 @@ $isThai  = ($_SESSION['lang'] ?? '0') === '1';
 $tourDate     = trim($_GET['tour_date'] ?? '');
 $section      = trim($_GET['section'] ?? 'all');
 $tourActivity     = trim($_GET['activity'] ?? '');
-$tourActivityName = '';
-if (!empty($tourActivity) && is_numeric($tourActivity)) {
-    $r = mysqli_fetch_assoc(mysqli_query($db->conn, "SELECT name FROM type WHERE id = " . intval($tourActivity) . " LIMIT 1"));
-    $tourActivityName = $r ? $r['name'] : '';
-}
+$tourActivityName = $reportModel->resolveActivityLabel($tourActivity);
 
 if (empty($tourDate)) {
     http_response_code(400);
