@@ -12,6 +12,7 @@
 | UI/UX Designer | `prompts/agent-designer.md` | claude-opus-4-6 | Wireframes, v0.dev prompts |
 | Marketing | `prompts/agent-marketing.md` | claude-opus-4-6 | Copy, social media, emails |
 | Customer Support | `prompts/agent-support.md` | claude-haiku-4-5-20251001 | User questions, FAQs |
+| Project Tracker  | `prompts/agent-tracker.md` | claude-opus-4-6 | Milestones, tasks, timeline summaries |
 
 ---
 
@@ -71,3 +72,8 @@ $response = $runner->run('pm', 'Write a spec for CSV bulk import');
 
 ### Ask Designer Agent
 > "Write a v0.dev prompt for a Bootstrap 5 view that shows: [describe the screen]"
+
+### Ask Tracker Agent
+> "Create a milestone plan for: [your feature idea]"
+> "Give me a sprint summary of what we've built so far"
+> "Show me a timeline from [feature] start to production"
