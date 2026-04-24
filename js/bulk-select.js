@@ -146,6 +146,19 @@ const BulkSelect = (function () {
     const modal = document.getElementById('bulkPaymentModal');
     if (!modal) { postAction({ action: actionCfg.key }); return; }
 
+    // Auto-fill balance: if exactly 1 row selected, read its data-balance attribute
+    const amountInput = document.getElementById('bulkPayAmount');
+    if (amountInput) {
+      if (_selected.size === 1) {
+        const id  = Array.from(_selected)[0];
+        const cb  = _table.querySelector('.bulk-select-row[value="' + id + '"]');
+        const bal = cb ? parseFloat(cb.dataset.balance || '0') : 0;
+        amountInput.value = bal > 0 ? bal.toFixed(2) : '';
+      } else {
+        amountInput.value = '';
+      }
+    }
+
     modal.style.display = 'flex';
 
     document.getElementById('bulkPayCancel').onclick = () => {

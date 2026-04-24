@@ -299,7 +299,7 @@ $statusConfig = [
                         : ($b['customer_name'] ?: $b['contact_name'] ?: '-');
                 ?>
                 <tr>
-                    <td class="bulk-col"><input type="checkbox" class="bulk-select-row" value="<?= $b['id'] ?>" aria-label="Select booking <?= htmlspecialchars($b['booking_number']) ?>"></td>
+                    <td class="bulk-col"><input type="checkbox" class="bulk-select-row" value="<?= $b['id'] ?>" data-balance="<?= number_format($b['balance'] ?? $b['total_amount'], 2, '.', '') ?>" aria-label="Select booking <?= htmlspecialchars($b['booking_number']) ?>"></td>
                     <td>
                         <a href="index.php?page=tour_booking_view&id=<?= $b['id'] ?>" class="bk-link">
                             <?= htmlspecialchars($b['booking_number']) ?>
@@ -394,7 +394,7 @@ $statusConfig = [
                     key: 'send_invoices',
                     label: '<?= $isThai ? 'ส่ง Invoice' : 'Send Invoices' ?>',
                     icon: 'fa-file-text-o',
-                    class: 'btn-secondary',
+                    class: 'btn-warning',
                     confirm: true,
                     confirmMsg: '<?= $isThai ? 'ส่ง Invoice สำหรับ {n} การจอง?' : 'Send invoices for {n} booking(s)?' ?>'
                 },
@@ -402,7 +402,7 @@ $statusConfig = [
                     key: 'export_csv',
                     label: '<?= $isThai ? 'ส่งออก CSV' : 'Export CSV' ?>',
                     icon: 'fa-download',
-                    class: 'btn-secondary'
+                    class: 'btn-default'
                 },
                 {
                     key: 'delete',
