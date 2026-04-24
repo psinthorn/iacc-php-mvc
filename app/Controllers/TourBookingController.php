@@ -308,9 +308,17 @@ class TourBookingController extends BaseController
     {
         $this->guardModule();
 
-        $id = intval($_GET['id'] ?? 0);
+        $id    = intval($_GET['id'] ?? 0);
+        $comId = $this->user['com_id'];
+
         if ($id <= 0) {
             $this->redirect('tour_booking_list');
+            return;
+        }
+
+        $booking = $this->bookingModel->findBooking($id, $comId);
+        if (!$booking) {
+            $this->redirect('tour_booking_list', ['msg' => 'not_found']);
             return;
         }
 
