@@ -28,11 +28,9 @@ class TourCheckin extends BaseModel
                     b.checkin_token, b.checkin_token_exp,
                     b.checkin_status, b.checkin_at, b.checkin_by,
                     (SELECT contact_name FROM tour_booking_contacts
-                     WHERE booking_id = b.id AND contact_type = 'primary'
-                     ORDER BY id LIMIT 1) AS contact_name,
-                    (SELECT contact_phone FROM tour_booking_contacts
-                     WHERE booking_id = b.id AND contact_type = 'primary'
-                     ORDER BY id LIMIT 1) AS contact_phone,
+                     WHERE booking_id = b.id ORDER BY id LIMIT 1) AS contact_name,
+                    (SELECT mobile FROM tour_booking_contacts
+                     WHERE booking_id = b.id ORDER BY id LIMIT 1) AS contact_phone,
                     c.name_en AS company_name_en,
                     c.name_th AS company_name_th,
                     c.logo    AS company_logo
@@ -200,7 +198,7 @@ class TourCheckin extends BaseModel
                     b.checkin_status, b.checkin_at, b.checkin_by,
                     (SELECT contact_name FROM tour_booking_contacts
                      WHERE booking_id = b.id ORDER BY id LIMIT 1) AS contact_name,
-                    (SELECT contact_phone FROM tour_booking_contacts
+                    (SELECT mobile FROM tour_booking_contacts
                      WHERE booking_id = b.id ORDER BY id LIMIT 1) AS contact_phone,
                     COALESCE(c.name_en, c.name_th) AS agent_name
                  FROM tour_bookings b

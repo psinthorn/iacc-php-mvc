@@ -446,9 +446,7 @@ $messages = [
                 <?php if ($checkinUrl): ?>
                 <!-- QR Code -->
                 <div style="flex-shrink:0;text-align:center;">
-                    <div id="qr-container" style="width:160px;height:160px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;">
-                        <span style="color:#94a3b8;font-size:12px;">Loading QR...</span>
-                    </div>
+                    <div id="qr-container" style="width:160px;height:160px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;"></div>
                     <p style="font-size:11px;color:#94a3b8;margin-top:6px;"><?= $isThai ? 'สแกนเพื่อเช็คอิน' : 'Scan to Check In' ?></p>
                 </div>
                 <?php endif; ?>
@@ -514,7 +512,11 @@ $messages = [
 <script>
 (function() {
     var url = <?= json_encode($checkinUrl) ?>;
-    new QRCode(document.getElementById('qr-container'), {
+    var qrEl = document.getElementById('qr-container');
+    qrEl.innerHTML = '';
+    qrEl.style.display = 'block';
+    qrEl.style.padding = '5px';
+    new QRCode(qrEl, {
         text: url, width: 150, height: 150,
         colorDark: '#0d9488', colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
