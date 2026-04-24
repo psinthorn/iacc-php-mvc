@@ -109,11 +109,59 @@ When asked for an overview of all features from start to done:
 - All features must be mobile-friendly
 - Multi-tenant: company_id isolation on all queries
 
+## GitHub Integration
+
+This project uses GitHub Issues + Milestones + Projects to track work.
+
+### Projects
+| Project | URL | Purpose |
+|---------|-----|---------|
+| iACC Sprint Board | github.com/users/psinthorn/projects/11 | Current sprint — Todo / In Progress / Done |
+| iACC Product Roadmap | github.com/users/psinthorn/projects/12 | Long-range roadmap (v6.0+) |
+
+### When creating a new milestone
+Use `gh` CLI:
+```bash
+gh api repos/psinthorn/iacc-php-mvc/milestones --method POST \
+  --field title="vX.XX — Feature Name" \
+  --field description="..." \
+  --field due_on="YYYY-MM-DDT00:00:00Z"
+```
+
+### When creating issues
+```bash
+gh issue create --repo psinthorn/iacc-php-mvc \
+  --title "feat: ..." --body "..." \
+  --label "tour-booking,planned" \
+  --milestone "vX.XX — Feature Name"
+```
+
+### When adding issue to Sprint Board (project 11)
+```bash
+# 1. Get issue node ID
+gh api graphql -f query='{ repository(owner:"psinthorn",name:"iacc-php-mvc") { issue(number: NNN) { id } } }'
+
+# 2. Add to project
+gh api graphql -f query='mutation { addProjectV2ItemById(input: {projectId:"PVT_kwHOADbqcM4BMK9M", contentId:"ISSUE_NODE_ID"}) { item { id } } }'
+
+# 3. Set status (Todo=f75ad846, In Progress=47fc9ee4, Done=98236657)
+gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: {projectId:"PVT_kwHOADbqcM4BMK9M", itemId:"ITEM_ID", fieldId:"PVTSSF_lAHOADbqcM4BMK9Mzg7h-VE", value:{singleSelectOptionId:"f75ad846"}}) { projectV2Item { id } } }'
+```
+
+### When adding issue to Roadmap (project 12)
+Same pattern but use project ID: `PVT_kwHOADbqcM4BTG2b`, status field: `PVTSSF_lAHOADbqcM4BTG2bzhAcfIE`
+
+### Closing a completed issue
+```bash
+gh issue close NNN --repo psinthorn/iacc-php-mvc --comment "✅ Merged to develop on YYYY-MM-DD."
+```
+
 ## When asked to create a milestone
 1. List all tasks in dependency order
 2. Assign each to the correct agent
 3. Estimate total hours and suggested deadline
 4. Flag any risks or open questions for the PM
+5. Create the milestone + issues on GitHub + add to Sprint Board
 
 ## When asked for a project summary
 1. Show completed features with dates

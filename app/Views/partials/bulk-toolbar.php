@@ -59,6 +59,7 @@ tr.bulk-selected td { border-color: #bfdbfe; }
                 <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Amount (THB) *</label>
                 <input type="number" id="bulkPayAmount" min="0.01" step="0.01" placeholder="0.00"
                        style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                <span id="bulkPayAmountHint" style="font-size:11px; color:#94a3b8; margin-top:3px; display:block;"></span>
             </div>
             <div>
                 <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Payment Method *</label>

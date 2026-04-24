@@ -65,19 +65,11 @@ class TourBooking extends BaseModel
         $sql = "SELECT b.*,
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        agt.name_en AS agent_name,
-                       bc.contact_name,
-                       COALESCE(pay.paid_amount, 0) AS paid_amount,
-                       GREATEST(0, b.total_amount - COALESCE(pay.paid_amount, 0)) AS balance
+                       bc.contact_name
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
                 LEFT JOIN tour_booking_contacts bc ON bc.booking_id = b.id
-                LEFT JOIN (
-                    SELECT booking_id, SUM(amount) AS paid_amount
-                    FROM tour_booking_payments
-                    WHERE deleted_at IS NULL
-                    GROUP BY booking_id
-                ) pay ON pay.booking_id = b.id
                 WHERE $where
                 ORDER BY b.id DESC
                 LIMIT $offset, $limit";
