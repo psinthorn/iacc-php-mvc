@@ -239,12 +239,12 @@ class TourBookingPayment extends BaseModel
             $paymentStatus = 'partial';
         }
 
-        // Update booking
+        // Update booking payment fields
         $sql3 = sprintf(
-            "UPDATE tour_bookings SET 
-                payment_status = '%s', 
-                amount_paid = %s, 
-                amount_due = %s, 
+            "UPDATE tour_bookings SET
+                payment_status = '%s',
+                amount_paid = %s,
+                amount_due = %s,
                 deposit_amount = %s
              WHERE id = %d AND company_id = %d",
             sql_escape($paymentStatus),
@@ -255,6 +255,25 @@ class TourBookingPayment extends BaseModel
             intval($comId)
         );
         mysqli_query($this->conn, $sql3);
+
+        // Auto-advance booking status when fully paid:
+        //   draft     → confirmed  (payment received, booking is now confirmed)
+        //   confirmed → completed  (fully paid + already confirmed = job done)
+        if ($paymentStatus === 'paid') {
+            $sql4 = sprintf(
+                "UPDATE tour_bookings
+                 SET status = CASE
+                     WHEN status = 'draft'     THEN 'confirmed'
+                     WHEN status = 'confirmed' THEN 'completed'
+                     ELSE status
+                 END,
+                 updated_at = NOW()
+                 WHERE id = %d AND company_id = %d AND status IN ('draft','confirmed') AND deleted_at IS NULL",
+                intval($bookingId),
+                intval($comId)
+            );
+            mysqli_query($this->conn, $sql4);
+        }
     }
 
     // ─── Stats ─────────────────────────────────────────────────
