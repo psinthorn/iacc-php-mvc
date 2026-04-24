@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Agents — New';
+
 /**
  * Tour Agent Profile — Create / Edit Form
  * 

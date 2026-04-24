@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Reports — Pickup Sheet';
+
 /**
  * Tour Report — Pickup Report for Driver PDF (portrait A4)
  * Standalone mPDF view

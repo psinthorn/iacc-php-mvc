@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Test Rbac';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * RBAC Test Page

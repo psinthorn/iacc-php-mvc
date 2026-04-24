@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'AI Assistant — Documentation';
+
 /**
  * AI System Documentation
  * 

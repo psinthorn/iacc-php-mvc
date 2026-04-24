@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Requests';
+
 /**
  * PR List View — Modern UX/UI (from legacy pr-list.php)
  * Variables: $items_out, $items_in, $total_out, $total_in, $total_records, $pagination, $filters, $per_page, $query_params

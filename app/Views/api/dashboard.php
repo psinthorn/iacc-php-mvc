@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Dashboard';
+
 /**
  * Sales Channel Dashboard View
  * 

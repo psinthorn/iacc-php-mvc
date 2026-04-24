@@ -1,3 +1,4 @@
+<?php $pageTitle = 'AI Assistant — Action Log'; ?>
 <div class="ai-action-log-page">
 <div class="row">
     <div class="col-lg-12">

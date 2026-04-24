@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Bookings — Payments';
+
 /**
  * Tour Booking — Payments tab / page
  *

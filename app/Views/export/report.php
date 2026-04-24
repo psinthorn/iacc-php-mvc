@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Export — Report';
+
 /**
  * Report Export - CSV/Excel Export
  * Exports report data to CSV format (opens in Excel)

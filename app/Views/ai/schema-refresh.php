@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'AI Assistant — Schema Refresh';
+
 /** @var array|null $cached */
 /** @var bool $autoRefresh */
 ?>

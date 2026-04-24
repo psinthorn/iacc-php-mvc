@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Orders — New';
+
 /**
  * PO Make View — Modern UX/UI (from legacy po-make.php)
  * Variables: $pr, $id, $types, $models, $models_by_type, $brands, $companies, $vendor, $tmp_products, $credit

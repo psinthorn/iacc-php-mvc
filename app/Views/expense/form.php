@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Expenses — New';
+
 /**
  * Expense Form — Create / Edit
  * 

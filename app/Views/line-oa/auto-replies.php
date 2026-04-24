@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Auto Replies';
+
 /**
  * LINE OA Auto-Reply Rules
  */

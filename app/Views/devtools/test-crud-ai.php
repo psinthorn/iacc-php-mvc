@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Test Crud Ai';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * AI-Powered CRUD Testing Tool

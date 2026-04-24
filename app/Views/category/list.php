@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Categories';
+
 /**
  * Category List View
  */

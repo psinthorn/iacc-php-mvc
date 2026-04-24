@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Companies';
+
 /**
  * Company List View
  * 

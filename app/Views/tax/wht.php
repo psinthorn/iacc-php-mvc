@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tax — WHT Report';
+
 /**
  * WHT Report (ภ.ง.ด.3 / ภ.ง.ด.53) — Modern UI
  * 

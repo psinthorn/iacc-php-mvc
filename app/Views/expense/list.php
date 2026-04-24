@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Expenses';
+
 /**
  * Expense List — Modern UI
  * 

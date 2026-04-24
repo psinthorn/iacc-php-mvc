@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Help — User Manual';
+
 /**
  * User Manual — Complete Guide
  * Step-by-step guide from initial setup to daily operations

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Journal — New';
+
 /**
  * Journal Voucher Create/Edit Form — Modern UI
  * 

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Subscriptions';
+
 /**
  * API Subscriptions Management (Super Admin)
  * 

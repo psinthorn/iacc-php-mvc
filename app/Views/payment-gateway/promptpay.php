@@ -1,3 +1,4 @@
+<?php $pageTitle = 'Payment Gateway — PromptPay'; ?>
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">

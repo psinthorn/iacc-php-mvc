@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Receipts — Details';
+
 /**
  * Receipt View — Legacy Modern Design
  * Variables: $receipt, $products, $id

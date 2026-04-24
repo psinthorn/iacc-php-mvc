@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Debug Php';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * PHP Debug & Error Log Viewer

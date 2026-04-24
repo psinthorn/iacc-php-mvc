@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Reports — Check-in Sheet';
+
 /**
  * Tour Report — Customer Check-in List PDF (landscape A4)
  * Standalone mPDF view

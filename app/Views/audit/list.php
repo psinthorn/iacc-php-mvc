@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Audit Log';
+
 /**
  * Audit Log List View — MVC version
  * Variables: $logs, $actionCounts, $filterUser, $filterAction, $filterEntity, $filterDateFrom, $filterDateTo

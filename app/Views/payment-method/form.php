@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Payment Methods — New';
+
 /**
  * Payment Method Form View
  * 

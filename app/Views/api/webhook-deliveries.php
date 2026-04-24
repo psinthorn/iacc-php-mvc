@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Webhook Deliveries';
+
 /**
  * Webhook Delivery Log View
  * 

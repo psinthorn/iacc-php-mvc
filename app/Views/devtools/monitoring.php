@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Monitoring';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Admin Monitoring Dashboard

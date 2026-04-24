@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Expenses — Project Report';
+
 /**
  * Expense Project Cost Report
  * 

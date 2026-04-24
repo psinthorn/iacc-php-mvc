@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Categories — New';
+
 /**
  * Category Standalone Form View
  * 

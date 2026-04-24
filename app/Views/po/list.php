@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Orders';
+
 /**
  * PO List View — Legacy Modern Design
  * Variables: $items_out, $items_in, $total_out, $total_in, $total_records, $pagination, $filters, $per_page, $query_params

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Export — Invoice Payments';
+
 /**
  * Invoice Payments Export - CSV/Excel Export
  * Exports invoice payment tracking data to CSV format

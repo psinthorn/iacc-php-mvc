@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Reports — Reports';
+
 /**
  * Reports Hub — Central reports navigation
  * Variables: $com_id, $user_level

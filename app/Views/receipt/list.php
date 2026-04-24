@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Receipts';
+
 /**
  * Receipt List View — Legacy Modern Design
  * Variables: $items, $stats, $total_records, $pagination, $filters, $per_page

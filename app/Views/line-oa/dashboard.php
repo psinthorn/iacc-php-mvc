@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Dashboard';
+
 /**
  * LINE OA Dashboard — redesigned to match API Sales Channel dashboard style
  * Uses master-data.css design system (stat-card, stats-row, master-data-container)

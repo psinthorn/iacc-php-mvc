@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Orders — Details';
+
 /**
  * PO View (Detail) — Legacy Modern Design
  * Variables: $po, $id, $products, $has_labour, $payment_methods

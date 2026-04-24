@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Bookings';
+
 /**
  * Tour Bookings — List Page
  *
