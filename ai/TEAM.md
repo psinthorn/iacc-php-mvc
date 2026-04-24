@@ -13,6 +13,7 @@
 | Marketing | `prompts/agent-marketing.md` | claude-opus-4-6 | Copy, social media, emails |
 | Customer Support | `prompts/agent-support.md` | claude-haiku-4-5-20251001 | User questions, FAQs |
 | Project Tracker  | `prompts/agent-tracker.md` | claude-opus-4-6 | Milestones, tasks, timeline summaries |
+| Database Analyst | `prompts/agent-dba.md`     | claude-opus-4-6 | Schema design, query optimization, migrations, reporting SQL |
 
 ---
 
@@ -77,3 +78,9 @@ $response = $runner->run('pm', 'Write a spec for CSV bulk import');
 > "Create a milestone plan for: [your feature idea]"
 > "Give me a sprint summary of what we've built so far"
 > "Show me a timeline from [feature] start to production"
+
+### Ask DBA Agent
+> "Review this query for performance: [paste SQL]"
+> "Design a schema for: [describe the feature]"
+> "Write a migration to add [column] to [table]"
+> "Write a report query for: [booking revenue by agent per month]"
