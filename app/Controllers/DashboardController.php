@@ -68,7 +68,10 @@ class DashboardController extends BaseController
         $userData = [];
         if ($showUserDashboard) {
             $userData['sales_today']      = $this->model->getSalesToday($comId, $companyFilterPr);
+            $userData['sales_yesterday']  = $this->model->getSalesYesterday($companyFilterPr);
             $userData['sales_month']      = $this->model->getSalesMonth($comId, $companyFilterPr);
+            $userData['sales_last_month'] = $this->model->getSalesLastMonth($companyFilterPr);
+            $userData['overdue_amount']   = $this->model->getOverdueAmount($companyFilterIv);
             $userData['pending_orders']   = $this->model->getPendingOrderCount($companyFilterPr);
             $userData['total_orders']     = $this->model->getTotalOrderCount($companyFilterPr);
             $userData['recent_payments']  = $this->model->getRecentPayments($companyFilterPr, 5);

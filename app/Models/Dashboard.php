@@ -103,8 +103,11 @@ class Dashboard
     public function getQuickCompanies(int $limit = 8): ?\mysqli_result
     {
         $sql = "SELECT DISTINCT c.id, c.name_en, c.name_th, c.name_sh, c.logo,
+            c.customer, c.vender, c.contact, c.phone,
             (SELECT MAX(pr.date) FROM pr WHERE pr.ven_id = c.id OR pr.cus_id = c.id) as last_activity,
-            c.customer, c.vender
+            (SELECT COUNT(*) FROM pr WHERE (pr.ven_id = c.id OR pr.cus_id = c.id) AND pr.date >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as tx_30d,
+            (SELECT COUNT(*) FROM pr WHERE (pr.ven_id = c.id OR pr.cus_id = c.id) AND pr.status >= 4) as invoice_count,
+            (SELECT COALESCE(SUM(p.volumn),0) FROM pay p JOIN po ON p.po_id = po.id JOIN pr ON po.ref = pr.id WHERE (pr.ven_id = c.id OR pr.cus_id = c.id) AND p.date >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as revenue_30d
             FROM company c
             WHERE c.deleted_at IS NULL
             ORDER BY last_activity DESC
@@ -113,6 +116,43 @@ class Dashboard
     }
 
     // ========== User Dashboard (Company Data) ==========
+
+    public function getSalesYesterday(string $companyFilter): float
+    {
+        $sql = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay
+                JOIN po ON pay.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE DATE(pay.date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) $companyFilter";
+        $result = mysqli_query($this->db->conn, $sql);
+        return (float) (mysqli_fetch_assoc($result)['total'] ?? 0);
+    }
+
+    public function getSalesLastMonth(string $companyFilter): float
+    {
+        $sql = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay
+                JOIN po ON pay.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE DATE(pay.date) >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
+                  AND DATE(pay.date) < DATE_FORMAT(CURDATE(), '%Y-%m-01') $companyFilter";
+        $result = mysqli_query($this->db->conn, $sql);
+        return (float) (mysqli_fetch_assoc($result)['total'] ?? 0);
+    }
+
+    public function getOverdueAmount(string $companyFilter): float
+    {
+        $sql = "SELECT IFNULL(SUM(
+                    COALESCE((SELECT SUM(price*quantity) FROM product WHERE po_id = po.id), 0) -
+                    COALESCE((SELECT SUM(volumn) FROM pay WHERE po_id = po.id), 0)
+                ), 0) as overdue
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE iv.createdate < DATE_SUB(CURDATE(), INTERVAL 30 DAY) $companyFilter
+                  AND (SELECT COALESCE(SUM(volumn),0) FROM pay WHERE po_id = po.id) <
+                      (SELECT COALESCE(SUM(price*quantity),0) FROM product WHERE po_id = po.id)";
+        $result = @mysqli_query($this->db->conn, $sql);
+        return (float) (mysqli_fetch_assoc($result ?? null)['overdue'] ?? 0);
+    }
 
     public function getSalesToday(int $comId, string $companyFilter): float
     {
@@ -156,12 +196,12 @@ class Dashboard
 
     public function getRecentPayments(string $companyFilter, int $limit = 5): ?\mysqli_result
     {
-        $sql = "SELECT pay.*, po.name, po.tax 
-                FROM pay 
-                LEFT JOIN po ON pay.po_id = po.id 
+        $sql = "SELECT pay.*, po.name, po.tax
+                FROM pay
+                LEFT JOIN po ON pay.po_id = po.id
                 LEFT JOIN pr ON po.ref = pr.id
-                WHERE 1=1 $companyFilter
-                ORDER BY pay.date DESC LIMIT $limit";
+                WHERE pay.deleted_at IS NULL $companyFilter
+                ORDER BY pay.date DESC, pay.id DESC LIMIT $limit";
         return mysqli_query($this->db->conn, $sql);
     }
 
@@ -213,11 +253,11 @@ class Dashboard
         $sql = "SELECT iv.tex as po_id, iv.createdate, iv.status_iv,
                 po.name as description,
                 (SELECT SUM(price*quantity) FROM product WHERE po_id = po.id) as subtotal
-                FROM iv 
+                FROM iv
                 JOIN po ON iv.tex = po.id
                 JOIN pr ON po.ref = pr.id
-                WHERE 1=1 $companyFilter
-                ORDER BY iv.createdate DESC LIMIT $limit";
+                WHERE iv.deleted_at IS NULL $companyFilter
+                ORDER BY iv.createdate DESC, iv.tex DESC LIMIT $limit";
         return mysqli_query($this->db->conn, $sql);
     }
 

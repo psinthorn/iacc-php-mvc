@@ -145,10 +145,10 @@ function get_status_badge($status) {
     return '<span class="badge" style="background: #6c757d; color: white;">' . $t['unknown'] . '</span>';
 }
 ?>
-<!-- Modern Font -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Modern Font (Inter for Latin + Sarabun for Thai) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
+    body { font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     .dashboard-wrapper { padding: 20px; max-width: 1400px; margin: 0 auto; }
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25); color: white; }
     .dashboard-title { font-size: 28px; font-weight: 700; margin: 0; }
@@ -339,44 +339,139 @@ function get_status_badge($status) {
                     </div>
                 </div>
                 
-                <!-- Quick Selection Grid -->
+                <!-- Recently Active Companies Grid -->
                 <div class="quick-selection-label">
                     <i class="fa fa-clock-o"></i> Recently Active Companies
+                    <span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:400;text-transform:none;letter-spacing:0;">Last activity · 30-day transactions · revenue</span>
                 </div>
                 <?php $quick_companies = $admin['quick_companies'] ?? null; ?>
                 <div class="company-quick-grid">
                     <?php if($quick_companies && mysqli_num_rows($quick_companies) > 0): ?>
-                        <?php while($qc = mysqli_fetch_assoc($quick_companies)): ?>
-                        <a href="index.php?page=remote&select_company=<?php echo $qc['id']; ?>" class="company-quick-card <?php echo ($com_id == $qc['id']) ? 'active' : ''; ?>">
-                            <div class="company-quick-logo">
-                                <?php if(!empty($qc['logo'])): ?>
-                                <img src="upload/<?php echo htmlspecialchars($qc['logo']); ?>" alt="">
+                        <?php while($qc = mysqli_fetch_assoc($quick_companies)):
+                            $isActive = ($com_id == $qc['id']);
+                            $name     = htmlspecialchars(mb_substr($qc['name_en'] ?: $qc['name_th'], 0, 30));
+                            $tx30d    = intval($qc['tx_30d'] ?? 0);
+                            $rev30d   = floatval($qc['revenue_30d'] ?? 0);
+                            $invCount = intval($qc['invoice_count'] ?? 0);
+                            // Relative time label
+                            $lastAct  = $qc['last_activity'] ?? null;
+                            if ($lastAct) {
+                                $diff = (int) round((time() - strtotime($lastAct)) / 86400);
+                                if ($diff === 0)      $actLabel = 'Today';
+                                elseif ($diff === 1)  $actLabel = 'Yesterday';
+                                elseif ($diff <= 7)   $actLabel = $diff . 'd ago';
+                                elseif ($diff <= 30)  $actLabel = ceil($diff/7) . 'w ago';
+                                elseif ($diff <= 365) $actLabel = date('M d', strtotime($lastAct));
+                                else                  $actLabel = date('M Y', strtotime($lastAct));
+                            } else { $actLabel = 'No activity'; }
+                            // Activity pulse color
+                            $pulseColor = !$lastAct ? '#e5e7eb' : ($diff <= 7 ? '#10b981' : ($diff <= 30 ? '#f59e0b' : '#94a3b8'));
+                            // Initials avatar fallback
+                            $_rawName = $qc['name_en'] ?: $qc['name_th'];
+                            $initials = mb_strtoupper(mb_substr($_rawName, 0, 2, 'UTF-8'), 'UTF-8');
+                            // Gradient based on id
+                            $gradients = ['135deg,#667eea,#764ba2','135deg,#06b6d4,#0891b2','135deg,#10b981,#059669','135deg,#f59e0b,#d97706','135deg,#ef4444,#dc2626','135deg,#8b5cf6,#7c3aed'];
+                            $grad = $gradients[$qc['id'] % count($gradients)];
+                        ?>
+                        <a href="index.php?page=remote&select_company=<?= $qc['id'] ?>" class="cqc <?= $isActive ? 'cqc--active' : '' ?>">
+                            <!-- Activity pulse indicator -->
+                            <span class="cqc-pulse" style="background:<?= $pulseColor ?>"></span>
+
+                            <!-- Logo / Avatar -->
+                            <div class="cqc-logo">
+                                <?php if (!empty($qc['logo'])): ?>
+                                <img src="upload/<?= htmlspecialchars($qc['logo']) ?>" alt="">
                                 <?php else: ?>
-                                <i class="fa fa-building"></i>
+                                <div class="cqc-initials" style="background:linear-gradient(<?= $grad ?>)"><?= $initials ?></div>
                                 <?php endif; ?>
                             </div>
-                            <div class="company-quick-info">
-                                <div class="company-quick-name"><?php echo htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 25)); ?></div>
-                                <div class="company-quick-meta">
-                                    <?php if($qc['vender'] == '1' && $qc['customer'] == '1'): ?>
-                                    <span class="badge-both">Both</span>
-                                    <?php elseif($qc['vender'] == '1'): ?>
-                                    <span class="badge-vendor">Vendor</span>
-                                    <?php elseif($qc['customer'] == '1'): ?>
-                                    <span class="badge-customer">Customer</span>
+
+                            <!-- Main info -->
+                            <div class="cqc-body">
+                                <div class="cqc-name"><?= $name ?></div>
+                                <div class="cqc-tags">
+                                    <?php if ($qc['vender'] == '1' && $qc['customer'] == '1'): ?>
+                                    <span class="cqc-tag cqc-tag--both">Both</span>
+                                    <?php elseif ($qc['vender'] == '1'): ?>
+                                    <span class="cqc-tag cqc-tag--vendor">Vendor</span>
+                                    <?php elseif ($qc['customer'] == '1'): ?>
+                                    <span class="cqc-tag cqc-tag--customer">Customer</span>
                                     <?php endif; ?>
-                                    <?php if($qc['last_activity']): ?>
-                                    <span class="last-activity"><?php echo date('M d', strtotime($qc['last_activity'])); ?></span>
+                                    <span class="cqc-tag cqc-tag--time"><i class="fa fa-clock-o"></i> <?= $actLabel ?></span>
+                                </div>
+
+                                <!-- Stats row -->
+                                <div class="cqc-stats">
+                                    <div class="cqc-stat" title="Transactions last 30 days">
+                                        <i class="fa fa-exchange"></i> <?= $tx30d ?>
+                                    </div>
+                                    <div class="cqc-stat" title="Total invoices">
+                                        <i class="fa fa-file-text-o"></i> <?= $invCount ?>
+                                    </div>
+                                    <?php if ($rev30d > 0): ?>
+                                    <div class="cqc-stat cqc-stat--rev" title="Revenue last 30 days">
+                                        <i class="fa fa-bar-chart"></i> ฿<?= $rev30d >= 1000000 ? number_format($rev30d/1000000,1).'M' : ($rev30d >= 1000 ? number_format($rev30d/1000,1).'K' : number_format($rev30d,0)) ?>
+                                    </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <?php if($com_id == $qc['id']): ?>
-                            <div class="company-selected-badge"><i class="fa fa-check"></i></div>
+
+                            <!-- Selected checkmark -->
+                            <?php if ($isActive): ?>
+                            <div class="cqc-check"><i class="fa fa-check"></i></div>
                             <?php endif; ?>
                         </a>
                         <?php endwhile; ?>
+                    <?php else: ?>
+                        <div style="grid-column:1/-1;text-align:center;padding:32px;color:#94a3b8;">
+                            <i class="fa fa-building" style="font-size:32px;margin-bottom:10px;display:block;"></i>
+                            No companies found
+                        </div>
                     <?php endif; ?>
                 </div>
+
+                <style>
+                /* ── Recently Active Companies cards ────────────── */
+                .company-quick-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:12px 24px 24px; }
+                @media(max-width:1200px){.company-quick-grid{grid-template-columns:repeat(3,1fr);}}
+                @media(max-width:900px) {.company-quick-grid{grid-template-columns:repeat(2,1fr);}}
+                @media(max-width:576px) {.company-quick-grid{grid-template-columns:1fr;}}
+
+                .cqc { position:relative; display:flex; flex-direction:column; gap:10px; padding:16px; background:#f8fafc; border:2px solid #e5e7eb; border-radius:14px; text-decoration:none; color:inherit; transition:all .18s ease; overflow:hidden; }
+                .cqc:hover { border-color:#667eea; background:#fff; transform:translateY(-3px); box-shadow:0 8px 24px rgba(102,126,234,.14); text-decoration:none; color:inherit; }
+                .cqc--active { border-color:#667eea; background:linear-gradient(135deg,rgba(102,126,234,.07),rgba(118,75,162,.07)); }
+
+                /* Pulse dot */
+                .cqc-pulse { position:absolute; top:12px; right:12px; width:9px; height:9px; border-radius:50%; }
+
+                /* Logo / initials */
+                .cqc-logo { width:48px; height:48px; border-radius:12px; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+                .cqc-logo img { width:100%; height:100%; object-fit:cover; }
+                .cqc-initials { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; border-radius:11px; font-family:'Sarabun','Inter',sans-serif; letter-spacing:0; }
+
+                /* Body */
+                .cqc-body { flex:1; min-width:0; }
+                .cqc-name { font-weight:700; font-size:13.5px; color:#1e293b; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px; padding-right:14px; line-height:1.4; min-height:2em; }
+
+                /* Tags */
+                .cqc-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+                .cqc-tag { font-size:10px; padding:2px 7px; border-radius:4px; font-weight:600; display:inline-flex; align-items:center; gap:3px; }
+                .cqc-tag--vendor   { background:#dbeafe; color:#1d4ed8; }
+                .cqc-tag--customer { background:#dcfce7; color:#15803d; }
+                .cqc-tag--both     { background:#fef3c7; color:#b45309; }
+                .cqc-tag--time     { background:#f1f5f9; color:#64748b; }
+
+                /* Stats row */
+                .cqc-stats { display:flex; gap:10px; align-items:center; }
+                .cqc-stat { font-size:11px; color:#64748b; display:inline-flex; align-items:center; gap:3px; font-weight:500; }
+                .cqc-stat i { opacity:.65; }
+                .cqc-stat--rev { color:#059669; font-weight:600; }
+
+                /* Selected badge */
+                .cqc-check { position:absolute; top:-1px; right:-1px; width:24px; height:24px; background:linear-gradient(135deg,#667eea,#764ba2); border-radius:0 12px 0 10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; }
+
+                .quick-selection-label { padding:16px 24px 8px; font-size:12px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:6px; }
+                </style>
                 
                 <div class="company-selector-footer">
                     <a href="index.php?page=company" class="btn-browse-all">
@@ -540,7 +635,7 @@ function get_status_badge($status) {
                                 <?php if($top_customers && mysqli_num_rows($top_customers) > 0): ?>
                                     <?php while($tc = mysqli_fetch_assoc($top_customers)): ?>
                                     <tr>
-                                        <td><a href="index.php?page=remote&select_company=<?php echo $tc['id']; ?>" style="color: #333;"><?php echo htmlspecialchars(substr($tc['name_en'] ?: $tc['name_th'], 0, 20)); ?></a></td>
+                                        <td><a href="index.php?page=remote&select_company=<?php echo $tc['id']; ?>" style="color: #333;"><?php echo htmlspecialchars(mb_substr($tc['name_en'] ?: $tc['name_th'], 0, 20)); ?></a></td>
                                         <td class="text-center"><?php echo $tc['tx_count']; ?></td>
                                         <td class="text-center"><?php echo $tc['invoice_count']; ?></td>
                                     </tr>
@@ -686,31 +781,61 @@ function get_status_badge($status) {
     <!-- ============ USER DASHBOARD (Company-specific data) ============ -->
     <?php $u = $dashboard; ?>
     
+    <?php
+    // ── KPI helpers ─────────────────────────────────────────────────────────
+    function kpi_delta(float $current, float $prev): string {
+        if ($prev <= 0) return '';
+        $pct = round(($current - $prev) / $prev * 100);
+        if ($pct > 0) return '<span style="color:#10b981;font-size:11px;font-weight:600;"><i class="fa fa-arrow-up"></i> ' . $pct . '% vs prev</span>';
+        if ($pct < 0) return '<span style="color:#ef4444;font-size:11px;font-weight:600;"><i class="fa fa-arrow-down"></i> ' . abs($pct) . '% vs prev</span>';
+        return '<span style="color:#94a3b8;font-size:11px;">No change</span>';
+    }
+    $salesYest    = $u['sales_yesterday']  ?? 0;
+    $salesLastMo  = $u['sales_last_month'] ?? 0;
+    $overdueAmt   = $u['overdue_amount']   ?? 0;
+    ?>
+
+    <?php if ($overdueAmt > 0): ?>
+    <!-- Overdue AR Alert Banner -->
+    <div style="background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #fca5a5;border-radius:12px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+        <i class="fa fa-exclamation-triangle" style="font-size:22px;color:#ef4444;flex-shrink:0;"></i>
+        <div style="flex:1;">
+            <strong style="color:#991b1b;font-size:14px;">Overdue Invoices</strong>
+            <div style="color:#b91c1c;font-size:13px;margin-top:2px;">
+                <strong><?= format_currency($overdueAmt) ?></strong> outstanding on invoices older than 30 days
+            </div>
+        </div>
+        <a href="index.php?page=report_ar_aging" style="background:#ef4444;color:#fff;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;">
+            <i class="fa fa-eye"></i> View AR Aging
+        </a>
+    </div>
+    <?php endif; ?>
+
     <!-- KPI Cards Row -->
     <div class="row kpi-row">
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card">
-                <div class="kpi-icon primary"><i class="fa fa-dollar-sign"></i></div>
+                <div class="kpi-icon primary"><i class="fa fa-money"></i></div>
                 <div class="kpi-label"><?= $t['sales_today'] ?></div>
-                <div class="kpi-value"><?php echo format_currency($u['sales_today']); ?></div>
-                <div class="kpi-change"><i class="fa fa-arrow-up"></i> <?= $t['last_24h'] ?></div>
+                <div class="kpi-value"><?= format_currency($u['sales_today']) ?></div>
+                <div class="kpi-change"><?= kpi_delta($u['sales_today'], $salesYest) ?: ('<i class="fa fa-clock-o"></i> ' . $t['last_24h']) ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card success">
-                <div class="kpi-icon success"><i class="fa fa-chart-line"></i></div>
+                <div class="kpi-icon success"><i class="fa fa-line-chart"></i></div>
                 <div class="kpi-label"><?= $t['month_sales'] ?></div>
-                <div class="kpi-value"><?php echo format_currency($u['sales_month']); ?></div>
-                <div class="kpi-change"><?= $t['current_month'] ?></div>
+                <div class="kpi-value"><?= format_currency($u['sales_month']) ?></div>
+                <div class="kpi-change"><?= kpi_delta($u['sales_month'], $salesLastMo) ?: $t['current_month'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card warning">
                 <div class="kpi-icon warning"><i class="fa fa-hourglass-half"></i></div>
                 <div class="kpi-label"><?= $t['pending_orders'] ?></div>
-                <div class="kpi-value"><?php echo $u['pending_orders']; ?></div>
+                <div class="kpi-value"><?= $u['pending_orders'] ?></div>
                 <div class="kpi-change">
-                    <?php if($u['pending_orders'] > 0): ?>
+                    <?php if ($u['pending_orders'] > 0): ?>
                         <span class="badge badge-warning"><?= $t['action_needed'] ?></span>
                     <?php else: ?>
                         <span class="badge badge-success"><?= $t['all_clear'] ?></span>
@@ -719,11 +844,13 @@ function get_status_badge($status) {
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="kpi-card alert">
-                <div class="kpi-icon danger"><i class="fa fa-shopping-cart"></i></div>
+            <div class="kpi-card">
+                <div class="kpi-icon primary"><i class="fa fa-shopping-cart"></i></div>
                 <div class="kpi-label"><?= $t['total_orders'] ?></div>
-                <div class="kpi-value"><?php echo $u['total_orders']; ?></div>
-                <div class="kpi-change"><?= $t['all_time'] ?></div>
+                <div class="kpi-value"><?= $u['total_orders'] ?></div>
+                <div class="kpi-change">
+                    <span style="color:#10b981;font-size:11px;font-weight:600;"><?= $u['completed_orders'] ?> completed this month</span>
+                </div>
             </div>
         </div>
     </div>
@@ -731,21 +858,31 @@ function get_status_badge($status) {
     <!-- Invoice KPI Cards Row -->
     <div class="row kpi-row">
         <div class="col-md-3 col-sm-6">
-            <div class="kpi-card" style="border-left: 4px solid #4caf50;">
-                <div class="kpi-icon" style="color: #4caf50;"><i class="fa fa-file-invoice"></i></div>
+            <div class="kpi-card" style="border-left:4px solid #4caf50;">
+                <div class="kpi-icon" style="color:#4caf50;"><i class="fa fa-file-text-o"></i></div>
                 <div class="kpi-label"><?= $t['invoices_month'] ?></div>
-                <div class="kpi-value"><?php echo $u['total_invoices']; ?></div>
+                <div class="kpi-value"><?= $u['total_invoices'] ?></div>
                 <div class="kpi-change"><?= $t['customer_invoices'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="kpi-card" style="border-left: 4px solid #2196f3;">
-                <div class="kpi-icon" style="color: #2196f3;"><i class="fa fa-receipt"></i></div>
+            <div class="kpi-card" style="border-left:4px solid #2196f3;">
+                <div class="kpi-icon" style="color:#2196f3;"><i class="fa fa-file-o"></i></div>
                 <div class="kpi-label"><?= $t['tax_invoices_month'] ?></div>
-                <div class="kpi-value"><?php echo $u['total_tax_invoices']; ?></div>
+                <div class="kpi-value"><?= $u['total_tax_invoices'] ?></div>
                 <div class="kpi-change"><?= $t['tax_docs_issued'] ?></div>
             </div>
         </div>
+        <?php if ($overdueAmt > 0): ?>
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card alert">
+                <div class="kpi-icon danger"><i class="fa fa-warning"></i></div>
+                <div class="kpi-label">Overdue (30+ days)</div>
+                <div class="kpi-value" style="font-size:22px;"><?= format_currency($overdueAmt) ?></div>
+                <div class="kpi-change"><a href="index.php?page=report_ar_aging" style="color:#ef4444;font-size:11px;">View AR Aging →</a></div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- ============ CHARTS SECTION ============ -->
@@ -755,7 +892,7 @@ function get_status_badge($status) {
                 <h5 class="card-title">
                     <i class="fa fa-line-chart"></i> <?= $t['revenue_expenses'] ?>
                 </h5>
-                <div style="position: relative; height: 320px;">
+                <div style="position:relative;height:320px;overflow-x:auto;min-width:0;">
                     <canvas id="revenueExpenseChart"></canvas>
                 </div>
             </div>
@@ -796,27 +933,47 @@ function get_status_badge($status) {
     <!-- Main Content Row -->
     <div class="row">
         <!-- Left Column -->
-        <div class="col-lg-8">
+        <div class="col-lg-8 col-md-8 col-sm-12">
             <!-- Recent Payments -->
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-money-bill-wave"></i> <?= $t['recent_payments'] ?>
-                    <a href="index.php?page=payment_list" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
+                    <a href="index.php?page=payment" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
                         <thead><tr><th><?= $t['po_no'] ?></th><th><?= $t['description'] ?></th><th><?= $t['date'] ?></th><th><?= $t['amount'] ?></th><th><?= $t['payment_method'] ?></th><th></th></tr></thead>
                         <tbody>
                             <?php $recent_payments = $u['recent_payments'] ?? null; ?>
-                            <?php if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
-                                <?php while($payment = mysqli_fetch_assoc($recent_payments)): ?>
+                            <?php
+                            $pmIcons = [
+                                'cash'          => ['fa-money',       '#10b981'],
+                                'bank_transfer' => ['fa-university',  '#3b82f6'],
+                                'bank transfer' => ['fa-university',  '#3b82f6'],
+                                'credit_card'   => ['fa-credit-card', '#8b5cf6'],
+                                'credit card'   => ['fa-credit-card', '#8b5cf6'],
+                                'promptpay'     => ['fa-qrcode',      '#06b6d4'],
+                                'stripe'        => ['fa-cc-stripe',   '#635bff'],
+                                'paypal'        => ['fa-paypal',      '#0070ba'],
+                                'cheque'        => ['fa-pencil-square-o','#f59e0b'],
+                            ];
+                            if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
+                                <?php while($payment = mysqli_fetch_assoc($recent_payments)):
+                                    $pmKey = strtolower($payment['value'] ?? '');
+                                    $pmMeta = $pmIcons[$pmKey] ?? ['fa-money', '#94a3b8'];
+                                ?>
                                 <tr>
-                                    <td><strong>#<?php echo $payment['po_id']; ?></strong></td>
-                                    <td><?php echo htmlspecialchars(mb_substr($payment['name'] ?? '', 0, 25)); ?></td>
-                                    <td><?php echo date('M d, Y', strtotime($payment['date'])); ?></td>
-                                    <td><?php echo format_currency($payment['volumn']); ?></td>
-                                    <td><?php echo !empty($payment['value']) ? ucfirst($payment['value']) : 'Direct'; ?></td>
-                                    <td><a href="index.php?page=po_view&id=<?php echo $payment['po_id']; ?>" class="action-btn" title="View Details"><i class="fa fa-eye"></i></a></td>
+                                    <td><strong>#<?= $payment['po_id'] ?></strong></td>
+                                    <td><?= htmlspecialchars(mb_substr($payment['name'] ?? '', 0, 25)) ?></td>
+                                    <td><?= date('M d, Y', strtotime($payment['date'])) ?></td>
+                                    <td><strong><?= format_currency($payment['volumn']) ?></strong></td>
+                                    <td>
+                                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;">
+                                            <i class="fa <?= $pmMeta[0] ?>" style="color:<?= $pmMeta[1] ?>;font-size:14px;"></i>
+                                            <?= !empty($payment['value']) ? ucwords(str_replace('_',' ',$payment['value'])) : 'Direct' ?>
+                                        </span>
+                                    </td>
+                                    <td><a href="index.php?page=po_view&id=<?= $payment['po_id'] ?>" class="action-btn" title="View Details"><i class="fa fa-eye"></i></a></td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
@@ -920,7 +1077,7 @@ function get_status_badge($status) {
         </div>
 
         <!-- Right Sidebar -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 col-md-4 col-sm-12">
             <?php if ($is_admin && $com_id > 0): ?>
             <div class="content-card" style="background: #f8f9fa; border-left: 4px solid #667eea;">
                 <h5 class="card-title"><i class="fa fa-cog"></i> Admin Actions</h5>
@@ -939,11 +1096,26 @@ function get_status_badge($status) {
 
             <div class="content-card">
                 <h5 class="card-title"><i class="fa fa-bolt"></i> Quick Links</h5>
-                <a href="index.php?page=po_list" class="quick-link"><i class="fa fa-shopping-cart"></i><span class="quick-link-text">Purchase Orders</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=pr_list" class="quick-link"><i class="fa fa-clipboard"></i><span class="quick-link-text">Requests</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=deliv_list" class="quick-link"><i class="fa fa-truck"></i><span class="quick-link-text">Deliveries</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=report" class="quick-link"><i class="fa fa-bar-chart-o"></i><span class="quick-link-text">Reports</span><i class="fa fa-chevron-right"></i></a>
+
+                <div class="ql-group-label">Sales</div>
+                <a href="index.php?page=po_list"    class="quick-link"><i class="fa fa-shopping-cart" style="color:#667eea;"></i><span class="quick-link-text">Purchase Orders</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=pr_list"    class="quick-link"><i class="fa fa-clipboard"     style="color:#667eea;"></i><span class="quick-link-text">Requests</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=compl_list" class="quick-link"><i class="fa fa-file-text-o"   style="color:#667eea;"></i><span class="quick-link-text">Invoices</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=deliv_list" class="quick-link"><i class="fa fa-truck"         style="color:#667eea;"></i><span class="quick-link-text">Deliveries</span><i class="fa fa-chevron-right"></i></a>
+
+                <div class="ql-group-label" style="margin-top:10px;">Finance</div>
+                <a href="index.php?page=payment" class="quick-link"><i class="fa fa-money" style="color:#10b981;"></i><span class="quick-link-text">Payments</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=receipt_list"  class="quick-link"><i class="fa fa-file-o"     style="color:#10b981;"></i><span class="quick-link-text">Receipts</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=report_ar_aging"      class="quick-link"><i class="fa fa-clock-o"    style="color:<?= $overdueAmt > 0 ? '#ef4444' : '#10b981' ?>;"></i><span class="quick-link-text">AR Aging<?= $overdueAmt > 0 ? ' <span style="background:#ef4444;color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;">!</span>' : '' ?></span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=expense_list"  class="quick-link"><i class="fa fa-credit-card" style="color:#10b981;"></i><span class="quick-link-text">Expenses</span><i class="fa fa-chevron-right"></i></a>
+
+                <div class="ql-group-label" style="margin-top:10px;">Reports</div>
+                <a href="index.php?page=report"         class="quick-link"><i class="fa fa-bar-chart-o" style="color:#f59e0b;"></i><span class="quick-link-text">Summary Report</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=tour_report"    class="quick-link"><i class="fa fa-plane"       style="color:#f59e0b;"></i><span class="quick-link-text">Tour Report</span><i class="fa fa-chevron-right"></i></a>
             </div>
+            <style>
+            .ql-group-label { font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;padding:4px 2px 6px; }
+            </style>
 
             <div class="content-card">
                 <h5 class="card-title">
