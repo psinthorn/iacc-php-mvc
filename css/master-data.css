@@ -157,6 +157,19 @@
     color: white !important;
 }
 
+/* Status badges inside header — solid colors + white text for contrast on dark gradient */
+.master-data-header .status-badge {
+    background: rgba(255,255,255,0.15) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(4px);
+}
+/* Per-status solid accent colours inside header */
+.master-data-header .status-badge.status-draft     { background: rgba(100,116,139,0.75) !important; }
+.master-data-header .status-badge.status-confirmed { background: rgba(5,150,105,0.85)   !important; }
+.master-data-header .status-badge.status-completed { background: rgba(37,99,235,0.85)   !important; }
+.master-data-header .status-badge.status-cancelled { background: rgba(220,38,38,0.85)   !important; }
+
 /* Module-specific header colors — override with inline style or data attribute */
 .master-data-header[data-theme="teal"] {
     background: linear-gradient(135deg, #0d9488, #0891b2);
