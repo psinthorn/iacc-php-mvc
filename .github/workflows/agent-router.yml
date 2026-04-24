@@ -1,0 +1,162 @@
+# =============================================================================
+# Agent Router — Auto-assign new GitHub Issues to the right AI agent
+# =============================================================================
+#
+# Triggers when a new issue is opened.
+# Uses Claude API to read the issue and decide:
+#   - Which agent should handle it (pm/backend/frontend/qa/devops/designer/tracker)
+#   - Which labels to apply
+#   - Which milestone to assign
+# Then posts a comment naming the assigned agent + next steps.
+#
+# Required secrets:
+#   ANTHROPIC_API_KEY  — Claude API key (already set)
+#   TRACKER_TOKEN      — PAT with repo + project scope (already set)
+#
+# =============================================================================
+
+name: Agent Router — Auto-assign Issues to AI Agents
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask Claude which agent should handle this issue
+        id: classify
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          PROMPT="You are an agent router for iACC, a PHP MVC SaaS for tour operators.
+
+          Available agents:
+          - pm: Feature specs, user stories, product decisions, roadmap
+          - backend: PHP controllers, models, MySQL, APIs, migrations
+          - frontend: Views, HTML, CSS, Bootstrap, JavaScript, UI
+          - qa: Bugs, test cases, code review, security issues
+          - devops: Deployments, cPanel, Docker, CI/CD, GitHub Actions
+          - designer: UI/UX wireframes, design improvements
+          - tracker: Milestones, sprint planning, project timeline
+
+          Issue title: ${ISSUE_TITLE}
+          Issue body: ${ISSUE_BODY}
+
+          Reply with ONLY a JSON object, no markdown, no explanation:
+          {
+            \"agent\": \"<one of: pm|backend|frontend|qa|devops|designer|tracker>\",
+            \"reason\": \"<one sentence why>\",
+            \"labels\": [\"<label1>\", \"<label2>\"],
+            \"priority\": \"<high|medium|low>\",
+            \"next_step\": \"<one action the assigned agent should do first>\"
+          }
+
+          Label options (pick 1-3 that fit): bug, enhancement, feature, planned, ui/ux, payment, report, tour-booking, bulk-actions, ai-agent, infrastructure, devtools, security, accounting"
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "{
+              \"model\": \"claude-haiku-4-5-20251001\",
+              \"max_tokens\": 256,
+              \"messages\": [{\"role\": \"user\", \"content\": $(echo "$PROMPT" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')}]
+            }")
+
+          echo "Raw response: $RESPONSE"
+
+          CONTENT=$(echo "$RESPONSE" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data['content'][0]['text'])" 2>/dev/null || echo '{"agent":"pm","reason":"Could not classify","labels":["enhancement"],"priority":"medium","next_step":"Review the issue manually"}')
+
+          echo "content=$CONTENT" >> $GITHUB_OUTPUT
+
+          AGENT=$(echo "$CONTENT" | python3 -c "import json,sys; print(json.load(sys.stdin)['agent'])" 2>/dev/null || echo "pm")
+          REASON=$(echo "$CONTENT" | python3 -c "import json,sys; print(json.load(sys.stdin)['reason'])" 2>/dev/null || echo "")
+          PRIORITY=$(echo "$CONTENT" | python3 -c "import json,sys; print(json.load(sys.stdin)['priority'])" 2>/dev/null || echo "medium")
+          NEXT_STEP=$(echo "$CONTENT" | python3 -c "import json,sys; print(json.load(sys.stdin)['next_step'])" 2>/dev/null || echo "")
+          LABELS=$(echo "$CONTENT" | python3 -c "import json,sys; print(' '.join(json.load(sys.stdin)['labels']))" 2>/dev/null || echo "enhancement")
+
+          echo "agent=$AGENT" >> $GITHUB_OUTPUT
+          echo "reason=$REASON" >> $GITHUB_OUTPUT
+          echo "priority=$PRIORITY" >> $GITHUB_OUTPUT
+          echo "next_step=$NEXT_STEP" >> $GITHUB_OUTPUT
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+
+      - name: Apply labels to issue
+        env:
+          GH_TOKEN: ${{ secrets.TRACKER_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          LABELS: ${{ steps.classify.outputs.labels }}
+        run: |
+          for LABEL in $LABELS; do
+            gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$LABEL" 2>/dev/null || true
+          done
+
+      - name: Add issue to Sprint Board as Todo
+        env:
+          GH_TOKEN: ${{ secrets.TRACKER_TOKEN }}
+          PROJECT_ID: PVT_kwHOADbqcM4BMK9M
+          STATUS_FIELD_ID: PVTSSF_lAHOADbqcM4BMK9Mzg7h-VE
+          TODO_OPTION_ID: f75ad846
+          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query="mutation {
+            addProjectV2ItemById(input: {
+              projectId: \"$PROJECT_ID\"
+              contentId: \"$ISSUE_NODE_ID\"
+            }) { item { id } }
+          }" --jq '.data.addProjectV2ItemById.item.id // empty')
+
+          if [ -n "$ITEM_ID" ]; then
+            gh api graphql -f query="mutation {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: \"$PROJECT_ID\"
+                itemId: \"$ITEM_ID\"
+                fieldId: \"$STATUS_FIELD_ID\"
+                value: { singleSelectOptionId: \"$TODO_OPTION_ID\" }
+              }) { projectV2Item { id } }
+            }" > /dev/null
+            echo "Added to Sprint Board as Todo"
+          fi
+
+      - name: Post agent assignment comment
+        env:
+          GH_TOKEN: ${{ secrets.TRACKER_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          AGENT: ${{ steps.classify.outputs.agent }}
+          REASON: ${{ steps.classify.outputs.reason }}
+          PRIORITY: ${{ steps.classify.outputs.priority }}
+          NEXT_STEP: ${{ steps.classify.outputs.next_step }}
+        run: |
+          declare -A AGENT_EMOJI=(
+            [pm]="📋" [backend]="⚙️" [frontend]="🎨"
+            [qa]="🔍" [devops]="🚀" [designer]="✏️" [tracker]="📊"
+          )
+          declare -A AGENT_NAME=(
+            [pm]="Product Manager" [backend]="Backend Developer" [frontend]="Frontend Developer"
+            [qa]="QA Tester" [devops]="DevOps Engineer" [designer]="UI/UX Designer" [tracker]="Project Tracker"
+          )
+          declare -A PRIORITY_EMOJI=([high]="🔴" [medium]="🟡" [low]="🟢")
+
+          EMOJI="${AGENT_EMOJI[$AGENT]:-🤖}"
+          NAME="${AGENT_NAME[$AGENT]:-$AGENT}"
+          P_EMOJI="${PRIORITY_EMOJI[$PRIORITY]:-🟡}"
+
+          cat > /tmp/router-comment.md << EOF
+          ## ${EMOJI} Assigned to ${NAME} Agent
+
+          **Priority:** ${P_EMOJI} ${PRIORITY}
+          **Why:** ${REASON}
+
+          **Next step:** ${NEXT_STEP}
+
+          ---
+          *Added to Sprint Board as Todo. To use the ${NAME} agent, paste the contents of [ai/prompts/agent-${AGENT}.md](https://github.com/${REPO}/blob/develop/ai/prompts/agent-${AGENT}.md) into Claude and describe your task.*
+          EOF
+
+          gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --body-file /tmp/router-comment.md
