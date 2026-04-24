@@ -145,10 +145,10 @@ function get_status_badge($status) {
     return '<span class="badge" style="background: #6c757d; color: white;">' . $t['unknown'] . '</span>';
 }
 ?>
-<!-- Modern Font -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Modern Font (Inter for Latin + Sarabun for Thai) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
+    body { font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     .dashboard-wrapper { padding: 20px; max-width: 1400px; margin: 0 auto; }
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.25); color: white; }
     .dashboard-title { font-size: 28px; font-weight: 700; margin: 0; }
@@ -349,7 +349,7 @@ function get_status_badge($status) {
                     <?php if($quick_companies && mysqli_num_rows($quick_companies) > 0): ?>
                         <?php while($qc = mysqli_fetch_assoc($quick_companies)):
                             $isActive = ($com_id == $qc['id']);
-                            $name     = htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 28));
+                            $name     = htmlspecialchars(mb_substr($qc['name_en'] ?: $qc['name_th'], 0, 30));
                             $tx30d    = intval($qc['tx_30d'] ?? 0);
                             $rev30d   = floatval($qc['revenue_30d'] ?? 0);
                             $invCount = intval($qc['invoice_count'] ?? 0);
@@ -367,7 +367,8 @@ function get_status_badge($status) {
                             // Activity pulse color
                             $pulseColor = !$lastAct ? '#e5e7eb' : ($diff <= 7 ? '#10b981' : ($diff <= 30 ? '#f59e0b' : '#94a3b8'));
                             // Initials avatar fallback
-                            $initials = strtoupper(substr($qc['name_en'] ?: $qc['name_th'], 0, 2));
+                            $_rawName = $qc['name_en'] ?: $qc['name_th'];
+                            $initials = mb_strtoupper(mb_substr($_rawName, 0, 2, 'UTF-8'), 'UTF-8');
                             // Gradient based on id
                             $gradients = ['135deg,#667eea,#764ba2','135deg,#06b6d4,#0891b2','135deg,#10b981,#059669','135deg,#f59e0b,#d97706','135deg,#ef4444,#dc2626','135deg,#8b5cf6,#7c3aed'];
                             $grad = $gradients[$qc['id'] % count($gradients)];
@@ -446,11 +447,11 @@ function get_status_badge($status) {
                 /* Logo / initials */
                 .cqc-logo { width:48px; height:48px; border-radius:12px; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
                 .cqc-logo img { width:100%; height:100%; object-fit:cover; }
-                .cqc-initials { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; border-radius:11px; }
+                .cqc-initials { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; border-radius:11px; font-family:'Sarabun','Inter',sans-serif; letter-spacing:0; }
 
                 /* Body */
                 .cqc-body { flex:1; min-width:0; }
-                .cqc-name { font-weight:700; font-size:13.5px; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px; padding-right:14px; }
+                .cqc-name { font-weight:700; font-size:13.5px; color:#1e293b; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px; padding-right:14px; line-height:1.4; min-height:2em; }
 
                 /* Tags */
                 .cqc-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
@@ -634,7 +635,7 @@ function get_status_badge($status) {
                                 <?php if($top_customers && mysqli_num_rows($top_customers) > 0): ?>
                                     <?php while($tc = mysqli_fetch_assoc($top_customers)): ?>
                                     <tr>
-                                        <td><a href="index.php?page=remote&select_company=<?php echo $tc['id']; ?>" style="color: #333;"><?php echo htmlspecialchars(substr($tc['name_en'] ?: $tc['name_th'], 0, 20)); ?></a></td>
+                                        <td><a href="index.php?page=remote&select_company=<?php echo $tc['id']; ?>" style="color: #333;"><?php echo htmlspecialchars(mb_substr($tc['name_en'] ?: $tc['name_th'], 0, 20)); ?></a></td>
                                         <td class="text-center"><?php echo $tc['tx_count']; ?></td>
                                         <td class="text-center"><?php echo $tc['invoice_count']; ?></td>
                                     </tr>
@@ -804,7 +805,7 @@ function get_status_badge($status) {
                 <strong><?= format_currency($overdueAmt) ?></strong> outstanding on invoices older than 30 days
             </div>
         </div>
-        <a href="index.php?page=ar_aging" style="background:#ef4444;color:#fff;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;">
+        <a href="index.php?page=report_ar_aging" style="background:#ef4444;color:#fff;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;">
             <i class="fa fa-eye"></i> View AR Aging
         </a>
     </div>
@@ -878,7 +879,7 @@ function get_status_badge($status) {
                 <div class="kpi-icon danger"><i class="fa fa-warning"></i></div>
                 <div class="kpi-label">Overdue (30+ days)</div>
                 <div class="kpi-value" style="font-size:22px;"><?= format_currency($overdueAmt) ?></div>
-                <div class="kpi-change"><a href="index.php?page=ar_aging" style="color:#ef4444;font-size:11px;">View AR Aging →</a></div>
+                <div class="kpi-change"><a href="index.php?page=report_ar_aging" style="color:#ef4444;font-size:11px;">View AR Aging →</a></div>
             </div>
         </div>
         <?php endif; ?>
@@ -932,12 +933,12 @@ function get_status_badge($status) {
     <!-- Main Content Row -->
     <div class="row">
         <!-- Left Column -->
-        <div class="col-lg-8">
+        <div class="col-lg-8 col-md-8 col-sm-12">
             <!-- Recent Payments -->
             <div class="content-card">
                 <h5 class="card-title">
                     <i class="fa fa-money-bill-wave"></i> <?= $t['recent_payments'] ?>
-                    <a href="index.php?page=payment_list" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
+                    <a href="index.php?page=payment" style="float: right; font-size: 11px; color: #667eea;"><?= $t['view_all'] ?> <i class="fa fa-arrow-right"></i></a>
                 </h5>
                 <div class="table-responsive">
                     <table class="table table-hover" style="font-size: 12px;">
@@ -1076,7 +1077,7 @@ function get_status_badge($status) {
         </div>
 
         <!-- Right Sidebar -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 col-md-4 col-sm-12">
             <?php if ($is_admin && $com_id > 0): ?>
             <div class="content-card" style="background: #f8f9fa; border-left: 4px solid #667eea;">
                 <h5 class="card-title"><i class="fa fa-cog"></i> Admin Actions</h5>
@@ -1103,9 +1104,9 @@ function get_status_badge($status) {
                 <a href="index.php?page=deliv_list" class="quick-link"><i class="fa fa-truck"         style="color:#667eea;"></i><span class="quick-link-text">Deliveries</span><i class="fa fa-chevron-right"></i></a>
 
                 <div class="ql-group-label" style="margin-top:10px;">Finance</div>
-                <a href="index.php?page=payment_list"  class="quick-link"><i class="fa fa-money"      style="color:#10b981;"></i><span class="quick-link-text">Payments</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=payment" class="quick-link"><i class="fa fa-money" style="color:#10b981;"></i><span class="quick-link-text">Payments</span><i class="fa fa-chevron-right"></i></a>
                 <a href="index.php?page=receipt_list"  class="quick-link"><i class="fa fa-file-o"     style="color:#10b981;"></i><span class="quick-link-text">Receipts</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=ar_aging"      class="quick-link"><i class="fa fa-clock-o"    style="color:<?= $overdueAmt > 0 ? '#ef4444' : '#10b981' ?>;"></i><span class="quick-link-text">AR Aging<?= $overdueAmt > 0 ? ' <span style="background:#ef4444;color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;">!</span>' : '' ?></span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=report_ar_aging"      class="quick-link"><i class="fa fa-clock-o"    style="color:<?= $overdueAmt > 0 ? '#ef4444' : '#10b981' ?>;"></i><span class="quick-link-text">AR Aging<?= $overdueAmt > 0 ? ' <span style="background:#ef4444;color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;">!</span>' : '' ?></span><i class="fa fa-chevron-right"></i></a>
                 <a href="index.php?page=expense_list"  class="quick-link"><i class="fa fa-credit-card" style="color:#10b981;"></i><span class="quick-link-text">Expenses</span><i class="fa fa-chevron-right"></i></a>
 
                 <div class="ql-group-label" style="margin-top:10px;">Reports</div>

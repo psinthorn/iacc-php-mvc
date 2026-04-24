@@ -196,12 +196,12 @@ class Dashboard
 
     public function getRecentPayments(string $companyFilter, int $limit = 5): ?\mysqli_result
     {
-        $sql = "SELECT pay.*, po.name, po.tax 
-                FROM pay 
-                LEFT JOIN po ON pay.po_id = po.id 
+        $sql = "SELECT pay.*, po.name, po.tax
+                FROM pay
+                LEFT JOIN po ON pay.po_id = po.id
                 LEFT JOIN pr ON po.ref = pr.id
-                WHERE 1=1 $companyFilter
-                ORDER BY pay.date DESC LIMIT $limit";
+                WHERE pay.deleted_at IS NULL $companyFilter
+                ORDER BY pay.date DESC, pay.id DESC LIMIT $limit";
         return mysqli_query($this->db->conn, $sql);
     }
 
@@ -253,11 +253,11 @@ class Dashboard
         $sql = "SELECT iv.tex as po_id, iv.createdate, iv.status_iv,
                 po.name as description,
                 (SELECT SUM(price*quantity) FROM product WHERE po_id = po.id) as subtotal
-                FROM iv 
+                FROM iv
                 JOIN po ON iv.tex = po.id
                 JOIN pr ON po.ref = pr.id
-                WHERE 1=1 $companyFilter
-                ORDER BY iv.createdate DESC LIMIT $limit";
+                WHERE iv.deleted_at IS NULL $companyFilter
+                ORDER BY iv.createdate DESC, iv.tex DESC LIMIT $limit";
         return mysqli_query($this->db->conn, $sql);
     }
 
