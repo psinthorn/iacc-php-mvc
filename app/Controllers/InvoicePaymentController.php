@@ -44,6 +44,7 @@ class InvoicePaymentController extends BaseController
 
         // Handle payment initiation POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gateway'])) {
+            $this->verifyCsrf();
             $selectedGateway = $_POST['gateway'];
             try {
                 if ($selectedGateway === 'paypal') {

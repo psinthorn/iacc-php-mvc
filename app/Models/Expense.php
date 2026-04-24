@@ -21,9 +21,10 @@ class Expense extends BaseModel
      */
     public function generateExpenseNumber(): string
     {
+        $comId = (int) ($_SESSION['com_id'] ?? 0);
         $prefix = 'EXP-' . date('Ym') . '-';
-        $sql = "SELECT expense_number FROM expenses 
-                WHERE expense_number LIKE '{$prefix}%' 
+        $sql = "SELECT expense_number FROM expenses
+                WHERE expense_number LIKE '{$prefix}%' AND com_id = {$comId}
                 ORDER BY expense_number DESC LIMIT 1";
         $result = mysqli_query($this->conn, $sql);
         

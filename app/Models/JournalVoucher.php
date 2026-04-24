@@ -260,8 +260,11 @@ class JournalVoucher extends BaseModel
                 throw new \Exception('Failed to update journal voucher');
             }
 
-            // Delete old entries
-            mysqli_query($conn, "DELETE FROM journal_entries WHERE journal_voucher_id = {$id}");
+            // Delete old entries — scoped to this voucher's company (tenant isolation)
+            $comId = (int) ($_SESSION['com_id'] ?? 0);
+            mysqli_query($conn, "DELETE je FROM journal_entries je
+                INNER JOIN journal_vouchers jv ON jv.id = je.journal_voucher_id
+                WHERE je.journal_voucher_id = {$id} AND jv.com_id = {$comId}");
 
             // Insert new entries
             foreach ($entries as $i => $entry) {

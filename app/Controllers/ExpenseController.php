@@ -147,16 +147,16 @@ class ExpenseController extends BaseController
             'status'         => $_POST['status'] ?? 'draft',
         ];
 
-        // Handle file upload
-        if (!empty($_FILES['receipt_file']['name'])) {
-            $uploadDir = 'upload/expense/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            $ext = pathinfo($_FILES['receipt_file']['name'], PATHINFO_EXTENSION);
-            $filename = 'exp_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            if (move_uploaded_file($_FILES['receipt_file']['tmp_name'], $uploadDir . $filename)) {
-                $data['receipt_file'] = $uploadDir . $filename;
+        // Handle file upload — server-side MIME validation via FileUpload helper
+        if (!empty($_FILES['receipt_file']['tmp_name'])) {
+            $filename = \App\Helpers\FileUpload::save(
+                $_FILES['receipt_file'],
+                'upload/expense',
+                'exp',
+                'document'
+            );
+            if ($filename) {
+                $data['receipt_file'] = 'upload/expense/' . $filename;
             }
         }
 

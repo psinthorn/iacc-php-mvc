@@ -83,7 +83,7 @@
             <h3>Select Payment Method</h3>
             <div class="gateway-options">
                 <?php foreach ($gateways as $gw): ?>
-                <form method="POST"><input type="hidden" name="gateway" value="<?= htmlspecialchars($gw['code']) ?>">
+                <form method="POST"><?= csrf_field() ?><input type="hidden" name="gateway" value="<?= htmlspecialchars($gw['code']) ?>">
                     <button type="submit" class="gateway-btn <?= htmlspecialchars($gw['code']) ?>">
                         <i class="fa fa-<?= $gw['code'] === 'paypal' ? 'paypal' : 'cc-stripe' ?>"></i>
                         Pay with <?= htmlspecialchars($gw['name']) ?>
