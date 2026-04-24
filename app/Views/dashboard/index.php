@@ -780,31 +780,61 @@ function get_status_badge($status) {
     <!-- ============ USER DASHBOARD (Company-specific data) ============ -->
     <?php $u = $dashboard; ?>
     
+    <?php
+    // ── KPI helpers ─────────────────────────────────────────────────────────
+    function kpi_delta(float $current, float $prev): string {
+        if ($prev <= 0) return '';
+        $pct = round(($current - $prev) / $prev * 100);
+        if ($pct > 0) return '<span style="color:#10b981;font-size:11px;font-weight:600;"><i class="fa fa-arrow-up"></i> ' . $pct . '% vs prev</span>';
+        if ($pct < 0) return '<span style="color:#ef4444;font-size:11px;font-weight:600;"><i class="fa fa-arrow-down"></i> ' . abs($pct) . '% vs prev</span>';
+        return '<span style="color:#94a3b8;font-size:11px;">No change</span>';
+    }
+    $salesYest    = $u['sales_yesterday']  ?? 0;
+    $salesLastMo  = $u['sales_last_month'] ?? 0;
+    $overdueAmt   = $u['overdue_amount']   ?? 0;
+    ?>
+
+    <?php if ($overdueAmt > 0): ?>
+    <!-- Overdue AR Alert Banner -->
+    <div style="background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1.5px solid #fca5a5;border-radius:12px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+        <i class="fa fa-exclamation-triangle" style="font-size:22px;color:#ef4444;flex-shrink:0;"></i>
+        <div style="flex:1;">
+            <strong style="color:#991b1b;font-size:14px;">Overdue Invoices</strong>
+            <div style="color:#b91c1c;font-size:13px;margin-top:2px;">
+                <strong><?= format_currency($overdueAmt) ?></strong> outstanding on invoices older than 30 days
+            </div>
+        </div>
+        <a href="index.php?page=ar_aging" style="background:#ef4444;color:#fff;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;">
+            <i class="fa fa-eye"></i> View AR Aging
+        </a>
+    </div>
+    <?php endif; ?>
+
     <!-- KPI Cards Row -->
     <div class="row kpi-row">
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card">
-                <div class="kpi-icon primary"><i class="fa fa-dollar-sign"></i></div>
+                <div class="kpi-icon primary"><i class="fa fa-money"></i></div>
                 <div class="kpi-label"><?= $t['sales_today'] ?></div>
-                <div class="kpi-value"><?php echo format_currency($u['sales_today']); ?></div>
-                <div class="kpi-change"><i class="fa fa-arrow-up"></i> <?= $t['last_24h'] ?></div>
+                <div class="kpi-value"><?= format_currency($u['sales_today']) ?></div>
+                <div class="kpi-change"><?= kpi_delta($u['sales_today'], $salesYest) ?: ('<i class="fa fa-clock-o"></i> ' . $t['last_24h']) ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card success">
-                <div class="kpi-icon success"><i class="fa fa-chart-line"></i></div>
+                <div class="kpi-icon success"><i class="fa fa-line-chart"></i></div>
                 <div class="kpi-label"><?= $t['month_sales'] ?></div>
-                <div class="kpi-value"><?php echo format_currency($u['sales_month']); ?></div>
-                <div class="kpi-change"><?= $t['current_month'] ?></div>
+                <div class="kpi-value"><?= format_currency($u['sales_month']) ?></div>
+                <div class="kpi-change"><?= kpi_delta($u['sales_month'], $salesLastMo) ?: $t['current_month'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="kpi-card warning">
                 <div class="kpi-icon warning"><i class="fa fa-hourglass-half"></i></div>
                 <div class="kpi-label"><?= $t['pending_orders'] ?></div>
-                <div class="kpi-value"><?php echo $u['pending_orders']; ?></div>
+                <div class="kpi-value"><?= $u['pending_orders'] ?></div>
                 <div class="kpi-change">
-                    <?php if($u['pending_orders'] > 0): ?>
+                    <?php if ($u['pending_orders'] > 0): ?>
                         <span class="badge badge-warning"><?= $t['action_needed'] ?></span>
                     <?php else: ?>
                         <span class="badge badge-success"><?= $t['all_clear'] ?></span>
@@ -813,11 +843,13 @@ function get_status_badge($status) {
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="kpi-card alert">
-                <div class="kpi-icon danger"><i class="fa fa-shopping-cart"></i></div>
+            <div class="kpi-card">
+                <div class="kpi-icon primary"><i class="fa fa-shopping-cart"></i></div>
                 <div class="kpi-label"><?= $t['total_orders'] ?></div>
-                <div class="kpi-value"><?php echo $u['total_orders']; ?></div>
-                <div class="kpi-change"><?= $t['all_time'] ?></div>
+                <div class="kpi-value"><?= $u['total_orders'] ?></div>
+                <div class="kpi-change">
+                    <span style="color:#10b981;font-size:11px;font-weight:600;"><?= $u['completed_orders'] ?> completed this month</span>
+                </div>
             </div>
         </div>
     </div>
@@ -825,21 +857,31 @@ function get_status_badge($status) {
     <!-- Invoice KPI Cards Row -->
     <div class="row kpi-row">
         <div class="col-md-3 col-sm-6">
-            <div class="kpi-card" style="border-left: 4px solid #4caf50;">
-                <div class="kpi-icon" style="color: #4caf50;"><i class="fa fa-file-invoice"></i></div>
+            <div class="kpi-card" style="border-left:4px solid #4caf50;">
+                <div class="kpi-icon" style="color:#4caf50;"><i class="fa fa-file-text-o"></i></div>
                 <div class="kpi-label"><?= $t['invoices_month'] ?></div>
-                <div class="kpi-value"><?php echo $u['total_invoices']; ?></div>
+                <div class="kpi-value"><?= $u['total_invoices'] ?></div>
                 <div class="kpi-change"><?= $t['customer_invoices'] ?></div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="kpi-card" style="border-left: 4px solid #2196f3;">
-                <div class="kpi-icon" style="color: #2196f3;"><i class="fa fa-receipt"></i></div>
+            <div class="kpi-card" style="border-left:4px solid #2196f3;">
+                <div class="kpi-icon" style="color:#2196f3;"><i class="fa fa-file-o"></i></div>
                 <div class="kpi-label"><?= $t['tax_invoices_month'] ?></div>
-                <div class="kpi-value"><?php echo $u['total_tax_invoices']; ?></div>
+                <div class="kpi-value"><?= $u['total_tax_invoices'] ?></div>
                 <div class="kpi-change"><?= $t['tax_docs_issued'] ?></div>
             </div>
         </div>
+        <?php if ($overdueAmt > 0): ?>
+        <div class="col-md-3 col-sm-6">
+            <div class="kpi-card alert">
+                <div class="kpi-icon danger"><i class="fa fa-warning"></i></div>
+                <div class="kpi-label">Overdue (30+ days)</div>
+                <div class="kpi-value" style="font-size:22px;"><?= format_currency($overdueAmt) ?></div>
+                <div class="kpi-change"><a href="index.php?page=ar_aging" style="color:#ef4444;font-size:11px;">View AR Aging →</a></div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- ============ CHARTS SECTION ============ -->
@@ -849,7 +891,7 @@ function get_status_badge($status) {
                 <h5 class="card-title">
                     <i class="fa fa-line-chart"></i> <?= $t['revenue_expenses'] ?>
                 </h5>
-                <div style="position: relative; height: 320px;">
+                <div style="position:relative;height:320px;overflow-x:auto;min-width:0;">
                     <canvas id="revenueExpenseChart"></canvas>
                 </div>
             </div>
@@ -902,15 +944,35 @@ function get_status_badge($status) {
                         <thead><tr><th><?= $t['po_no'] ?></th><th><?= $t['description'] ?></th><th><?= $t['date'] ?></th><th><?= $t['amount'] ?></th><th><?= $t['payment_method'] ?></th><th></th></tr></thead>
                         <tbody>
                             <?php $recent_payments = $u['recent_payments'] ?? null; ?>
-                            <?php if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
-                                <?php while($payment = mysqli_fetch_assoc($recent_payments)): ?>
+                            <?php
+                            $pmIcons = [
+                                'cash'          => ['fa-money',       '#10b981'],
+                                'bank_transfer' => ['fa-university',  '#3b82f6'],
+                                'bank transfer' => ['fa-university',  '#3b82f6'],
+                                'credit_card'   => ['fa-credit-card', '#8b5cf6'],
+                                'credit card'   => ['fa-credit-card', '#8b5cf6'],
+                                'promptpay'     => ['fa-qrcode',      '#06b6d4'],
+                                'stripe'        => ['fa-cc-stripe',   '#635bff'],
+                                'paypal'        => ['fa-paypal',      '#0070ba'],
+                                'cheque'        => ['fa-pencil-square-o','#f59e0b'],
+                            ];
+                            if($recent_payments && mysqli_num_rows($recent_payments) > 0): ?>
+                                <?php while($payment = mysqli_fetch_assoc($recent_payments)):
+                                    $pmKey = strtolower($payment['value'] ?? '');
+                                    $pmMeta = $pmIcons[$pmKey] ?? ['fa-money', '#94a3b8'];
+                                ?>
                                 <tr>
-                                    <td><strong>#<?php echo $payment['po_id']; ?></strong></td>
-                                    <td><?php echo htmlspecialchars(mb_substr($payment['name'] ?? '', 0, 25)); ?></td>
-                                    <td><?php echo date('M d, Y', strtotime($payment['date'])); ?></td>
-                                    <td><?php echo format_currency($payment['volumn']); ?></td>
-                                    <td><?php echo !empty($payment['value']) ? ucfirst($payment['value']) : 'Direct'; ?></td>
-                                    <td><a href="index.php?page=po_view&id=<?php echo $payment['po_id']; ?>" class="action-btn" title="View Details"><i class="fa fa-eye"></i></a></td>
+                                    <td><strong>#<?= $payment['po_id'] ?></strong></td>
+                                    <td><?= htmlspecialchars(mb_substr($payment['name'] ?? '', 0, 25)) ?></td>
+                                    <td><?= date('M d, Y', strtotime($payment['date'])) ?></td>
+                                    <td><strong><?= format_currency($payment['volumn']) ?></strong></td>
+                                    <td>
+                                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;">
+                                            <i class="fa <?= $pmMeta[0] ?>" style="color:<?= $pmMeta[1] ?>;font-size:14px;"></i>
+                                            <?= !empty($payment['value']) ? ucwords(str_replace('_',' ',$payment['value'])) : 'Direct' ?>
+                                        </span>
+                                    </td>
+                                    <td><a href="index.php?page=po_view&id=<?= $payment['po_id'] ?>" class="action-btn" title="View Details"><i class="fa fa-eye"></i></a></td>
                                 </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
@@ -1033,11 +1095,26 @@ function get_status_badge($status) {
 
             <div class="content-card">
                 <h5 class="card-title"><i class="fa fa-bolt"></i> Quick Links</h5>
-                <a href="index.php?page=po_list" class="quick-link"><i class="fa fa-shopping-cart"></i><span class="quick-link-text">Purchase Orders</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=pr_list" class="quick-link"><i class="fa fa-clipboard"></i><span class="quick-link-text">Requests</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=deliv_list" class="quick-link"><i class="fa fa-truck"></i><span class="quick-link-text">Deliveries</span><i class="fa fa-chevron-right"></i></a>
-                <a href="index.php?page=report" class="quick-link"><i class="fa fa-bar-chart-o"></i><span class="quick-link-text">Reports</span><i class="fa fa-chevron-right"></i></a>
+
+                <div class="ql-group-label">Sales</div>
+                <a href="index.php?page=po_list"    class="quick-link"><i class="fa fa-shopping-cart" style="color:#667eea;"></i><span class="quick-link-text">Purchase Orders</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=pr_list"    class="quick-link"><i class="fa fa-clipboard"     style="color:#667eea;"></i><span class="quick-link-text">Requests</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=compl_list" class="quick-link"><i class="fa fa-file-text-o"   style="color:#667eea;"></i><span class="quick-link-text">Invoices</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=deliv_list" class="quick-link"><i class="fa fa-truck"         style="color:#667eea;"></i><span class="quick-link-text">Deliveries</span><i class="fa fa-chevron-right"></i></a>
+
+                <div class="ql-group-label" style="margin-top:10px;">Finance</div>
+                <a href="index.php?page=payment_list"  class="quick-link"><i class="fa fa-money"      style="color:#10b981;"></i><span class="quick-link-text">Payments</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=receipt_list"  class="quick-link"><i class="fa fa-file-o"     style="color:#10b981;"></i><span class="quick-link-text">Receipts</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=ar_aging"      class="quick-link"><i class="fa fa-clock-o"    style="color:<?= $overdueAmt > 0 ? '#ef4444' : '#10b981' ?>;"></i><span class="quick-link-text">AR Aging<?= $overdueAmt > 0 ? ' <span style="background:#ef4444;color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;">!</span>' : '' ?></span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=expense_list"  class="quick-link"><i class="fa fa-credit-card" style="color:#10b981;"></i><span class="quick-link-text">Expenses</span><i class="fa fa-chevron-right"></i></a>
+
+                <div class="ql-group-label" style="margin-top:10px;">Reports</div>
+                <a href="index.php?page=report"         class="quick-link"><i class="fa fa-bar-chart-o" style="color:#f59e0b;"></i><span class="quick-link-text">Summary Report</span><i class="fa fa-chevron-right"></i></a>
+                <a href="index.php?page=tour_report"    class="quick-link"><i class="fa fa-plane"       style="color:#f59e0b;"></i><span class="quick-link-text">Tour Report</span><i class="fa fa-chevron-right"></i></a>
             </div>
+            <style>
+            .ql-group-label { font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;padding:4px 2px 6px; }
+            </style>
 
             <div class="content-card">
                 <h5 class="card-title">

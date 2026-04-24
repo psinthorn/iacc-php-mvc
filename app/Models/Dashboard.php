@@ -117,6 +117,43 @@ class Dashboard
 
     // ========== User Dashboard (Company Data) ==========
 
+    public function getSalesYesterday(string $companyFilter): float
+    {
+        $sql = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay
+                JOIN po ON pay.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE DATE(pay.date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) $companyFilter";
+        $result = mysqli_query($this->db->conn, $sql);
+        return (float) (mysqli_fetch_assoc($result)['total'] ?? 0);
+    }
+
+    public function getSalesLastMonth(string $companyFilter): float
+    {
+        $sql = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay
+                JOIN po ON pay.po_id = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE DATE(pay.date) >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
+                  AND DATE(pay.date) < DATE_FORMAT(CURDATE(), '%Y-%m-01') $companyFilter";
+        $result = mysqli_query($this->db->conn, $sql);
+        return (float) (mysqli_fetch_assoc($result)['total'] ?? 0);
+    }
+
+    public function getOverdueAmount(string $companyFilter): float
+    {
+        $sql = "SELECT IFNULL(SUM(
+                    COALESCE((SELECT SUM(price*quantity) FROM product WHERE po_id = po.id), 0) -
+                    COALESCE((SELECT SUM(volumn) FROM pay WHERE po_id = po.id), 0)
+                ), 0) as overdue
+                FROM iv
+                JOIN po ON iv.tex = po.id
+                JOIN pr ON po.ref = pr.id
+                WHERE iv.createdate < DATE_SUB(CURDATE(), INTERVAL 30 DAY) $companyFilter
+                  AND (SELECT COALESCE(SUM(volumn),0) FROM pay WHERE po_id = po.id) <
+                      (SELECT COALESCE(SUM(price*quantity),0) FROM product WHERE po_id = po.id)";
+        $result = @mysqli_query($this->db->conn, $sql);
+        return (float) (mysqli_fetch_assoc($result ?? null)['overdue'] ?? 0);
+    }
+
     public function getSalesToday(int $comId, string $companyFilter): float
     {
         $sql = "SELECT IFNULL(SUM(pay.volumn), 0) as total FROM pay 
