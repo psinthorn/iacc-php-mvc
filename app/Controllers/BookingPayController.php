@@ -132,6 +132,8 @@ class BookingPayController extends BaseController
 
     public function checkout(): void
     {
+        $this->verifyCsrf();
+
         $bookingId = intval($_POST['id'] ?? 0);
         $token     = trim($_POST['token'] ?? '');
         $gateway   = trim($_POST['gateway'] ?? '');
@@ -201,7 +203,8 @@ class BookingPayController extends BaseController
             throw new \Exception('Unknown gateway');
 
         } catch (\Exception $e) {
-            $_SESSION['bpay_flash'] = ['type' => 'error', 'msg' => $e->getMessage()];
+            error_log('BookingPay checkout error (booking ' . $bookingId . '): ' . $e->getMessage());
+            $_SESSION['bpay_flash'] = ['type' => 'error', 'msg' => 'Payment processing failed. Please try again or contact the tour operator.'];
             header('Location: ' . $backUrl); exit;
         }
     }
@@ -277,7 +280,8 @@ class BookingPayController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            $error = $e->getMessage();
+            error_log('BookingPay success error (booking ' . $bookingId . ', gateway ' . $gateway . '): ' . $e->getMessage());
+            $error = 'Payment verification failed. Please contact the tour operator with your payment reference.';
         }
 
         $bookingNumber = $booking['booking_number'];
@@ -352,16 +356,16 @@ class BookingPayController extends BaseController
         $companyId = intval($booking['company_id']);
         $slipImage = null;
 
-        if (!empty($_FILES['slip']['name']) && $_FILES['slip']['error'] === UPLOAD_ERR_OK) {
-            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-            if (in_array($_FILES['slip']['type'], $allowed) && $_FILES['slip']['size'] <= 5 * 1024 * 1024) {
-                $ext      = pathinfo($_FILES['slip']['name'], PATHINFO_EXTENSION);
-                $fname    = sprintf('slip_%d_%d_%s.%s', $companyId, $bookingId, date('YmdHis'), $ext);
-                $dir      = $_SERVER['DOCUMENT_ROOT'] . '/upload/payment_slips/';
-                if (!is_dir($dir)) mkdir($dir, 0755, true);
-                if (move_uploaded_file($_FILES['slip']['tmp_name'], $dir . $fname)) {
-                    $slipImage = 'upload/payment_slips/' . $fname;
-                }
+        if (!empty($_FILES['slip']['tmp_name'])) {
+            $dir      = $_SERVER['DOCUMENT_ROOT'] . '/upload/payment_slips';
+            $filename = \App\Helpers\FileUpload::save(
+                $_FILES['slip'],
+                $dir,
+                'slip_' . $companyId . '_' . $bookingId,
+                'document'
+            );
+            if ($filename) {
+                $slipImage = 'upload/payment_slips/' . $filename;
             }
         }
 

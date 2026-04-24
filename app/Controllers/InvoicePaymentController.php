@@ -44,6 +44,7 @@ class InvoicePaymentController extends BaseController
 
         // Handle payment initiation POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gateway'])) {
+            $this->verifyCsrf();
             $selectedGateway = $_POST['gateway'];
             try {
                 if ($selectedGateway === 'paypal') {
@@ -280,26 +281,33 @@ class InvoicePaymentController extends BaseController
         // Handle slip upload
         $slipPath = '';
         if (isset($_FILES['slip']) && $_FILES['slip']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../upload/slips/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+            $uploadDir = __DIR__ . '/../../upload/slips';
+            $filename = \App\Helpers\FileUpload::save(
+                $_FILES['slip'],
+                $uploadDir,
+                'slip_inv' . $invoiceId,
+                'document'
+            );
+            if ($filename) {
+                $slipPath = 'upload/slips/' . $filename;
+                // Deny direct web access to uploaded slips
+                $htaccess = $uploadDir . '/.htaccess';
+                if (!file_exists($htaccess)) {
+                    file_put_contents($htaccess, "Deny from all\n");
+                }
             }
-            $ext = pathinfo($_FILES['slip']['name'], PATHINFO_EXTENSION);
-            $filename = 'slip_' . $invoiceId . '_' . time() . '.' . $ext;
-            move_uploaded_file($_FILES['slip']['tmp_name'], $uploadDir . $filename);
-            $slipPath = 'upload/slips/' . $filename;
         }
 
         // Update payment_log with slip info
-        if ($paymentLogId) {
+        if ($paymentLogId > 0) {
             $transRef = sql_escape($transRef);
             $slipPath = sql_escape($slipPath);
-            $sql = "UPDATE payment_log SET 
+            $sql = "UPDATE payment_log SET
                         reference_id = '$transRef',
                         slip_image = '$slipPath',
                         status = 'pending_review',
                         updated_at = NOW()
-                    WHERE id = $paymentLogId";
+                    WHERE id = " . intval($paymentLogId);
             mysqli_query($this->conn, $sql);
         }
 

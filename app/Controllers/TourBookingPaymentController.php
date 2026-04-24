@@ -482,29 +482,13 @@ class TourBookingPaymentController extends BaseController
 
     private function handleSlipUpload(array $file, int $comId, int $bookingId): ?string
     {
-        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-        if (!in_array($file['type'], $allowed)) {
-            return null;
-        }
-
-        $maxSize = 5 * 1024 * 1024; // 5MB
-        if ($file['size'] > $maxSize) {
-            return null;
-        }
-
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = sprintf('slip_%d_%d_%s.%s', $comId, $bookingId, date('YmdHis'), $ext);
-        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/upload/payment_slips/';
-
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        $dest = $uploadDir . $filename;
-        if (move_uploaded_file($file['tmp_name'], $dest)) {
-            return 'upload/payment_slips/' . $filename;
-        }
-
-        return null;
+        $dir      = $_SERVER['DOCUMENT_ROOT'] . '/upload/payment_slips';
+        $filename = \App\Helpers\FileUpload::save(
+            $file,
+            $dir,
+            'slip_' . $comId . '_' . $bookingId,
+            'document'
+        );
+        return $filename ? 'upload/payment_slips/' . $filename : null;
     }
 }

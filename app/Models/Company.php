@@ -392,13 +392,12 @@ class Company extends BaseModel
         if (!isset($_FILES['logo']) || $_FILES['logo']['error'] !== 0 || empty($_FILES['logo']['tmp_name'])) {
             return '';
         }
-        $allowed = ['image/jpg', 'image/jpeg', 'image/JPG', 'image/pjpeg', 'image/png', 'image/PNG'];
-        if (!in_array($_FILES['logo']['type'], $allowed)) {
-            return '';
-        }
-        $ext = (strpos($_FILES['logo']['type'], 'png') !== false || strpos($_FILES['logo']['type'], 'PNG') !== false) ? '.png' : '.jpg';
-        $filename = 'logo' . md5(rand() . $nameHint) . $ext;
-        move_uploaded_file($_FILES['logo']['tmp_name'], __DIR__ . '/../../upload/' . $filename);
-        return $filename;
+        return \App\Helpers\FileUpload::save(
+            $_FILES['logo'],
+            __DIR__ . '/../../upload',
+            'logo',
+            'image',
+            2 * 1024 * 1024 // 2 MB max for logos
+        );
     }
 }
