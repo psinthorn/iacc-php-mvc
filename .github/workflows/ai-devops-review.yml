@@ -108,7 +108,7 @@ jobs:
           Keep the total response under 400 words. Be direct and actionable."
 
           # Call Claude API
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+          RESPONSE=$(curl -s -w "\n__HTTP_STATUS__%{http_code}" https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: ${ANTHROPIC_API_KEY}" \
             -H "anthropic-version: 2023-06-01" \
@@ -121,8 +121,23 @@ jobs:
               }]
             }")
 
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "__HTTP_STATUS__" | sed 's/__HTTP_STATUS__//')
+          BODY=$(echo "$RESPONSE" | grep -v "__HTTP_STATUS__")
+          echo "HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            ERROR=$(echo "$BODY" | jq -r '.error.message // .error // "Unknown error"' 2>/dev/null || echo "$BODY")
+            echo "API Error: $ERROR"
+            REVIEW="⚠️ AI review failed (HTTP $HTTP_STATUS): $ERROR"
+            echo "review<<EOF" >> $GITHUB_OUTPUT
+            echo "$REVIEW" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "verdict=safe" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Extract text
-          REVIEW=$(echo "$RESPONSE" | jq -r '.content[0].text // "AI review unavailable."')
+          REVIEW=$(echo "$BODY" | jq -r '.content[0].text // "AI review unavailable."')
 
           # Save for next step
           echo "review<<EOF" >> $GITHUB_OUTPUT
