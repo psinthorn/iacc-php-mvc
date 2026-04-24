@@ -224,6 +224,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=tour_report"><i class="fa fa-bar-chart"></i> <?=$xml->tourreports ?? 'Reports'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=tour_checkin_staff"><i class="fa fa-check-square-o"></i> <?=$xml->tourcheckin ?? 'Check-In Dashboard'?></a>
+                            </li>
                         </ul>
                     </li>
                     <?php endif; ?>
