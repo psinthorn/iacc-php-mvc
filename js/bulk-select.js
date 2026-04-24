@@ -146,16 +146,21 @@ const BulkSelect = (function () {
     const modal = document.getElementById('bulkPaymentModal');
     if (!modal) { postAction({ action: actionCfg.key }); return; }
 
-    // Auto-fill balance: if exactly 1 row selected, read its data-balance attribute
+    // Auto-fill total balance due across all selected bookings
     const amountInput = document.getElementById('bulkPayAmount');
+    const amountHint  = document.getElementById('bulkPayAmountHint');
     if (amountInput) {
-      if (_selected.size === 1) {
-        const id  = Array.from(_selected)[0];
-        const cb  = _table.querySelector('.bulk-select-row[value="' + id + '"]');
-        const bal = cb ? parseFloat(cb.dataset.balance || '0') : 0;
-        amountInput.value = bal > 0 ? bal.toFixed(2) : '';
-      } else {
-        amountInput.value = '';
+      let total = 0;
+      _selected.forEach(id => {
+        const cb = _table.querySelector('.bulk-select-row[value="' + id + '"]');
+        if (cb) total += parseFloat(cb.dataset.balance || '0');
+      });
+      amountInput.value = total > 0 ? total.toFixed(2) : '';
+      if (amountHint) {
+        const n = _selected.size;
+        amountHint.textContent = total > 0
+          ? 'Total balance due for ' + n + ' booking' + (n > 1 ? 's' : '')
+          : '';
       }
     }
 
