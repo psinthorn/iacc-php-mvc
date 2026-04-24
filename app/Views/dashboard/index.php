@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dashboard';
+
 /**
  * Dashboard View — Admin Panel + User Dashboard
  *

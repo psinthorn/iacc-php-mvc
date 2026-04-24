@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Billing — Details';
+
 /**
  * Billing Note View — Admin Shell
  * Variables: $billing, $invoices, $vendor, $customer, $amount

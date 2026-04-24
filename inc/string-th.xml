@@ -584,5 +584,27 @@
 <tourpickupreport>รายงานรับส่งสำหรับคนขับ</tourpickupreport>
 <tournetrate>ราคาเน็ต</tournetrate>
 <tourpercentage>เปอร์เซ็นต์</tourpercentage>
+<!-- Tour Booking Payments -->
+<tourpayments>การชำระเงิน</tourpayments>
+<tourpaymentstatus>สถานะการชำระ</tourpaymentstatus>
+<tourpaymentrecord>บันทึกการชำระเงิน</tourpaymentrecord>
+<tourpaymentmethod>ช่องทางชำระ</tourpaymentmethod>
+<tourpaymenttype>ประเภทการชำระ</tourpaymenttype>
+<tourpaymentamount>จำนวนเงิน</tourpaymentamount>
+<tourpaymentdate>วันที่ชำระ</tourpaymentdate>
+<tourpaymentref>เลขอ้างอิง</tourpaymentref>
+<tourpaymentslip>หลักฐานการชำระ</tourpaymentslip>
+<tourpaymentnotes>หมายเหตุ</tourpaymentnotes>
+<tourpaymentapprove>อนุมัติ</tourpaymentapprove>
+<tourpaymentreject>ปฏิเสธ</tourpaymentreject>
+<tourpaymentrefund>คืนเงิน</tourpaymentrefund>
+<tourpaymenthistory>ประวัติการชำระเงิน</tourpaymenthistory>
+<tourpaymentbalance>ยอดค้างชำระ</tourpaymentbalance>
+<tourpaymentpaid>ชำระแล้ว</tourpaymentpaid>
+<tourpaymentunpaid>ยังไม่ชำระ</tourpaymentunpaid>
+<tourpaymentdeposit>มัดจำ</tourpaymentdeposit>
+<tourpaymentpartial>ชำระบางส่วน</tourpaymentpartial>
+<tourpaymentfull>ชำระเต็มจำนวน</tourpaymentfull>
+<tourpaymentmanage>จัดการชำระเงิน</tourpaymentmanage>
 
 </note>

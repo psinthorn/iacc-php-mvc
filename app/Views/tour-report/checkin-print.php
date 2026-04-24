@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Reports — Check-in Sheet';
+
 /**
  * Tour Report — Customer Check-in List PDF (landscape A4)
  * Standalone mPDF view
@@ -47,7 +49,8 @@ if (empty($tourDate)) {
 require_once("app/Models/BaseModel.php");
 require_once("app/Models/TourReport.php");
 
-$reportModel = new \App\Models\TourReport();
+$reportModel      = new \App\Models\TourReport();
+$tourActivityName = $reportModel->resolveActivityLabel($tourActivity);
 $data = $reportModel->getCheckinData($com_id, $tourDate, $section, $tourActivity);
 $direct = $data['direct'];
 $agent  = $data['agent'];
@@ -75,7 +78,7 @@ $html = '
     table.checkin { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     table.checkin th { background: #f1f5f9; color: #475569; padding: 4px 5px; font-size: 8px; text-align: left; text-transform: uppercase; letter-spacing: 0.03em; border: 1px solid #e2e8f0; }
     table.checkin td { padding: 4px 5px; font-size: 9px; border: 1px solid #e2e8f0; vertical-align: top; }
-    table.checkin tr.blank td { height: 22px; }
+    table.checkin tr.blank td { height: 30px; }
     .right { text-align: right; }
     .center { text-align: center; }
     .summary { margin-top: 8px; font-size: 10px; color: #475569; }
@@ -93,26 +96,26 @@ if (!empty($logo)) {
 $html .= '<div class="company-name">' . htmlspecialchars($companyName) . '</div>';
 $html .= '<div class="title">' . ($isThai ? 'ใบเช็คอินลูกค้า' : 'Customer Check-in List') . '</div>';
 $html .= '<div class="subtitle">' . ($isThai ? 'วันที่ทัวร์: ' : 'Tour Date: ') . $formattedDate;
-if (!empty($tourActivity)) {
-    $html .= ' | ' . ($isThai ? 'กิจกรรม: ' : 'Activity: ') . htmlspecialchars($tourActivity);
+if (!empty($tourActivityName)) {
+    $html .= ' | ' . ($isThai ? 'กิจกรรม: ' : 'Activity: ') . htmlspecialchars($tourActivityName);
 }
 $html .= '</div>';
 $html .= '</div>';
 
 // Table header row template
+// Columns: # | Hotel | Customer | Room | Adult | Child | Agent | Pickup | Sale Rep | Entrance | Signature/Remark
 $thRow = '<tr>
-    <th style="width:25px;">#</th>
-    <th style="width:80px;">' . ($isThai ? 'ตัวแทน' : 'Tour Agent') . '</th>
-    <th>' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
-    <th class="center" style="width:30px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
-    <th class="center" style="width:30px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
-    <th class="center" style="width:35px;">' . ($isThai ? 'รวม' : 'Total') . '</th>
-    <th style="width:90px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
-    <th style="width:40px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
+    <th style="width:22px;">#</th>
+    <th style="width:80px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
+    <th style="width:380px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
+    <th style="width:45px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
+    <th class="center" style="width:40px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
+    <th class="center" style="width:40px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
+    <th style="width:130px;">' . ($isThai ? 'ตัวแทน' : 'Agent') . '</th>
     <th style="width:55px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
-    <th style="width:50px;">' . ($isThai ? 'ผู้จอง' : 'Book By') . '</th>
-    <th class="right" style="width:55px;">' . ($isThai ? 'ค่าเข้าชม' : 'Entrance') . '</th>
-    <th style="width:140px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
+    <th style="width:70px;">' . ($isThai ? 'เซลล์' : 'Sale Rep') . '</th>
+    <th class="right" style="width:60px;">' . ($isThai ? 'ค่าเข้าชม' : 'Entrance') . '</th>
+    <th style="width:125px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
 </tr>';
 
 $globalNum = 0;
@@ -133,29 +136,21 @@ if (!empty($direct)) {
         $custName = ($isThai && !empty($b['customer_name_th'])) ? $b['customer_name_th'] : ($b['customer_name'] ?: '-');
         $pickupTime = !empty($b['pickup_time']) ? date('H:i', strtotime($b['pickup_time'])) : '-';
 
-        // Main booking row
+        // Main booking row — # | Hotel | Customer | Room | Adult | Child | Agent | Pickup | Sale Rep | Entrance | Signature/Remark
         $html .= '<tr>
             <td class="center">' . $globalNum . '</td>
-            <td>-</td>
+            <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
             <td><strong>' . htmlspecialchars($custName) . '</strong></td>
+            <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
             <td class="center">' . intval($b['pax_adult']) . '</td>
             <td class="center">' . intval($b['pax_child']) . '</td>
-            <td class="center"><strong>' . $b['total_pax'] . '</strong></td>
-            <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
-            <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
+            <td>-</td>
             <td>' . $pickupTime . '</td>
-            <td>' . htmlspecialchars($b['booking_by'] ?: '-') . '</td>
+            <td>' . htmlspecialchars($b['sales_rep_name'] ?: '-') . '</td>
             <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
-            <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 50)) . '</td>
+            <td></td>
         </tr>';
 
-        // Blank rows for handwritten signatures (total_pax rows)
-        for ($i = 0; $i < $b['total_pax']; $i++) {
-            $html .= '<tr class="blank">
-                <td></td><td></td><td></td><td></td><td></td><td></td>
-                <td></td><td></td><td></td><td></td><td></td><td></td>
-            </tr>';
-        }
     }
     $html .= '</table>';
 }
@@ -188,25 +183,18 @@ if (!empty($agent)) {
 
             $html .= '<tr>
                 <td class="center">' . $globalNum . '</td>
-                <td>' . htmlspecialchars($agName) . '</td>
+                <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
                 <td><strong>' . htmlspecialchars($custName) . '</strong></td>
+                <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
                 <td class="center">' . intval($b['pax_adult']) . '</td>
                 <td class="center">' . intval($b['pax_child']) . '</td>
-                <td class="center"><strong>' . $b['total_pax'] . '</strong></td>
-                <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
-                <td>' . htmlspecialchars($b['pickup_room'] ?: '-') . '</td>
+                <td>' . htmlspecialchars($agName) . '</td>
                 <td>' . $pickupTime . '</td>
-                <td>' . htmlspecialchars($b['booking_by'] ?: '-') . '</td>
+                <td>' . htmlspecialchars($b['sales_rep_name'] ?: '-') . '</td>
                 <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
-                <td>' . htmlspecialchars(mb_substr($b['remark'] ?? '', 0, 50)) . '</td>
+                <td></td>
             </tr>';
 
-            for ($i = 0; $i < $b['total_pax']; $i++) {
-                $html .= '<tr class="blank">
-                    <td></td><td></td><td></td><td></td><td></td><td></td>
-                    <td></td><td></td><td></td><td></td><td></td><td></td>
-                </tr>';
-            }
         }
         $html .= '</table>';
     }

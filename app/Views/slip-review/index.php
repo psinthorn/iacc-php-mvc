@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Slip Review';
+
 /**
  * Slip Review — Admin PromptPay Payment Review
  * 

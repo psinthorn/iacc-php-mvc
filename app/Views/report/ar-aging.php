@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Reports — AR Aging';
+
 /**
  * AR Aging Report — Accounts Receivable Aging
  * Variables: $buckets, $grand_total, $com_id

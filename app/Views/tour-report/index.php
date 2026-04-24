@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Reports';
+
 /**
  * Tour Report — Filter Hub Page
  *
@@ -90,6 +92,10 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                         <input type="radio" name="report_type" value="pickup">
                         <span><i class="fa fa-car"></i> <?= $isThai ? 'รายงานรับลูกค้า (คนขับ)' : 'Pickup Report for Driver' ?></span>
                     </label>
+                    <label class="rpt-radio">
+                        <input type="radio" name="report_type" value="insurance">
+                        <span><i class="fa fa-shield"></i> <?= $isThai ? 'ประกันอุบัติเหตุผู้โดยสาร' : 'Passenger Accident Insurance' ?></span>
+                    </label>
                 </div>
             </div>
 
@@ -118,8 +124,17 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                 <label><?= $isThai ? 'ทัวร์/กิจกรรม (ไม่บังคับ)' : 'Tour/Activity (Optional)' ?></label>
                 <select id="rpt_activity">
                     <option value=""><?= $isThai ? '— ทั้งหมด —' : '— All —' ?></option>
-                    <?php foreach ($activities as $act): ?>
-                    <option value="<?= htmlspecialchars($act) ?>"><?= htmlspecialchars($act) ?></option>
+                    <?php foreach ($activities as $type): ?>
+                    <optgroup label="<?= htmlspecialchars($type['name']) ?>">
+                        <option value="type:<?= intval($type['id']) ?>">
+                            <?= htmlspecialchars($type['name']) ?> (<?= $isThai ? 'ทั้งหมด' : 'All' ?>)
+                        </option>
+                        <?php foreach ($type['models'] as $model): ?>
+                        <option value="model:<?= intval($model['id']) ?>">
+                            &nbsp;&nbsp;↳ <?= htmlspecialchars($model['name']) ?><?= !empty($model['des']) ? ' — ' . htmlspecialchars($model['des']) : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </optgroup>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -146,7 +161,7 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
     function toggleGroups() {
         var selected = document.querySelector('input[name="report_type"]:checked').value;
-        sectionGroup.className  = 'rpt-group conditional-group' + (selected === 'checkin' ? ' show' : '');
+        sectionGroup.className  = 'rpt-group conditional-group' + (selected === 'checkin' || selected === 'insurance' ? ' show' : '');
         groupingGroup.className = 'rpt-group conditional-group' + (selected === 'pickup' ? ' show' : '');
 
         // Update radio active state
@@ -180,6 +195,11 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
         if (reportType === 'checkin') {
             var section = document.getElementById('rpt_section').value;
             url = 'index.php?page=tour_report_checkin&tour_date=' + encodeURIComponent(tourDate)
+                + '&section=' + encodeURIComponent(section)
+                + '&activity=' + encodeURIComponent(activity);
+        } else if (reportType === 'insurance') {
+            var section = document.getElementById('rpt_section').value;
+            url = 'index.php?page=tour_report_insurance&tour_date=' + encodeURIComponent(tourDate)
                 + '&section=' + encodeURIComponent(section)
                 + '&activity=' + encodeURIComponent(activity);
         } else {

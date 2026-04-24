@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'AI Assistant — Schema Browser';
+
 /** @var array $tables */
 /** @var string $discoveredAt */
 /** @var array|null $cachedSchema */

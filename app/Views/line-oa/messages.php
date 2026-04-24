@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Messages';
+
 /**
  * LINE OA Messages Log
  */

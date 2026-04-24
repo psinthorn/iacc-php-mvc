@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Invoices — Tax Invoices';
+
 /**
  * Tax Invoice List View (MVC)
  * Replaces legacy compl-list2.php

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Usage Logs';
+
 /**
  * API Usage Logs View
  * 

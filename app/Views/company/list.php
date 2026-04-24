@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Companies';
+
 /**
  * Company List View
  * 
@@ -128,7 +130,7 @@ $total_customers = $stats['customers'];
                 <th><?=$xml->contact ?? 'Contact'?></th>
                 <th><?=$xml->email ?? 'Email'?></th>
                 <th><?=$xml->phone ?? 'Phone'?></th>
-                <th width="100"><?=$xml->type ?? 'Type'?></th>
+                <?php if ($type_filter == ''): ?><th width="100"><?=$xml->type ?? 'Type'?></th><?php endif; ?>
                 <th width="150"><?=$xml->actions ?? 'Actions'?></th>
             </tr>
         </thead>
@@ -168,6 +170,7 @@ $total_customers = $stats['customers'];
                     <?php else: ?>-<?php endif; ?>
                 </td>
                 <td><?=htmlspecialchars($data['phone'] ?? '') ?: '-'?></td>
+                <?php if ($type_filter == ''): ?>
                 <td>
                     <?php if ($data['vender'] == '1' && $data['customer'] == '1'): ?>
                     <span class="badge-both"><?=$xml->both ?? 'Both'?></span>
@@ -179,6 +182,7 @@ $total_customers = $stats['customers'];
                     <span class="text-muted">-</span>
                     <?php endif; ?>
                 </td>
+                <?php endif; ?>
                 <td>
                     <div class="action-buttons">
                         <a href="index.php?page=remote&select_company=<?=$data['id']?>" 

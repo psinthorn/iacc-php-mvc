@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Debug Session';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Session Debug Tool

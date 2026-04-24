@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Delivery — Edit';
+
 /**
  * Delivery Edit View — Legacy Modern Design
  * Variables: $detail, $products, $id, $mode, $customers

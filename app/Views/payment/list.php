@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Payments';
+
 /**
  * Payment List View — Legacy Modern Design (inline add/edit)
  * Variables: $items, $total, $search, $edit_id, $edit_data

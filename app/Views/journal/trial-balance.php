@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Journal — Trial Balance';
+
 /**
  * Trial Balance Report — Modern UI
  * 

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Test Crud';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * CRUD Operations Test Script

@@ -141,17 +141,16 @@ class PromptPayService
     public function generateQR(float $amount, int $size = 300, string $target = ''): array
     {
         $payload = $this->generatePayload($amount, $target);
-        
-        // Use Google Chart API as fallback QR generator
-        // TODO: Replace with local QR library (endroid/qr-code) for production
-        $qrUrl = 'https://chart.googleapis.com/chart?chs=' . $size . 'x' . $size 
-                . '&cht=qr&chl=' . urlencode($payload) 
-                . '&choe=UTF-8&chld=M|2';
-        
+
+        // api.qrserver.com — free, reliable, no deprecated status
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=' . $size . 'x' . $size
+               . '&data=' . urlencode($payload)
+               . '&format=png&ecc=M&margin=10';
+
         return [
             'payload'   => $payload,
             'qr_url'    => $qrUrl,
-            'qr_base64' => '', // Will be populated when local QR library is added
+            'qr_base64' => '',
             'amount'    => $amount,
             'target'    => $target ?: ($this->config['promptpay_id'] ?? ''),
         ];

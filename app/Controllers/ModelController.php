@@ -28,12 +28,13 @@ class ModelController extends BaseController
     public function index(): void
     {
         $search      = trim($this->input('search', ''));
+        $status      = $this->input('status', '');
         $currentPage = max(1, $this->inputInt('p', 1));
         $typeId      = $this->inputInt('type_id', 0);
         $brandId     = $this->inputInt('brand_id', 0);
         $perPage     = 15;
 
-        $result = $this->model->getPaginated($search, $currentPage, $perPage, $typeId, $brandId);
+        $result = $this->model->getPaginated($search, $currentPage, $perPage, $typeId, $brandId, $status);
 
         // Edit mode
         $editId   = $this->inputInt('edit', 0);
@@ -52,7 +53,9 @@ class ModelController extends BaseController
             'total_items'  => $result['total'],
             'item_count'   => $result['count'],
             'pagination'   => $result['pagination'],
+            'stats'        => $this->model->getStats(),
             'search'       => $search,
+            'status'       => $status,
             'type_id'      => $typeId,
             'brand_id'     => $brandId,
             'edit_data'    => $editData,
@@ -92,13 +95,16 @@ class ModelController extends BaseController
                 ]);
                 break;
 
-            case 'E': // Edit (only name, des, price — not type/brand)
+            case 'E': // Edit
                 if ($id > 0) {
-                    $this->model->update($id, [
+                    $data = [
                         'model_name' => $modelName,
                         'des'        => $des,
                         'price'      => $price,
-                    ]);
+                    ];
+                    if ($typeId > 0)  $data['type_id']  = $typeId;
+                    if ($brandId > 0) $data['brand_id'] = $brandId;
+                    $this->model->update($id, $data);
                 }
                 break;
 
@@ -147,6 +153,21 @@ class ModelController extends BaseController
         if (!empty($_REQUEST['search'])) $redirectParams['search'] = $_REQUEST['search'];
 
         $this->redirect('mo_list', $redirectParams);
+    }
+
+    /**
+     * AJAX toggle is_active
+     * Route: ?page=mo_list_toggle  POST {id, active, csrf_token}
+     */
+    public function toggle(): void
+    {
+        $this->verifyCsrf();
+        $id     = $this->inputInt('id', 0);
+        $active = intval($this->input('active', '1'));
+        $ok     = $id > 0 && $this->model->toggle($id, $active);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $ok, 'active' => $active]);
+        exit;
     }
 
     /**

@@ -42,14 +42,17 @@ class TourBooking extends BaseModel
 
         if (!empty($filters['search'])) {
             $s = sql_escape(trim($filters['search']));
-            $where .= " AND (b.booking_number LIKE '%$s%' OR b.booking_by LIKE '%$s%' 
+            $where .= " AND (b.booking_number LIKE '%$s%' OR b.booking_by LIKE '%$s%'
                          OR cust.name_en LIKE '%$s%' OR cust.name_th LIKE '%$s%'
+                         OR bc.contact_name LIKE '%$s%'
                          OR b.voucher_number LIKE '%$s%')";
         }
         if (!empty($filters['status'])) {
             $where .= " AND b.status = '" . sql_escape($filters['status']) . "'";
         }
-        if (!empty($filters['agent_id'])) {
+        if (isset($filters['agent_id']) && $filters['agent_id'] == -1) {
+            $where .= " AND b.agent_id = 0";
+        } elseif (!empty($filters['agent_id'])) {
             $where .= " AND b.agent_id = " . intval($filters['agent_id']);
         }
         if (!empty($filters['date_from'])) {
@@ -59,14 +62,16 @@ class TourBooking extends BaseModel
             $where .= " AND b.travel_date <= '" . sql_escape($filters['date_to']) . "'";
         }
 
-        $sql = "SELECT b.*, 
+        $sql = "SELECT b.*,
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
-                       agt.name_en AS agent_name
+                       agt.name_en AS agent_name,
+                       bc.contact_name
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
+                LEFT JOIN tour_booking_contacts bc ON bc.booking_id = b.id
                 WHERE $where
-                ORDER BY b.travel_date DESC, b.id DESC
+                ORDER BY b.id DESC
                 LIMIT $offset, $limit";
 
         $result = mysqli_query($this->conn, $sql);
@@ -84,12 +89,15 @@ class TourBooking extends BaseModel
         if (!empty($filters['search'])) {
             $s = sql_escape(trim($filters['search']));
             $where .= " AND (b.booking_number LIKE '%$s%' OR b.booking_by LIKE '%$s%'
-                         OR cust.name_en LIKE '%$s%' OR cust.name_th LIKE '%$s%')";
+                         OR cust.name_en LIKE '%$s%' OR cust.name_th LIKE '%$s%'
+                         OR bc.contact_name LIKE '%$s%')";
         }
         if (!empty($filters['status'])) {
             $where .= " AND b.status = '" . sql_escape($filters['status']) . "'";
         }
-        if (!empty($filters['agent_id'])) {
+        if (isset($filters['agent_id']) && $filters['agent_id'] == -1) {
+            $where .= " AND b.agent_id = 0";
+        } elseif (!empty($filters['agent_id'])) {
             $where .= " AND b.agent_id = " . intval($filters['agent_id']);
         }
         if (!empty($filters['date_from'])) {
@@ -102,6 +110,7 @@ class TourBooking extends BaseModel
         $sql = "SELECT COUNT(*) AS total
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
+                LEFT JOIN tour_booking_contacts bc ON bc.booking_id = b.id
                 WHERE $where";
 
         $result = mysqli_query($this->conn, $sql);
@@ -116,15 +125,23 @@ class TourBooking extends BaseModel
      */
     public function findBooking(int $id, int $comId): ?array
     {
-        $sql = "SELECT b.*, 
+        $sql = "SELECT b.*,
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        agt.name_en AS agent_name, agt.name_th AS agent_name_th,
+                       tap.contact_email AS agent_email, tap.contact_mobile AS agent_mobile,
+                       CONCAT_WS(', ', tap.contact_line, tap.contact_whatsapp) AS agent_messengers,
+                       srep.name_en AS sales_rep_name, srep.name_th AS sales_rep_name_th,
+                       srtap.contact_email AS sales_rep_email, srtap.contact_mobile AS sales_rep_mobile,
+                       CONCAT_WS(', ', srtap.contact_line, srtap.contact_whatsapp) AS sales_rep_messengers,
                        loc.name AS pickup_location_name, loc.location_type AS pickup_location_type
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
+                LEFT JOIN tour_agent_profiles tap ON tap.company_ref_id = b.agent_id AND tap.company_id = b.company_id
+                LEFT JOIN company srep ON b.sales_rep_id = srep.id
+                LEFT JOIN tour_agent_profiles srtap ON srtap.company_ref_id = b.sales_rep_id AND srtap.company_id = b.company_id
                 LEFT JOIN tour_locations loc ON b.pickup_location_id = loc.id
-                WHERE b.id = " . intval($id) . " 
+                WHERE b.id = " . intval($id) . "
                   AND b.company_id = " . intval($comId) . "
                   AND b.deleted_at IS NULL
                 LIMIT 1";
@@ -177,19 +194,21 @@ class TourBooking extends BaseModel
 
     public function createBooking(array $data): int
     {
-        $cols = "company_id, booking_number, booking_date, customer_id, agent_id, booking_by, travel_date,
+        $cols = "company_id, booking_number, booking_date, customer_id, agent_id, sales_rep_id, booking_by, travel_date,
                  pax_adult, pax_child, pax_infant,
                  pickup_location_id, pickup_hotel, pickup_room, pickup_time,
+                 driver_name, vehicle_no,
                  voucher_number, entrance_fee, subtotal, discount, vat, total_amount, currency,
                  status, remark, created_by";
 
         $vals = sprintf(
-            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
             intval($data['company_id']),
             sql_escape($data['booking_number']),
             sql_escape($data['booking_date'] ?? date('Y-m-d')),
             intval($data['customer_id'] ?? 0),
             intval($data['agent_id'] ?? 0),
+            intval($data['sales_rep_id'] ?? 0),
             sql_escape($data['booking_by'] ?? ''),
             sql_escape($data['travel_date']),
             intval($data['pax_adult'] ?? 0),
@@ -199,6 +218,8 @@ class TourBooking extends BaseModel
             sql_escape($data['pickup_hotel'] ?? ''),
             sql_escape($data['pickup_room'] ?? ''),
             sql_escape($data['pickup_time'] ?? ''),
+            sql_escape($data['driver_name'] ?? ''),
+            sql_escape($data['vehicle_no'] ?? ''),
             sql_escape($data['voucher_number'] ?? ''),
             floatval($data['entrance_fee'] ?? 0),
             floatval($data['subtotal'] ?? 0),
@@ -227,13 +248,15 @@ class TourBooking extends BaseModel
     public function updateBooking(int $id, array $data, int $comId): bool
     {
         $set = sprintf(
-            "customer_id='%s', agent_id='%s', booking_by='%s', booking_date='%s', travel_date='%s',
+            "customer_id='%s', agent_id='%s', sales_rep_id='%s', booking_by='%s', booking_date='%s', travel_date='%s',
              pax_adult='%s', pax_child='%s', pax_infant='%s',
              pickup_location_id='%s', pickup_hotel='%s', pickup_room='%s', pickup_time='%s',
+             driver_name='%s', vehicle_no='%s',
              voucher_number='%s', entrance_fee='%s', subtotal='%s', discount='%s', vat='%s', total_amount='%s',
              currency='%s', status='%s', remark='%s'",
             intval($data['customer_id'] ?? 0),
             intval($data['agent_id'] ?? 0),
+            intval($data['sales_rep_id'] ?? 0),
             sql_escape($data['booking_by'] ?? ''),
             sql_escape($data['booking_date'] ?? date('Y-m-d')),
             sql_escape($data['travel_date']),
@@ -244,6 +267,8 @@ class TourBooking extends BaseModel
             sql_escape($data['pickup_hotel'] ?? ''),
             sql_escape($data['pickup_room'] ?? ''),
             sql_escape($data['pickup_time'] ?? ''),
+            sql_escape($data['driver_name'] ?? ''),
+            sql_escape($data['vehicle_no'] ?? ''),
             sql_escape($data['voucher_number'] ?? ''),
             floatval($data['entrance_fee'] ?? 0),
             floatval($data['subtotal'] ?? 0),
@@ -407,7 +432,9 @@ class TourBooking extends BaseModel
      */
     public function getAgentDropdown(int $comId): array
     {
-        $sql = "SELECT c.id, c.name_en, c.name_th
+        $sql = "SELECT c.id, c.name_en, c.name_th,
+                       tap.contact_email, tap.contact_mobile, tap.contact_line, tap.contact_whatsapp,
+                       tap.contact_messengers
                 FROM company c
                 INNER JOIN tour_agent_profiles tap ON c.id = tap.company_ref_id
                 WHERE tap.company_id = " . intval($comId) . "
@@ -472,6 +499,7 @@ class TourBooking extends BaseModel
                 FROM type
                 WHERE company_id = " . intval($comId) . "
                   AND deleted_at IS NULL
+                  AND is_active = 1
                 ORDER BY name";
 
         $result = mysqli_query($this->conn, $sql);
@@ -491,6 +519,7 @@ class TourBooking extends BaseModel
                 FROM model m
                 WHERE m.company_id = " . intval($comId) . "
                   AND m.deleted_at IS NULL
+                  AND m.is_active = 1
                 ORDER BY m.type_id, m.model_name";
 
         $result = mysqli_query($this->conn, $sql);
@@ -513,6 +542,7 @@ class TourBooking extends BaseModel
                 FROM company
                 WHERE company_id = " . intval($comId) . "
                   AND customer = '1'
+                  AND vender != '1'
                   AND deleted_at IS NULL
                   AND (name_en LIKE '%$s%' OR name_th LIKE '%$s%' OR phone LIKE '%$s%' OR email LIKE '%$s%')
                 ORDER BY name_en
@@ -527,22 +557,88 @@ class TourBooking extends BaseModel
     }
 
     /**
+     * Search agent profiles (used for both Agent and Sales Rep smart search)
+     * Returns company name + tour_agent_profiles contact fields
+     */
+    public function searchAgents(int $comId, string $term, int $limit = 15): array
+    {
+        $s = sql_escape(trim($term));
+        $sql = "SELECT c.id, c.name_en, c.name_th,
+                       tap.contact_email, tap.contact_mobile,
+                       CONCAT_WS(', ', tap.contact_line, tap.contact_whatsapp) AS contact_messengers
+                FROM tour_agent_profiles tap
+                JOIN company c ON c.id = tap.company_ref_id
+                WHERE tap.company_id = " . intval($comId) . "
+                  AND tap.deleted_at IS NULL
+                  AND c.deleted_at IS NULL
+                  AND (c.name_en LIKE '%$s%' OR c.name_th LIKE '%$s%'
+                       OR tap.contact_email LIKE '%$s%' OR tap.contact_mobile LIKE '%$s%')
+                ORDER BY c.name_en
+                LIMIT " . intval($limit);
+
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    /**
+     * Quick-create an agent: creates a company record (vender=1) + tour_agent_profiles entry
+     */
+    public function quickCreateAgent(int $comId, string $nameEn, string $email = '', string $phone = '', string $messengers = ''): int
+    {
+        // 1. Create company record as vendor (provide all NOT NULL cols for strict mode)
+        $companyId = $this->hard->insertSafe('company', [
+            'company_id' => $comId,
+            'name_en'    => $nameEn,
+            'name_th'    => $nameEn,
+            'name_sh'    => '',
+            'contact'    => '',
+            'fax'        => '',
+            'tax'        => '',
+            'logo'       => '',
+            'term'       => '',
+            'vender'     => '1',
+            'customer'   => '0',
+            'email'      => $email,
+            'phone'      => $phone,
+        ]);
+        if (!$companyId) return 0;
+
+        // 2. Create tour_agent_profiles entry linked to new company
+        $this->hard->insertSafe('tour_agent_profiles', [
+            'company_ref_id'      => $companyId,
+            'company_id'          => $comId,
+            'contact_email'       => $email,
+            'contact_mobile'      => $phone,
+            'contact_messengers'  => $messengers,
+        ]);
+        return $companyId; // agent_id in tour_bookings = company.id
+    }
+
+    /**
      * Quick-create a customer record (core company table — name + phone only)
      */
-    public function quickCreateCustomer(int $comId, string $nameEn, string $phone = ''): int
+    public function quickCreateCustomer(int $comId, string $nameEn, string $phone = '', string $messengers = ''): int
     {
-        $vals = sprintf(
-            "'%s','%s','%s','1'",
-            intval($comId),
-            sql_escape($nameEn),
-            sql_escape($phone)
-        );
-
-        $args = [];
-        $args['table'] = 'company';
-        $args['columns'] = 'company_id, name_en, phone, customer';
-        $args['value'] = $vals;
-        return intval($this->hard->insertDbMax($args));
+        $id = $this->hard->insertSafe('company', [
+            'company_id' => $comId,
+            'name_en'    => $nameEn,
+            'name_th'    => $nameEn,
+            'name_sh'    => '',
+            'contact'    => '',
+            'fax'        => '',
+            'tax'        => '',
+            'logo'       => '',
+            'term'       => '',
+            'customer'   => '1',
+            'vender'     => '0',
+            'phone'      => $phone,
+            'email'      => '',
+        ]);
+        return intval($id);
     }
 
     // ─── Tour Booking Contacts ──────────────────────────────────
@@ -557,18 +653,19 @@ class TourBooking extends BaseModel
         mysqli_query($this->conn, "DELETE FROM tour_booking_contacts WHERE booking_id = $bid");
 
         $vals = sprintf(
-            "'%s','%s','%s','%s','%s','%s'",
+            "'%s','%s','%s','%s','%s','%s','%s'",
             $bid,
             sql_escape($data['contact_name'] ?? ''),
             sql_escape($data['mobile'] ?? ''),
             sql_escape($data['email'] ?? ''),
             sql_escape($data['gender'] ?? ''),
-            sql_escape($data['nationality'] ?? '')
+            sql_escape($data['nationality'] ?? ''),
+            sql_escape($data['contact_messengers'] ?? '')
         );
 
         $args = [];
         $args['table'] = 'tour_booking_contacts';
-        $args['columns'] = 'booking_id, contact_name, mobile, email, gender, nationality';
+        $args['columns'] = 'booking_id, contact_name, mobile, email, gender, nationality, contact_messengers';
         $args['value'] = $vals;
         $this->hard->insertDB($args);
     }
@@ -600,6 +697,7 @@ class TourBooking extends BaseModel
                 LEFT JOIN type t ON m.type_id = t.id
                 WHERE m.company_id = $cid
                   AND m.deleted_at IS NULL
+                  AND m.is_active = 1
                   AND (m.model_name LIKE '%$s%' OR m.des LIKE '%$s%' OR t.name LIKE '%$s%')
                 ORDER BY m.model_name
                 LIMIT $lim";
@@ -619,6 +717,7 @@ class TourBooking extends BaseModel
                      LEFT JOIN category c ON t.cat_id = c.id
                      WHERE t.company_id = $cid
                        AND t.deleted_at IS NULL
+                       AND t.is_active = 1
                        AND (t.name LIKE '%$s%' OR t.des LIKE '%$s%')
                      ORDER BY t.name
                      LIMIT $remaining";

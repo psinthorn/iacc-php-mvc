@@ -28,10 +28,11 @@ class BrandController extends BaseController
     public function index(): void
     {
         $search      = trim($this->input('search', ''));
+        $status      = $this->input('status', '');
         $currentPage = max(1, $this->inputInt('p', 1));
         $perPage     = 15;
 
-        $result = $this->brand->getPaginated($search, $currentPage, $perPage);
+        $result = $this->brand->getPaginated($search, $currentPage, $perPage, $status);
 
         // Edit mode
         $editId   = $this->inputInt('edit', 0);
@@ -51,7 +52,9 @@ class BrandController extends BaseController
             'total_items'  => $result['total'],
             'item_count'   => $result['count'],
             'pagination'   => $result['pagination'],
+            'stats'        => $this->brand->getStats(),
             'search'       => $search,
+            'status'       => $status,
             'edit_data'    => $editData,
             'show_form'    => $showForm,
             'own_company'  => $ownCompany,
@@ -142,6 +145,21 @@ class BrandController extends BaseController
         }
 
         $this->redirect('brand');
+    }
+
+    /**
+     * AJAX toggle is_active
+     * Route: ?page=brand_toggle  POST {id, active, csrf_token}
+     */
+    public function toggle(): void
+    {
+        $this->verifyCsrf();
+        $id     = $this->inputInt('id', 0);
+        $active = intval($this->input('active', '1'));
+        $ok     = $id > 0 && $this->brand->toggle($id, $active);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $ok, 'active' => $active]);
+        exit;
     }
 
     /**

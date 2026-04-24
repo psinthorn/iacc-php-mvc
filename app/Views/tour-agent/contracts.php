@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Agents — Contracts';
+
 /**
  * Agent Contracts — List View
  * 

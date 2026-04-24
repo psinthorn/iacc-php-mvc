@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Billing';
+
 /**
  * Billing List View — Grouped Billing Notes + Unbilled Invoices
  * Variables: $items, $stats, $total_records, $pagination, $filters, $per_page

@@ -29,11 +29,12 @@ class TypeController extends BaseController
     public function index(): void
     {
         $search      = trim($this->input('search', ''));
+        $status      = $this->input('status', '');
         $currentPage = max(1, $this->inputInt('p', 1));
         $catId       = $this->inputInt('cat_id', 0);
         $perPage     = 15;
 
-        $result = $this->type->getPaginated($search, $currentPage, $perPage, $catId);
+        $result = $this->type->getPaginated($search, $currentPage, $perPage, $catId, $status);
 
         // Edit mode
         $editId   = $this->inputInt('edit', 0);
@@ -56,7 +57,9 @@ class TypeController extends BaseController
             'total_items'    => $result['total'],
             'item_count'     => $result['count'],
             'pagination'     => $result['pagination'],
+            'stats'          => $this->type->getStats(),
             'search'         => $search,
+            'status'         => $status,
             'cat_id'         => $catId,
             'edit_data'      => $editData,
             'edit_brand_ids' => $editBrandIds,
@@ -123,6 +126,21 @@ class TypeController extends BaseController
         }
 
         $this->redirect('type');
+    }
+
+    /**
+     * AJAX toggle is_active
+     * Route: ?page=type_toggle  POST {id, active, csrf_token}
+     */
+    public function toggle(): void
+    {
+        $this->verifyCsrf();
+        $id     = $this->inputInt('id', 0);
+        $active = intval($this->input('active', '1'));
+        $ok     = $id > 0 && $this->type->toggle($id, $active);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => $ok, 'active' => $active]);
+        exit;
     }
 
     /**

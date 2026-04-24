@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Containers';
+
 /**
  * Docker Container Monitor
  * Monitor and manage Docker containers

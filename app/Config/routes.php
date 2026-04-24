@@ -19,22 +19,26 @@ return [
     'category_form'   => ['CategoryController', 'form'],
     'category_store'  => ['CategoryController', 'store'],
     'category_delete' => ['CategoryController', 'delete'],
-    
+    'category_toggle' => ['CategoryController', 'toggle'],
+
     // Brand
     'brand'           => ['BrandController', 'index'],
     'brand_form'      => ['BrandController', 'form'],
     'brand_store'     => ['BrandController', 'store'],
     'brand_delete'    => ['BrandController', 'delete'],
-    
+    'brand_toggle'    => ['BrandController', 'toggle'],
+
     // Type
     'type'            => ['TypeController', 'index'],
     'type_store'      => ['TypeController', 'store'],
     'type_delete'     => ['TypeController', 'delete'],
-    
+    'type_toggle'     => ['TypeController', 'toggle'],
+
     // Model
     'mo_list'         => ['ModelController', 'index'],
     'mo_list_store'   => ['ModelController', 'store'],
     'mo_list_delete'  => ['ModelController', 'delete'],
+    'mo_list_toggle'  => ['ModelController', 'toggle'],
     'mo_list_brands'  => ['ModelController', 'getBrands'],
     
     // Payment Method
@@ -142,7 +146,9 @@ return [
     'containers'            => ['DevToolsController', 'containers'],
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
+    'payment_gateway_save'   => ['PaymentGatewayController', 'save'],
     'payment_gateway_test'   => ['PaymentGatewayController', 'test'],
+    'payment_gateway_toggle' => ['PaymentGatewayController', 'toggle'],
     'payment_webhook'        => ['PaymentGatewayController', 'webhook'],
 
     // ========== Phase 5B: Invoice Payment Flow (MVC) ==========
@@ -345,11 +351,35 @@ return [
     'tour_booking_generate'  => ['TourBookingController', 'generateDocuments'],
     'tour_booking_calendar'  => ['TourBookingController', 'calendar', 'standalone'],
     'tour_booking_print'     => ['TourBookingController', 'print', 'standalone'],
+    'tour_booking_bulk'      => ['BulkActionController', 'handleBulkAction', 'standalone'],
     'tour_booking_customer_search' => ['TourBookingController', 'customerSearch', 'standalone'],
     'tour_booking_customer_create' => ['TourBookingController', 'customerCreate', 'standalone'],
+    'tour_booking_agent_search'    => ['TourBookingController', 'agentSearch', 'standalone'],
+    'tour_booking_sales_rep_search' => ['TourBookingController', 'salesRepSearch', 'standalone'],
+    'tour_booking_sales_rep_create' => ['TourBookingController', 'salesRepCreate', 'standalone'],
     'tour_booking_product_search'  => ['TourBookingController', 'productSearch', 'standalone'],
     'tour_booking_staff_search'    => ['TourBookingController', 'staffSearch', 'standalone'],
+    'tour_booking_payments'                  => ['TourBookingPaymentController', 'index'],
+    'tour_booking_payment_store'             => ['TourBookingPaymentController', 'store'],
+    'tour_booking_payment_delete'            => ['TourBookingPaymentController', 'delete'],
+    'tour_booking_payment_approve'           => ['TourBookingPaymentController', 'approve'],
+    'tour_booking_payment_reject'            => ['TourBookingPaymentController', 'reject'],
+    'tour_booking_payment_refund'            => ['TourBookingPaymentController', 'refund'],
+    // ── Customer-facing payment link (public, no login required) ──
+    'booking_pay'                            => ['BookingPayController', 'index'],
+    'booking_pay_checkout'                   => ['BookingPayController', 'checkout'],
+    'booking_pay_success'                    => ['BookingPayController', 'success'],
+    'booking_pay_cancel'                     => ['BookingPayController', 'cancel'],
+    'booking_pay_promptpay'                  => ['BookingPayController', 'promptpay'],
+    'booking_pay_promptpay_confirm'          => ['BookingPayController', 'promptpayConfirm'],
+    // ── Admin booking payment actions ──────────────────────────
+    'tour_booking_payment_checkout'          => ['TourBookingPaymentController', 'checkout'],
+    'tour_booking_payment_gw_success'        => ['TourBookingPaymentController', 'gatewaySuccess'],
+    'tour_booking_payment_gw_cancel'         => ['TourBookingPaymentController', 'gatewayCancel'],
+    'tour_booking_payment_promptpay'         => ['TourBookingPaymentController', 'promptpayPage'],
+    'tour_booking_payment_promptpay_confirm' => ['TourBookingPaymentController', 'promptpayConfirm'],
     'tour_report'            => ['TourReportController', 'index'],
     'tour_report_checkin'    => ['TourReportController', 'checkinPrint', 'standalone'],
     'tour_report_pickup'     => ['TourReportController', 'pickupPrint', 'standalone'],
+    'tour_report_insurance'  => ['TourReportController', 'insurancePrint', 'standalone'],
 ];

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Journal — Chart of Accounts';
+
 /**
  * Chart of Accounts — Modern UI
  * 

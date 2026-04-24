@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Companies — Credits';
+
 /**
  * Company Credits View
  * 

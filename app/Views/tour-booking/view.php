@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Bookings — Details';
+
 /**
  * Tour Booking — Detail View (read-only)
  *
@@ -30,14 +32,24 @@ $paxTypeLabels = [
     'infant' => $isThai ? 'ทารก' : 'Infant',
 ];
 
-$custName = ($isThai && !empty($booking['customer_name_th'])) ? $booking['customer_name_th'] : ($booking['customer_name'] ?: '-');
-$agentName = ($isThai && !empty($booking['agent_name_th'])) ? $booking['agent_name_th'] : ($booking['agent_name'] ?: '-');
+$custName = ($isThai && !empty($booking['customer_name_th']))
+    ? $booking['customer_name_th']
+    : ($booking['customer_name'] ?: ($booking['contact']['contact_name'] ?? '') ?: '-');
+$agentName    = ($isThai && !empty($booking['agent_name_th'])) ? $booking['agent_name_th'] : ($booking['agent_name'] ?: '-');
+$salesRepName = ($isThai && !empty($booking['sales_rep_name_th'])) ? $booking['sales_rep_name_th'] : ($booking['sales_rep_name'] ?: '-');
 
 $messages = [
     'created'        => ['✅', $isThai ? 'สร้างการจองสำเร็จ' : 'Booking created successfully'],
     'updated'        => ['✅', $isThai ? 'อัพเดทสำเร็จ' : 'Booking updated successfully'],
     'docs_generated' => ['✅', $isThai ? 'สร้างเอกสารสำเร็จ (PR, PO, ใบส่งของ, ใบแจ้งหนี้)' : 'Documents generated (PR, PO, Delivery, Invoice)'],
     'docs_error'     => ['⚠️', $isThai ? 'สร้างเอกสารไม่สำเร็จ' : 'Failed to generate documents'],
+    'payment_recorded' => ['✅', $isThai ? 'บันทึกการชำระเงินสำเร็จ' : 'Payment recorded successfully'],
+    'payment_deleted'  => ['✅', $isThai ? 'ลบรายการชำระเงินแล้ว' : 'Payment deleted'],
+    'payment_approved' => ['✅', $isThai ? 'อนุมัติการชำระเงินแล้ว' : 'Payment approved'],
+    'payment_rejected' => ['✅', $isThai ? 'ปฏิเสธการชำระเงินแล้ว' : 'Payment rejected'],
+    'refund_recorded'  => ['✅', $isThai ? 'บันทึกการคืนเงินสำเร็จ' : 'Refund recorded'],
+    'payment_error'    => ['⚠️', $isThai ? 'บันทึกการชำระเงินไม่สำเร็จ' : 'Failed to record payment'],
+    'invalid_amount'   => ['⚠️', $isThai ? 'จำนวนเงินไม่ถูกต้อง' : 'Invalid amount'],
 ];
 ?>
 
@@ -132,7 +144,28 @@ $messages = [
                 </div>
                 <div class="vw-item">
                     <div class="lbl"><?= $isThai ? 'ตัวแทน' : 'Agent' ?></div>
-                    <div class="val"><?= htmlspecialchars($agentName) ?></div>
+                    <div class="val"><?= htmlspecialchars($agentName) ?>
+                        <?php if (!empty($booking['agent_mobile'])): ?>
+                        <span style="font-size:12px; color:#64748b; display:block;"><?= htmlspecialchars($booking['agent_mobile']) ?></span>
+                        <?php endif; ?>
+                        <?php if (!empty($booking['agent_email'])): ?>
+                        <span style="font-size:12px; color:#64748b; display:block;"><?= htmlspecialchars($booking['agent_email']) ?></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'พนักงานขาย' : 'Sales Rep' ?></div>
+                    <div class="val"><?= htmlspecialchars($salesRepName) ?>
+                        <?php if (!empty($booking['sales_rep_mobile'])): ?>
+                        <span style="font-size:12px; color:#64748b; display:block;"><?= htmlspecialchars($booking['sales_rep_mobile']) ?></span>
+                        <?php endif; ?>
+                        <?php if (!empty($booking['sales_rep_email'])): ?>
+                        <span style="font-size:12px; color:#64748b; display:block;"><?= htmlspecialchars($booking['sales_rep_email']) ?></span>
+                        <?php endif; ?>
+                        <?php if (!empty($booking['sales_rep_messengers'])): ?>
+                        <span style="font-size:12px; color:#64748b; display:block;"><?= htmlspecialchars($booking['sales_rep_messengers']) ?></span>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <div class="vw-item">
                     <div class="lbl"><?= $isThai ? 'ผู้จอง' : 'Booking By' ?></div>
@@ -216,11 +249,14 @@ $messages = [
                         <td>
                             <div style="font-weight:600; margin-bottom:4px;">
                                 <?= htmlspecialchars($item['description']) ?>
+                                <?php if (!empty($item['type_name'])): ?>
+                                <span style="color:#0d9488; font-weight:500; font-size:12px; background:#f0fdfa; padding:1px 6px; border-radius:4px; margin-left:4px;"><?= htmlspecialchars($item['type_name']) ?></span>
+                                <?php endif; ?>
                                 <?php if (!empty($item['model_name'])): ?>
                                 <span style="color:#64748b; font-weight:500;"> | <?= htmlspecialchars($item['model_name']) ?></span>
                                 <?php endif; ?>
                                 <?php if (!empty($item['model_des'])): ?>
-                                <span style="color:#94a3b8; font-weight:400;"> | <?= htmlspecialchars($item['model_des']) ?></span>
+                                <div style="font-size:12px; color:#94a3b8; font-weight:400; margin-top:2px;"><?= htmlspecialchars($item['model_des']) ?></div>
                                 <?php endif; ?>
                             </div>
                             <?php
@@ -269,6 +305,54 @@ $messages = [
                 <?php endif; ?>
                 <div class="row grand"><span><?= $isThai ? 'ยอดรวมทั้งหมด' : 'Grand Total' ?></span><span>฿<?= number_format($booking['total_amount'], 2) ?></span></div>
             </div>
+        </div>
+
+        <!-- Payment Summary -->
+        <?php
+        $payStatus   = $booking['payment_status'] ?? 'unpaid';
+        $amountPaid  = floatval($paymentSummary['net_paid'] ?? $booking['amount_paid'] ?? 0);
+        $totalAmount = floatval($booking['total_amount'] ?? 0);
+        $amountDue   = max(0.0, $totalAmount - $amountPaid);
+        $payStatusCfg = [
+            'unpaid'  => ['label' => $isThai ? 'ยังไม่ชำระ' : 'Unpaid',   'color' => '#ef4444', 'bg' => '#fee2e2', 'icon' => 'fa-times-circle'],
+            'deposit' => ['label' => $isThai ? 'ชำระมัดจำ' : 'Deposit',   'color' => '#f59e0b', 'bg' => '#fef3c7', 'icon' => 'fa-clock-o'],
+            'partial' => ['label' => $isThai ? 'ชำระบางส่วน' : 'Partial', 'color' => '#8b5cf6', 'bg' => '#ede9fe', 'icon' => 'fa-adjust'],
+            'paid'    => ['label' => $isThai ? 'ชำระแล้ว' : 'Paid',       'color' => '#059669', 'bg' => '#d1fae5', 'icon' => 'fa-check-circle'],
+            'refunded'=> ['label' => $isThai ? 'คืนเงินแล้ว' : 'Refunded','color' => '#6366f1', 'bg' => '#e0e7ff', 'icon' => 'fa-undo'],
+        ];
+        $psCfg = $payStatusCfg[$payStatus] ?? $payStatusCfg['unpaid'];
+        ?>
+        <div class="vw-card">
+            <h3><i class="fa fa-money"></i> <?= $isThai ? 'การชำระเงิน' : 'Payment' ?></h3>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px;">
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'สถานะการชำระ' : 'Payment Status' ?></div>
+                    <div><span class="status-badge" style="background:<?= $psCfg['bg'] ?>;color:<?= $psCfg['color'] ?>;"><i class="fa <?= $psCfg['icon'] ?>"></i> <?= $psCfg['label'] ?></span></div>
+                </div>
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'ชำระแล้ว' : 'Amount Paid' ?></div>
+                    <div class="val" style="color:#059669;">฿<?= number_format($amountPaid, 2) ?></div>
+                </div>
+                <div class="vw-item">
+                    <div class="lbl"><?= $isThai ? 'คงเหลือ' : 'Balance Due' ?></div>
+                    <div class="val" style="color:<?= $amountDue > 0 ? '#ef4444' : '#059669' ?>;">฿<?= number_format($amountDue, 2) ?></div>
+                </div>
+            </div>
+            <?php if (($booking['status'] ?? 'draft') === 'draft'): ?>
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:#fef9c3; border:1.5px solid #fde047; border-radius:10px; font-size:13px; color:#854d0e;">
+                <i class="fa fa-lock" style="font-size:15px; color:#ca8a04; flex-shrink:0;"></i>
+                <span>
+                    <?= $isThai ? 'การจัดการชำระเงินต้องการสถานะ <strong>ยืนยัน</strong> — ' : 'Payment management requires <strong>Confirmed</strong> status — ' ?>
+                    <a href="index.php?page=tour_booking_make&id=<?= $booking['id'] ?>" style="color:#ca8a04; font-weight:700; text-decoration:underline;">
+                        <?= $isThai ? 'อัปเดตสถานะ' : 'Update status' ?>
+                    </a>
+                </span>
+            </div>
+            <?php else: ?>
+            <a href="index.php?page=tour_booking_payments&booking_id=<?= $booking['id'] ?>" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#0d9488; color:white; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none;">
+                <i class="fa fa-credit-card"></i> <?= $isThai ? 'จัดการชำระเงิน' : 'Manage Payments' ?>
+            </a>
+            <?php endif; ?>
         </div>
 
         <!-- Remark -->

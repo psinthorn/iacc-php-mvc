@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Orders — Delivery';
+
 /**
  * PO Delivery View — Legacy Modern Design
  * Variables: $po, $id, $action, $products

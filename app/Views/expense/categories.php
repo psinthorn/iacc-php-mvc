@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Expenses — Categories';
+
 /**
  * Expense Categories — Management Page
  * 

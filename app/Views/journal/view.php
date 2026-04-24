@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Journal — Details';
+
 /**
  * Journal Voucher Detail View — Modern UI
  * 

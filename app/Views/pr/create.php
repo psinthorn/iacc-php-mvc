@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Requests — New';
+
 /**
  * PR Create View — Full product selection with modal
  * Variables from controller: $customers, $categories (with nested types+prices), $com_id

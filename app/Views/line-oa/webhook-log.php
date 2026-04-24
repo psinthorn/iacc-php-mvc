@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Webhook Log';
+
 /**
  * LINE OA Webhook Event Log
  */

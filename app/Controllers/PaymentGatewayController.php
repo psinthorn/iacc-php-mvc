@@ -54,14 +54,8 @@ class PaymentGatewayController extends BaseController
                 }
             }
 
-            if ($action === 'test_connection') {
-                $gatewayCode = $_POST['gateway_code'] ?? '';
-                $gatewayId = intval($_POST['gateway_id'] ?? 0);
-                $testConfigs = $this->gateway->getGatewayConfig($gatewayId, $companyId);
-                $result = $this->gateway->testConnection($gatewayCode, $testConfigs);
-                $message = $result['message'];
-                $messageType = $result['success'] ? 'success' : 'danger';
-            }
+            // test_connection is now handled via AJAX (?page=payment_gateway_test)
+            // No fallback needed here — button no longer submits the main form
         }
 
         // Load gateways and their configs
@@ -75,6 +69,81 @@ class PaymentGatewayController extends BaseController
         $this->render('payment-gateway/config', compact(
             'gateways', 'gatewayConfigs', 'gatewayFields', 'message', 'messageType'
         ));
+    }
+
+    /**
+     * AJAX save config endpoint (POST, JSON)
+     */
+    public function save(): void
+    {
+        header('Content-Type: application/json');
+
+        if ($this->user['level'] < 2) {
+            echo json_encode(['success' => false, 'message' => 'Access denied']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit;
+        }
+
+        $this->verifyCsrf();
+
+        $companyId = $this->companyFilter->getSafeCompanyId();
+        $gatewayId = intval($_POST['gateway_id'] ?? 0);
+        $configs   = $_POST['config'] ?? [];
+
+        if ($gatewayId <= 0 || empty($configs)) {
+            echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+            exit;
+        }
+
+        $ok = $this->gateway->saveConfig($gatewayId, $companyId, $configs);
+        echo json_encode([
+            'success' => $ok,
+            'message' => $ok ? 'Configuration saved successfully.' : 'Error saving configuration.',
+        ]);
+        exit;
+    }
+
+    /**
+     * AJAX toggle gateway active status (POST, JSON)
+     */
+    public function toggle(): void
+    {
+        header('Content-Type: application/json');
+
+        if ($this->user['level'] < 2) {
+            echo json_encode(['success' => false, 'message' => 'Access denied']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            exit;
+        }
+
+        $this->verifyCsrf();
+
+        $companyId = $this->companyFilter->getSafeCompanyId();
+        $gatewayId = intval($_POST['gateway_id'] ?? 0);
+        $active    = ($_POST['active'] ?? '0') === '1';
+
+        if ($gatewayId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid gateway']);
+            exit;
+        }
+
+        $ok = $this->gateway->toggleActive($gatewayId, $companyId, $active);
+        echo json_encode([
+            'success' => $ok,
+            'active'  => $active,
+            'message' => $ok
+                ? ($active ? 'Gateway enabled.' : 'Gateway disabled.')
+                : 'Failed to update status.',
+        ]);
+        exit;
     }
 
     /**

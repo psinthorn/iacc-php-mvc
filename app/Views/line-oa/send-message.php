@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Send Message';
+
 /**
  * LINE OA Send Message
  */

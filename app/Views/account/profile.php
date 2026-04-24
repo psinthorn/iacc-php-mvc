@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Account — Profile';
+
 /**
  * Profile View — MVC version
  * Variables: $user, $message, $messageType

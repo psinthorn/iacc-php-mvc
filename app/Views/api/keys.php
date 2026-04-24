@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — API Keys';
+
 /**
  * API Keys Management View
  * 

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Payment Methods';
+
 /**
  * Payment Method List View
  * 
@@ -84,6 +86,18 @@
             <i class="fa fa-plus"></i> <?=$xml->addnew ?? 'Add New'?>
         </a>
     </div>
+
+    <!-- Flash Messages -->
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+    <div style="background:#f0fdf4; border-left:4px solid #10b981; padding:12px 20px; border-radius:8px; margin-bottom:16px; font-size:14px; color:#065f46;">
+        <i class="fa fa-check-circle" style="margin-right:6px;"></i> <?= htmlspecialchars($_SESSION['flash_success']) ?>
+    </div>
+    <?php unset($_SESSION['flash_success']); endif; ?>
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+    <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 20px; border-radius:8px; margin-bottom:16px; font-size:14px; color:#991b1b;">
+        <i class="fa fa-exclamation-triangle" style="margin-right:6px;"></i> <?= htmlspecialchars($_SESSION['flash_error']) ?>
+    </div>
+    <?php unset($_SESSION['flash_error']); endif; ?>
 
     <!-- Stats Cards -->
     <div class="pm-stats-row">

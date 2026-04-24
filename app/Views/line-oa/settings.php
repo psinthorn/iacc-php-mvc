@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Settings';
+
 /**
  * LINE OA Settings
  * Configure LINE channel credentials and behavior

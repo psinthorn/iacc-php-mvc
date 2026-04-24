@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Quick Create — New Tax Invoice';
+
 /**
  * Quick Create — Tax Invoice Entry Form (Entry Point C)
  * Auto-creates: PR + PO + Delivery + Invoice (upstream)

@@ -211,3 +211,42 @@ CREATE TABLE IF NOT EXISTS tour_booking_contacts (
 ALTER TABLE tour_bookings
   ADD COLUMN driver_name VARCHAR(100) DEFAULT NULL AFTER remark,
   ADD COLUMN vehicle_no VARCHAR(50) DEFAULT NULL AFTER driver_name;
+
+-- ============================================================================
+-- Customer & Sales Rep Contact Separation with Flexible Messengers (2026-04-21)
+-- ============================================================================
+
+-- Add sales_rep_id to tour_bookings (FK to tour_agent_profiles / agent company)
+-- Separate from agent_id which is the main tour partner channel
+ALTER TABLE tour_bookings
+  ADD COLUMN sales_rep_id INT(11) DEFAULT NULL COMMENT 'FK to tour_agent_profiles.id - sales rep/referrer' AFTER agent_id,
+  ADD KEY idx_sales_rep (sales_rep_id);
+
+-- Add contact_messengers to tour_booking_contacts (customer messengers)
+-- Single TEXT field: flexible format "Line: @user, WhatsApp: +668123456, Telegram: @username"
+ALTER TABLE tour_booking_contacts
+  ADD COLUMN contact_messengers TEXT DEFAULT NULL AFTER nationality;
+
+-- Add contact_messengers to tour_agent_profiles (sales rep messengers)
+-- Same flexible format for Line, WhatsApp, Telegram, WeChat
+ALTER TABLE tour_agent_profiles
+  ADD COLUMN contact_telegram VARCHAR(100) DEFAULT NULL COMMENT 'Telegram username/ID' AFTER contact_whatsapp,
+  ADD COLUMN contact_wechat VARCHAR(100) DEFAULT NULL COMMENT 'WeChat ID' AFTER contact_telegram,
+  ADD COLUMN contact_messengers TEXT DEFAULT NULL COMMENT 'Flexible messengers: Line: @user, WhatsApp: +668123456, Telegram: @tg, WeChat: wxid' AFTER contact_wechat;
+
+-- ============================================================================
+-- Payment Method: fix unique key to be per-company (2026-04-21)
+-- ============================================================================
+
+-- Drop global unique key on code, replace with composite (code, company_id)
+ALTER TABLE payment_method DROP INDEX IF EXISTS `code`;
+ALTER TABLE payment_method ADD UNIQUE KEY `code_company` (`code`, `company_id`);
+
+-- Seed payment methods for company 165 (My Samui Island Tour)
+INSERT IGNORE INTO payment_method (code, name, name_th, icon, description, is_gateway, is_active, sort_order, company_id) VALUES
+('cash',          'Cash',          'เงินสด',     'fa-money',       'Cash payment',           0, 1, 1, 165),
+('bank_transfer', 'Bank Transfer', 'โอนเงิน',    'fa-university',  'Bank transfer',          0, 1, 2, 165),
+('credit_card',   'Credit Card',   'บัตรเครดิต', 'fa-credit-card', 'Credit card',            0, 1, 3, 165),
+('promptpay',     'PromptPay',     'พร้อมเพย์',  'fa-qrcode',      'PromptPay QR',           1, 1, 4, 165),
+('stripe',        'Stripe',        'Stripe',      'fa-cc-stripe',   'Stripe gateway',         1, 1, 5, 165),
+('paypal',        'PayPal',        'PayPal',      'fa-paypal',      'PayPal gateway',         1, 1, 6, 165);

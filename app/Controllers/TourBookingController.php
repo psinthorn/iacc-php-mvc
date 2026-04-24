@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\TourBooking;
+use App\Models\TourBookingPayment;
 use App\Services\TourBookingService;
 
 class TourBookingController extends BaseController
@@ -104,6 +105,7 @@ class TourBookingController extends BaseController
     {
         $this->guardModule();
         $comId = $this->user['com_id'];
+        $paymentModel = new TourBookingPayment();
 
         $id = intval($_GET['id'] ?? 0);
         $booking = $this->bookingModel->findBooking($id, $comId);
@@ -112,9 +114,12 @@ class TourBookingController extends BaseController
             $this->redirect('tour_booking_list', ['msg' => 'not_found']);
         }
 
+        $paymentSummary = $paymentModel->getBookingPaymentSummary(intval($booking['id']), $comId);
+
         $this->render('tour-booking/view', [
-            'booking' => $booking,
-            'message' => $_GET['msg'] ?? '',
+            'booking'        => $booking,
+            'paymentSummary' => $paymentSummary,
+            'message'        => $_GET['msg'] ?? '',
         ]);
     }
 
@@ -141,6 +146,7 @@ class TourBookingController extends BaseController
             'company_id'         => $comId,
             'customer_id'        => intval($_POST['customer_id'] ?? 0),
             'agent_id'           => intval($_POST['agent_id'] ?? 0),
+            'sales_rep_id'       => intval($_POST['sales_rep_id'] ?? 0),
             'booking_by'         => trim($_POST['booking_by'] ?? ''),
             'booking_date'       => $bookingDate,
             'travel_date'        => $travelDate,
@@ -234,11 +240,12 @@ class TourBookingController extends BaseController
 
             // Save per-booking contact info (module-isolated)
             $contactData = [
-                'contact_name' => trim($_POST['contact_name'] ?? ''),
-                'mobile'       => trim($_POST['contact_mobile'] ?? ''),
-                'email'        => trim($_POST['contact_email'] ?? ''),
-                'gender'       => trim($_POST['contact_gender'] ?? ''),
-                'nationality'  => trim($_POST['contact_nationality'] ?? ''),
+                'contact_name'       => trim($_POST['contact_name'] ?? ''),
+                'mobile'             => trim($_POST['contact_mobile'] ?? ''),
+                'email'              => trim($_POST['contact_email'] ?? ''),
+                'gender'             => trim($_POST['contact_gender'] ?? ''),
+                'nationality'        => trim($_POST['contact_nationality'] ?? ''),
+                'contact_messengers' => trim($_POST['contact_messengers'] ?? ''),
             ];
             $this->bookingModel->saveBookingContact($bookingId, $contactData);
 
@@ -301,9 +308,17 @@ class TourBookingController extends BaseController
     {
         $this->guardModule();
 
-        $id = intval($_GET['id'] ?? 0);
+        $id    = intval($_GET['id'] ?? 0);
+        $comId = $this->user['com_id'];
+
         if ($id <= 0) {
             $this->redirect('tour_booking_list');
+            return;
+        }
+
+        $booking = $this->bookingModel->findBooking($id, $comId);
+        if (!$booking) {
+            $this->redirect('tour_booking_list', ['msg' => 'not_found']);
             return;
         }
 
@@ -377,9 +392,10 @@ class TourBookingController extends BaseController
         $this->guardModule();
         $this->verifyCsrf();
 
-        $comId = $this->user['com_id'];
-        $name  = trim($_POST['name'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
+        $comId      = $this->user['com_id'];
+        $name       = trim($_POST['name'] ?? '');
+        $phone      = trim($_POST['phone'] ?? '');
+        $messengers = trim($_POST['messengers'] ?? '');
 
         if (empty($name)) {
             header('Content-Type: application/json');
@@ -387,14 +403,15 @@ class TourBookingController extends BaseController
             exit;
         }
 
-        $id = $this->bookingModel->quickCreateCustomer($comId, $name, $phone);
+        $id = $this->bookingModel->quickCreateCustomer($comId, $name, $phone, $messengers);
 
         header('Content-Type: application/json');
         echo json_encode([
-            'success' => $id > 0,
-            'id'      => $id,
-            'name'    => $name,
-            'phone'   => $phone,
+            'success'    => $id > 0,
+            'id'         => $id,
+            'name'       => $name,
+            'phone'      => $phone,
+            'messengers' => $messengers,
         ]);
         exit;
     }
@@ -434,6 +451,77 @@ class TourBookingController extends BaseController
 
         header('Content-Type: application/json');
         echo json_encode($results);
+        exit;
+    }
+
+    // ─── Agent Search (AJAX) ───────────────────────────────────
+
+    public function agentSearch(): void
+    {
+        $this->guardModule();
+
+        $comId = $this->user['com_id'];
+        $term  = trim($_GET['q'] ?? '');
+
+        $results = [];
+        if (strlen($term) >= 1) {
+            $results = $this->bookingModel->searchAgents($comId, $term);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
+    }
+
+    // ─── Sales Rep Search (AJAX) ───────────────────────────────
+
+    public function salesRepSearch(): void
+    {
+        $this->guardModule();
+
+        $comId = $this->user['com_id'];
+        $term  = trim($_GET['q'] ?? '');
+
+        $results = [];
+        if (strlen($term) >= 1) {
+            $results = $this->bookingModel->searchAgents($comId, $term);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
+    }
+
+    // ─── Sales Rep Quick Create (AJAX POST) ───────────────────
+
+    public function salesRepCreate(): void
+    {
+        $this->guardModule();
+        $this->verifyCsrf();
+
+        $comId      = $this->user['com_id'];
+        $name       = trim($_POST['name'] ?? '');
+        $email      = trim($_POST['email'] ?? '');
+        $phone      = trim($_POST['phone'] ?? '');
+        $messengers = trim($_POST['messengers'] ?? '');
+
+        if (empty($name)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Name is required']);
+            exit;
+        }
+
+        $id = $this->bookingModel->quickCreateAgent($comId, $name, $email, $phone, $messengers);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success'    => $id > 0,
+            'id'         => $id,
+            'name'       => $name,
+            'email'      => $email,
+            'phone'      => $phone,
+            'messengers' => $messengers,
+        ]);
         exit;
     }
 }

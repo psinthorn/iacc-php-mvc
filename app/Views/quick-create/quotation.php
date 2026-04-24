@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Quick Create — New Quotation';
+
 /**
  * Quick Create — Quotation Entry Form (Entry Point A)
  * Auto-creates: PR (upstream)

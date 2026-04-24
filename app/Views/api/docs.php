@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Documentation';
+
 /**
  * API Documentation View
  * 

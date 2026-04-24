@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Expenses — Summary';
+
 /**
  * Expense Summary — Monthly Report & Category Breakdown
  * 

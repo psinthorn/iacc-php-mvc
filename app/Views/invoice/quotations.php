@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Invoices — Quotations';
+
 /**
  * Quotation List View (MVC)
  * Replaces legacy qa-list.php

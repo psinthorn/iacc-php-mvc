@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Vouchers';
+
 /**
  * Voucher List View — Legacy Modern Design
  * Variables: $items, $stats, $total_records, $pagination, $filters, $per_page

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Delivery';
+
 /**
  * Delivery List View — Legacy Modern Design
  * Variables: $items_out, $items_in, $sendouts_out, $sendouts_in, $total_out, $total_in, $total_records, $pagination, $filters, $per_page
