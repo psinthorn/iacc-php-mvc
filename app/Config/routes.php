@@ -347,6 +347,7 @@ return [
     'tour_booking_generate'  => ['TourBookingController', 'generateDocuments'],
     'tour_booking_calendar'  => ['TourBookingController', 'calendar', 'standalone'],
     'tour_booking_print'     => ['TourBookingController', 'print', 'standalone'],
+    'tour_booking_bulk'      => ['BulkActionController', 'handleBulkAction', 'standalone'],
     'tour_booking_customer_search' => ['TourBookingController', 'customerSearch', 'standalone'],
     'tour_booking_customer_create' => ['TourBookingController', 'customerCreate', 'standalone'],
     'tour_booking_agent_search'    => ['TourBookingController', 'agentSearch', 'standalone'],
