@@ -14,6 +14,7 @@
 | Customer Support | `prompts/agent-support.md` | claude-haiku-4-5-20251001 | User questions, FAQs |
 | Project Tracker  | `prompts/agent-tracker.md` | claude-opus-4-6 | Milestones, tasks, timeline summaries |
 | Database Analyst | `prompts/agent-dba.md`     | claude-opus-4-6 | Schema design, query optimization, migrations, reporting SQL |
+| Security Engineer | `prompts/agent-security.md` | claude-opus-4-6 | OWASP audits, SQL injection, CSRF, tenant isolation, auth review |
 
 ---
 
@@ -84,3 +85,9 @@ $response = $runner->run('pm', 'Write a spec for CSV bulk import');
 > "Design a schema for: [describe the feature]"
 > "Write a migration to add [column] to [table]"
 > "Write a report query for: [booking revenue by agent per month]"
+
+### Ask Security Agent
+> "Audit this controller for security issues: [paste code]"
+> "Review this PR for OWASP Top 10 vulnerabilities"
+> "Check if this query is safe from SQL injection: [paste SQL]"
+> "Is the company_id isolation correct in this file?"

@@ -104,12 +104,16 @@ class Brand extends BaseModel
      */
     public function handleLogoUpload(): ?string
     {
-        if (!empty($_FILES['logo']['tmp_name']) && 
-            in_array($_FILES['logo']['type'], ['image/jpg', 'image/jpeg', 'image/JPG', 'image/pjpeg'])) {
-            $filepath = 'logo' . md5(rand() . ($_REQUEST['brand_name'] ?? '')) . '.jpg';
-            copy($_FILES['logo']['tmp_name'], __DIR__ . '/../../upload/' . $filepath);
-            return $filepath;
+        if (empty($_FILES['logo']['tmp_name'])) {
+            return null;
         }
-        return null;
+        $filename = \App\Helpers\FileUpload::save(
+            $_FILES['logo'],
+            __DIR__ . '/../../upload',
+            'logo',
+            'image',
+            2 * 1024 * 1024 // 2 MB max for logos
+        );
+        return $filename ?: null;
     }
 }
