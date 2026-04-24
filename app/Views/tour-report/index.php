@@ -68,6 +68,9 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                 <p><?= $isThai ? 'เลือกประเภทรายงานและกรองข้อมูล' : 'Select report type and filters' ?></p>
             </div>
             <div class="header-actions">
+                <a href="index.php?page=tour_checkin_staff" class="btn-header btn-header-outline" style="background:#0d9488;color:white;border-color:#0d9488;">
+                    <i class="fa fa-check-square-o"></i> <?= $isThai ? 'แดชบอร์ดเช็คอิน' : 'Check-In Dashboard' ?>
+                </a>
                 <a href="index.php?page=tour_booking_list" class="btn-header btn-header-outline">
                     <i class="fa fa-arrow-left"></i> <?= $isThai ? 'กลับ' : 'Back' ?>
                 </a>
