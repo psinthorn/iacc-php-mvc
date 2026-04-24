@@ -34,7 +34,9 @@ class TourBooking extends BaseModel
     // ─── List / Count ──────────────────────────────────────────
 
     /**
-     * Get bookings with agent + customer JOINs
+     * Get bookings with agent + customer JOINs.
+     * contact_name fetched via correlated subquery to avoid duplicate rows
+     * when a booking has multiple contacts.
      */
     public function getBookings(int $comId, array $filters = [], int $offset = 0, int $limit = 25): array
     {
@@ -42,10 +44,13 @@ class TourBooking extends BaseModel
 
         if (!empty($filters['search'])) {
             $s = sql_escape(trim($filters['search']));
-            $where .= " AND (b.booking_number LIKE '%$s%' OR b.booking_by LIKE '%$s%'
-                         OR cust.name_en LIKE '%$s%' OR cust.name_th LIKE '%$s%'
-                         OR bc.contact_name LIKE '%$s%'
-                         OR b.voucher_number LIKE '%$s%')";
+            $where .= " AND (b.booking_number LIKE '%$s%'
+                         OR b.booking_by LIKE '%$s%'
+                         OR b.voucher_number LIKE '%$s%'
+                         OR cust.name_en LIKE '%$s%'
+                         OR cust.name_th LIKE '%$s%'
+                         OR EXISTS (SELECT 1 FROM tour_booking_contacts
+                                    WHERE booking_id = b.id AND contact_name LIKE '%$s%'))";
         }
         if (!empty($filters['status'])) {
             $where .= " AND b.status = '" . sql_escape($filters['status']) . "'";
@@ -65,11 +70,11 @@ class TourBooking extends BaseModel
         $sql = "SELECT b.*,
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        agt.name_en AS agent_name,
-                       bc.contact_name
+                       (SELECT contact_name FROM tour_booking_contacts
+                        WHERE booking_id = b.id ORDER BY id LIMIT 1) AS contact_name
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
-                LEFT JOIN tour_booking_contacts bc ON bc.booking_id = b.id
                 WHERE $where
                 ORDER BY b.id DESC
                 LIMIT $offset, $limit";
@@ -88,9 +93,12 @@ class TourBooking extends BaseModel
 
         if (!empty($filters['search'])) {
             $s = sql_escape(trim($filters['search']));
-            $where .= " AND (b.booking_number LIKE '%$s%' OR b.booking_by LIKE '%$s%'
-                         OR cust.name_en LIKE '%$s%' OR cust.name_th LIKE '%$s%'
-                         OR bc.contact_name LIKE '%$s%')";
+            $where .= " AND (b.booking_number LIKE '%$s%'
+                         OR b.booking_by LIKE '%$s%'
+                         OR cust.name_en LIKE '%$s%'
+                         OR cust.name_th LIKE '%$s%'
+                         OR EXISTS (SELECT 1 FROM tour_booking_contacts
+                                    WHERE booking_id = b.id AND contact_name LIKE '%$s%'))";
         }
         if (!empty($filters['status'])) {
             $where .= " AND b.status = '" . sql_escape($filters['status']) . "'";
@@ -107,10 +115,9 @@ class TourBooking extends BaseModel
             $where .= " AND b.travel_date <= '" . sql_escape($filters['date_to']) . "'";
         }
 
-        $sql = "SELECT COUNT(*) AS total
+        $sql = "SELECT COUNT(DISTINCT b.id) AS total
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
-                LEFT JOIN tour_booking_contacts bc ON bc.booking_id = b.id
                 WHERE $where";
 
         $result = mysqli_query($this->conn, $sql);

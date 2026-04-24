@@ -87,6 +87,10 @@ class DashboardController extends BaseController
             $userData['monthly_expenses'] = $this->model->getMonthlyExpenses($companyFilterPr, 12);
             $userData['payment_status']   = $this->model->getPaymentStatusDistribution($companyFilterIv);
             $userData['order_status']     = $this->model->getOrderStatusDistribution($companyFilterPr);
+
+            // Tour Booking KPI (Issue #51)
+            $userData['tour_kpi']        = $this->model->getTourBookingKpi($comId);
+            $userData['tour_top_agents'] = $this->model->getTourTopAgents($comId, 5);
         }
 
         // Docker tools settings (for super admin display)
