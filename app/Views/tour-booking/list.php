@@ -80,6 +80,7 @@ $statusConfig = [
 .row-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; color: #64748b; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; text-decoration: none; transition: all 0.15s; }
 .row-btn:hover { background: #0d9488; color: white; border-color: #0d9488; }
 .row-btn.danger:hover { background: #ef4444; border-color: #ef4444; color: white; }
+.row-btn.payment:hover { background: #7c3aed; border-color: #7c3aed; color: white; }
 
 /* Booking number link */
 .bk-link { font-weight: 600; color: #0d9488; text-decoration: none; }
@@ -341,6 +342,7 @@ $statusConfig = [
                         <div class="row-actions" style="justify-content:center;">
                             <a href="index.php?page=tour_booking_view&id=<?= $b['id'] ?>" class="row-btn" title="<?= $isThai ? 'ดู' : 'View' ?>"><i class="fa fa-eye"></i></a>
                             <a href="index.php?page=tour_booking_make&id=<?= $b['id'] ?>" class="row-btn" title="<?= $isThai ? 'แก้ไข' : 'Edit' ?>"><i class="fa fa-pencil"></i></a>
+                            <a href="index.php?page=tour_booking_payments&booking_id=<?= $b['id'] ?>" class="row-btn payment" title="<?= $isThai ? 'จัดการชำระเงิน' : 'Manage Payments' ?>"><i class="fa fa-credit-card"></i></a>
                             <form method="post" action="index.php?page=tour_booking_delete" style="display:inline;" onsubmit="return confirm('<?= $isThai ? 'ลบการจองนี้?' : 'Delete this booking?' ?>')">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="id" value="<?= $b['id'] ?>">
