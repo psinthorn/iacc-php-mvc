@@ -299,7 +299,7 @@ $statusConfig = [
                         : ($b['customer_name'] ?: $b['contact_name'] ?: '-');
                 ?>
                 <tr>
-                    <td class="bulk-col"><input type="checkbox" class="bulk-select-row" value="<?= $b['id'] ?>" data-balance="<?= number_format($b['balance'] ?? $b['total_amount'], 2, '.', '') ?>" aria-label="Select booking <?= htmlspecialchars($b['booking_number']) ?>"></td>
+                    <td class="bulk-col"><input type="checkbox" class="bulk-select-row" value="<?= $b['id'] ?>" data-balance="<?= number_format($b['amount_due'] ?? $b['total_amount'], 2, '.', '') ?>" aria-label="Select booking <?= htmlspecialchars($b['booking_number']) ?>"></td>
                     <td>
                         <a href="index.php?page=tour_booking_view&id=<?= $b['id'] ?>" class="bk-link">
                             <?= htmlspecialchars($b['booking_number']) ?>
