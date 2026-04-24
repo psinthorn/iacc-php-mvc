@@ -24,7 +24,7 @@ class TourCheckin extends BaseModel
                     b.id, b.booking_number, b.company_id, b.agent_id,
                     b.travel_date, b.status,
                     b.pax_adult, b.pax_child, b.pax_infant, b.total_pax,
-                    b.total_amount, b.notes,
+                    b.total_amount, b.remark,
                     b.checkin_token, b.checkin_token_exp,
                     b.checkin_status, b.checkin_at, b.checkin_by,
                     (SELECT contact_name FROM tour_booking_contacts
