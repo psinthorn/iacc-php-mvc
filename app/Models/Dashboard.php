@@ -445,4 +445,71 @@ class Dashboard
 
         return ['buckets' => $buckets, 'grand_total' => $grandTotal];
     }
+
+    // ========== Tour Booking KPI (Issue #51) ==========
+
+    /**
+     * Tour booking summary stats for the current month.
+     */
+    public function getTourBookingKpi(int $comId): array
+    {
+        $cid = intval($comId);
+        $comFilter = $cid > 0 ? "AND b.company_id = $cid" : "";
+        $monthStart = date('Y-m-01');
+
+        $sql = "SELECT
+                    COUNT(*) AS total_bookings,
+                    COALESCE(SUM(b.total_amount), 0) AS total_revenue,
+                    COALESCE(SUM(b.total_pax), 0) AS total_pax,
+                    SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) AS confirmed,
+                    SUM(CASE WHEN b.status = 'pending'   THEN 1 ELSE 0 END) AS pending,
+                    SUM(CASE WHEN b.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled
+                FROM tour_bookings b
+                WHERE b.deleted_at IS NULL
+                  AND b.booking_date >= '$monthStart'
+                  $comFilter";
+        $result = mysqli_query($this->db->conn, $sql);
+        $row = $result ? mysqli_fetch_assoc($result) : [];
+
+        return [
+            'total_bookings' => (int)   ($row['total_bookings'] ?? 0),
+            'total_revenue'  => (float) ($row['total_revenue']  ?? 0),
+            'total_pax'      => (int)   ($row['total_pax']      ?? 0),
+            'confirmed'      => (int)   ($row['confirmed']      ?? 0),
+            'pending'        => (int)   ($row['pending']        ?? 0),
+            'cancelled'      => (int)   ($row['cancelled']      ?? 0),
+        ];
+    }
+
+    /**
+     * Top agents by booking revenue this month.
+     */
+    public function getTourTopAgents(int $comId, int $limit = 5): array
+    {
+        $cid = intval($comId);
+        $comFilter = $cid > 0 ? "AND b.company_id = $cid" : "";
+        $monthStart = date('Y-m-01');
+
+        $sql = "SELECT
+                    COALESCE(c.name_en, c.name_th, 'Direct') AS agent_name,
+                    COUNT(b.id) AS bookings,
+                    COALESCE(SUM(b.total_amount), 0) AS revenue,
+                    COALESCE(SUM(b.total_pax), 0) AS pax
+                FROM tour_bookings b
+                LEFT JOIN company c ON b.agent_id = c.id
+                WHERE b.deleted_at IS NULL
+                  AND b.booking_date >= '$monthStart'
+                  AND b.status != 'cancelled'
+                  $comFilter
+                GROUP BY b.agent_id
+                ORDER BY revenue DESC
+                LIMIT $limit";
+
+        $result = mysqli_query($this->db->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
 }

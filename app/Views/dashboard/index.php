@@ -930,6 +930,62 @@ function get_status_badge($status) {
         </div>
     </div>
 
+    <!-- Tour Booking KPI Widget (Issue #51) -->
+    <?php
+    $tourKpi    = $u['tour_kpi']        ?? [];
+    $tourAgents = $u['tour_top_agents'] ?? [];
+    $hasTourData = ($tourKpi['total_bookings'] ?? 0) > 0 || ($tourKpi['pending'] ?? 0) > 0;
+    if ($hasTourData || true): // always show widget so staff see the section
+    ?>
+    <div class="content-card" style="margin-bottom:20px;">
+        <h5 class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span><i class="fa fa-plane" style="color:#667eea;"></i> Tour Bookings — This Month</span>
+            <a href="index.php?page=tour_booking_list" style="font-size:11px;color:#667eea;font-weight:400;">View all <i class="fa fa-arrow-right"></i></a>
+        </h5>
+        <div class="row" style="margin-bottom:15px;">
+            <!-- Stat tiles -->
+            <?php
+            $tiles = [
+                ['val' => $tourKpi['total_bookings'] ?? 0, 'lbl' => 'Bookings',  'icon' => 'fa-ticket',    'color' => '#667eea'],
+                ['val' => format_currency($tourKpi['total_revenue'] ?? 0), 'lbl' => 'Revenue', 'icon' => 'fa-dollar', 'color' => '#10b981'],
+                ['val' => number_format($tourKpi['total_pax'] ?? 0),       'lbl' => 'Pax',     'icon' => 'fa-users',  'color' => '#f59e0b'],
+                ['val' => $tourKpi['confirmed'] ?? 0,  'lbl' => 'Confirmed',  'icon' => 'fa-check-circle', 'color' => '#10b981'],
+                ['val' => $tourKpi['pending'] ?? 0,    'lbl' => 'Pending',    'icon' => 'fa-clock-o',      'color' => '#f59e0b'],
+                ['val' => $tourKpi['cancelled'] ?? 0,  'lbl' => 'Cancelled',  'icon' => 'fa-times-circle', 'color' => '#ef4444'],
+            ];
+            foreach ($tiles as $tile): ?>
+            <div class="col-xs-6 col-sm-4 col-md-2" style="margin-bottom:10px;">
+                <div style="background:#f8fafc;border-radius:10px;padding:14px 12px;text-align:center;border:1px solid #e5e7eb;">
+                    <i class="fa <?= $tile['icon'] ?>" style="font-size:18px;color:<?= $tile['color'] ?>;margin-bottom:6px;display:block;"></i>
+                    <div style="font-size:18px;font-weight:700;color:#1e293b;"><?= $tile['val'] ?></div>
+                    <div style="font-size:11px;color:#64748b;margin-top:2px;"><?= $tile['lbl'] ?></div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php if (!empty($tourAgents)): ?>
+        <div style="border-top:1px solid #f1f5f9;padding-top:12px;">
+            <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">
+                <i class="fa fa-trophy" style="color:#f59e0b;"></i> Top Agents This Month
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <?php foreach ($tourAgents as $i => $ag):
+                $medals = ['#f59e0b','#94a3b8','#b45309'];
+                $medal  = $medals[$i] ?? '#94a3b8';
+            ?>
+                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa fa-circle" style="font-size:8px;color:<?= $medal ?>;"></i>
+                    <span style="font-weight:600;"><?= htmlspecialchars(mb_substr($ag['agent_name'], 0, 20)) ?></span>
+                    <span style="color:#64748b;"><?= $ag['bookings'] ?> bookings</span>
+                    <span style="color:#10b981;font-weight:600;"><?= format_currency($ag['revenue']) ?></span>
+                </div>
+            <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <!-- Main Content Row -->
     <div class="row">
         <!-- Left Column -->
