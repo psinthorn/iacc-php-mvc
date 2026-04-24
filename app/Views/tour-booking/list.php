@@ -174,6 +174,41 @@ $statusConfig = [
         </div>
     </div>
 
+    <!-- Status Filter Tabs (PM spec: quick status tabs with badge counts) -->
+    <?php
+    $activeStatus = $filters['status'] ?? '';
+    $tabQuery = http_build_query(array_merge($_GET, ['page' => 'tour_booking_list', 'status' => '']));
+    $statusTabs = [
+        ''          => ['label' => $isThai ? 'ทั้งหมด'  : 'All',       'count' => $stats['total'],     'color' => '#64748b'],
+        'draft'     => ['label' => $isThai ? 'ฉบับร่าง' : 'Draft',     'count' => $stats['draft'] ?? 0,     'color' => '#64748b'],
+        'confirmed' => ['label' => $isThai ? 'ยืนยัน'   : 'Confirmed', 'count' => $stats['confirmed'] ?? 0, 'color' => '#059669'],
+        'completed' => ['label' => $isThai ? 'เสร็จสิ้น': 'Completed', 'count' => $stats['completed'] ?? 0, 'color' => '#2563eb'],
+        'cancelled' => ['label' => $isThai ? 'ยกเลิก'   : 'Cancelled', 'count' => $stats['cancelled'] ?? 0, 'color' => '#dc2626'],
+    ];
+    ?>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+        <?php foreach ($statusTabs as $key => $tab):
+            $isActive = ($activeStatus === $key);
+            $href = '?' . http_build_query(array_filter(array_merge($_GET, ['page' => 'tour_booking_list', 'status' => $key]), fn($v) => $v !== ''));
+        ?>
+        <a href="<?= htmlspecialchars($href) ?>" style="
+            display:inline-flex; align-items:center; gap:6px;
+            padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600;
+            text-decoration:none; transition:all .15s;
+            background:<?= $isActive ? $tab['color'] : '#f1f5f9' ?>;
+            color:<?= $isActive ? '#fff' : '#64748b' ?>;
+            border:2px solid <?= $isActive ? $tab['color'] : 'transparent' ?>;">
+            <?= $tab['label'] ?>
+            <span style="
+                background:<?= $isActive ? 'rgba(255,255,255,0.3)' : '#e2e8f0' ?>;
+                color:<?= $isActive ? '#fff' : '#64748b' ?>;
+                border-radius:10px; padding:1px 7px; font-size:11px;">
+                <?= number_format($tab['count']) ?>
+            </span>
+        </a>
+        <?php endforeach; ?>
+    </div>
+
     <!-- Filters -->
     <?php
     $activeFilters = 0;
@@ -185,6 +220,7 @@ $statusConfig = [
     ?>
     <form method="get" class="filter-bar">
         <input type="hidden" name="page" value="tour_booking_list">
+        <input type="hidden" name="status" value="<?= htmlspecialchars($activeStatus) ?>">
 
         <div class="filter-group">
             <label><?= $isThai ? 'ค้นหา' : 'Search' ?></label>
@@ -192,13 +228,10 @@ $statusConfig = [
                    placeholder="<?= $isThai ? 'เลขจอง, ลูกค้า, ตัวแทน...' : 'Booking #, customer, agent...' ?>">
         </div>
 
-        <div class="filter-group">
-            <label><?= $isThai ? 'สถานะ' : 'Status' ?></label>
-            <select name="status">
+        <div class="filter-group" style="display:none;">
+            <!-- Status now controlled by tabs above; hidden input preserves value -->
+            <select name="status_legacy" style="display:none;">
                 <option value=""><?= $isThai ? 'ทุกสถานะ' : 'All Status' ?></option>
-                <?php foreach ($statusConfig as $key => $cfg): ?>
-                <option value="<?= $key ?>" <?= $filters['status'] === $key ? 'selected' : '' ?>><?= $cfg['label'] ?></option>
-                <?php endforeach; ?>
             </select>
         </div>
 
