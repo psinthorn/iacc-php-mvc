@@ -58,6 +58,13 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          # Skip AI review if API key is not configured
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "review=⚠️ AI review skipped — ANTHROPIC_API_KEY not set. Add it to repo secrets to enable automatic DevOps reviews. See: https://console.anthropic.com/settings/keys" >> $GITHUB_OUTPUT
+            echo "verdict=safe" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_BRANCH="${{ github.event.pull_request.head.ref }}"
           CHANGED_FILES="${{ steps.diff.outputs.files }}"
@@ -157,3 +164,7 @@ jobs:
           echo "❌ DevOps Agent flagged this PR as NEEDS REVIEW."
           echo "Read the PR comment for details before merging."
           exit 1
+
+      - name: ✅ AI review passed or skipped
+        if: steps.ai_review.outputs.verdict == 'safe'
+        run: echo "✅ DevOps review passed — safe to merge."
