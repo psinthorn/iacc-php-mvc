@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Locations';
+
 /**
  * Tour Locations — List Page
  * 

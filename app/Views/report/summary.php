@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Reports — Summary';
+
 /**
  * Business Summary Report View — MVC version
  * Variables: $reportData, $totals, $period, $periodLabel, $sortBy, $sortDir, $noCompany

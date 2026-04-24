@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Requests — Details';
+
 /**
  * Purchase Request View — Legacy Modern Design
  * Variables: $pr, $products, $id

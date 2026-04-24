@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Users';
+
 /**
  * LINE OA Users List
  */

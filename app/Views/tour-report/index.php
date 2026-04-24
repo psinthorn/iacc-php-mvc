@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Reports';
+
 /**
  * Tour Report — Filter Hub Page
  *

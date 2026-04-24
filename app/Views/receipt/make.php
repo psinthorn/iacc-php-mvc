@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Receipts — New';
+
 /**
  * Receipt Make/Edit View — Legacy Modern Design
  * Variables: $receipt, $products, $id, $types, $quotations, $invoices

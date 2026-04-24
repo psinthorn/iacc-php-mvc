@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Brands — New';
+
 /**
  * Brand Form View (standalone)
  * 

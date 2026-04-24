@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Vouchers — New';
+
 /**
  * Voucher Make/Edit View — Legacy Modern Design
  * Variables: $voucher, $products, $types, $models, $models_by_type, $brands, $vendor_brands, $payment_methods, $id

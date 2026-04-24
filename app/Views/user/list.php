@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Users';
+
 /**
  * User Management List View — MVC version
  * Variables: $usersByRole, $companies, $search, $roleFilter, $companyFilter, $message, $messageType

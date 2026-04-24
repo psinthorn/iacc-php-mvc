@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Test Containers';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Container Test Tool

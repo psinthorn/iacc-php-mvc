@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Agents';
+
 /**
  * Tour Agent Profiles — List Page
  * 

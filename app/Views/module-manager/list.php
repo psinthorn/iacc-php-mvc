@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Module Manager';
+
 /**
  * Module Manager - List View (Card-Based Layout)
  * Variables: $companies, $stats, $totalCompanies, $modules, $plans, $search, $xml

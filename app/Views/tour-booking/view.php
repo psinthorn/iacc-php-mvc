@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Bookings — Details';
+
 /**
  * Tour Booking — Detail View (read-only)
  *

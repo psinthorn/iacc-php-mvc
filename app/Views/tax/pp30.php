@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tax — PP30 Report';
+
 /**
  * PP30 (ภ.พ.30) — Monthly VAT Return — Modern UI
  * 

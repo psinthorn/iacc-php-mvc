@@ -1,3 +1,4 @@
+<?php $pageTitle = 'AI Assistant — Chat History'; ?>
 <div class="ai-chat-history-page">
 <div class="row">
     <div class="col-lg-12">

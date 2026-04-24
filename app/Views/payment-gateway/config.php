@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Payment Gateway — Configuration';
+
 /**
  * Payment Gateway Configuration View
  * Variables: $gateways, $gatewayConfigs, $gatewayFields, $message, $messageType, $xml

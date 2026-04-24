@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Companies — New';
+
 /**
  * Company Form View (Create / Edit)
  * 

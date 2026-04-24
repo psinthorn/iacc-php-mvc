@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Vouchers — Details';
+
 /**
  * Voucher View — Legacy Modern Design
  * Variables: $voucher, $products, $id

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Help';
+
 /**
  * Help & Support Page
  * Provides FAQs, documentation, and contact information

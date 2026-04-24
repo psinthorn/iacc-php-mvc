@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Invoices';
+
 /**
  * Invoice List View (MVC)
  * Replaces legacy compl-list.php

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tax — Dashboard';
+
 /**
  * Tax Report Dashboard — Annual VAT Summary
  * 

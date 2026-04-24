@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Brands';
+
 /**
  * Brand List View
  * 

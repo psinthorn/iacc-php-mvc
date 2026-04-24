@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Agents — New Contract';
+
 /**
  * Agent Contract — Create / Edit Form
  * 

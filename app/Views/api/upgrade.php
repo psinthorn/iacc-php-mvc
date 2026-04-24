@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Upgrade Plan';
+
 /**
  * Plan Upgrade View
  * 

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Invoices';
+
 /**
  * API Invoices View
  *

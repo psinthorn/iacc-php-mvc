@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Dev Tools — Lang Debug';
+
 chdir(__DIR__ . "/../../.."); // Set working directory to project root
 /**
  * Language Debug Tool

@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Purchase Orders — Edit';
+
 /**
  * PO Edit View — Legacy Modern Design
  * Variables: $po, $id, $products, $types, $models, $brands, $companies

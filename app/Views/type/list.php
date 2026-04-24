@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Types';
+
 /**
  * Type (Product) List View
  * 

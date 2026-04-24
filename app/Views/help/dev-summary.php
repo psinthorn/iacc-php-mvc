@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Help — Dev Summary';
+
 /**
  * Developer System Summary
  * Technical reference for developers — architecture, database, API, deployment

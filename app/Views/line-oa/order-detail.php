@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'LINE OA — Order Details';
+
 /**
  * LINE OA Order Detail
  */

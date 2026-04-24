@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Tour Bookings — PromptPay';
+
 /**
  * Tour Booking — PromptPay QR Payment Page
  *

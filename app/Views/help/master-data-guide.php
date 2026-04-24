@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Help — Master Data Guide';
+
 /**
  * Master Data Guide
  * Documentation for Category, Brand, Product Type, and Model management

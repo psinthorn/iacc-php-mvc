@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Currency';
+
 /**
  * Currency Management — Modern UI
  * 

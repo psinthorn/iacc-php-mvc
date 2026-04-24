@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Delivery — New';
+
 /**
  * Delivery Make View (standalone sendout) — Legacy Modern Design
  * Variables: $customers, $types

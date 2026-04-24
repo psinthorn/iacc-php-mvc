@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Reports — Invoice Payments';
+
 /**
  * Invoice Payments View — MVC version
  * Variables: $summary, $rows, $pagination, $status, $search, $queryParams

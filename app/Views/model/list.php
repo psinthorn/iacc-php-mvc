@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Models';
+
 /**
  * Model List View
  * 

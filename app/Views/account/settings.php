@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Account — Settings';
+
 /**
  * Settings View — MVC version
  * Variables: $user, $message, $messageType

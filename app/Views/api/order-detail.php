@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'API — Order Details';
+
 /**
  * Order Detail View
  * 

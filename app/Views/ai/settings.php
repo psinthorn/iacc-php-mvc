@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'AI Assistant — Settings';
+
 /**
  * AI Settings View (rendered inside admin layout)
  * Variables: $settings, $message, $messageType

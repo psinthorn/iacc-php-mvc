@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Billing — New';
+
 /**
  * Billing Make View — Legacy Modern Design
  * Variables: $customer, $inv_id, $unbilled, $customers

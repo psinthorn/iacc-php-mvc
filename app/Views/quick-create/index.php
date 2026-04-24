@@ -1,4 +1,6 @@
 <?php
+$pageTitle = 'Quick Create';
+
 /**
  * Quick Create — Entry Point Selector
  * Choose: Quotation, Invoice, or Tax Invoice
