@@ -271,10 +271,12 @@ $statusConfig = [
         <?php endif; ?>
     </div>
     <?php else: ?>
+    <?php include __DIR__ . '/../partials/bulk-toolbar.php'; ?>
     <div class="master-data-table">
-        <table>
+        <table id="tour-bookings-table">
             <thead>
                 <tr>
+                    <th class="bulk-col"><input type="checkbox" class="bulk-select-all" title="Select all"></th>
                     <th><?= $isThai ? 'เลขจอง' : 'Booking #' ?></th>
                     <th><?= $isThai ? 'วันที่จอง' : 'Booking Date' ?></th>
                     <th><?= $isThai ? 'วันเดินทาง' : 'Trip Date' ?></th>
@@ -295,6 +297,7 @@ $statusConfig = [
                         : ($b['customer_name'] ?: $b['contact_name'] ?: '-');
                 ?>
                 <tr>
+                    <td class="bulk-col"><input type="checkbox" class="bulk-select-row" value="<?= $b['id'] ?>" aria-label="Select booking <?= htmlspecialchars($b['booking_number']) ?>"></td>
                     <td>
                         <a href="index.php?page=tour_booking_view&id=<?= $b['id'] ?>" class="bk-link">
                             <?= htmlspecialchars($b['booking_number']) ?>
@@ -355,6 +358,64 @@ $statusConfig = [
             </tbody>
         </table>
     </div>
+
+    <script src="js/bulk-select.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        BulkSelect.init({
+            tableId:  'tour-bookings-table',
+            actions: [
+                {
+                    key: 'confirm',
+                    label: '<?= $isThai ? 'ยืนยัน' : 'Confirm' ?>',
+                    icon: 'fa-check-circle',
+                    class: 'btn-success',
+                    confirm: true,
+                    confirmMsg: '<?= $isThai ? 'ยืนยัน {n} การจอง?' : 'Confirm {n} booking(s)?' ?>'
+                },
+                {
+                    key: 'mark_payment',
+                    label: '<?= $isThai ? 'รับชำระเงิน' : 'Mark Payment' ?>',
+                    icon: 'fa-money',
+                    class: 'btn-primary',
+                    modal: 'payment'
+                },
+                {
+                    key: 'send_vouchers',
+                    label: '<?= $isThai ? 'ส่ง Voucher' : 'Send Vouchers' ?>',
+                    icon: 'fa-paper-plane',
+                    class: 'btn-info',
+                    confirm: true,
+                    confirmMsg: '<?= $isThai ? 'ส่ง Voucher สำหรับ {n} การจอง?' : 'Send vouchers for {n} booking(s)?' ?>'
+                },
+                {
+                    key: 'send_invoices',
+                    label: '<?= $isThai ? 'ส่ง Invoice' : 'Send Invoices' ?>',
+                    icon: 'fa-file-text-o',
+                    class: 'btn-secondary',
+                    confirm: true,
+                    confirmMsg: '<?= $isThai ? 'ส่ง Invoice สำหรับ {n} การจอง?' : 'Send invoices for {n} booking(s)?' ?>'
+                },
+                {
+                    key: 'export_csv',
+                    label: '<?= $isThai ? 'ส่งออก CSV' : 'Export CSV' ?>',
+                    icon: 'fa-download',
+                    class: 'btn-secondary'
+                },
+                {
+                    key: 'delete',
+                    label: '<?= $isThai ? 'ลบ' : 'Delete' ?>',
+                    icon: 'fa-trash',
+                    class: 'btn-danger',
+                    confirm: true,
+                    confirmMsg: '<?= $isThai ? 'ลบ {n} การจอง? ไม่สามารถกู้คืนได้' : 'Delete {n} booking(s)? This cannot be undone.' ?>'
+                },
+            ],
+            actionUrl: 'index.php?page=tour_booking_bulk',
+            csrfToken: '<?= csrf_token() ?>'
+        });
+    });
+    </script>
 
     <!-- Pagination -->
     <?php if ($totalPages > 1): ?>

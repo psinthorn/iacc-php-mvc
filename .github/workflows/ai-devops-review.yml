@@ -1,9 +1,21 @@
 # =============================================================================
 # AI DevOps Agent — PR Review Gate
 # =============================================================================
-# Runs on every PR targeting the develop (staging) branch.
-# Calls Claude API with the DevOps agent system prompt to review the diff,
-# then posts a deployment checklist as a PR comment.
+#
+# MODES (set via GitHub repo variable AI_REVIEW_MODE):
+#   auto    — runs on every PR to develop (default if variable not set)
+#   manual  — only runs when PR has label "ai-review" or via manual trigger
+#   off     — disabled entirely
+#
+# TOKEN BUDGET (set via GitHub repo variable AI_REVIEW_MAX_TOKENS):
+#   Default: 512 tokens (~$0.001 per review with claude-haiku)
+#   Raise to 1024 for more detailed reviews
+#   Model used is claude-haiku-4-5-20251001 (cheapest) — change via AI_REVIEW_MODEL
+#
+# MANUAL TRIGGER:
+#   Go to Actions → AI DevOps Review → Run workflow
+#   Or add label "ai-review" to any PR
+#
 # =============================================================================
 
 name: 🤖 AI DevOps Review
@@ -12,7 +24,13 @@ on:
   pull_request:
     branches:
       - develop
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to review
+        required: true
+        type: number
 
 permissions:
   pull-requests: write
@@ -24,46 +42,98 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Check mode — skip if conditions not met
+      # -----------------------------------------------------------------------
+      - name: 🔎 Check review mode
+        id: mode
+        env:
+          AI_REVIEW_MODE: ${{ vars.AI_REVIEW_MODE }}
+        run: |
+          MODE="${AI_REVIEW_MODE:-auto}"
+          EVENT="${{ github.event_name }}"
+          LABEL="${{ github.event.label.name }}"
+
+          echo "Mode: $MODE | Event: $EVENT | Label: $LABEL"
+
+          if [ "$MODE" = "off" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "reason=AI review is disabled (AI_REVIEW_MODE=off)" >> $GITHUB_OUTPUT
+
+          elif [ "$MODE" = "manual" ] && [ "$EVENT" = "pull_request" ] && [ "$LABEL" != "ai-review" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "reason=Manual mode — add label 'ai-review' to this PR to trigger a review" >> $GITHUB_OUTPUT
+
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "reason=Running review (mode=$MODE)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: ⏭️ Skip notice
+        if: steps.mode.outputs.skip == 'true'
+        run: echo "⏭️ ${{ steps.mode.outputs.reason }}"
+
+      # -----------------------------------------------------------------------
+      # Step 2: Checkout & diff
+      # -----------------------------------------------------------------------
       - name: 📥 Checkout code
+        if: steps.mode.outputs.skip == 'false'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: 📋 Get changed files + diff summary
+        if: steps.mode.outputs.skip == 'false'
         id: diff
         run: |
           BASE=${{ github.event.pull_request.base.sha }}
           HEAD=${{ github.event.pull_request.head.sha }}
 
-          # Changed file list
           FILES=$(git diff --name-only "$BASE" "$HEAD" | head -60)
           echo "files<<EOF" >> $GITHUB_OUTPUT
           echo "$FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          # Compact diff (stats only to stay within token limits)
           DIFF_STAT=$(git diff --stat "$BASE" "$HEAD" | tail -20)
           echo "stat<<EOF" >> $GITHUB_OUTPUT
           echo "$DIFF_STAT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          # Check for SQL migration files
           SQL_FILES=$(git diff --name-only "$BASE" "$HEAD" | grep -E '\.(sql|php)' | grep -i 'migration\|seed' || true)
           echo "sql_files<<EOF" >> $GITHUB_OUTPUT
           echo "$SQL_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+          # Count changed files for token budget decision
+          FILE_COUNT=$(git diff --name-only "$BASE" "$HEAD" | wc -l | tr -d ' ')
+          echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+
+      # -----------------------------------------------------------------------
+      # Step 3: Run DevOps Agent
+      # -----------------------------------------------------------------------
       - name: 🤖 Run DevOps Agent via Claude API
+        if: steps.mode.outputs.skip == 'false'
         id: ai_review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_REVIEW_MAX_TOKENS: ${{ vars.AI_REVIEW_MAX_TOKENS }}
+          AI_REVIEW_MODEL: ${{ vars.AI_REVIEW_MODEL }}
         run: |
-          # Skip AI review if API key is not configured
+          # Skip if API key not set
           if [ -z "$ANTHROPIC_API_KEY" ]; then
-            echo "review=⚠️ AI review skipped — ANTHROPIC_API_KEY not set. Add it to repo secrets to enable automatic DevOps reviews. See: https://console.anthropic.com/settings/keys" >> $GITHUB_OUTPUT
+            echo "review=⚠️ AI review skipped — ANTHROPIC_API_KEY not configured. See: https://console.anthropic.com/settings/keys" >> $GITHUB_OUTPUT
             echo "verdict=safe" >> $GITHUB_OUTPUT
+            echo "tokens_used=0" >> $GITHUB_OUTPUT
             exit 0
           fi
+
+          # Token budget — default 512 (cheap), raise via AI_REVIEW_MAX_TOKENS variable
+          MAX_TOKENS="${AI_REVIEW_MAX_TOKENS:-512}"
+          # Model — default haiku (cheapest ~$0.001/review), override via AI_REVIEW_MODEL
+          MODEL="${AI_REVIEW_MODEL:-claude-haiku-4-5-20251001}"
+
+          FILE_COUNT="${{ steps.diff.outputs.file_count }}"
+          echo "📊 Files changed: $FILE_COUNT | Model: $MODEL | Max tokens: $MAX_TOKENS"
 
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_BRANCH="${{ github.event.pull_request.head.ref }}"
@@ -71,85 +141,79 @@ jobs:
           DIFF_STAT="${{ steps.diff.outputs.stat }}"
           SQL_FILES="${{ steps.diff.outputs.sql_files }}"
 
-          # Build the prompt
           PROMPT="You are a DevOps Engineer for iACC, a PHP MVC SaaS on cPanel shared hosting.
 
-          A developer has opened a PR to the staging (develop) branch.
-
-          PR Title: ${PR_TITLE}
-          Branch: ${PR_BRANCH}
-
+          PR: ${PR_TITLE} (branch: ${PR_BRANCH})
           Changed files:
           ${CHANGED_FILES}
 
           Diff stats:
           ${DIFF_STAT}
 
-          SQL/Migration files detected:
-          ${SQL_FILES:-None}
+          SQL/Migration files: ${SQL_FILES:-None}
 
-          Based on these changed files, produce a concise deployment review with:
-
-          ## ✅ Deployment Checklist
-          (ordered steps to deploy these changes to cPanel staging)
-
+          Write a short deployment review:
+          ## ✅ Deploy Steps (ordered)
           ## ⚠️ Risks
-          (list any high-risk changes — index changes, schema alterations, breaking routes)
+          ## 🗄️ SQL Steps (if any)
+          ## 🔍 Smoke Tests
+          ## 🟢 Verdict: SAFE TO MERGE or NEEDS REVIEW (reason)
 
-          ## 🗄️ SQL Steps
-          (what to run in phpMyAdmin staging, if any migration files changed)
+          Max 300 words. Be direct."
 
-          ## 🔍 Post-Deploy Checks
-          (what URLs/features to smoke-test after deploy)
-
-          ## 🟢 Verdict
-          Either: SAFE TO MERGE or NEEDS REVIEW (with reason)
-
-          Keep the total response under 400 words. Be direct and actionable."
-
-          # Call Claude API
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: ${ANTHROPIC_API_KEY}" \
             -H "anthropic-version: 2023-06-01" \
             -d "{
-              \"model\": \"claude-sonnet-4-6\",
-              \"max_tokens\": 1024,
+              \"model\": \"${MODEL}\",
+              \"max_tokens\": ${MAX_TOKENS},
               \"messages\": [{
                 \"role\": \"user\",
                 \"content\": $(echo "$PROMPT" | jq -Rs .)
               }]
             }")
 
-          # Extract text
           REVIEW=$(echo "$RESPONSE" | jq -r '.content[0].text // "AI review unavailable."')
+          TOKENS_USED=$(echo "$RESPONSE" | jq -r '.usage.output_tokens // 0')
 
-          # Save for next step
           echo "review<<EOF" >> $GITHUB_OUTPUT
           echo "$REVIEW" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          echo "tokens_used=$TOKENS_USED" >> $GITHUB_OUTPUT
 
-          # Check verdict
           if echo "$REVIEW" | grep -q "NEEDS REVIEW"; then
             echo "verdict=needs_review" >> $GITHUB_OUTPUT
           else
             echo "verdict=safe" >> $GITHUB_OUTPUT
           fi
 
+      # -----------------------------------------------------------------------
+      # Step 4: Post PR comment
+      # -----------------------------------------------------------------------
       - name: 💬 Post review comment on PR
+        if: steps.mode.outputs.skip == 'false'
         uses: actions/github-script@v7
+        env:
+          AI_REVIEW_MODEL: ${{ vars.AI_REVIEW_MODEL }}
+          AI_REVIEW_MAX_TOKENS: ${{ vars.AI_REVIEW_MAX_TOKENS }}
         with:
           script: |
-            const review = `${{ steps.ai_review.outputs.review }}`;
-            const verdict = `${{ steps.ai_review.outputs.verdict }}`;
-            const icon = verdict === 'safe' ? '🟢' : '🔴';
+            const review   = `${{ steps.ai_review.outputs.review }}`;
+            const verdict  = `${{ steps.ai_review.outputs.verdict }}`;
+            const tokens   = `${{ steps.ai_review.outputs.tokens_used }}`;
+            const model    = process.env.AI_REVIEW_MODEL    || 'claude-haiku-4-5-20251001';
+            const maxTok   = process.env.AI_REVIEW_MAX_TOKENS || '512';
+            const icon     = verdict === 'safe' ? '🟢' : '🔴';
+            const mode     = `${{ vars.AI_REVIEW_MODE || 'auto' }}`;
 
             const body = `## ${icon} AI DevOps Agent Review
 
             ${review}
 
             ---
-            *Generated by [DevOps Agent](../blob/main/ai/prompts/agent-devops.md) · Claude claude-sonnet-4-6*`;
+            <sub>Model: \`${model}\` · Tokens used: \`${tokens}/${maxTok}\` · Mode: \`${mode}\` · [DevOps Agent prompt](../blob/develop/ai/prompts/agent-devops.md)</sub>
+            <sub>Change review settings: Repo → Settings → Variables → \`AI_REVIEW_MODE\` / \`AI_REVIEW_MAX_TOKENS\` / \`AI_REVIEW_MODEL\`</sub>`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -158,13 +222,16 @@ jobs:
               body: body
             });
 
+      # -----------------------------------------------------------------------
+      # Step 5: Pass or fail
+      # -----------------------------------------------------------------------
       - name: ❌ Fail if agent flags issues
-        if: steps.ai_review.outputs.verdict == 'needs_review'
+        if: steps.mode.outputs.skip == 'false' && steps.ai_review.outputs.verdict == 'needs_review'
         run: |
           echo "❌ DevOps Agent flagged this PR as NEEDS REVIEW."
           echo "Read the PR comment for details before merging."
           exit 1
 
-      - name: ✅ AI review passed or skipped
-        if: steps.ai_review.outputs.verdict == 'safe'
-        run: echo "✅ DevOps review passed — safe to merge."
+      - name: ✅ Passed or skipped
+        if: steps.mode.outputs.skip == 'true' || steps.ai_review.outputs.verdict == 'safe'
+        run: echo "✅ DevOps review passed or skipped."
