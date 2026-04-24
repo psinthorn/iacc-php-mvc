@@ -53,7 +53,13 @@ const BulkSelect = (function () {
   }
 
   function handleSelectAll(e) {
-    rows().forEach(cb => { cb.checked = e.target.checked; handleRowChange(cb); });
+    const checked = e.target.checked;
+    rows().forEach(cb => {
+      cb.checked = checked;
+      checked ? _selected.add(cb.value) : _selected.delete(cb.value);
+      highlightRow(cb);
+    });
+    syncToolbar();
   }
 
   function resetSelection() {
