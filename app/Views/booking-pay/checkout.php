@@ -213,14 +213,17 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); m
             'paypal'    => ['class' => 'gw-paypal',    'icon' => 'fa-paypal',      'title' => 'PayPal',        'desc' => 'Pay with your PayPal account'],
             'promptpay' => ['class' => 'gw-promptpay', 'icon' => 'fa-qrcode',      'title' => 'PromptPay QR', 'desc' => 'Scan with any Thai banking app'],
         ];
+        $allowedGateways = ['stripe', 'paypal', 'promptpay'];
         foreach ($activeGateways as $gw):
-            $code = strtolower($gw['code']);
+            $code = strtolower($gw['code'] ?? '');
+            if (!in_array($code, $allowedGateways, true)) continue;
             $meta = $gwMeta[$code] ?? ['class' => '', 'icon' => 'fa-plug', 'title' => $gw['name'], 'desc' => ''];
         ?>
         <form method="post" action="index.php?page=booking_pay_checkout" class="gw-form">
+            <?= csrf_field() ?>
             <input type="hidden" name="id"           value="<?= $bookingId ?>">
             <input type="hidden" name="token"        value="<?= htmlspecialchars($token) ?>">
-            <input type="hidden" name="gateway"      value="<?= $code ?>">
+            <input type="hidden" name="gateway"      value="<?= htmlspecialchars($code) ?>">
             <input type="hidden" name="amount"       class="amount-field" value="<?= $amountDue ?>">
             <input type="hidden" name="payment_type" class="type-field"   value="full">
             <button type="submit" class="gw-btn <?= $meta['class'] ?>">

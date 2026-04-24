@@ -132,6 +132,8 @@ class BookingPayController extends BaseController
 
     public function checkout(): void
     {
+        $this->verifyCsrf();
+
         $bookingId = intval($_POST['id'] ?? 0);
         $token     = trim($_POST['token'] ?? '');
         $gateway   = trim($_POST['gateway'] ?? '');
@@ -201,7 +203,8 @@ class BookingPayController extends BaseController
             throw new \Exception('Unknown gateway');
 
         } catch (\Exception $e) {
-            $_SESSION['bpay_flash'] = ['type' => 'error', 'msg' => $e->getMessage()];
+            error_log('BookingPay checkout error (booking ' . $bookingId . '): ' . $e->getMessage());
+            $_SESSION['bpay_flash'] = ['type' => 'error', 'msg' => 'Payment processing failed. Please try again or contact the tour operator.'];
             header('Location: ' . $backUrl); exit;
         }
     }
@@ -277,7 +280,8 @@ class BookingPayController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            $error = $e->getMessage();
+            error_log('BookingPay success error (booking ' . $bookingId . ', gateway ' . $gateway . '): ' . $e->getMessage());
+            $error = 'Payment verification failed. Please contact the tour operator with your payment reference.';
         }
 
         $bookingNumber = $booking['booking_number'];
