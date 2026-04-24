@@ -103,8 +103,11 @@ class Dashboard
     public function getQuickCompanies(int $limit = 8): ?\mysqli_result
     {
         $sql = "SELECT DISTINCT c.id, c.name_en, c.name_th, c.name_sh, c.logo,
+            c.customer, c.vender, c.contact, c.phone,
             (SELECT MAX(pr.date) FROM pr WHERE pr.ven_id = c.id OR pr.cus_id = c.id) as last_activity,
-            c.customer, c.vender
+            (SELECT COUNT(*) FROM pr WHERE (pr.ven_id = c.id OR pr.cus_id = c.id) AND pr.date >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as tx_30d,
+            (SELECT COUNT(*) FROM pr WHERE (pr.ven_id = c.id OR pr.cus_id = c.id) AND pr.status >= 4) as invoice_count,
+            (SELECT COALESCE(SUM(p.volumn),0) FROM pay p JOIN po ON p.po_id = po.id JOIN pr ON po.ref = pr.id WHERE (pr.ven_id = c.id OR pr.cus_id = c.id) AND p.date >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as revenue_30d
             FROM company c
             WHERE c.deleted_at IS NULL
             ORDER BY last_activity DESC

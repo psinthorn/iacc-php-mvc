@@ -339,44 +339,138 @@ function get_status_badge($status) {
                     </div>
                 </div>
                 
-                <!-- Quick Selection Grid -->
+                <!-- Recently Active Companies Grid -->
                 <div class="quick-selection-label">
                     <i class="fa fa-clock-o"></i> Recently Active Companies
+                    <span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:400;text-transform:none;letter-spacing:0;">Last activity · 30-day transactions · revenue</span>
                 </div>
                 <?php $quick_companies = $admin['quick_companies'] ?? null; ?>
                 <div class="company-quick-grid">
                     <?php if($quick_companies && mysqli_num_rows($quick_companies) > 0): ?>
-                        <?php while($qc = mysqli_fetch_assoc($quick_companies)): ?>
-                        <a href="index.php?page=remote&select_company=<?php echo $qc['id']; ?>" class="company-quick-card <?php echo ($com_id == $qc['id']) ? 'active' : ''; ?>">
-                            <div class="company-quick-logo">
-                                <?php if(!empty($qc['logo'])): ?>
-                                <img src="upload/<?php echo htmlspecialchars($qc['logo']); ?>" alt="">
+                        <?php while($qc = mysqli_fetch_assoc($quick_companies)):
+                            $isActive = ($com_id == $qc['id']);
+                            $name     = htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 28));
+                            $tx30d    = intval($qc['tx_30d'] ?? 0);
+                            $rev30d   = floatval($qc['revenue_30d'] ?? 0);
+                            $invCount = intval($qc['invoice_count'] ?? 0);
+                            // Relative time label
+                            $lastAct  = $qc['last_activity'] ?? null;
+                            if ($lastAct) {
+                                $diff = (int) round((time() - strtotime($lastAct)) / 86400);
+                                if ($diff === 0)      $actLabel = 'Today';
+                                elseif ($diff === 1)  $actLabel = 'Yesterday';
+                                elseif ($diff <= 7)   $actLabel = $diff . 'd ago';
+                                elseif ($diff <= 30)  $actLabel = ceil($diff/7) . 'w ago';
+                                elseif ($diff <= 365) $actLabel = date('M d', strtotime($lastAct));
+                                else                  $actLabel = date('M Y', strtotime($lastAct));
+                            } else { $actLabel = 'No activity'; }
+                            // Activity pulse color
+                            $pulseColor = !$lastAct ? '#e5e7eb' : ($diff <= 7 ? '#10b981' : ($diff <= 30 ? '#f59e0b' : '#94a3b8'));
+                            // Initials avatar fallback
+                            $initials = strtoupper(substr($qc['name_en'] ?: $qc['name_th'], 0, 2));
+                            // Gradient based on id
+                            $gradients = ['135deg,#667eea,#764ba2','135deg,#06b6d4,#0891b2','135deg,#10b981,#059669','135deg,#f59e0b,#d97706','135deg,#ef4444,#dc2626','135deg,#8b5cf6,#7c3aed'];
+                            $grad = $gradients[$qc['id'] % count($gradients)];
+                        ?>
+                        <a href="index.php?page=remote&select_company=<?= $qc['id'] ?>" class="cqc <?= $isActive ? 'cqc--active' : '' ?>">
+                            <!-- Activity pulse indicator -->
+                            <span class="cqc-pulse" style="background:<?= $pulseColor ?>"></span>
+
+                            <!-- Logo / Avatar -->
+                            <div class="cqc-logo">
+                                <?php if (!empty($qc['logo'])): ?>
+                                <img src="upload/<?= htmlspecialchars($qc['logo']) ?>" alt="">
                                 <?php else: ?>
-                                <i class="fa fa-building"></i>
+                                <div class="cqc-initials" style="background:linear-gradient(<?= $grad ?>)"><?= $initials ?></div>
                                 <?php endif; ?>
                             </div>
-                            <div class="company-quick-info">
-                                <div class="company-quick-name"><?php echo htmlspecialchars(substr($qc['name_en'] ?: $qc['name_th'], 0, 25)); ?></div>
-                                <div class="company-quick-meta">
-                                    <?php if($qc['vender'] == '1' && $qc['customer'] == '1'): ?>
-                                    <span class="badge-both">Both</span>
-                                    <?php elseif($qc['vender'] == '1'): ?>
-                                    <span class="badge-vendor">Vendor</span>
-                                    <?php elseif($qc['customer'] == '1'): ?>
-                                    <span class="badge-customer">Customer</span>
+
+                            <!-- Main info -->
+                            <div class="cqc-body">
+                                <div class="cqc-name"><?= $name ?></div>
+                                <div class="cqc-tags">
+                                    <?php if ($qc['vender'] == '1' && $qc['customer'] == '1'): ?>
+                                    <span class="cqc-tag cqc-tag--both">Both</span>
+                                    <?php elseif ($qc['vender'] == '1'): ?>
+                                    <span class="cqc-tag cqc-tag--vendor">Vendor</span>
+                                    <?php elseif ($qc['customer'] == '1'): ?>
+                                    <span class="cqc-tag cqc-tag--customer">Customer</span>
                                     <?php endif; ?>
-                                    <?php if($qc['last_activity']): ?>
-                                    <span class="last-activity"><?php echo date('M d', strtotime($qc['last_activity'])); ?></span>
+                                    <span class="cqc-tag cqc-tag--time"><i class="fa fa-clock-o"></i> <?= $actLabel ?></span>
+                                </div>
+
+                                <!-- Stats row -->
+                                <div class="cqc-stats">
+                                    <div class="cqc-stat" title="Transactions last 30 days">
+                                        <i class="fa fa-exchange"></i> <?= $tx30d ?>
+                                    </div>
+                                    <div class="cqc-stat" title="Total invoices">
+                                        <i class="fa fa-file-text-o"></i> <?= $invCount ?>
+                                    </div>
+                                    <?php if ($rev30d > 0): ?>
+                                    <div class="cqc-stat cqc-stat--rev" title="Revenue last 30 days">
+                                        <i class="fa fa-bar-chart"></i> ฿<?= $rev30d >= 1000000 ? number_format($rev30d/1000000,1).'M' : ($rev30d >= 1000 ? number_format($rev30d/1000,1).'K' : number_format($rev30d,0)) ?>
+                                    </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <?php if($com_id == $qc['id']): ?>
-                            <div class="company-selected-badge"><i class="fa fa-check"></i></div>
+
+                            <!-- Selected checkmark -->
+                            <?php if ($isActive): ?>
+                            <div class="cqc-check"><i class="fa fa-check"></i></div>
                             <?php endif; ?>
                         </a>
                         <?php endwhile; ?>
+                    <?php else: ?>
+                        <div style="grid-column:1/-1;text-align:center;padding:32px;color:#94a3b8;">
+                            <i class="fa fa-building" style="font-size:32px;margin-bottom:10px;display:block;"></i>
+                            No companies found
+                        </div>
                     <?php endif; ?>
                 </div>
+
+                <style>
+                /* ── Recently Active Companies cards ────────────── */
+                .company-quick-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:12px 24px 24px; }
+                @media(max-width:1200px){.company-quick-grid{grid-template-columns:repeat(3,1fr);}}
+                @media(max-width:900px) {.company-quick-grid{grid-template-columns:repeat(2,1fr);}}
+                @media(max-width:576px) {.company-quick-grid{grid-template-columns:1fr;}}
+
+                .cqc { position:relative; display:flex; flex-direction:column; gap:10px; padding:16px; background:#f8fafc; border:2px solid #e5e7eb; border-radius:14px; text-decoration:none; color:inherit; transition:all .18s ease; overflow:hidden; }
+                .cqc:hover { border-color:#667eea; background:#fff; transform:translateY(-3px); box-shadow:0 8px 24px rgba(102,126,234,.14); text-decoration:none; color:inherit; }
+                .cqc--active { border-color:#667eea; background:linear-gradient(135deg,rgba(102,126,234,.07),rgba(118,75,162,.07)); }
+
+                /* Pulse dot */
+                .cqc-pulse { position:absolute; top:12px; right:12px; width:9px; height:9px; border-radius:50%; }
+
+                /* Logo / initials */
+                .cqc-logo { width:48px; height:48px; border-radius:12px; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+                .cqc-logo img { width:100%; height:100%; object-fit:cover; }
+                .cqc-initials { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; border-radius:11px; }
+
+                /* Body */
+                .cqc-body { flex:1; min-width:0; }
+                .cqc-name { font-weight:700; font-size:13.5px; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px; padding-right:14px; }
+
+                /* Tags */
+                .cqc-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+                .cqc-tag { font-size:10px; padding:2px 7px; border-radius:4px; font-weight:600; display:inline-flex; align-items:center; gap:3px; }
+                .cqc-tag--vendor   { background:#dbeafe; color:#1d4ed8; }
+                .cqc-tag--customer { background:#dcfce7; color:#15803d; }
+                .cqc-tag--both     { background:#fef3c7; color:#b45309; }
+                .cqc-tag--time     { background:#f1f5f9; color:#64748b; }
+
+                /* Stats row */
+                .cqc-stats { display:flex; gap:10px; align-items:center; }
+                .cqc-stat { font-size:11px; color:#64748b; display:inline-flex; align-items:center; gap:3px; font-weight:500; }
+                .cqc-stat i { opacity:.65; }
+                .cqc-stat--rev { color:#059669; font-weight:600; }
+
+                /* Selected badge */
+                .cqc-check { position:absolute; top:-1px; right:-1px; width:24px; height:24px; background:linear-gradient(135deg,#667eea,#764ba2); border-radius:0 12px 0 10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; }
+
+                .quick-selection-label { padding:16px 24px 8px; font-size:12px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:6px; }
+                </style>
                 
                 <div class="company-selector-footer">
                     <a href="index.php?page=company" class="btn-browse-all">
