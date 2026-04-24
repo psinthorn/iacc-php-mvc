@@ -42,6 +42,7 @@ jobs:
           - devops: Deployments, cPanel, Docker, CI/CD, GitHub Actions
           - designer: UI/UX wireframes, design improvements
           - tracker: Milestones, sprint planning, project timeline
+          - dba: Database schema, query optimization, migrations, reporting SQL, indexes, data integrity
 
           Issue title: ${ISSUE_TITLE}
           Issue body: ${ISSUE_BODY}
@@ -135,11 +136,11 @@ jobs:
         run: |
           declare -A AGENT_EMOJI=(
             [pm]="📋" [backend]="⚙️" [frontend]="🎨"
-            [qa]="🔍" [devops]="🚀" [designer]="✏️" [tracker]="📊"
+            [qa]="🔍" [devops]="🚀" [designer]="✏️" [tracker]="📊" [dba]="🗄️"
           )
           declare -A AGENT_NAME=(
             [pm]="Product Manager" [backend]="Backend Developer" [frontend]="Frontend Developer"
-            [qa]="QA Tester" [devops]="DevOps Engineer" [designer]="UI/UX Designer" [tracker]="Project Tracker"
+            [qa]="QA Tester" [devops]="DevOps Engineer" [designer]="UI/UX Designer" [tracker]="Project Tracker" [dba]="Database Analyst"
           )
           declare -A PRIORITY_EMOJI=([high]="🔴" [medium]="🟡" [low]="🟢")
 
