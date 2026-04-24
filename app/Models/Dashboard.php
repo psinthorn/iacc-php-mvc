@@ -459,8 +459,8 @@ class Dashboard
 
         $sql = "SELECT
                     COUNT(*) AS total_bookings,
-                    COALESCE(SUM(b.total_price), 0) AS total_revenue,
-                    COALESCE(SUM(b.pax_count), 0) AS total_pax,
+                    COALESCE(SUM(b.total_amount), 0) AS total_revenue,
+                    COALESCE(SUM(b.total_pax), 0) AS total_pax,
                     SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) AS confirmed,
                     SUM(CASE WHEN b.status = 'pending'   THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN b.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled
@@ -491,13 +491,11 @@ class Dashboard
         $monthStart = date('Y-m-01');
 
         $sql = "SELECT
-                    COALESCE(tap.profile_name, c.name_en, c.name_th, 'Direct') AS agent_name,
+                    COALESCE(c.name_en, c.name_th, 'Direct') AS agent_name,
                     COUNT(b.id) AS bookings,
-                    COALESCE(SUM(b.total_price), 0) AS revenue,
-                    COALESCE(SUM(b.pax_count), 0) AS pax
+                    COALESCE(SUM(b.total_amount), 0) AS revenue,
+                    COALESCE(SUM(b.total_pax), 0) AS pax
                 FROM tour_bookings b
-                LEFT JOIN tour_agent_profiles tap ON b.agent_id = tap.company_id
-                    AND tap.company_id = b.company_id
                 LEFT JOIN company c ON b.agent_id = c.id
                 WHERE b.deleted_at IS NULL
                   AND b.booking_date >= '$monthStart'

@@ -181,11 +181,11 @@ class TourBooking extends BaseModel
                     SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled,
                     SUM(CASE WHEN travel_date = '$today' THEN 1 ELSE 0 END) AS today_bookings,
                     COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue,
-                    COALESCE(SUM(pax_count), 0) AS total_pax,
+                    COALESCE(SUM(total_pax), 0) AS total_pax,
                     SUM(CASE WHEN booking_date >= '$monthStart' THEN 1 ELSE 0 END) AS month_bookings,
                     COALESCE(SUM(CASE WHEN booking_date >= '$monthStart'
                                       AND status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS month_revenue,
-                    COALESCE(SUM(CASE WHEN booking_date >= '$monthStart' THEN pax_count ELSE 0 END), 0) AS month_pax
+                    COALESCE(SUM(CASE WHEN booking_date >= '$monthStart' THEN total_pax ELSE 0 END), 0) AS month_pax
                 FROM tour_bookings
                 WHERE company_id = $cid AND deleted_at IS NULL";
 
@@ -219,7 +219,7 @@ class TourBooking extends BaseModel
         $sql = "SELECT
                     COUNT(*) AS total_bookings,
                     COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue,
-                    COALESCE(SUM(pax_count), 0) AS total_pax,
+                    COALESCE(SUM(total_pax), 0) AS total_pax,
                     SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) AS confirmed,
                     SUM(CASE WHEN status='pending'   THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled
@@ -232,13 +232,11 @@ class TourBooking extends BaseModel
 
         // Top agents in range
         $agentSql = "SELECT
-                        COALESCE(tap.profile_name, c.name_en, c.name_th, 'Direct') AS agent_name,
+                        COALESCE(c.name_en, c.name_th, 'Direct') AS agent_name,
                         COUNT(b.id) AS bookings,
                         COALESCE(SUM(b.total_amount), 0) AS revenue,
-                        COALESCE(SUM(b.pax_count), 0) AS pax
+                        COALESCE(SUM(b.total_pax), 0) AS pax
                     FROM tour_bookings b
-                    LEFT JOIN tour_agent_profiles tap ON tap.company_id = b.company_id
-                        AND tap.company_id = b.agent_id
                     LEFT JOIN company c ON b.agent_id = c.id
                     WHERE b.company_id = $cid AND b.deleted_at IS NULL
                       AND b.booking_date BETWEEN '$from' AND '$to'

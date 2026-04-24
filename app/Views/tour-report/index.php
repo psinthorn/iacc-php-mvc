@@ -15,7 +15,7 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
 <link rel="stylesheet" href="css/master-data.css">
 
 <style>
-.rpt-container { max-width: 720px; margin: 0 auto; }
+.rpt-container { }
 .rpt-card { background: white; border-radius: 14px; padding: 28px 32px; border: 1px solid #e2e8f0; }
 .rpt-card h3 { font-size: 15px; font-weight: 600; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
 .rpt-card h3 i { color: #0d9488; margin-right: 6px; }
@@ -37,11 +37,21 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
 .quick-date:hover { background: #f0fdfa; border-color: #0d9488; color: #0d9488; }
 .conditional-group { display: none; }
 .conditional-group.show { display: block; }
-.rpt-actions { display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+.rpt-actions { display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9; flex-wrap: wrap; }
 .rpt-actions .btn-print { padding: 11px 28px; background: #0d9488; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
 .rpt-actions .btn-print:hover { background: #0f766e; }
 .rpt-actions .btn-back { padding: 11px 24px; background: white; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .rpt-actions .btn-back:hover { background: #f8fafc; }
+.rpt-toggle { display: inline-flex; background: #f1f5f9; border-radius: 8px; padding: 3px; gap: 2px; }
+.rpt-toggle label { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; color: #64748b; transition: all 0.15s; }
+.rpt-toggle input[type="radio"] { display: none; }
+.rpt-toggle input[type="radio"]:checked + label { background: white; color: #0d9488; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.rpt-checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.rpt-checkbox { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.rpt-checkbox input[type="checkbox"] { accent-color: #0d9488; width: 15px; height: 15px; }
+.rpt-checkbox span { font-size: 13px; color: #334155; }
+.rpt-separator { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0 20px; }
+.rpt-section-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 14px; }
 
 @media (max-width: 640px) {
     .rpt-row { grid-template-columns: 1fr; }
@@ -149,20 +159,58 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
         <div class="rpt-card">
             <h3><i class="fa fa-filter"></i> <?= $isThai ? 'ตั้งค่ารายงาน' : 'Report Settings' ?></h3>
 
-            <!-- Tour Date -->
-            <div class="rpt-group">
-                <label><?= $isThai ? 'วันที่ทัวร์ *' : 'Tour Date *' ?></label>
-                <input type="date" id="rpt_tour_date" value="<?= $today ?>" required>
-                <div class="quick-dates">
-                    <button type="button" class="quick-date" data-date="<?= $today ?>"><?= $isThai ? 'วันนี้' : 'Today' ?></button>
-                    <button type="button" class="quick-date" data-date="<?= $tomorrow ?>"><?= $isThai ? 'พรุ่งนี้' : 'Tomorrow' ?></button>
-                    <button type="button" class="quick-date" data-date="<?= date('Y-m-d', strtotime('monday this week')) ?>"><?= $isThai ? 'จันทร์นี้' : 'This Monday' ?></button>
+            <!-- ── 1. DATE ──────────────────────────────────────── -->
+            <p class="rpt-section-title"><i class="fa fa-calendar" style="color:#0d9488;margin-right:4px;"></i><?= $isThai ? 'วันที่' : 'Date' ?></p>
+
+            <!-- Date mode toggle -->
+            <div class="rpt-group" style="margin-bottom:14px;">
+                <div class="rpt-toggle">
+                    <input type="radio" name="date_mode" id="dm_single" value="single" checked>
+                    <label for="dm_single"><?= $isThai ? 'วันเดียว' : 'Single Day' ?></label>
+                    <input type="radio" name="date_mode" id="dm_range" value="range">
+                    <label for="dm_range"><?= $isThai ? 'ช่วงวันที่' : 'Date Range' ?></label>
                 </div>
             </div>
 
-            <!-- Report Type -->
+            <!-- Single day -->
+            <div id="date_single_wrap">
+                <div class="rpt-group">
+                    <label><?= $isThai ? 'วันที่ทัวร์ *' : 'Tour Date *' ?></label>
+                    <input type="date" id="rpt_tour_date" value="<?= $today ?>" required>
+                    <div class="quick-dates" style="margin-top:8px;">
+                        <button type="button" class="quick-date" data-target="rpt_tour_date" data-date="<?= $today ?>"><?= $isThai ? 'วันนี้' : 'Today' ?></button>
+                        <button type="button" class="quick-date" data-target="rpt_tour_date" data-date="<?= $tomorrow ?>"><?= $isThai ? 'พรุ่งนี้' : 'Tomorrow' ?></button>
+                        <button type="button" class="quick-date" data-target="rpt_tour_date" data-date="<?= date('Y-m-d', strtotime('monday this week')) ?>"><?= $isThai ? 'จันทร์นี้' : 'This Mon' ?></button>
+                        <button type="button" class="quick-date" data-target="rpt_tour_date" data-date="<?= date('Y-m-d', strtotime('monday next week')) ?>"><?= $isThai ? 'จันทร์หน้า' : 'Next Mon' ?></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date range -->
+            <div id="date_range_wrap" style="display:none;">
+                <div class="rpt-row">
+                    <div class="rpt-group">
+                        <label><?= $isThai ? 'วันที่เริ่มต้น *' : 'Date From *' ?></label>
+                        <input type="date" id="rpt_date_from" value="<?= $today ?>">
+                    </div>
+                    <div class="rpt-group">
+                        <label><?= $isThai ? 'วันที่สิ้นสุด *' : 'Date To *' ?></label>
+                        <input type="date" id="rpt_date_to" value="<?= $today ?>">
+                    </div>
+                </div>
+                <div class="quick-dates" style="margin-top:-8px;margin-bottom:16px;">
+                    <button type="button" class="quick-date" data-range="week"><?= $isThai ? 'สัปดาห์นี้' : 'This Week' ?></button>
+                    <button type="button" class="quick-date" data-range="next_week"><?= $isThai ? 'สัปดาห์หน้า' : 'Next Week' ?></button>
+                    <button type="button" class="quick-date" data-range="month"><?= $isThai ? 'เดือนนี้' : 'This Month' ?></button>
+                </div>
+            </div>
+
+            <hr class="rpt-separator">
+
+            <!-- ── 2. REPORT TYPE ───────────────────────────────── -->
+            <p class="rpt-section-title"><i class="fa fa-file-text-o" style="color:#0d9488;margin-right:4px;"></i><?= $isThai ? 'ประเภทรายงาน' : 'Report Type' ?></p>
+
             <div class="rpt-group">
-                <label><?= $isThai ? 'ประเภทรายงาน' : 'Report Type' ?></label>
                 <div class="rpt-radio-group" id="rpt_type_group">
                     <label class="rpt-radio active">
                         <input type="radio" name="report_type" value="checkin" checked>
@@ -179,9 +227,29 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                 </div>
             </div>
 
-            <!-- Section Filter (Check-in only) -->
+            <hr class="rpt-separator">
+
+            <!-- ── 3. FILTERS ──────────────────────────────────── -->
+            <p class="rpt-section-title"><i class="fa fa-sliders" style="color:#0d9488;margin-right:4px;"></i><?= $isThai ? 'ตัวกรอง' : 'Filters' ?></p>
+
+            <!-- Booking Status -->
+            <div class="rpt-group">
+                <label><?= $isThai ? 'สถานะการจอง' : 'Booking Status' ?></label>
+                <div class="rpt-toggle">
+                    <input type="radio" name="rpt_status" id="st_all" value="all" checked>
+                    <label for="st_all"><?= $isThai ? 'ทั้งหมด' : 'All' ?></label>
+                    <input type="radio" name="rpt_status" id="st_confirmed" value="confirmed">
+                    <label for="st_confirmed"><?= $isThai ? 'ยืนยันแล้ว' : 'Confirmed' ?></label>
+                    <input type="radio" name="rpt_status" id="st_pending" value="pending">
+                    <label for="st_pending"><?= $isThai ? 'รอดำเนินการ' : 'Pending' ?></label>
+                    <input type="radio" name="rpt_status" id="st_completed" value="completed">
+                    <label for="st_completed"><?= $isThai ? 'เสร็จสิ้น' : 'Completed' ?></label>
+                </div>
+            </div>
+
+            <!-- Section Filter (Checkin + Insurance) -->
             <div class="rpt-group conditional-group show" id="section_group">
-                <label><?= $isThai ? 'กรองตามประเภท' : 'Section Filter' ?></label>
+                <label><?= $isThai ? 'ประเภทการจอง' : 'Booking Type' ?></label>
                 <select id="rpt_section">
                     <option value="all"><?= $isThai ? 'ทั้งหมด' : 'All' ?></option>
                     <option value="direct"><?= $isThai ? 'จองตรงเท่านั้น' : 'Direct Booking Only' ?></option>
@@ -195,13 +263,14 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
                 <select id="rpt_grouping">
                     <option value="time"><?= $isThai ? 'เวลารับ' : 'Pickup Time' ?></option>
                     <option value="location"><?= $isThai ? 'จุดรับ' : 'Pickup Location' ?></option>
+                    <option value="agent"><?= $isThai ? 'ตัวแทน' : 'Agent' ?></option>
                 </select>
             </div>
 
-            <!-- Tour Activity filter -->
+            <!-- Tour Activity -->
             <?php if (!empty($activities)): ?>
             <div class="rpt-group">
-                <label><?= $isThai ? 'ทัวร์/กิจกรรม (ไม่บังคับ)' : 'Tour/Activity (Optional)' ?></label>
+                <label><?= $isThai ? 'ทัวร์/กิจกรรม (ไม่บังคับ)' : 'Tour / Activity (Optional)' ?></label>
                 <select id="rpt_activity">
                     <option value=""><?= $isThai ? '— ทั้งหมด —' : '— All —' ?></option>
                     <?php foreach ($activities as $type): ?>
@@ -220,10 +289,98 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
             </div>
             <?php endif; ?>
 
+            <hr class="rpt-separator">
+
+            <!-- ── 4. SORT & DISPLAY OPTIONS ───────────────────── -->
+            <p class="rpt-section-title"><i class="fa fa-sort" style="color:#0d9488;margin-right:4px;"></i><?= $isThai ? 'การเรียงและแสดงผล' : 'Sort & Display' ?></p>
+
+            <!-- Sort By (conditional) -->
+            <div class="rpt-row">
+                <div class="rpt-group">
+                    <label><?= $isThai ? 'เรียงตาม' : 'Sort By' ?></label>
+                    <!-- checkin / insurance sort -->
+                    <select id="rpt_sort_checkin" class="sort-select">
+                        <option value="name"><?= $isThai ? 'ชื่อลูกค้า' : 'Customer Name' ?></option>
+                        <option value="booking_ref"><?= $isThai ? 'เลขที่ใบจอง' : 'Booking Ref' ?></option>
+                        <option value="pickup_time"><?= $isThai ? 'เวลารับ' : 'Pickup Time' ?></option>
+                        <option value="agent"><?= $isThai ? 'ตัวแทน' : 'Agent' ?></option>
+                    </select>
+                    <!-- pickup sort -->
+                    <select id="rpt_sort_pickup" class="sort-select" style="display:none;">
+                        <option value="pickup_time"><?= $isThai ? 'เวลารับ' : 'Pickup Time' ?></option>
+                        <option value="location"><?= $isThai ? 'จุดรับ' : 'Location' ?></option>
+                        <option value="name"><?= $isThai ? 'ชื่อลูกค้า' : 'Customer Name' ?></option>
+                    </select>
+                    <!-- insurance sort -->
+                    <select id="rpt_sort_insurance" class="sort-select" style="display:none;">
+                        <option value="name"><?= $isThai ? 'ชื่อ' : 'Name' ?></option>
+                        <option value="nationality"><?= $isThai ? 'สัญชาติ' : 'Nationality' ?></option>
+                        <option value="passport"><?= $isThai ? 'เลขพาสปอร์ต' : 'Passport No.' ?></option>
+                    </select>
+                </div>
+
+                <div class="rpt-group">
+                    <label><?= $isThai ? 'ลำดับ' : 'Order' ?></label>
+                    <div class="rpt-toggle" style="margin-top:2px;">
+                        <input type="radio" name="sort_dir" id="dir_asc" value="asc" checked>
+                        <label for="dir_asc"><i class="fa fa-sort-alpha-asc"></i> <?= $isThai ? 'น้อย→มาก' : 'Asc' ?></label>
+                        <input type="radio" name="sort_dir" id="dir_desc" value="desc">
+                        <label for="dir_desc"><i class="fa fa-sort-alpha-desc"></i> <?= $isThai ? 'มาก→น้อย' : 'Desc' ?></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Print Language -->
+            <div class="rpt-group">
+                <label><?= $isThai ? 'ภาษาในเอกสาร' : 'Print Language' ?></label>
+                <div class="rpt-toggle">
+                    <input type="radio" name="print_lang" id="lang_session" value="" checked>
+                    <label for="lang_session"><?= $isThai ? 'ตามระบบ' : 'System Default' ?></label>
+                    <input type="radio" name="print_lang" id="lang_en" value="en">
+                    <label for="lang_en">English</label>
+                    <input type="radio" name="print_lang" id="lang_th" value="th">
+                    <label for="lang_th">ภาษาไทย</label>
+                </div>
+            </div>
+
+            <!-- Extra columns (Insurance only) -->
+            <div class="rpt-group conditional-group" id="ins_options_group">
+                <label><?= $isThai ? 'แสดงข้อมูลเพิ่มเติม' : 'Show Extra Columns' ?></label>
+                <div class="rpt-checkbox-group">
+                    <label class="rpt-checkbox">
+                        <input type="checkbox" id="ins_show_passport" value="1" checked>
+                        <span><?= $isThai ? 'เลขพาสปอร์ต' : 'Passport No.' ?></span>
+                    </label>
+                    <label class="rpt-checkbox">
+                        <input type="checkbox" id="ins_show_nationality" value="1" checked>
+                        <span><?= $isThai ? 'สัญชาติ' : 'Nationality' ?></span>
+                    </label>
+                    <label class="rpt-checkbox">
+                        <input type="checkbox" id="ins_show_dob" value="1">
+                        <span><?= $isThai ? 'วันเกิด' : 'Date of Birth' ?></span>
+                    </label>
+                    <label class="rpt-checkbox">
+                        <input type="checkbox" id="ins_show_phone" value="1">
+                        <span><?= $isThai ? 'เบอร์โทร' : 'Phone' ?></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="rpt-group">
+                <label><?= $isThai ? 'หมายเหตุ (แสดงในเอกสาร)' : 'Notes (printed on report)' ?></label>
+                <input type="text" id="rpt_notes" placeholder="<?= $isThai ? 'ระบุหมายเหตุที่ต้องการแสดง...' : 'Optional notes to appear on the printed report...' ?>"
+                       style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:white;box-sizing:border-box;">
+            </div>
+
             <!-- Action Buttons -->
             <div class="rpt-actions">
                 <button type="button" class="btn-print" id="btn_print_report">
                     <i class="fa fa-print"></i> <?= $isThai ? 'พิมพ์รายงาน' : 'Print Report' ?>
+                </button>
+                <button type="button" class="btn-print" id="btn_preview_report"
+                        style="background:#475569;">
+                    <i class="fa fa-eye"></i> <?= $isThai ? 'ดูตัวอย่าง' : 'Preview' ?>
                 </button>
                 <a href="index.php?page=tour_booking_list" class="btn-back">
                     <i class="fa fa-arrow-left"></i> <?= $isThai ? 'กลับ' : 'Back' ?>
@@ -235,16 +392,81 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
 <script>
 (function() {
-    var typeRadios = document.querySelectorAll('input[name="report_type"]');
-    var sectionGroup  = document.getElementById('section_group');
-    var groupingGroup = document.getElementById('grouping_group');
+    // ── Element refs ──────────────────────────────────────────────────
+    var typeRadios     = document.querySelectorAll('input[name="report_type"]');
+    var dateModeRadios = document.querySelectorAll('input[name="date_mode"]');
+    var sectionGroup   = document.getElementById('section_group');
+    var groupingGroup  = document.getElementById('grouping_group');
+    var insOptGroup    = document.getElementById('ins_options_group');
+    var dateSingleWrap = document.getElementById('date_single_wrap');
+    var dateRangeWrap  = document.getElementById('date_range_wrap');
 
+    // ── Date mode toggle ──────────────────────────────────────────────
+    dateModeRadios.forEach(function(r) {
+        r.addEventListener('change', function() {
+            var isRange = this.value === 'range';
+            dateSingleWrap.style.display = isRange ? 'none' : '';
+            dateRangeWrap.style.display  = isRange ? '' : 'none';
+        });
+    });
+
+    // ── Quick date shortcuts ──────────────────────────────────────────
+    document.querySelectorAll('.quick-date').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var target = this.getAttribute('data-target');
+            var date   = this.getAttribute('data-date');
+            var range  = this.getAttribute('data-range');
+
+            if (target && date) {
+                document.getElementById(target).value = date;
+                return;
+            }
+
+            // range shortcuts
+            if (range) {
+                var now = new Date();
+                var from, to;
+                if (range === 'week') {
+                    var day = now.getDay() || 7; // Mon=1
+                    from = new Date(now); from.setDate(now.getDate() - day + 1);
+                    to   = new Date(from); to.setDate(from.getDate() + 6);
+                } else if (range === 'next_week') {
+                    var day = now.getDay() || 7;
+                    from = new Date(now); from.setDate(now.getDate() - day + 8);
+                    to   = new Date(from); to.setDate(from.getDate() + 6);
+                } else if (range === 'month') {
+                    from = new Date(now.getFullYear(), now.getMonth(), 1);
+                    to   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                }
+                document.getElementById('rpt_date_from').value = fmt(from);
+                document.getElementById('rpt_date_to').value   = fmt(to);
+            }
+        });
+    });
+
+    function fmt(d) {
+        return d.getFullYear() + '-'
+            + String(d.getMonth()+1).padStart(2,'0') + '-'
+            + String(d.getDate()).padStart(2,'0');
+    }
+
+    // ── Report type toggle ────────────────────────────────────────────
     function toggleGroups() {
         var selected = document.querySelector('input[name="report_type"]:checked').value;
-        sectionGroup.className  = 'rpt-group conditional-group' + (selected === 'checkin' || selected === 'insurance' ? ' show' : '');
-        groupingGroup.className = 'rpt-group conditional-group' + (selected === 'pickup' ? ' show' : '');
+        var isCheckin   = selected === 'checkin';
+        var isPickup    = selected === 'pickup';
+        var isInsurance = selected === 'insurance';
 
-        // Update radio active state
+        sectionGroup.className  = 'rpt-group conditional-group' + (isCheckin || isInsurance ? ' show' : '');
+        groupingGroup.className = 'rpt-group conditional-group' + (isPickup ? ' show' : '');
+        insOptGroup.className   = 'rpt-group conditional-group' + (isInsurance ? ' show' : '');
+
+        // Sort selects
+        document.getElementById('rpt_sort_checkin').style.display   = (isCheckin) ? '' : 'none';
+        document.getElementById('rpt_sort_pickup').style.display     = isPickup    ? '' : 'none';
+        document.getElementById('rpt_sort_insurance').style.display  = isInsurance ? '' : 'none';
+
+        // Radio active state
         document.querySelectorAll('.rpt-radio').forEach(function(lbl) {
             lbl.classList.toggle('active', lbl.querySelector('input').checked);
         });
@@ -252,44 +474,87 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
     typeRadios.forEach(function(r) { r.addEventListener('change', toggleGroups); });
 
-    // Quick date buttons
-    document.querySelectorAll('.quick-date').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.getElementById('rpt_tour_date').value = this.getAttribute('data-date');
-        });
-    });
-
-    // Print button
-    document.getElementById('btn_print_report').addEventListener('click', function() {
-        var tourDate = document.getElementById('rpt_tour_date').value;
-        if (!tourDate) {
-            alert('<?= $isThai ? 'กรุณาเลือกวันที่ทัวร์' : 'Please select a tour date' ?>');
-            return;
-        }
-
+    // ── Build URL ─────────────────────────────────────────────────────
+    function buildUrl() {
         var reportType = document.querySelector('input[name="report_type"]:checked').value;
+        var isRange    = document.querySelector('input[name="date_mode"]:checked').value === 'range';
         var activityEl = document.getElementById('rpt_activity');
         var activity   = activityEl ? activityEl.value : '';
+        var status     = document.querySelector('input[name="rpt_status"]:checked').value;
+        var lang       = document.querySelector('input[name="print_lang"]:checked').value;
+        var notes      = document.getElementById('rpt_notes').value.trim();
+        var sortDir    = document.querySelector('input[name="sort_dir"]:checked').value;
 
-        var url;
-        if (reportType === 'checkin') {
-            var section = document.getElementById('rpt_section').value;
-            url = 'index.php?page=tour_report_checkin&tour_date=' + encodeURIComponent(tourDate)
-                + '&section=' + encodeURIComponent(section)
-                + '&activity=' + encodeURIComponent(activity);
-        } else if (reportType === 'insurance') {
-            var section = document.getElementById('rpt_section').value;
-            url = 'index.php?page=tour_report_insurance&tour_date=' + encodeURIComponent(tourDate)
-                + '&section=' + encodeURIComponent(section)
-                + '&activity=' + encodeURIComponent(activity);
+        var tourDate, dateFrom, dateTo;
+        if (isRange) {
+            dateFrom = document.getElementById('rpt_date_from').value;
+            dateTo   = document.getElementById('rpt_date_to').value;
+            if (!dateFrom || !dateTo) {
+                alert('<?= $isThai ? 'กรุณาเลือกช่วงวันที่' : 'Please select a date range' ?>');
+                return null;
+            }
         } else {
-            var grouping = document.getElementById('rpt_grouping').value;
-            url = 'index.php?page=tour_report_pickup&tour_date=' + encodeURIComponent(tourDate)
-                + '&grouping=' + encodeURIComponent(grouping)
-                + '&activity=' + encodeURIComponent(activity);
+            tourDate = document.getElementById('rpt_tour_date').value;
+            if (!tourDate) {
+                alert('<?= $isThai ? 'กรุณาเลือกวันที่ทัวร์' : 'Please select a tour date' ?>');
+                return null;
+            }
         }
 
-        window.open(url, '_blank');
+        var base;
+        var params = {};
+
+        if (reportType === 'checkin') {
+            base = 'index.php?page=tour_report_checkin';
+            var sortEl = document.getElementById('rpt_sort_checkin');
+            params.sort = sortEl.value;
+            params.section = document.getElementById('rpt_section').value;
+        } else if (reportType === 'insurance') {
+            base = 'index.php?page=tour_report_insurance';
+            var sortEl = document.getElementById('rpt_sort_insurance');
+            params.sort = sortEl.value;
+            params.section = document.getElementById('rpt_section').value;
+            params.show_passport    = document.getElementById('ins_show_passport').checked    ? '1' : '0';
+            params.show_nationality = document.getElementById('ins_show_nationality').checked ? '1' : '0';
+            params.show_dob         = document.getElementById('ins_show_dob').checked         ? '1' : '0';
+            params.show_phone       = document.getElementById('ins_show_phone').checked       ? '1' : '0';
+        } else {
+            base = 'index.php?page=tour_report_pickup';
+            var sortEl = document.getElementById('rpt_sort_pickup');
+            params.sort = sortEl.value;
+            params.grouping = document.getElementById('rpt_grouping').value;
+        }
+
+        if (isRange) {
+            params.date_from = dateFrom;
+            params.date_to   = dateTo;
+        } else {
+            params.tour_date = tourDate;
+        }
+
+        params.activity = activity;
+        params.status   = status;
+        params.sort_dir = sortDir;
+        if (lang)  params.lang  = lang;
+        if (notes) params.notes = notes;
+
+        var qs = Object.keys(params).map(function(k) {
+            return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+        }).join('&');
+
+        return base + '&' + qs;
+    }
+
+    // ── Print button ──────────────────────────────────────────────────
+    document.getElementById('btn_print_report').addEventListener('click', function() {
+        var url = buildUrl();
+        if (url) window.open(url, '_blank');
+    });
+
+    // ── Preview button ────────────────────────────────────────────────
+    document.getElementById('btn_preview_report').addEventListener('click', function() {
+        var url = buildUrl();
+        if (url) window.open(url + '&preview=1', '_blank');
     });
 })();
 </script>
