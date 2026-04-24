@@ -9,9 +9,7 @@
 #   3. Post a tracker summary comment on the PR
 #
 # Required secret: TRACKER_TOKEN
-#   A GitHub Personal Access Token (classic) with scopes:
-#     - repo (full)
-#     - project (read:project + write:project via project scope)
+#   A GitHub Personal Access Token (classic) with scopes: repo + project
 #   Add at: Settings → Secrets and variables → Actions → New repository secret
 #
 # =============================================================================
@@ -27,80 +25,69 @@ jobs:
   update-board:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
 
     steps:
-      - name: Extract linked issue numbers from PR body
+      - name: Parse linked issues from PR body
         id: parse
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          # Match: #123, closes #123, fixes #123, resolves #123 (case-insensitive)
-          ISSUES=$(echo "$PR_BODY" | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)?\s*#[0-9]+' | grep -oE '[0-9]+' | sort -u | tr '\n' ' ')
-          echo "Found issues: $ISSUES"
+          PR_BODY=$(cat << 'PRBODY'
+          ${{ github.event.pull_request.body }}
+          PRBODY
+          )
+          ISSUES=$(echo "$PR_BODY" | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)?\s*#[0-9]+' | grep -oE '[0-9]+' | sort -u | tr '\n' ' ' | xargs)
           echo "issues=$ISSUES" >> $GITHUB_OUTPUT
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
+          echo "Found linked issues: $ISSUES"
 
-      - name: Move linked issues to Done in Sprint Board
+      - name: Update Sprint Board — move issues to Done
         if: steps.parse.outputs.issues != ''
         env:
           GH_TOKEN: ${{ secrets.TRACKER_TOKEN }}
-          PROJECT_ID: "PVT_kwHOADbqcM4BMK9M"
-          STATUS_FIELD_ID: "PVTSSF_lAHOADbqcM4BMK9Mzg7h-VE"
+          PROJECT_ID: PVT_kwHOADbqcM4BMK9M
+          STATUS_FIELD_ID: PVTSSF_lAHOADbqcM4BMK9Mzg7h-VE
           DONE_OPTION_ID: "98236657"
-          REPO: ${{ github.repository }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
           ISSUES: ${{ steps.parse.outputs.issues }}
         run: |
-          for ISSUE_NUM in $ISSUES; do
-            echo "Processing issue #$ISSUE_NUM"
+          for NUM in $ISSUES; do
+            echo "--- Issue #$NUM ---"
 
-            # Get issue node ID
-            NODE_ID=$(gh api graphql -f query="
-              {
-                repository(owner: \"$(echo $REPO | cut -d/ -f1)\", name: \"$(echo $REPO | cut -d/ -f2)\") {
-                  issue(number: $ISSUE_NUM) { id title }
-                }
-              }" --jq '.data.repository.issue.id // empty')
+            NODE_ID=$(gh api graphql -f query="{
+              repository(owner: \"$REPO_OWNER\", name: \"$REPO_NAME\") {
+                issue(number: $NUM) { id title }
+              }
+            }" --jq '.data.repository.issue.id // empty')
 
             if [ -z "$NODE_ID" ]; then
-              echo "Issue #$ISSUE_NUM not found, skipping"
+              echo "Issue #$NUM not found, skipping"
               continue
             fi
 
-            # Find item ID in project (add if not already there)
-            ITEM_ID=$(gh api graphql -f query="
-              mutation {
-                addProjectV2ItemById(input: {
-                  projectId: \"$PROJECT_ID\"
-                  contentId: \"$NODE_ID\"
-                }) { item { id } }
-              }" --jq '.data.addProjectV2ItemById.item.id')
+            ITEM_ID=$(gh api graphql -f query="mutation {
+              addProjectV2ItemById(input: {
+                projectId: \"$PROJECT_ID\"
+                contentId: \"$NODE_ID\"
+              }) { item { id } }
+            }" --jq '.data.addProjectV2ItemById.item.id // empty')
 
             if [ -z "$ITEM_ID" ]; then
-              echo "Could not add issue #$ISSUE_NUM to project, skipping"
+              echo "Could not add #$NUM to project"
               continue
             fi
 
-            # Set status to Done
-            gh api graphql -f query="
-              mutation {
-                updateProjectV2ItemFieldValue(input: {
-                  projectId: \"$PROJECT_ID\"
-                  itemId: \"$ITEM_ID\"
-                  fieldId: \"$STATUS_FIELD_ID\"
-                  value: { singleSelectOptionId: \"$DONE_OPTION_ID\" }
-                }) { projectV2Item { id } }
-              }" > /dev/null
+            gh api graphql -f query="mutation {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: \"$PROJECT_ID\"
+                itemId: \"$ITEM_ID\"
+                fieldId: \"$STATUS_FIELD_ID\"
+                value: { singleSelectOptionId: \"$DONE_OPTION_ID\" }
+              }) { projectV2Item { id } }
+            }" > /dev/null
 
-            echo "✅ Issue #$ISSUE_NUM → Done in Sprint Board"
+            echo "✅ #$NUM moved to Done"
           done
 
-      - name: Post tracker summary comment on PR
+      - name: Post tracker summary comment
         env:
           GH_TOKEN: ${{ secrets.TRACKER_TOKEN }}
           REPO: ${{ github.repository }}
@@ -109,33 +96,29 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           MERGED_AT: ${{ github.event.pull_request.merged_at }}
           ISSUES: ${{ steps.parse.outputs.issues }}
-          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
-          # Build issues list for comment
-          ISSUE_LIST=""
-          for ISSUE_NUM in $ISSUES; do
-            ISSUE_LIST="$ISSUE_LIST\n- [#$ISSUE_NUM](https://github.com/$REPO/issues/$ISSUE_NUM) → ✅ Done in Sprint Board"
-          done
-
-          if [ -z "$ISSUES" ]; then
-            ISSUE_LIST="\n- _(No linked issues found — add \`#NNN\` or \`Closes #NNN\` to PR body to auto-link)_"
-          fi
-
           DATE=$(echo "$MERGED_AT" | cut -c1-10)
 
-          COMMENT="## 🤖 Tracker Agent — Merge Summary
+          LINES=""
+          for NUM in $ISSUES; do
+            LINES="${LINES}- [#${NUM}](https://github.com/${REPO}/issues/${NUM}) moved to Done in Sprint Board"$'\n'
+          done
+          if [ -z "$ISSUES" ]; then
+            LINES="- No linked issues. Add Closes #NNN to PR body to auto-link next time."
+          fi
 
-**PR:** #$PR_NUMBER $PR_TITLE
-**Merged by:** @$PR_AUTHOR → \`$BASE_BRANCH\`
-**Date:** $DATE
+          cat > /tmp/tracker-comment.md << EOF
+          ## Tracker Agent - Merge Summary
 
-### Issues updated
-$(echo -e "$ISSUE_LIST")
+          Merged: #${PR_NUMBER} ${PR_TITLE}
+          By: @${PR_AUTHOR} to develop on ${DATE}
 
-### Sprint Board
-[View Sprint Board →](https://github.com/users/$(echo $REPO | cut -d/ -f1)/projects/11)
+          ### Issues updated
+          ${LINES}
 
----
-_Tracker Agent auto-updated GitHub Projects. To link issues, add \`Closes #NNN\` to your PR description._"
+          ### Sprint Board
+          https://github.com/users/${REPO_OWNER}/projects/11
+          EOF
 
-          gh pr comment $PR_NUMBER --repo $REPO --body "$COMMENT"
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file /tmp/tracker-comment.md
