@@ -2,15 +2,18 @@
 namespace App\Controllers;
 
 use App\Models\TourReport;
+use App\Models\TourBooking;
 
 class TourReportController extends BaseController
 {
     private TourReport $reportModel;
+    private TourBooking $bookingModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->reportModel = new TourReport();
+        $this->reportModel  = new TourReport();
+        $this->bookingModel = new TourBooking();
     }
 
     private function guardModule(): void
@@ -29,8 +32,16 @@ class TourReportController extends BaseController
 
         $activities = $this->reportModel->getTourActivities($comId);
 
+        // KPI defaults: current month
+        $kpiFrom = $_GET['kpi_from'] ?? date('Y-m-01');
+        $kpiTo   = $_GET['kpi_to']   ?? date('Y-m-d');
+        $kpi     = $this->bookingModel->getKpiByRange($comId, $kpiFrom, $kpiTo);
+
         $this->render('tour-report/index', [
             'activities' => $activities,
+            'kpi'        => $kpi,
+            'kpi_from'   => $kpiFrom,
+            'kpi_to'     => $kpiTo,
         ]);
     }
 

@@ -65,6 +65,86 @@ $tomorrow = date('Y-m-d', strtotime('+1 day'));
         </div>
     </div>
 
+    <!-- KPI Summary Section -->
+    <?php
+    $kpi     = $kpi     ?? [];
+    $kpiFrom = $kpiFrom ?? date('Y-m-01');
+    $kpiTo   = $kpiTo   ?? date('Y-m-d');
+    ?>
+    <div style="margin-bottom:24px;">
+        <!-- Date range picker for KPI -->
+        <form method="get" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+            <input type="hidden" name="page" value="tour_report">
+            <span style="font-size:13px;font-weight:600;color:#475569;"><?= $isThai ? 'ช่วงวันที่:' : 'Date range:' ?></span>
+            <input type="date" name="kpi_from" value="<?= htmlspecialchars($kpiFrom) ?>"
+                   style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;">
+            <span style="color:#94a3b8;">–</span>
+            <input type="date" name="kpi_to" value="<?= htmlspecialchars($kpiTo) ?>"
+                   style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;">
+            <button type="submit" style="padding:7px 16px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                <i class="fa fa-refresh"></i> <?= $isThai ? 'อัปเดต' : 'Update' ?>
+            </button>
+            <?php foreach (['month'=>[$isThai?'เดือนนี้':'This Month',date('Y-m-01'),date('Y-m-d')],'q'=>[$isThai?'ไตรมาสนี้':'This Qtr',date('Y-m-01',strtotime('first day of -'.(((int)date('n')-1)%3).' months')),date('Y-m-d')],'year'=>[$isThai?'ปีนี้':'This Year',date('Y-01-01'),date('Y-m-d')]] as $k=>[$lbl,$f,$t]): ?>
+            <a href="?page=tour_report&kpi_from=<?= $f ?>&kpi_to=<?= $t ?>"
+               style="padding:6px 12px;border:1px solid<?= ($kpiFrom===$f&&$kpiTo===$t)?' #0d9488;background:#f0fdfa;color:#0d9488':' #e2e8f0;background:#fff;color:#64748b' ?>;border-radius:6px;font-size:12px;text-decoration:none;">
+                <?= $lbl ?>
+            </a>
+            <?php endforeach; ?>
+        </form>
+
+        <!-- KPI Tiles -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;">
+            <?php
+            $tiles = [
+                ['val'=>number_format($kpi['total_bookings']??0), 'lbl'=>$isThai?'การจองทั้งหมด':'Total Bookings', 'icon'=>'fa-ticket',       'c'=>'#667eea'],
+                ['val'=>'฿'.number_format($kpi['revenue']??0,0),  'lbl'=>$isThai?'รายได้':'Revenue',               'icon'=>'fa-dollar',       'c'=>'#0d9488'],
+                ['val'=>number_format($kpi['total_pax']??0),       'lbl'=>$isThai?'นักท่องเที่ยว':'Total Pax',     'icon'=>'fa-users',        'c'=>'#f59e0b'],
+                ['val'=>number_format($kpi['confirmed']??0),       'lbl'=>$isThai?'ยืนยันแล้ว':'Confirmed',        'icon'=>'fa-check-circle', 'c'=>'#10b981'],
+                ['val'=>number_format($kpi['pending']??0),         'lbl'=>$isThai?'รอดำเนินการ':'Pending',         'icon'=>'fa-clock-o',      'c'=>'#f59e0b'],
+                ['val'=>number_format($kpi['cancelled']??0),       'lbl'=>$isThai?'ยกเลิก':'Cancelled',            'icon'=>'fa-times-circle', 'c'=>'#ef4444'],
+            ];
+            foreach ($tiles as $tile): ?>
+            <div style="background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;text-align:center;">
+                <i class="fa <?= $tile['icon'] ?>" style="font-size:20px;color:<?= $tile['c'] ?>;margin-bottom:8px;display:block;"></i>
+                <div style="font-size:20px;font-weight:700;color:#1e293b;"><?= $tile['val'] ?></div>
+                <div style="font-size:11px;color:#64748b;margin-top:3px;"><?= $tile['lbl'] ?></div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Top Agents Table -->
+        <?php if (!empty($kpi['agents'])): ?>
+        <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:600;color:#475569;">
+                <i class="fa fa-trophy" style="color:#f59e0b;margin-right:6px;"></i>
+                <?= $isThai ? 'ตัวแทนท่องเที่ยว — อันดับรายได้' : 'Top Agents by Revenue' ?>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead>
+                    <tr style="background:#f8fafc;">
+                        <th style="padding:10px 16px;text-align:left;color:#64748b;font-weight:600;">#</th>
+                        <th style="padding:10px 16px;text-align:left;color:#64748b;font-weight:600;"><?= $isThai?'ตัวแทน':'Agent' ?></th>
+                        <th style="padding:10px 16px;text-align:right;color:#64748b;font-weight:600;"><?= $isThai?'การจอง':'Bookings' ?></th>
+                        <th style="padding:10px 16px;text-align:right;color:#64748b;font-weight:600;"><?= $isThai?'นักท่องเที่ยว':'Pax' ?></th>
+                        <th style="padding:10px 16px;text-align:right;color:#64748b;font-weight:600;"><?= $isThai?'รายได้':'Revenue' ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($kpi['agents'] as $i => $ag): ?>
+                    <tr style="border-top:1px solid #f1f5f9;">
+                        <td style="padding:10px 16px;color:<?= $i<3?'#f59e0b':'#94a3b8' ?>;font-weight:700;"><?= $i+1 ?></td>
+                        <td style="padding:10px 16px;font-weight:600;"><?= htmlspecialchars(mb_substr($ag['agent_name'],0,30)) ?></td>
+                        <td style="padding:10px 16px;text-align:right;"><?= number_format($ag['bookings']) ?></td>
+                        <td style="padding:10px 16px;text-align:right;"><?= number_format($ag['pax']) ?></td>
+                        <td style="padding:10px 16px;text-align:right;font-weight:700;color:#0d9488;">฿<?= number_format($ag['revenue'],0) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
+    </div>
+
     <div class="rpt-container">
         <div class="rpt-card">
             <h3><i class="fa fa-filter"></i> <?= $isThai ? 'ตั้งค่ารายงาน' : 'Report Settings' ?></h3>

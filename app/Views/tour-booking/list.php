@@ -147,7 +147,7 @@ $statusConfig = [
                 <div class="stat-value"><?= number_format($stats['total']) ?></div>
                 <div class="stat-label"><?= $isThai ? 'การจองทั้งหมด' : 'Total Bookings' ?></div>
                 <?php if ($stats['today_bookings'] > 0): ?>
-                <div style="font-size:11px; color:#0d9488; margin-top:4px; font-weight:600;">
+                <div style="font-size:11px;color:#0d9488;margin-top:4px;font-weight:600;">
                     +<?= $stats['today_bookings'] ?> <?= $isThai ? 'วันนี้' : 'today' ?>
                 </div>
                 <?php endif; ?>
@@ -167,11 +167,28 @@ $statusConfig = [
                 <div class="stat-label"><?= $isThai ? 'เสร็จสิ้น' : 'Completed' ?></div>
             </div>
         </div>
-        <div class="stat-card" style="border-left:4px solid #0d9488; background:linear-gradient(135deg,#f0fdfa 0%,#fff 100%);">
+        <div class="stat-card" style="border-left:4px solid #0d9488;background:linear-gradient(135deg,#f0fdfa 0%,#fff 100%);">
             <i class="fa fa-money stat-icon" style="color:#0d9488;"></i>
             <div>
                 <div class="stat-value" style="font-size:28px;">฿<?= number_format($stats['revenue'], 0) ?></div>
-                <div class="stat-label"><?= $isThai ? 'รายได้รวม' : 'Revenue' ?></div>
+                <div class="stat-label"><?= $isThai ? 'รายได้รวม' : 'Total Revenue' ?></div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #f59e0b;background:linear-gradient(135deg,#fffbeb 0%,#fff 100%);">
+            <i class="fa fa-users stat-icon" style="color:#f59e0b;"></i>
+            <div>
+                <div class="stat-value"><?= number_format($stats['total_pax']) ?></div>
+                <div class="stat-label"><?= $isThai ? 'นักท่องเที่ยวทั้งหมด' : 'Total Pax' ?></div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #667eea;background:linear-gradient(135deg,#f5f3ff 0%,#fff 100%);">
+            <i class="fa fa-bar-chart stat-icon" style="color:#667eea;"></i>
+            <div>
+                <div class="stat-value">฿<?= number_format($stats['month_revenue'], 0) ?></div>
+                <div class="stat-label"><?= $isThai ? 'รายได้เดือนนี้' : 'This Month Revenue' ?></div>
+                <div style="font-size:11px;color:#667eea;margin-top:4px;font-weight:600;">
+                    <?= $stats['month_bookings'] ?> <?= $isThai ? 'การจอง' : 'bookings' ?> · <?= $stats['month_pax'] ?> <?= $isThai ? 'คน' : 'pax' ?>
+                </div>
             </div>
         </div>
     </div>

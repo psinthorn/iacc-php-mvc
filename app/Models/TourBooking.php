@@ -169,17 +169,23 @@ class TourBooking extends BaseModel
 
     public function getStats(int $comId): array
     {
-        $cid = intval($comId);
-        $today = date('Y-m-d');
+        $cid        = intval($comId);
+        $today      = date('Y-m-d');
+        $monthStart = date('Y-m-01');
 
-        $sql = "SELECT 
+        $sql = "SELECT
                     COUNT(*) AS total,
-                    SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) AS draft,
+                    SUM(CASE WHEN status='draft'     THEN 1 ELSE 0 END) AS draft,
                     SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) AS confirmed,
                     SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) AS completed,
                     SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled,
-                    SUM(CASE WHEN travel_date='$today' THEN 1 ELSE 0 END) AS today_bookings,
-                    COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue
+                    SUM(CASE WHEN travel_date = '$today' THEN 1 ELSE 0 END) AS today_bookings,
+                    COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue,
+                    COALESCE(SUM(pax_count), 0) AS total_pax,
+                    SUM(CASE WHEN booking_date >= '$monthStart' THEN 1 ELSE 0 END) AS month_bookings,
+                    COALESCE(SUM(CASE WHEN booking_date >= '$monthStart'
+                                      AND status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS month_revenue,
+                    COALESCE(SUM(CASE WHEN booking_date >= '$monthStart' THEN pax_count ELSE 0 END), 0) AS month_pax
                 FROM tour_bookings
                 WHERE company_id = $cid AND deleted_at IS NULL";
 
@@ -187,13 +193,73 @@ class TourBooking extends BaseModel
         $row = $result ? mysqli_fetch_assoc($result) : [];
 
         return [
-            'total'          => intval($row['total'] ?? 0),
-            'draft'          => intval($row['draft'] ?? 0),
-            'confirmed'      => intval($row['confirmed'] ?? 0),
-            'completed'      => intval($row['completed'] ?? 0),
-            'cancelled'      => intval($row['cancelled'] ?? 0),
+            'total'          => intval($row['total']          ?? 0),
+            'draft'          => intval($row['draft']          ?? 0),
+            'confirmed'      => intval($row['confirmed']      ?? 0),
+            'completed'      => intval($row['completed']      ?? 0),
+            'cancelled'      => intval($row['cancelled']      ?? 0),
             'today_bookings' => intval($row['today_bookings'] ?? 0),
-            'revenue'        => floatval($row['revenue'] ?? 0),
+            'revenue'        => floatval($row['revenue']      ?? 0),
+            'total_pax'      => intval($row['total_pax']      ?? 0),
+            'month_bookings' => intval($row['month_bookings'] ?? 0),
+            'month_revenue'  => floatval($row['month_revenue']?? 0),
+            'month_pax'      => intval($row['month_pax']      ?? 0),
+        ];
+    }
+
+    /**
+     * KPI summary for a date range — used by tour_report KPI section.
+     */
+    public function getKpiByRange(int $comId, string $dateFrom, string $dateTo): array
+    {
+        $cid  = intval($comId);
+        $from = sql_escape($dateFrom);
+        $to   = sql_escape($dateTo);
+
+        $sql = "SELECT
+                    COUNT(*) AS total_bookings,
+                    COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue,
+                    COALESCE(SUM(pax_count), 0) AS total_pax,
+                    SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) AS confirmed,
+                    SUM(CASE WHEN status='pending'   THEN 1 ELSE 0 END) AS pending,
+                    SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled
+                FROM tour_bookings
+                WHERE company_id = $cid AND deleted_at IS NULL
+                  AND booking_date BETWEEN '$from' AND '$to'";
+
+        $result = mysqli_query($this->conn, $sql);
+        $row = $result ? mysqli_fetch_assoc($result) : [];
+
+        // Top agents in range
+        $agentSql = "SELECT
+                        COALESCE(tap.profile_name, c.name_en, c.name_th, 'Direct') AS agent_name,
+                        COUNT(b.id) AS bookings,
+                        COALESCE(SUM(b.total_amount), 0) AS revenue,
+                        COALESCE(SUM(b.pax_count), 0) AS pax
+                    FROM tour_bookings b
+                    LEFT JOIN tour_agent_profiles tap ON tap.company_id = b.company_id
+                        AND tap.company_id = b.agent_id
+                    LEFT JOIN company c ON b.agent_id = c.id
+                    WHERE b.company_id = $cid AND b.deleted_at IS NULL
+                      AND b.booking_date BETWEEN '$from' AND '$to'
+                      AND b.status != 'cancelled'
+                    GROUP BY b.agent_id
+                    ORDER BY revenue DESC LIMIT 10";
+
+        $agentResult = mysqli_query($this->conn, $agentSql);
+        $agents = [];
+        while ($agentResult && $a = mysqli_fetch_assoc($agentResult)) {
+            $agents[] = $a;
+        }
+
+        return [
+            'total_bookings' => intval($row['total_bookings'] ?? 0),
+            'revenue'        => floatval($row['revenue']       ?? 0),
+            'total_pax'      => intval($row['total_pax']       ?? 0),
+            'confirmed'      => intval($row['confirmed']       ?? 0),
+            'pending'        => intval($row['pending']         ?? 0),
+            'cancelled'      => intval($row['cancelled']       ?? 0),
+            'agents'         => $agents,
         ];
     }
 
