@@ -828,4 +828,82 @@ class TourBooking extends BaseModel
         }
         return $rows;
     }
+
+    // ─── Self-Check-In Token ───────────────────────────────────
+
+    /**
+     * Generate a deterministic HMAC token for a booking check-in URL.
+     * Token is bound to booking_id + company_id + travel_date so it
+     * cannot be reused for a different booking or date.
+     */
+    public function generateCheckinToken(int $bookingId, int $companyId, string $travelDate): string
+    {
+        $secret = defined('CHECKIN_SECRET') ? CHECKIN_SECRET : 'checkin_fallback_secret_change_me';
+        $payload = "checkin:{$bookingId}:{$companyId}:{$travelDate}";
+        return substr(hash_hmac('sha256', $payload, $secret), 0, 40);
+    }
+
+    /**
+     * Save (or refresh) a check-in token for a booking.
+     * Sets token_exp to travel_date + 1 day.
+     */
+    public function saveCheckinToken(int $bookingId, string $token, string $travelDate): void
+    {
+        $bid   = intval($bookingId);
+        $tok   = sql_escape($token);
+        $exp   = sql_escape(date('Y-m-d', strtotime($travelDate . ' +1 day')));
+        mysqli_query($this->conn,
+            "UPDATE tour_bookings SET checkin_token='$tok', checkin_token_exp='$exp' WHERE id=$bid"
+        );
+    }
+
+    /**
+     * Ensure a booking has a check-in token, generating one if missing.
+     * Returns the token string.
+     */
+    public function ensureCheckinToken(int $bookingId): string
+    {
+        $bid    = intval($bookingId);
+        $result = mysqli_query($this->conn,
+            "SELECT company_id, travel_date, checkin_token FROM tour_bookings WHERE id=$bid AND deleted_at IS NULL"
+        );
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+        if (!$row) return '';
+
+        if (!empty($row['checkin_token'])) {
+            return $row['checkin_token'];
+        }
+
+        $token = $this->generateCheckinToken($bookingId, (int)$row['company_id'], $row['travel_date']);
+        $this->saveCheckinToken($bookingId, $token, $row['travel_date']);
+        return $token;
+    }
+
+    /**
+     * Regenerate check-in token (invalidates old QR/link) and reset check-in status.
+     */
+    public function regenerateCheckinToken(int $bookingId): string
+    {
+        $bid    = intval($bookingId);
+        $result = mysqli_query($this->conn,
+            "SELECT company_id, travel_date FROM tour_bookings WHERE id=$bid AND deleted_at IS NULL"
+        );
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+        if (!$row) return '';
+
+        // Force a new unique token by appending a nonce
+        $secret  = defined('CHECKIN_SECRET') ? CHECKIN_SECRET : 'checkin_fallback_secret_change_me';
+        $payload = "checkin:{$bookingId}:{$row['company_id']}:{$row['travel_date']}:" . microtime(true);
+        $token   = substr(hash_hmac('sha256', $payload, $secret), 0, 40);
+        $tok     = sql_escape($token);
+        $exp     = sql_escape(date('Y-m-d', strtotime($row['travel_date'] . ' +1 day')));
+
+        mysqli_query($this->conn,
+            "UPDATE tour_bookings
+             SET checkin_token='$tok', checkin_token_exp='$exp',
+                 checkin_status=0, checkin_at=NULL, checkin_by='self'
+             WHERE id=$bid"
+        );
+        return $token;
+    }
 }

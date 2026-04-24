@@ -410,6 +410,95 @@ $messages = [
             </div>
         </div>
 
+        <!-- ── Self-Check-In QR Card ────────────────────────────── -->
+        <?php
+        // Lazy-generate token if missing
+        use App\Models\TourBooking as TourBookingModel;
+        $checkinToken = $booking['checkin_token'] ?? '';
+        if (empty($checkinToken) && in_array($booking['status'], ['confirmed','completed'])) {
+            $tbm = new TourBookingModel();
+            $checkinToken = $tbm->ensureCheckinToken(intval($booking['id']));
+        }
+        $checkinUrl = $checkinToken
+            ? (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+              . '://' . $_SERVER['HTTP_HOST']
+              . '/index.php?page=tour_checkin&id=' . intval($booking['id']) . '&token=' . $checkinToken
+            : '';
+        $checkinStatus = intval($booking['checkin_status'] ?? 0);
+        $checkinAt     = $booking['checkin_at'] ?? null;
+        ?>
+        <div class="section-card" style="margin-top:16px;">
+            <div class="section-title">
+                <i class="fa fa-qrcode" style="color:#0d9488;"></i>
+                <?= $isThai ? 'เช็คอินด้วยตนเอง' : 'Customer Self-Check-In' ?>
+                <?php if ($checkinStatus): ?>
+                    <span style="margin-left:10px;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+                        <i class="fa fa-check-circle"></i> <?= $isThai ? 'เช็คอินแล้ว' : 'Checked In' ?>
+                    </span>
+                <?php else: ?>
+                    <span style="margin-left:10px;background:#f1f5f9;color:#64748b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+                        <i class="fa fa-clock-o"></i> <?= $isThai ? 'ยังไม่เช็คอิน' : 'Not Checked In' ?>
+                    </span>
+                <?php endif; ?>
+            </div>
+
+            <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
+                <?php if ($checkinUrl): ?>
+                <!-- QR Code -->
+                <div style="flex-shrink:0;text-align:center;">
+                    <div id="qr-container" style="width:160px;height:160px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;"></div>
+                    <p style="font-size:11px;color:#94a3b8;margin-top:6px;"><?= $isThai ? 'สแกนเพื่อเช็คอิน' : 'Scan to Check In' ?></p>
+                </div>
+                <?php endif; ?>
+
+                <!-- Info -->
+                <div style="flex:1;min-width:200px;">
+                    <?php if ($checkinStatus && $checkinAt): ?>
+                    <div style="background:#dcfce7;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#166534;">
+                        <i class="fa fa-check-circle"></i>
+                        <strong><?= $isThai ? 'เช็คอินเมื่อ:' : 'Checked in at:' ?></strong>
+                        <?= date('d M Y H:i', strtotime($checkinAt)) ?>
+                        (<?= $booking['checkin_by'] === 'staff' ? ($isThai ? 'โดยเจ้าหน้าที่' : 'by staff') : ($isThai ? 'ด้วยตนเอง' : 'self') ?>)
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($checkinUrl): ?>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button onclick="copyCheckinLink()" class="btn-copy-link" style="padding:8px 16px;background:#0d9488;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                            <i class="fa fa-copy"></i> <?= $isThai ? 'คัดลอกลิงก์' : 'Copy Link' ?>
+                        </button>
+                        <a href="<?= htmlspecialchars($checkinUrl) ?>" target="_blank"
+                           style="padding:8px 16px;background:#f0fdfa;color:#0d9488;border:1px solid #ccfbf1;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">
+                            <i class="fa fa-external-link"></i> <?= $isThai ? 'เปิดลิงก์' : 'Open Link' ?>
+                        </a>
+                    </div>
+                    <div style="font-size:11px;color:#94a3b8;word-break:break-all;margin-bottom:12px;" id="checkin-url-display">
+                        <?= htmlspecialchars($checkinUrl) ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <?php if ($checkinStatus): ?>
+                        <button onclick="staffCheckinAction('reset', <?= intval($booking['id']) ?>)"
+                                style="padding:7px 14px;background:#fff;color:#ef4444;border:1px solid #fecaca;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">
+                            <i class="fa fa-undo"></i> <?= $isThai ? 'รีเซ็ตเช็คอิน' : 'Reset Check-In' ?>
+                        </button>
+                        <?php else: ?>
+                        <button onclick="staffCheckinAction('override', <?= intval($booking['id']) ?>)"
+                                style="padding:7px 14px;background:#0d9488;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">
+                            <i class="fa fa-check"></i> <?= $isThai ? 'เช็คอินแทน' : 'Mark Checked In' ?>
+                        </button>
+                        <?php endif; ?>
+                        <button onclick="regenCheckinToken(<?= intval($booking['id']) ?>)"
+                                style="padding:7px 14px;background:#fff;color:#64748b;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;"
+                                title="<?= $isThai ? 'สร้าง QR ใหม่ (จะยกเลิก QR เก่า)' : 'Generate new QR (old QR will stop working)' ?>">
+                            <i class="fa fa-refresh"></i> <?= $isThai ? 'สร้าง QR ใหม่' : 'Regen QR' ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Action Bar -->
         <div class="action-bar">
             <a href="index.php?page=tour_booking_list" class="btn-back"><i class="fa fa-arrow-left"></i> <?= $isThai ? 'กลับ' : 'Back' ?></a>
@@ -417,3 +506,59 @@ $messages = [
         </div>
     </div>
 </div>
+
+<?php if ($checkinUrl): ?>
+<script src="js/qrcode.min.js"></script>
+<script>
+(function() {
+    var url = <?= json_encode($checkinUrl) ?>;
+    var qrEl = document.getElementById('qr-container');
+    qrEl.innerHTML = '';
+    qrEl.style.display = 'block';
+    qrEl.style.padding = '5px';
+    new QRCode(qrEl, {
+        text: url, width: 150, height: 150,
+        colorDark: '#0d9488', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+})();
+
+function copyCheckinLink() {
+    var url = <?= json_encode($checkinUrl) ?>;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            alert('<?= $isThai ? 'คัดลอกลิงก์แล้ว!' : 'Link copied!' ?>');
+        });
+    } else {
+        var t = document.createElement('textarea');
+        t.value = url; document.body.appendChild(t); t.select();
+        document.execCommand('copy'); document.body.removeChild(t);
+        alert('<?= $isThai ? 'คัดลอกลิงก์แล้ว!' : 'Link copied!' ?>');
+    }
+}
+
+function staffCheckinAction(action, bookingId) {
+    var msg = action === 'reset'
+        ? '<?= $isThai ? 'รีเซ็ตสถานะเช็คอิน?' : 'Reset check-in status?' ?>'
+        : '<?= $isThai ? 'เช็คอินแทนลูกค้า?' : 'Mark this booking as checked in?' ?>';
+    if (!confirm(msg)) return;
+    var route = action === 'reset' ? 'tour_checkin_reset' : 'tour_checkin_override';
+    fetch('index.php?page=' + route, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'booking_id=' + bookingId + '&csrf_token=<?= csrf_token() ?>'
+    }).then(function(r) { return r.json(); })
+      .then(function(d) { if (d.success) location.reload(); });
+}
+
+function regenCheckinToken(bookingId) {
+    if (!confirm('<?= $isThai ? 'สร้าง QR ใหม่? QR เก่าจะใช้ไม่ได้อีก' : 'Generate new QR? The old QR/link will stop working.' ?>')) return;
+    fetch('index.php?page=tour_checkin_regen', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'booking_id=' + bookingId + '&csrf_token=<?= csrf_token() ?>'
+    }).then(function(r) { return r.json(); })
+      .then(function(d) { if (d.success) location.reload(); });
+}
+</script>
+<?php endif; ?>

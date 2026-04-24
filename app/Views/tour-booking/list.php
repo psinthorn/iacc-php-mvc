@@ -304,6 +304,9 @@ $statusConfig = [
                     <th style="text-align:center;"><?= $isThai ? 'ผู้เดินทาง' : 'Pax' ?></th>
                     <th style="text-align:right;"><?= $isThai ? 'ยอดรวม' : 'Total' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'สถานะ' : 'Status' ?></th>
+                    <th style="text-align:center;" title="<?= $isThai ? 'สถานะเช็คอินด้วยตนเอง' : 'Self-check-in status' ?>">
+                        <i class="fa fa-qrcode"></i>
+                    </th>
                     <th style="text-align:center;"><?= $isThai ? 'เอกสาร' : 'Docs' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'จัดการ' : 'Actions' ?></th>
                 </tr>
@@ -349,6 +352,16 @@ $statusConfig = [
                         <span class="status-badge" style="background:<?= $sc['bg'] ?>; color:<?= $sc['color'] ?>;">
                             <i class="fa <?= $sc['icon'] ?>"></i> <?= $sc['label'] ?>
                         </span>
+                    </td>
+                    <td style="text-align:center;">
+                        <?php if (intval($b['checkin_status'] ?? 0) === 1): ?>
+                            <span title="<?= $isThai ? 'เช็คอินแล้ว: ' . ($b['checkin_at'] ? date('d M H:i', strtotime($b['checkin_at'])) : '') : 'Checked in: ' . ($b['checkin_at'] ? date('d M H:i', strtotime($b['checkin_at'])) : '') ?>"
+                                  style="color:#059669;font-size:16px;">
+                                <i class="fa fa-check-circle"></i>
+                            </span>
+                        <?php else: ?>
+                            <span style="color:#e2e8f0;font-size:16px;"><i class="fa fa-circle-o"></i></span>
+                        <?php endif; ?>
                     </td>
                     <td style="text-align:center;">
                         <?php

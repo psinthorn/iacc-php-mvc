@@ -63,6 +63,10 @@ if (!defined('PAYMENT_LINK_SECRET')) {
     define('PAYMENT_LINK_SECRET', 'iacc-bk-pay-' . (defined('DB_NAME') ? DB_NAME : 'default'));
 }
 
+if (!defined('CHECKIN_SECRET')) {
+    define('CHECKIN_SECRET', 'iacc-checkin-' . (defined('DB_NAME') ? DB_NAME : 'default'));
+}
+
 /**
  * Get Docker tools setting (from file or default config)
  * @param string $key 'docker_tools' or 'container_manager'

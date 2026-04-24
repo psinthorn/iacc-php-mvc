@@ -382,4 +382,14 @@ return [
     'tour_report_checkin'    => ['TourReportController', 'checkinPrint', 'standalone'],
     'tour_report_pickup'     => ['TourReportController', 'pickupPrint', 'standalone'],
     'tour_report_insurance'  => ['TourReportController', 'insurancePrint', 'standalone'],
+
+    // ── Customer Self-Check-In (public — no session auth) ───────────
+    'tour_checkin'           => ['TourCheckinController', 'index',         'public'],
+    'tour_checkin_submit'    => ['TourCheckinController', 'submit',        'public'],
+
+    // ── Staff Check-In Management (auth required) ───────────────────
+    'tour_checkin_staff'     => ['TourCheckinController', 'staffDashboard'],
+    'tour_checkin_override'  => ['TourCheckinController', 'staffOverride', 'standalone'],
+    'tour_checkin_reset'     => ['TourCheckinController', 'resetCheckin',  'standalone'],
+    'tour_checkin_regen'     => ['TourCheckinController', 'regenToken',    'standalone'],
 ];
