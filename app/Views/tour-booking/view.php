@@ -98,7 +98,7 @@ $messages = [
             <div class="header-text">
                 <h2><i class="fa fa-calendar-check-o"></i> <?= htmlspecialchars($booking['booking_number']) ?></h2>
                 <p>
-                    <span class="status-badge" style="background:<?= $sc['bg'] ?>; color:<?= $sc['color'] ?>;">
+                    <span class="status-badge status-<?= htmlspecialchars($booking['status']) ?>">
                         <i class="fa <?= $sc['icon'] ?>"></i> <?= $sc['label'] ?>
                     </span>
                 </p>
