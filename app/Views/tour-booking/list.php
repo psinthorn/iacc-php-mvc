@@ -125,6 +125,9 @@ $statusConfig = [
                 <a href="index.php?page=tour_location_list" class="btn-header btn-header-outline">
                     <i class="fa fa-map-marker"></i> <?= $isThai ? 'สถานที่' : 'Locations' ?>
                 </a>
+                <a href="index.php?page=tour_booking_csv_import" class="btn-header btn-header-outline">
+                    <i class="fa fa-upload"></i> <?= $isThai ? 'นำเข้า CSV' : 'Import CSV' ?>
+                </a>
                 <a href="index.php?page=tour_booking_make" class="btn-header btn-header-primary">
                     <i class="fa fa-plus"></i> <?= $isThai ? 'จองใหม่' : 'New Booking' ?>
                 </a>
