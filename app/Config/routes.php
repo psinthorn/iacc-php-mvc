@@ -144,6 +144,10 @@ return [
     // ========== Phase 6: Admin & Dev Tools (MVC) ==========
     'monitoring'            => ['DevToolsController', 'monitoring'],
     'containers'            => ['DevToolsController', 'containers'],
+    // ========== Email SMTP Settings ==========
+    'smtp_settings'      => ['SmtpSettingsController', 'index'],
+    'smtp_settings_test' => ['SmtpSettingsController', 'test', 'standalone'],
+
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
     'payment_gateway_save'   => ['PaymentGatewayController', 'save'],
