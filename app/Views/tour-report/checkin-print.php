@@ -107,7 +107,7 @@ $html .= '</div>';
 $thRow = '<tr>
     <th style="width:22px;">#</th>
     <th style="width:80px;">' . ($isThai ? 'โรงแรม' : 'Hotel') . '</th>
-    <th style="width:380px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
+    <th style="width:340px;">' . ($isThai ? 'ชื่อลูกค้า' : 'Customer Name') . '</th>
     <th style="width:45px;">' . ($isThai ? 'ห้อง' : 'Room') . '</th>
     <th class="center" style="width:40px;">' . ($isThai ? 'ผญ.' : 'Adult') . '</th>
     <th class="center" style="width:40px;">' . ($isThai ? 'เด็ก' : 'Child') . '</th>
@@ -115,11 +115,13 @@ $thRow = '<tr>
     <th style="width:55px;">' . ($isThai ? 'เวลารับ' : 'Pickup') . '</th>
     <th style="width:70px;">' . ($isThai ? 'เซลล์' : 'Sale Rep') . '</th>
     <th class="right" style="width:60px;">' . ($isThai ? 'ค่าเข้าชม' : 'Entrance') . '</th>
-    <th style="width:125px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
+    <th class="center" style="width:45px;" title="' . ($isThai ? 'เช็คอินดิจิตอล' : 'Digital Check-In') . '">✓ CI</th>
+    <th style="width:100px;">' . ($isThai ? 'ลายเซ็น/หมายเหตุ' : 'Signature/Remark') . '</th>
 </tr>';
 
-$globalNum = 0;
-$totalPaxAll = 0;
+$globalNum      = 0;
+$totalPaxAll    = 0;
+$totalCheckedIn = 0;
 
 // ── Section: Direct Bookings ─────────────────
 if (!empty($direct)) {
@@ -136,7 +138,11 @@ if (!empty($direct)) {
         $custName = ($isThai && !empty($b['customer_name_th'])) ? $b['customer_name_th'] : ($b['customer_name'] ?: '-');
         $pickupTime = !empty($b['pickup_time']) ? date('H:i', strtotime($b['pickup_time'])) : '-';
 
-        // Main booking row — # | Hotel | Customer | Room | Adult | Child | Agent | Pickup | Sale Rep | Entrance | Signature/Remark
+        // Main booking row — # | Hotel | Customer | Room | Adult | Child | Agent | Pickup | Sale Rep | Entrance | CI | Signature/Remark
+        if (intval($b['checkin_status'] ?? 0) === 1) $totalCheckedIn++;
+        $ciCell = intval($b['checkin_status'] ?? 0) === 1
+            ? '<td class="center" style="color:#059669;font-weight:700;">✓</td>'
+            : '<td class="center" style="color:#e2e8f0;">○</td>';
         $html .= '<tr>
             <td class="center">' . $globalNum . '</td>
             <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
@@ -148,6 +154,7 @@ if (!empty($direct)) {
             <td>' . $pickupTime . '</td>
             <td>' . htmlspecialchars($b['sales_rep_name'] ?: '-') . '</td>
             <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
+            ' . $ciCell . '
             <td></td>
         </tr>';
 
@@ -181,6 +188,10 @@ if (!empty($agent)) {
             $agName   = ($isThai && !empty($b['agent_name_th'])) ? $b['agent_name_th'] : ($b['agent_name'] ?: '-');
             $pickupTime = !empty($b['pickup_time']) ? date('H:i', strtotime($b['pickup_time'])) : '-';
 
+            if (intval($b['checkin_status'] ?? 0) === 1) $totalCheckedIn++;
+            $ciCell = intval($b['checkin_status'] ?? 0) === 1
+                ? '<td class="center" style="color:#059669;font-weight:700;">✓</td>'
+                : '<td class="center" style="color:#e2e8f0;">○</td>';
             $html .= '<tr>
                 <td class="center">' . $globalNum . '</td>
                 <td>' . htmlspecialchars($b['pickup_hotel'] ?: ($b['pickup_location_name'] ?? '-')) . '</td>
@@ -192,6 +203,7 @@ if (!empty($agent)) {
                 <td>' . $pickupTime . '</td>
                 <td>' . htmlspecialchars($b['sales_rep_name'] ?: '-') . '</td>
                 <td class="right">' . ($b['entrance_fee'] > 0 ? number_format($b['entrance_fee'], 0) : '-') . '</td>
+                ' . $ciCell . '
                 <td></td>
             </tr>';
 
@@ -212,6 +224,10 @@ $html .= '<div class="summary">'
     . ($isThai ? 'รวมทั้งหมด: ' : 'Grand Total: ')
     . $globalNum . ' ' . ($isThai ? 'รายการ' : 'bookings')
     . ', ' . $totalPaxAll . ' pax'
+    . ' &nbsp;|&nbsp; '
+    . ($isThai ? 'เช็คอินดิจิตอล: ' : 'Digital Check-In: ')
+    . '<span style="color:#059669;font-weight:700;">' . $totalCheckedIn . '</span>'
+    . ' / ' . $globalNum
     . '</div>';
 
 // Footer

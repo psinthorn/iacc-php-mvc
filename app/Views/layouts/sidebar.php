@@ -224,6 +224,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=tour_report"><i class="fa fa-bar-chart"></i> <?=$xml->tourreports ?? 'Reports'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=tour_checkin_staff"><i class="fa fa-check-square-o"></i> <?=$xml->tourcheckin ?? 'Check-In Dashboard'?></a>
+                            </li>
                         </ul>
                     </li>
                     <?php endif; ?>
@@ -419,6 +422,9 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <li>
                                 <a href="index.php?page=payment_gateway_config"><i class="fa fa-cogs"></i> <?=$xml->gatewayconfig ?? 'Gateway Config'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=smtp_settings"><i class="fa fa-envelope-o"></i> <?=$xml->smtpsettings ?? 'Email Settings'?></a>
                             </li>
                             <li class="divider"></li>
                             <li>

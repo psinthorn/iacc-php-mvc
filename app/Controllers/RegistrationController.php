@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\Registration;
+use App\Services\EmailService;
 
 /**
  * RegistrationController — Public self-registration flow
@@ -270,82 +271,16 @@ class RegistrationController extends BaseController
 
     private function sendVerificationEmail(string $email, string $name, string $token): void
     {
-        $baseUrl = $this->getBaseUrl();
+        $baseUrl   = $this->getBaseUrl();
         $verifyUrl = $baseUrl . '/index.php?page=register_verify&token=' . urlencode($token);
+        $subject   = 'Verify your iACC account';
+        $htmlBody  = $this->buildVerificationEmailHtml($name, $verifyUrl);
 
-        $subject = 'Verify your iACC account';
-        $htmlBody = $this->buildVerificationEmailHtml($name, $verifyUrl);
+        // Registration is company-agnostic (no com_id yet), so EmailService falls back to env SMTP
+        $emailSvc = new EmailService($this->conn, 0);
+        $sent = $emailSvc->send($email, $subject, $htmlBody);
 
-        // Use MailHog in dev, real SMTP in production
-        $smtpHost = getenv('SMTP_HOST') ?: 'iacc_mailhog_server';
-        $smtpPort = intval(getenv('SMTP_PORT') ?: 1025);
-
-        $headers = [
-            'From: iACC <noreply@iacc.app>',
-            'Reply-To: noreply@iacc.app',
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-        ];
-
-        // Try SMTP via fsockopen (works with MailHog, no extensions needed)
-        $sent = $this->sendSmtp($smtpHost, $smtpPort, 'noreply@iacc.app', $email, $subject, $htmlBody);
-
-        if (!$sent) {
-            // Fallback to PHP mail()
-            @mail($email, $subject, $htmlBody, implode("\r\n", $headers));
-        }
-
-        error_log("Verification email sent to {$email} (token: " . substr($token, 0, 8) . "...)");
-    }
-
-    private function sendSmtp(string $host, int $port, string $from, string $to, string $subject, string $body): bool
-    {
-        $socket = @fsockopen($host, $port, $errno, $errstr, 5);
-        if (!$socket) {
-            error_log("SMTP connection failed: {$errstr} ({$errno})");
-            return false;
-        }
-
-        $this->smtpRead($socket);
-        $this->smtpWrite($socket, "EHLO iacc.app\r\n");
-        $this->smtpRead($socket);
-        $this->smtpWrite($socket, "MAIL FROM:<{$from}>\r\n");
-        $this->smtpRead($socket);
-        $this->smtpWrite($socket, "RCPT TO:<{$to}>\r\n");
-        $this->smtpRead($socket);
-        $this->smtpWrite($socket, "DATA\r\n");
-        $this->smtpRead($socket);
-
-        $message = "From: iACC <{$from}>\r\n";
-        $message .= "To: {$to}\r\n";
-        $message .= "Subject: {$subject}\r\n";
-        $message .= "MIME-Version: 1.0\r\n";
-        $message .= "Content-Type: text/html; charset=UTF-8\r\n";
-        $message .= "\r\n";
-        $message .= $body . "\r\n";
-        $message .= ".\r\n";
-
-        $this->smtpWrite($socket, $message);
-        $response = $this->smtpRead($socket);
-        $this->smtpWrite($socket, "QUIT\r\n");
-        fclose($socket);
-
-        return strpos($response, '250') !== false;
-    }
-
-    private function smtpWrite($socket, string $data): void
-    {
-        fwrite($socket, $data);
-    }
-
-    private function smtpRead($socket): string
-    {
-        $response = '';
-        while ($line = fgets($socket, 512)) {
-            $response .= $line;
-            if (substr($line, 3, 1) === ' ') break;
-        }
-        return $response;
+        error_log("Verification email " . ($sent ? 'sent' : 'failed') . " to {$email} (token: " . substr($token, 0, 8) . "...)");
     }
 
     private function buildVerificationEmailHtml(string $name, string $verifyUrl): string

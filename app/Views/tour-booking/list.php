@@ -147,7 +147,7 @@ $statusConfig = [
                 <div class="stat-value"><?= number_format($stats['total']) ?></div>
                 <div class="stat-label"><?= $isThai ? 'การจองทั้งหมด' : 'Total Bookings' ?></div>
                 <?php if ($stats['today_bookings'] > 0): ?>
-                <div style="font-size:11px; color:#0d9488; margin-top:4px; font-weight:600;">
+                <div style="font-size:11px;color:#0d9488;margin-top:4px;font-weight:600;">
                     +<?= $stats['today_bookings'] ?> <?= $isThai ? 'วันนี้' : 'today' ?>
                 </div>
                 <?php endif; ?>
@@ -167,11 +167,28 @@ $statusConfig = [
                 <div class="stat-label"><?= $isThai ? 'เสร็จสิ้น' : 'Completed' ?></div>
             </div>
         </div>
-        <div class="stat-card" style="border-left:4px solid #0d9488; background:linear-gradient(135deg,#f0fdfa 0%,#fff 100%);">
+        <div class="stat-card" style="border-left:4px solid #0d9488;background:linear-gradient(135deg,#f0fdfa 0%,#fff 100%);">
             <i class="fa fa-money stat-icon" style="color:#0d9488;"></i>
             <div>
                 <div class="stat-value" style="font-size:28px;">฿<?= number_format($stats['revenue'], 0) ?></div>
-                <div class="stat-label"><?= $isThai ? 'รายได้รวม' : 'Revenue' ?></div>
+                <div class="stat-label"><?= $isThai ? 'รายได้รวม' : 'Total Revenue' ?></div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #f59e0b;background:linear-gradient(135deg,#fffbeb 0%,#fff 100%);">
+            <i class="fa fa-users stat-icon" style="color:#f59e0b;"></i>
+            <div>
+                <div class="stat-value"><?= number_format($stats['total_pax']) ?></div>
+                <div class="stat-label"><?= $isThai ? 'นักท่องเที่ยวทั้งหมด' : 'Total Pax' ?></div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #667eea;background:linear-gradient(135deg,#f5f3ff 0%,#fff 100%);">
+            <i class="fa fa-bar-chart stat-icon" style="color:#667eea;"></i>
+            <div>
+                <div class="stat-value">฿<?= number_format($stats['month_revenue'], 0) ?></div>
+                <div class="stat-label"><?= $isThai ? 'รายได้เดือนนี้' : 'This Month Revenue' ?></div>
+                <div style="font-size:11px;color:#667eea;margin-top:4px;font-weight:600;">
+                    <?= $stats['month_bookings'] ?> <?= $isThai ? 'การจอง' : 'bookings' ?> · <?= $stats['month_pax'] ?> <?= $isThai ? 'คน' : 'pax' ?>
+                </div>
             </div>
         </div>
     </div>
@@ -287,6 +304,9 @@ $statusConfig = [
                     <th style="text-align:center;"><?= $isThai ? 'ผู้เดินทาง' : 'Pax' ?></th>
                     <th style="text-align:right;"><?= $isThai ? 'ยอดรวม' : 'Total' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'สถานะ' : 'Status' ?></th>
+                    <th style="text-align:center;" title="<?= $isThai ? 'สถานะเช็คอินด้วยตนเอง' : 'Self-check-in status' ?>">
+                        <i class="fa fa-qrcode"></i>
+                    </th>
                     <th style="text-align:center;"><?= $isThai ? 'เอกสาร' : 'Docs' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'จัดการ' : 'Actions' ?></th>
                 </tr>
@@ -332,6 +352,16 @@ $statusConfig = [
                         <span class="status-badge" style="background:<?= $sc['bg'] ?>; color:<?= $sc['color'] ?>;">
                             <i class="fa <?= $sc['icon'] ?>"></i> <?= $sc['label'] ?>
                         </span>
+                    </td>
+                    <td style="text-align:center;">
+                        <?php if (intval($b['checkin_status'] ?? 0) === 1): ?>
+                            <span title="<?= $isThai ? 'เช็คอินแล้ว: ' . ($b['checkin_at'] ? date('d M H:i', strtotime($b['checkin_at'])) : '') : 'Checked in: ' . ($b['checkin_at'] ? date('d M H:i', strtotime($b['checkin_at'])) : '') ?>"
+                                  style="color:#059669;font-size:16px;">
+                                <i class="fa fa-check-circle"></i>
+                            </span>
+                        <?php else: ?>
+                            <span style="color:#e2e8f0;font-size:16px;"><i class="fa fa-circle-o"></i></span>
+                        <?php endif; ?>
                     </td>
                     <td style="text-align:center;">
                         <?php
