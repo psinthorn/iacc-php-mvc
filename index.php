@@ -106,7 +106,9 @@ if ($page === '') {
 $trialDaysLeft  = null;
 $isTrialExpired = false;
 $_trialComId    = intval($_SESSION['com_id'] ?? 0);
-if ($_trialComId > 0 && !in_array($page, ['billing','billing_upgrade','billing_history','billing_pending','plans','logout'], true)) {
+$_userLevel     = intval($_SESSION['user_level'] ?? 0);
+// Super Admins (level >= 1) are never blocked — they must be able to manage any company
+if ($_trialComId > 0 && $_userLevel < 1 && !in_array($page, ['billing','billing_upgrade','billing_history','billing_pending','plans','logout'], true)) {
     $_trialRes = mysqli_query($db->conn,
         "SELECT plan, trial_end, status, enabled, sponsor_type FROM api_subscriptions WHERE company_id = $_trialComId LIMIT 1"
     );

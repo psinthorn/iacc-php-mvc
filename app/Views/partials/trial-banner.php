@@ -1,9 +1,15 @@
 <?php
 /**
  * Trial expiry banner — injected in index.php after auth for trial accounts.
- * Variables: $trialDaysLeft (int), $isTrialExpired (bool)
+ * Variables: $trialDaysLeft (int|null), $isTrialExpired (bool), $_userLevel (int)
+ *
+ * Super Admins (user_level >= 1) are NEVER blocked — the gate in index.php already
+ * prevents $isTrialExpired from being set for them, so this partial is a no-op.
+ * The guard below is a belt-and-suspenders safety check.
  */
 if (!isset($trialDaysLeft)) return;
+// Never block Super Admins
+if (($_userLevel ?? 0) >= 1) return;
 ?>
 <?php if ($isTrialExpired ?? false): ?>
 <!-- ── Trial EXPIRED — hard lock ── -->
