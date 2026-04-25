@@ -96,6 +96,67 @@ class AdminApiController extends BaseController
     }
 
     /**
+     * Override trial/subscription expiry date (Super Admin only, AJAX POST)
+     * Accepts: subscription_id, new_date (YYYY-MM-DD), note (optional)
+     */
+    public function extendTrial(): void
+    {
+        header('Content-Type: application/json');
+        $this->requireLevel(3);
+        $this->verifyCsrf();
+
+        $id      = $this->inputInt('subscription_id');
+        $newDate = trim($this->inputStr('new_date'));
+        $note    = trim($this->inputStr('note'));
+
+        if ($id <= 0 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $newDate)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid subscription ID or date']);
+            exit;
+        }
+
+        $date = mysqli_real_escape_string($this->conn, $newDate);
+        $note = mysqli_real_escape_string($this->conn, $note);
+        $adminId = intval($this->user['id'] ?? 0);
+
+        // Determine which column to update based on current plan
+        $res = mysqli_query($this->conn, "SELECT plan FROM api_subscriptions WHERE id = $id LIMIT 1");
+        $row = $res ? mysqli_fetch_assoc($res) : null;
+        if (!$row) {
+            echo json_encode(['success' => false, 'message' => 'Subscription not found']);
+            exit;
+        }
+
+        if ($row['plan'] === 'trial') {
+            $ok = mysqli_query($this->conn,
+                "UPDATE api_subscriptions
+                 SET trial_end = '$date', trial_locked_at = NULL, status = 'active', enabled = 1,
+                     updated_at = NOW()
+                 WHERE id = $id"
+            );
+        } else {
+            $ok = mysqli_query($this->conn,
+                "UPDATE api_subscriptions
+                 SET expires_at = '$date 23:59:59', status = 'active', enabled = 1,
+                     updated_at = NOW()
+                 WHERE id = $id"
+            );
+        }
+
+        // Audit log
+        if ($ok && function_exists('audit_log')) {
+            audit_log($this->conn, 'extend_trial', 'api_subscriptions', $adminId,
+                "sub_id=$id new_date=$date note=$note");
+        }
+
+        echo json_encode([
+            'success'  => (bool) $ok,
+            'message'  => $ok ? "Expiry updated to $newDate" : 'DB update failed',
+            'new_date' => $newDate,
+        ]);
+        exit;
+    }
+
+    /**
      * API Keys management page (Company Admin)
      */
     public function keys(): void
