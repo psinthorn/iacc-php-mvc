@@ -169,6 +169,8 @@ include_once 'inc/top-navbar.php';
                         </li>
                         <li><a href="#"><i class="fa fa-gear fa-fw"></i> <?=$xml->settings ?? 'Settings'?></a>
                         </li>
+                        <li><a href="index.php?page=billing"><i class="fa fa-credit-card fa-fw"></i> <?=$xml->billing ?? 'Billing &amp; Plan'?></a>
+                        </li>
                         <li><a href="index.php?page=remote&clear=1"><i class="fa fa-home fa-fw"></i> <?=$xml->dashboard ?? 'Home'?></a>
                         </li>
                         <li class="divider"></li>

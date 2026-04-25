@@ -249,6 +249,13 @@ return [
     'onboarding_complete'    => ['RegistrationController', 'completeOnboarding'],
     'plans'                  => ['RegistrationController', 'plans'],
 
+    // ========== Billing & Subscription (#53 #54 #55) ==========
+    'billing'                => ['SubscriptionController', 'billing'],
+    'billing_upgrade'        => ['SubscriptionController', 'upgrade'],
+    'billing_history'        => ['SubscriptionController', 'history'],
+    'billing_pending'        => ['SubscriptionController', 'pending'],
+    'billing_confirm_payment'=> ['SubscriptionController', 'confirmPayment', 'standalone'],
+
     // ========== Phase 8: Q2 2026 – Payment Gateway & Multi-Currency (MVC) ==========
 
     // ========== Q3 2026 – Expense Module ==========
