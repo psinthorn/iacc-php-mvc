@@ -101,6 +101,24 @@ if ($page === '') {
     $routeType = (is_array($route) && isset($route[2])) ? $route[2] : 'normal';
 }
 
+// ========== Trial / Subscription Gate ==========
+// Check trial status for self-registered users (registered_via = 'self')
+$trialDaysLeft  = null;
+$isTrialExpired = false;
+$_trialComId    = intval($_SESSION['com_id'] ?? 0);
+if ($_trialComId > 0 && !in_array($page, ['billing','billing_upgrade','billing_history','billing_pending','plans','logout'], true)) {
+    $_trialRes = mysqli_query($db->conn,
+        "SELECT plan, trial_end, status, enabled FROM api_subscriptions WHERE company_id = $_trialComId LIMIT 1"
+    );
+    if ($_trialRes && $_trialRow = mysqli_fetch_assoc($_trialRes)) {
+        if ($_trialRow['plan'] === 'trial' && $_trialRow['trial_end']) {
+            $diff = (int) ceil((strtotime($_trialRow['trial_end']) - time()) / 86400);
+            $trialDaysLeft  = max(0, $diff);
+            $isTrialExpired = $diff < 0;
+        }
+    }
+}
+
 // ========== Handle Company Switching (Admin/Super Admin only) ==========
 // This must happen before any HTML output so we can redirect
 if (isset($_GET['page']) && $_GET['page'] === 'remote') {
@@ -263,6 +281,7 @@ $pageFile = is_string($route) ? $route : null;
 		<?php include_once __DIR__ . '/app/Views/layouts/sidebar.php';?>
 
         <div id="page-wrapper">
+            <?php include_once __DIR__ . '/app/Views/partials/trial-banner.php'; ?>
             <div class="row">
                 <?php 
                 // Debug routing (development only)
