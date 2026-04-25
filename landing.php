@@ -1886,6 +1886,110 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
         </div>
     </section>
 
+    <!-- ── Sponsors, Adopters & Testimonials ───────────────────── -->
+    <?php
+    // Load sponsors/adopters with testimonials from DB (only if DB is available)
+    $testimonials = [];
+    if (isset($db) && $db->conn) {
+        $res = mysqli_query($db->conn,
+            "SELECT s.sponsor_type, s.testimonial, s.testimonial_contact,
+                    COALESCE(c.name_en, c.name_th, 'Company') AS company_name,
+                    c.logo
+             FROM api_subscriptions s
+             JOIN company c ON c.id = s.company_id
+             WHERE s.show_on_landing = 1 AND s.sponsor_type IS NOT NULL
+             ORDER BY FIELD(s.sponsor_type,'sponsor','adopter'), c.name_en ASC"
+        );
+        while ($row = mysqli_fetch_assoc($res)) {
+            $testimonials[] = $row;
+        }
+    }
+    if (!empty($testimonials)):
+    ?>
+    <section style="padding:70px 0;background:#faf5ff;">
+        <div class="section-container">
+            <div style="text-align:center;margin-bottom:48px;">
+                <span style="background:rgba(142,68,173,.1);color:#8e44ad;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;letter-spacing:.04em;">OUR COMMUNITY</span>
+                <h2 style="margin:14px 0 8px;font-size:2rem;color:#1e1b4b;">Trusted by Tour Operators &amp; Sponsors</h2>
+                <p style="color:#64748b;font-size:1rem;">Companies that adopted iACC and helped shape the platform.</p>
+            </div>
+
+            <!-- Sponsor / Adopter badges -->
+            <?php
+            $sponsors = array_filter($testimonials, fn($t) => $t['sponsor_type'] === 'sponsor');
+            $adopters = array_filter($testimonials, fn($t) => $t['sponsor_type'] === 'adopter');
+            ?>
+            <?php if ($sponsors): ?>
+            <div style="text-align:center;margin-bottom:32px;">
+                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8e44ad;margin-bottom:14px;">
+                    <i class="fa fa-star"></i> Financial Sponsors
+                </p>
+                <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;">
+                <?php foreach ($sponsors as $s):
+                    $name = htmlspecialchars($s['company_name'], ENT_QUOTES, 'UTF-8'); ?>
+                    <div style="background:white;border-radius:12px;padding:14px 24px;box-shadow:0 2px 12px rgba(142,68,173,.1);border:1px solid #e9d5ff;display:flex;align-items:center;gap:10px;">
+                        <?php if ($s['logo']): ?>
+                        <img src="<?= htmlspecialchars($s['logo'], ENT_QUOTES) ?>" alt="<?= $name ?>" style="height:32px;object-fit:contain;">
+                        <?php else: ?>
+                        <span style="font-size:20px;color:#8e44ad;">&#x2B50;</span>
+                        <?php endif; ?>
+                        <span style="font-weight:700;color:#1e1b4b;font-size:15px;"><?= $name ?></span>
+                    </div>
+                <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Testimonial cards -->
+            <?php if (array_filter($testimonials, fn($t) => $t['testimonial'])): ?>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;margin-bottom:40px;">
+            <?php foreach ($testimonials as $t):
+                if (empty($t['testimonial'])) continue;
+                $isSponsor = $t['sponsor_type'] === 'sponsor';
+                $badgeStyle = $isSponsor
+                    ? 'background:#fef9c3;color:#854d0e;'
+                    : 'background:#ede9fe;color:#5b21b6;';
+                $icon = $isSponsor ? '&#x2B50;' : '&#x1F49C;';
+                $label = $isSponsor ? 'Sponsor' : 'Adopter';
+                $name  = htmlspecialchars($t['company_name'], ENT_QUOTES, 'UTF-8');
+                $quote = htmlspecialchars($t['testimonial'], ENT_QUOTES, 'UTF-8');
+                $who   = htmlspecialchars($t['testimonial_contact'] ?? '', ENT_QUOTES, 'UTF-8');
+            ?>
+            <div style="background:white;border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #f3e8ff;display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <span style="font-weight:700;font-size:15px;color:#1e1b4b;"><?= $name ?></span>
+                    <span style="<?= $badgeStyle ?>padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;"><?= $icon ?> <?= $label ?></span>
+                </div>
+                <p style="color:#475569;font-size:14px;line-height:1.7;flex:1;font-style:italic;">
+                    &ldquo;<?= $quote ?>&rdquo;
+                </p>
+                <?php if ($who): ?>
+                <p style="margin:16px 0 0;font-size:13px;font-weight:600;color:#8e44ad;">— <?= $who ?></p>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($adopters): ?>
+            <div style="text-align:center;">
+                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:12px;">
+                    <i class="fa fa-heart"></i> Project Adopters
+                </p>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+                <?php foreach ($adopters as $a):
+                    $name = htmlspecialchars($a['company_name'], ENT_QUOTES, 'UTF-8'); ?>
+                    <span style="background:white;border:1px solid #ddd6fe;color:#5b21b6;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">
+                        &#x1F49C; <?= $name ?>
+                    </span>
+                <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <!-- CTA Section -->
     <section class="cta">
         <div class="section-container">

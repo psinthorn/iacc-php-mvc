@@ -96,6 +96,62 @@ class AdminApiController extends BaseController
     }
 
     /**
+     * Set/clear adopter or sponsor status (Super Admin only, AJAX POST)
+     * Also saves testimonial text and show_on_landing flag.
+     */
+    public function setSponsor(): void
+    {
+        header('Content-Type: application/json');
+        $this->requireLevel(3);
+        $this->verifyCsrf();
+
+        $id           = $this->inputInt('subscription_id');
+        $sponsorType  = trim($this->inputStr('sponsor_type'));   // 'adopter'|'sponsor'|''
+        $showLanding  = intval($_POST['show_on_landing'] ?? 0) ? 1 : 0;
+        $testimonial  = trim($this->inputStr('testimonial'));
+        $contact      = trim($this->inputStr('testimonial_contact'));
+
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid subscription ID']);
+            exit;
+        }
+
+        $allowed = ['adopter', 'sponsor', ''];
+        if (!in_array($sponsorType, $allowed, true)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid sponsor type']);
+            exit;
+        }
+
+        $typeVal     = $sponsorType === '' ? 'NULL' : "'" . mysqli_real_escape_string($this->conn, $sponsorType) . "'";
+        $testimonial = mysqli_real_escape_string($this->conn, $testimonial);
+        $contact     = mysqli_real_escape_string($this->conn, $contact);
+
+        $ok = mysqli_query($this->conn,
+            "UPDATE api_subscriptions
+             SET sponsor_type        = $typeVal,
+                 show_on_landing     = $showLanding,
+                 testimonial         = " . ($testimonial ? "'$testimonial'" : 'NULL') . ",
+                 testimonial_contact = " . ($contact ? "'$contact'" : 'NULL') . ",
+                 updated_at          = NOW()
+             WHERE id = $id"
+        );
+
+        if ($ok && function_exists('audit_log')) {
+            $adminId = intval($this->user['id'] ?? 0);
+            audit_log($this->conn, 'set_sponsor', 'api_subscriptions', $adminId,
+                "sub_id=$id type=$sponsorType show=$showLanding");
+        }
+
+        echo json_encode([
+            'success' => (bool) $ok,
+            'message' => $ok
+                ? ($sponsorType ? ucfirst($sponsorType) . ' status set — lifetime access granted' : 'Sponsor status cleared')
+                : 'DB update failed',
+        ]);
+        exit;
+    }
+
+    /**
      * Override trial/subscription expiry date (Super Admin only, AJAX POST)
      * Accepts: subscription_id, new_date (YYYY-MM-DD), note (optional)
      */
