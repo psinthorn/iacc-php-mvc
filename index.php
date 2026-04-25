@@ -108,10 +108,11 @@ $isTrialExpired = false;
 $_trialComId    = intval($_SESSION['com_id'] ?? 0);
 if ($_trialComId > 0 && !in_array($page, ['billing','billing_upgrade','billing_history','billing_pending','plans','logout'], true)) {
     $_trialRes = mysqli_query($db->conn,
-        "SELECT plan, trial_end, status, enabled FROM api_subscriptions WHERE company_id = $_trialComId LIMIT 1"
+        "SELECT plan, trial_end, status, enabled, sponsor_type FROM api_subscriptions WHERE company_id = $_trialComId LIMIT 1"
     );
     if ($_trialRes && $_trialRow = mysqli_fetch_assoc($_trialRes)) {
-        if ($_trialRow['plan'] === 'trial' && $_trialRow['trial_end']) {
+        // Sponsors/adopters have lifetime access — no banner, no lock
+        if (empty($_trialRow['sponsor_type']) && $_trialRow['plan'] === 'trial' && $_trialRow['trial_end']) {
             $diff = (int) ceil((strtotime($_trialRow['trial_end']) - time()) / 86400);
             $trialDaysLeft  = max(0, $diff);
             $isTrialExpired = $diff < 0;
