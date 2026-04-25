@@ -19,22 +19,26 @@ return [
     'category_form'   => ['CategoryController', 'form'],
     'category_store'  => ['CategoryController', 'store'],
     'category_delete' => ['CategoryController', 'delete'],
-    
+    'category_toggle' => ['CategoryController', 'toggle'],
+
     // Brand
     'brand'           => ['BrandController', 'index'],
     'brand_form'      => ['BrandController', 'form'],
     'brand_store'     => ['BrandController', 'store'],
     'brand_delete'    => ['BrandController', 'delete'],
-    
+    'brand_toggle'    => ['BrandController', 'toggle'],
+
     // Type
     'type'            => ['TypeController', 'index'],
     'type_store'      => ['TypeController', 'store'],
     'type_delete'     => ['TypeController', 'delete'],
-    
+    'type_toggle'     => ['TypeController', 'toggle'],
+
     // Model
     'mo_list'         => ['ModelController', 'index'],
     'mo_list_store'   => ['ModelController', 'store'],
     'mo_list_delete'  => ['ModelController', 'delete'],
+    'mo_list_toggle'  => ['ModelController', 'toggle'],
     'mo_list_brands'  => ['ModelController', 'getBrands'],
     
     // Payment Method
@@ -140,6 +144,10 @@ return [
     // ========== Phase 6: Admin & Dev Tools (MVC) ==========
     'monitoring'            => ['DevToolsController', 'monitoring'],
     'containers'            => ['DevToolsController', 'containers'],
+    // ========== Email SMTP Settings ==========
+    'smtp_settings'      => ['SmtpSettingsController', 'index'],
+    'smtp_settings_test' => ['SmtpSettingsController', 'test', 'standalone'],
+
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
     'payment_gateway_save'   => ['PaymentGatewayController', 'save'],
@@ -377,4 +385,15 @@ return [
     'tour_report'            => ['TourReportController', 'index'],
     'tour_report_checkin'    => ['TourReportController', 'checkinPrint', 'standalone'],
     'tour_report_pickup'     => ['TourReportController', 'pickupPrint', 'standalone'],
+    'tour_report_insurance'  => ['TourReportController', 'insurancePrint', 'standalone'],
+
+    // ── Customer Self-Check-In (public — no session auth) ───────────
+    'tour_checkin'           => ['TourCheckinController', 'index',         'public'],
+    'tour_checkin_submit'    => ['TourCheckinController', 'submit',        'public'],
+
+    // ── Staff Check-In Management (auth required) ───────────────────
+    'tour_checkin_staff'     => ['TourCheckinController', 'staffDashboard'],
+    'tour_checkin_override'  => ['TourCheckinController', 'staffOverride', 'standalone'],
+    'tour_checkin_reset'     => ['TourCheckinController', 'resetCheckin',  'standalone'],
+    'tour_checkin_regen'     => ['TourCheckinController', 'regenToken',    'standalone'],
 ];
