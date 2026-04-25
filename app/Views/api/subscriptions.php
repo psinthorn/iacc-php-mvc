@@ -89,16 +89,23 @@ $pageTitle = 'API — Subscriptions';
                     </td>
                     <td><?= date('M d, Y', strtotime($sub['created_at'])) ?></td>
                     <td>
-                        <form method="post" action="index.php?page=api_subscription_plan" style="display:inline-flex; gap:5px; align-items:center;">
-                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                            <input type="hidden" name="subscription_id" value="<?= $sub['id'] ?>">
-                            <select name="plan" class="form-control form-control-sm" style="width:140px;">
-                                <?php foreach (['trial','starter','professional','enterprise'] as $p): ?>
-                                <option value="<?= $p ?>" <?= $sub['plan'] === $p ? 'selected' : '' ?>><?= ucfirst($p) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-primary">Change</button>
-                        </form>
+                        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+                            <form method="post" action="index.php?page=api_subscription_plan" style="display:inline-flex;gap:5px;align-items:center;">
+                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                                <input type="hidden" name="subscription_id" value="<?= $sub['id'] ?>">
+                                <select name="plan" class="form-control form-control-sm" style="width:130px;">
+                                    <?php foreach (['trial','starter','professional','enterprise'] as $p): ?>
+                                    <option value="<?= $p ?>" <?= $sub['plan'] === $p ? 'selected' : '' ?>><?= ucfirst($p) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary">Change</button>
+                            </form>
+                            <button class="btn btn-sm btn-warning"
+                                    onclick="openExtend(<?= $sub['id'] ?>, '<?= htmlspecialchars($sub['company_name'] ?? 'Company #'.$sub['company_id'], ENT_QUOTES) ?>', '<?= $sub['plan'] === 'trial' ? ($sub['trial_end'] ?? '') : substr($sub['expires_at'] ?? '', 0, 10) ?>')"
+                                    title="Override expiry date">
+                                <i class="fa fa-calendar"></i> Extend
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -107,6 +114,83 @@ $pageTitle = 'API — Subscriptions';
     </div>
     <?php endif; ?>
 </div>
+
+<!-- ── Extend / Override expiry modal ──────────────────────────── -->
+<div class="modal fade" id="extendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706);border:none;">
+                <h4 class="modal-title" style="margin:0;font-size:15px;color:white;">
+                    <i class="fa fa-calendar"></i> Override Expiry Date
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" style="color:white;opacity:.8;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <p style="font-size:14px;color:#334155;margin-bottom:16px;">
+                    Company: <strong id="extCompany"></strong>
+                </p>
+                <div class="form-group">
+                    <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;">New Expiry Date</label>
+                    <input type="date" id="extDate" class="form-control" style="border-radius:8px;">
+                    <small class="text-muted">Sets <code>trial_end</code> (trial plans) or <code>expires_at</code> (paid plans). Also clears any lock and re-enables the subscription.</small>
+                </div>
+                <div class="form-group">
+                    <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;">Internal Note (optional)</label>
+                    <input type="text" id="extNote" class="form-control" placeholder="e.g. Extended per customer request" style="border-radius:8px;">
+                </div>
+                <div id="extResult" style="display:none;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #f1f5f9;">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="btnExtend" style="border-radius:8px;">
+                    <i class="fa fa-save"></i> Save New Date
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var extSubId = 0;
+function openExtend(subId, company, currentDate) {
+    extSubId = subId;
+    document.getElementById('extCompany').textContent = company;
+    document.getElementById('extDate').value = currentDate || '';
+    document.getElementById('extNote').value = '';
+    document.getElementById('extResult').style.display = 'none';
+    $('#extendModal').modal('show');
+}
+document.getElementById('btnExtend').addEventListener('click', function () {
+    var btn = this, newDate = document.getElementById('extDate').value;
+    var note = document.getElementById('extNote').value;
+    var result = document.getElementById('extResult');
+    if (!newDate) { alert('Please select a date.'); return; }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
+    var params = new URLSearchParams();
+    params.append('csrf_token',      '<?= $_SESSION['csrf_token'] ?? '' ?>');
+    params.append('subscription_id', extSubId);
+    params.append('new_date',        newDate);
+    params.append('note',            note);
+    fetch('index.php?page=api_subscription_extend', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        result.style.cssText = 'display:block;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;background:'
+            + (data.success ? '#f0fdfa;border:1px solid #99f6e4;color:#0f766e' : '#fef2f2;border:1px solid #fecaca;color:#dc2626');
+        result.innerHTML = '<i class="fa fa-' + (data.success ? 'check-circle' : 'times-circle') + '"></i> ' + data.message;
+        if (data.success) setTimeout(function(){ location.reload(); }, 1200);
+    })
+    .catch(e => {
+        result.style.cssText = 'display:block;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626';
+        result.innerHTML = '<i class="fa fa-times-circle"></i> Request failed: ' + e.message;
+    })
+    .finally(function(){ btn.disabled = false; btn.innerHTML = '<i class="fa fa-save"></i> Save New Date'; });
+});
+</script>
 
 <!-- Plan Reference -->
 <div style="margin-top:20px; background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
