@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Traits\BulkActionTrait;
 use App\Models\TourBookingPayment;
+use App\Services\EmailService;
 
 /**
  * BulkActionController — Tour booking bulk operations
@@ -204,76 +205,118 @@ class BulkActionController extends BaseController
 
     private function bulkSendVouchers(array $ids, int $comId, array $errors = []): array
     {
-        $processed = 0;
-        $failed    = 0;
+        $processed   = 0;
+        $failed      = 0;
+        $emailSent   = 0;
+        $noEmail     = 0;
+        $emailSvc    = new EmailService($this->conn, $comId);
 
-        $stmt = mysqli_prepare(
-            $this->conn,
-            "UPDATE tour_bookings SET voucher_sent_at = NOW(), updated_at = NOW()
-             WHERE id = ? AND company_id = ? AND status IN ('confirmed','completed') AND deleted_at IS NULL"
-        );
-
-        if (!$stmt) {
-            return ['processed' => 0, 'failed' => count($ids), 'errors' => ['DB prepare failed']];
-        }
+        // Fetch company name once
+        $companyRow  = mysqli_fetch_assoc(mysqli_query($this->conn,
+            "SELECT name_en, name_th FROM company WHERE id = $comId LIMIT 1"
+        ));
+        $companyName = $companyRow['name_en'] ?: $companyRow['name_th'] ?: '';
 
         foreach ($ids as $id) {
-            mysqli_stmt_bind_param($stmt, 'ii', $id, $comId);
-            mysqli_stmt_execute($stmt);
-            if (mysqli_stmt_affected_rows($stmt) > 0) {
-                $processed++;
-                // TODO: dispatch email job when SMTP is configured
-            } else {
+            $bid = intval($id);
+
+            // Update timestamp (only confirmed/completed)
+            $upd = mysqli_query($this->conn,
+                "UPDATE tour_bookings SET voucher_sent_at = NOW(), updated_at = NOW()
+                 WHERE id = $bid AND company_id = $comId
+                   AND status IN ('confirmed','completed') AND deleted_at IS NULL"
+            );
+
+            if (!$upd || mysqli_affected_rows($this->conn) === 0) {
                 $failed++;
-                $errors[] = "Booking ID $id skipped — must be confirmed or completed to send voucher";
+                $errors[] = "Booking #$bid skipped — must be confirmed or completed";
+                continue;
+            }
+
+            $processed++;
+
+            // Fetch booking + primary contact for email
+            $bRow = mysqli_fetch_assoc(mysqli_query($this->conn,
+                "SELECT b.*, '$companyName' AS company_name FROM tour_bookings b WHERE b.id = $bid LIMIT 1"
+            ));
+            $cRow = mysqli_fetch_assoc(mysqli_query($this->conn,
+                "SELECT contact_name, mobile AS email FROM tour_booking_contacts WHERE booking_id = $bid ORDER BY id LIMIT 1"
+            ));
+
+            if (!empty($cRow['email'])) {
+                $result = $emailSvc->sendVoucher($bRow ?? [], $cRow);
+                if ($result['sent']) {
+                    $emailSent++;
+                } else {
+                    $noEmail++;
+                    $errors[] = "Booking #$bid: email failed — " . $result['error'];
+                }
+            } else {
+                $noEmail++;
             }
         }
-        mysqli_stmt_close($stmt);
 
-        $note = $processed > 0 ? " (email delivery requires SMTP configuration in Settings)" : '';
+        $note = '';
+        if ($emailSent > 0)   $note .= " — {$emailSent} email(s) sent";
+        if ($noEmail  > 0)    $note .= ", {$noEmail} skipped (no email address)";
 
-        return [
-            'processed' => $processed,
-            'failed'    => $failed,
-            'errors'    => $errors,
-            'note'      => $note,
-        ];
+        return ['processed' => $processed, 'failed' => $failed, 'errors' => $errors, 'note' => $note];
     }
 
     // ─── Send Invoices ─────────────────────────────────────────────────────────
 
     private function bulkSendInvoices(array $ids, int $comId, array $errors = []): array
     {
-        $processed = 0;
-        $failed    = 0;
+        $processed   = 0;
+        $failed      = 0;
+        $emailSent   = 0;
+        $noEmail     = 0;
+        $emailSvc    = new EmailService($this->conn, $comId);
 
-        $stmt = mysqli_prepare(
-            $this->conn,
-            "UPDATE tour_bookings SET invoice_sent_at = NOW(), updated_at = NOW()
-             WHERE id = ? AND company_id = ? AND deleted_at IS NULL"
-        );
-
-        if (!$stmt) {
-            return ['processed' => 0, 'failed' => count($ids), 'errors' => ['DB prepare failed']];
-        }
+        $companyRow  = mysqli_fetch_assoc(mysqli_query($this->conn,
+            "SELECT name_en, name_th FROM company WHERE id = $comId LIMIT 1"
+        ));
+        $companyName = $companyRow['name_en'] ?: $companyRow['name_th'] ?: '';
 
         foreach ($ids as $id) {
-            mysqli_stmt_bind_param($stmt, 'ii', $id, $comId);
-            mysqli_stmt_execute($stmt);
-            if (mysqli_stmt_affected_rows($stmt) > 0) {
-                $processed++;
-                // TODO: dispatch email job when SMTP is configured
-            } else {
+            $bid = intval($id);
+
+            $upd = mysqli_query($this->conn,
+                "UPDATE tour_bookings SET invoice_sent_at = NOW(), updated_at = NOW()
+                 WHERE id = $bid AND company_id = $comId AND deleted_at IS NULL"
+            );
+
+            if (!$upd || mysqli_affected_rows($this->conn) === 0) {
                 $failed++;
+                continue;
+            }
+
+            $processed++;
+
+            $bRow = mysqli_fetch_assoc(mysqli_query($this->conn,
+                "SELECT b.*, '$companyName' AS company_name FROM tour_bookings b WHERE b.id = $bid LIMIT 1"
+            ));
+            $cRow = mysqli_fetch_assoc(mysqli_query($this->conn,
+                "SELECT contact_name, mobile AS email FROM tour_booking_contacts WHERE booking_id = $bid ORDER BY id LIMIT 1"
+            ));
+
+            if (!empty($cRow['email'])) {
+                $result = $emailSvc->sendInvoiceNotification($bRow ?? [], $cRow);
+                if ($result['sent']) {
+                    $emailSent++;
+                } else {
+                    $noEmail++;
+                    $errors[] = "Booking #$bid: email failed — " . $result['error'];
+                }
+            } else {
+                $noEmail++;
             }
         }
-        mysqli_stmt_close($stmt);
 
-        return [
-            'processed' => $processed,
-            'failed'    => $failed,
-            'errors'    => $errors,
-            'note'      => $processed > 0 ? " (email delivery requires SMTP configuration in Settings)" : '',
-        ];
+        $note = '';
+        if ($emailSent > 0) $note .= " — {$emailSent} email(s) sent";
+        if ($noEmail  > 0)  $note .= ", {$noEmail} skipped (no email address)";
+
+        return ['processed' => $processed, 'failed' => $failed, 'errors' => $errors, 'note' => $note];
     }
 }
