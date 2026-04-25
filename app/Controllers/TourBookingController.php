@@ -524,4 +524,259 @@ class TourBookingController extends BaseController
         ]);
         exit;
     }
+
+    // ─── CSV Import ───────────────────────────────────────────────
+
+    /**
+     * GET: Upload form + downloadable template
+     * POST: Parse CSV, validate rows, store preview in session, redirect to preview
+     */
+    public function csvImport(): void
+    {
+        $this->guardModule();
+        $comId = $this->user['com_id'];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->verifyCsrf();
+
+            // Download template
+            if (($_POST['action'] ?? '') === 'download_template') {
+                $this->downloadCsvTemplate();
+            }
+
+            // Upload + parse
+            $file = $_FILES['csv_file'] ?? null;
+            if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+                $error = 'No file uploaded or upload error.';
+                $this->render('tour-booking/csv-import', compact('error'));
+                return;
+            }
+            if (!in_array(strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)), ['csv', 'txt'], true)) {
+                $error = 'File must be a .csv file.';
+                $this->render('tour-booking/csv-import', compact('error'));
+                return;
+            }
+
+            $rows   = $this->parseCsv($file['tmp_name']);
+            $parsed = $this->validateRows($rows, $comId);
+
+            // Store in session for preview
+            $_SESSION['csv_import_preview'] = $parsed;
+            $_SESSION['csv_import_comid']   = $comId;
+
+            header('Location: index.php?page=tour_booking_csv_preview');
+            exit;
+        }
+
+        $this->render('tour-booking/csv-import', []);
+    }
+
+    /**
+     * GET: Show preview table (valid + invalid rows)
+     * POST: Confirm — insert valid rows
+     */
+    public function csvPreview(): void
+    {
+        $this->guardModule();
+        $this->verifyCsrf();
+
+        $comId  = intval($_SESSION['csv_import_comid'] ?? 0);
+        $parsed = $_SESSION['csv_import_preview']   ?? null;
+
+        if (!$parsed || $comId !== $this->user['com_id']) {
+            header('Location: index.php?page=tour_booking_csv_import');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'confirm') {
+            $result = $this->importRows($parsed['valid'], $comId);
+            unset($_SESSION['csv_import_preview'], $_SESSION['csv_import_comid']);
+            $this->render('tour-booking/csv-import-done', compact('result'));
+            return;
+        }
+
+        $this->render('tour-booking/csv-preview', compact('parsed'));
+    }
+
+    /**
+     * GET standalone: Stream a template CSV file.
+     */
+    public function csvTemplate(): void
+    {
+        $this->downloadCsvTemplate();
+    }
+
+    // ─── CSV helpers ───────────────────────────────────────────────
+
+    private function parseCsv(string $path): array
+    {
+        $rows = [];
+        if (($fh = fopen($path, 'r')) === false) return $rows;
+
+        // Detect and strip BOM
+        $bom = fread($fh, 3);
+        if ($bom !== "\xEF\xBB\xBF") rewind($fh);
+
+        $headers = null;
+        while (($line = fgetcsv($fh, 2000, ',')) !== false) {
+            if ($headers === null) {
+                $headers = array_map(fn($h) => strtolower(trim($h)), $line);
+                continue;
+            }
+            if (count($line) < 2) continue;
+            $rows[] = array_combine($headers, array_pad($line, count($headers), ''));
+        }
+        fclose($fh);
+        return $rows;
+    }
+
+    private function validateRows(array $rows, int $comId): array
+    {
+        $valid   = [];
+        $invalid = [];
+
+        // Build name→id lookup maps for customers + agents
+        $customers = $this->buildNameIdMap($comId, 'customer');
+        $agents    = $this->buildNameIdMap($comId, 'agent');
+
+        foreach ($rows as $i => $row) {
+            $rowNum = $i + 2; // 1-indexed + header row
+            $errs   = [];
+
+            $travelDate = trim($row['travel_date'] ?? '');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $travelDate)) {
+                // Try d/m/Y and d-m-Y
+                $parsed = date_create_from_format('d/m/Y', $travelDate)
+                       ?: date_create_from_format('d-m-Y', $travelDate);
+                $travelDate = $parsed ? $parsed->format('Y-m-d') : '';
+            }
+            if (empty($travelDate)) $errs[] = 'travel_date missing or invalid (use YYYY-MM-DD)';
+
+            $amount = floatval(str_replace(',', '', $row['total_amount'] ?? '0'));
+            if ($amount < 0) $errs[] = 'total_amount must be >= 0';
+
+            $paxAdult  = max(0, intval($row['pax_adult']  ?? $row['pax'] ?? 1));
+            $paxChild  = max(0, intval($row['pax_child']  ?? 0));
+            $paxInfant = max(0, intval($row['pax_infant'] ?? 0));
+            if ($paxAdult + $paxChild + $paxInfant < 1) $errs[] = 'pax must be >= 1';
+
+            $status = trim(strtolower($row['status'] ?? 'draft'));
+            if (!in_array($status, ['draft', 'confirmed', 'completed', 'cancelled'], true)) {
+                $status = 'draft';
+            }
+
+            $customerName = trim($row['customer'] ?? $row['customer_name'] ?? '');
+            $agentName    = trim($row['agent']    ?? $row['agent_name']    ?? '');
+            $customerId   = $customers[strtolower($customerName)] ?? 0;
+            $agentId      = $agents[strtolower($agentName)]       ?? 0;
+
+            $clean = [
+                'row_num'      => $rowNum,
+                'booking_date' => trim($row['booking_date'] ?? date('Y-m-d')),
+                'travel_date'  => $travelDate,
+                'booking_by'   => trim($row['booking_by'] ?? $row['lead_name'] ?? ''),
+                'customer_id'  => $customerId,
+                'customer_name'=> $customerName,
+                'agent_id'     => $agentId,
+                'agent_name'   => $agentName,
+                'pax_adult'    => $paxAdult,
+                'pax_child'    => $paxChild,
+                'pax_infant'   => $paxInfant,
+                'total_amount' => $amount,
+                'currency'     => strtoupper(trim($row['currency'] ?? 'THB')) ?: 'THB',
+                'status'       => $status,
+                'remark'       => trim($row['remark'] ?? $row['notes'] ?? ''),
+                'pickup_hotel' => trim($row['pickup_hotel'] ?? ''),
+                'pickup_time'  => trim($row['pickup_time']  ?? ''),
+            ];
+
+            if (!empty($errs)) {
+                $invalid[] = array_merge($clean, ['errors' => $errs]);
+            } else {
+                $valid[] = $clean;
+            }
+        }
+
+        return ['valid' => $valid, 'invalid' => $invalid];
+    }
+
+    private function buildNameIdMap(int $comId, string $type): array
+    {
+        $map   = [];
+        $types = $type === 'customer' ? "'customer','individual'" : "'agent','supplier'";
+        $res   = mysqli_query($this->conn,
+            "SELECT id, LOWER(TRIM(COALESCE(name_en, name_th, ''))) AS name
+             FROM company WHERE company_id = $comId AND company_type IN ($types) AND deleted_at IS NULL"
+        );
+        while ($row = mysqli_fetch_assoc($res)) {
+            if ($row['name'] !== '') $map[$row['name']] = (int)$row['id'];
+        }
+        return $map;
+    }
+
+    private function importRows(array $valid, int $comId): array
+    {
+        $inserted = 0;
+        $failed   = 0;
+        $errors   = [];
+        $userId   = intval($this->user['id']);
+
+        foreach ($valid as $row) {
+            $bookingNum = $this->bookingModel->generateBookingNumber($comId);
+            $bookingDate = preg_match('/^\d{4}-\d{2}-\d{2}$/', $row['booking_date'])
+                ? $row['booking_date'] : date('Y-m-d');
+
+            $id = $this->bookingModel->createBooking([
+                'company_id'    => $comId,
+                'booking_number'=> $bookingNum,
+                'booking_date'  => $bookingDate,
+                'travel_date'   => $row['travel_date'],
+                'booking_by'    => $row['booking_by'],
+                'customer_id'   => $row['customer_id'],
+                'agent_id'      => $row['agent_id'],
+                'pax_adult'     => $row['pax_adult'],
+                'pax_child'     => $row['pax_child'],
+                'pax_infant'    => $row['pax_infant'],
+                'pickup_hotel'  => $row['pickup_hotel'],
+                'pickup_time'   => $row['pickup_time'],
+                'total_amount'  => $row['total_amount'],
+                'currency'      => $row['currency'],
+                'status'        => $row['status'],
+                'remark'        => $row['remark'],
+                'created_by'    => $userId,
+            ]);
+
+            if ($id > 0) {
+                $inserted++;
+            } else {
+                $failed++;
+                $errors[] = "Row {$row['row_num']}: DB insert failed";
+            }
+        }
+
+        return compact('inserted', 'failed', 'errors');
+    }
+
+    private function downloadCsvTemplate(): void
+    {
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="tour_bookings_import_template.csv"');
+        header('Cache-Control: no-cache');
+        echo "\xEF\xBB\xBF";
+        $out = fopen('php://output', 'w');
+        fputcsv($out, [
+            'travel_date','booking_date','booking_by',
+            'pax_adult','pax_child','pax_infant',
+            'total_amount','currency','status',
+            'customer','agent','pickup_hotel','pickup_time','remark',
+        ]);
+        fputcsv($out, [
+            '2026-05-01','2026-04-25','John Smith',
+            '2','1','0',
+            '5500.00','THB','confirmed',
+            '','','Amari Hotel','07:30','Airport transfer included',
+        ]);
+        fclose($out);
+        exit;
+    }
 }
