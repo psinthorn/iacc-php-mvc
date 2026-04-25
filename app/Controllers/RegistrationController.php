@@ -150,6 +150,9 @@ class RegistrationController extends BaseController
             return;
         }
 
+        // Send welcome email (non-blocking — failure doesn't stop flow)
+        $this->sendWelcomeEmail($verification['email'], $verification['payload']['name']);
+
         // Auto-login the new user
         $this->autoLogin($account['user_id'], $verification['email'], $account['company_id'], $verification['payload']['name']);
 
@@ -267,6 +270,45 @@ class RegistrationController extends BaseController
 
         $_SESSION[$key]['count']++;
         return $_SESSION[$key]['count'] > $maxAttempts;
+    }
+
+    private function sendWelcomeEmail(string $email, string $name): void
+    {
+        $dashUrl  = $this->getBaseUrl() . '/index.php?page=dashboard';
+        $plansUrl = $this->getBaseUrl() . '/index.php?page=plans';
+        $escaped  = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $html = <<<HTML
+<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Inter',Arial,sans-serif;background:#f5f5f5;padding:40px 0;margin:0;">
+<div style="max-width:520px;margin:0 auto;background:white;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);">
+    <div style="background:linear-gradient(135deg,#8e44ad,#6c3483);padding:30px;text-align:center;">
+        <h1 style="color:white;margin:0;font-size:26px;">Welcome to iACC!</h1>
+        <p style="color:rgba(255,255,255,.9);margin:6px 0 0;font-size:14px;">Your 14-day free trial has started</p>
+    </div>
+    <div style="padding:30px;">
+        <p style="color:#334155;font-size:15px;">Hi <strong>{$escaped}</strong>,</p>
+        <p style="color:#64748b;line-height:1.7;">Your account is active. Here's what you can do during your free trial:</p>
+        <ul style="color:#64748b;line-height:2;padding-left:20px;font-size:14px;">
+            <li>Create and manage tour bookings</li>
+            <li>Invite your team (up to 5 users)</li>
+            <li>Try all core accounting features</li>
+            <li>Import bookings via CSV</li>
+        </ul>
+        <div style="text-align:center;margin:28px 0 16px;">
+            <a href="{$dashUrl}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#8e44ad,#6c3483);color:white;text-decoration:none;border-radius:9px;font-weight:600;font-size:15px;">Go to Dashboard</a>
+        </div>
+        <div style="text-align:center;">
+            <a href="{$plansUrl}" style="font-size:13px;color:#8e44ad;">View plans &amp; pricing →</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #f1f5f9;margin:24px 0;">
+        <p style="color:#94a3b8;font-size:12px;line-height:1.6;">Your trial runs for 14 days. No credit card required until you upgrade. Questions? Reply to this email and we'll help.</p>
+    </div>
+    <div style="background:#f8fafc;padding:14px 30px;text-align:center;font-size:11px;color:#94a3b8;">Powered by iACC</div>
+</div>
+</body></html>
+HTML;
+        $emailSvc = new EmailService($this->conn, 0);
+        $emailSvc->send($email, 'Welcome to iACC — your free trial has started', $html);
     }
 
     private function sendVerificationEmail(string $email, string $name, string $token): void
