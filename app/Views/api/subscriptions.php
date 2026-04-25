@@ -32,10 +32,11 @@ $pageTitle = 'API — Subscriptions';
                     <th>Plan</th>
                     <th>Monthly Limit</th>
                     <th>Status</th>
+                    <th>Sponsor</th>
                     <th>Enabled</th>
                     <th>Expires</th>
                     <th>Created</th>
-                    <th style="width:220px;">Actions</th>
+                    <th style="width:260px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -57,6 +58,19 @@ $pageTitle = 'API — Subscriptions';
                             <span class="badge badge-danger">Expired</span>
                         <?php else: ?>
                             <span class="badge badge-secondary"><?= ucfirst($sub['status']) ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($sub['sponsor_type'] === 'sponsor'): ?>
+                            <span style="background:#fef9c3;color:#854d0e;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700;">
+                                <i class="fa fa-star"></i> Sponsor
+                            </span>
+                        <?php elseif ($sub['sponsor_type'] === 'adopter'): ?>
+                            <span style="background:#ede9fe;color:#5b21b6;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700;">
+                                <i class="fa fa-heart"></i> Adopter
+                            </span>
+                        <?php else: ?>
+                            <span style="color:#cbd5e1;font-size:12px;">—</span>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -104,6 +118,11 @@ $pageTitle = 'API — Subscriptions';
                                     onclick="openExtend(<?= $sub['id'] ?>, '<?= htmlspecialchars($sub['company_name'] ?? 'Company #'.$sub['company_id'], ENT_QUOTES) ?>', '<?= $sub['plan'] === 'trial' ? ($sub['trial_end'] ?? '') : substr($sub['expires_at'] ?? '', 0, 10) ?>')"
                                     title="Override expiry date">
                                 <i class="fa fa-calendar"></i> Extend
+                            </button>
+                            <button class="btn btn-sm <?= $sub['sponsor_type'] ? 'btn-success' : 'btn-default' ?>"
+                                    onclick="openSponsor(<?= $sub['id'] ?>, '<?= htmlspecialchars($sub['company_name'] ?? 'Company #'.$sub['company_id'], ENT_QUOTES) ?>', '<?= $sub['sponsor_type'] ?? '' ?>', <?= $sub['show_on_landing'] ?? 0 ?>, '<?= htmlspecialchars(addslashes($sub['testimonial'] ?? ''), ENT_QUOTES) ?>', '<?= htmlspecialchars(addslashes($sub['testimonial_contact'] ?? ''), ENT_QUOTES) ?>')"
+                                    title="Set sponsor/adopter status">
+                                <i class="fa fa-star"></i> Sponsor
                             </button>
                         </div>
                     </td>
@@ -189,6 +208,103 @@ document.getElementById('btnExtend').addEventListener('click', function () {
         result.innerHTML = '<i class="fa fa-times-circle"></i> Request failed: ' + e.message;
     })
     .finally(function(){ btn.disabled = false; btn.innerHTML = '<i class="fa fa-save"></i> Save New Date'; });
+});
+</script>
+
+<!-- ── Sponsor / Adopter modal ──────────────────────────────────── -->
+<div class="modal fade" id="sponsorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#8e44ad,#6c3483);border:none;">
+                <h4 class="modal-title" style="margin:0;font-size:15px;color:white;">
+                    <i class="fa fa-star"></i> Sponsor / Adopter Status
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" style="color:white;opacity:.8;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <p style="font-size:14px;color:#334155;margin-bottom:16px;">Company: <strong id="sponCompany"></strong></p>
+
+                <div class="form-group">
+                    <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;">Type</label>
+                    <select id="sponType" class="form-control" style="border-radius:8px;">
+                        <option value="">None (regular customer)</option>
+                        <option value="adopter">&#x1F49C; Adopter — adopted our open-source project</option>
+                        <option value="sponsor">&#x2B50; Sponsor — financial sponsor</option>
+                    </select>
+                    <small class="text-muted">Adopters and sponsors get <strong>lifetime access</strong> — expiry date is ignored.</small>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;">
+                        <input type="checkbox" id="sponShowLanding" style="margin-right:5px;">
+                        Show on Landing Page
+                    </label>
+                    <small class="text-muted" style="display:block;margin-top:4px;">Display this company's logo and testimonial in the public-facing testimonials section.</small>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;">Testimonial Quote</label>
+                    <textarea id="sponTestimonial" class="form-control" rows="3" style="border-radius:8px;" placeholder="&quot;iACC transformed the way we manage our tours...&quot;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.04em;">Name &amp; Title</label>
+                    <input type="text" id="sponContact" class="form-control" style="border-radius:8px;" placeholder="e.g. Jane Smith, Operations Director">
+                </div>
+
+                <div id="sponResult" style="display:none;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #f1f5f9;">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSponsor" style="background:#8e44ad;border-color:#6c3483;border-radius:8px;">
+                    <i class="fa fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var sponSubId = 0;
+function openSponsor(subId, company, type, showLanding, testimonial, contact) {
+    sponSubId = subId;
+    document.getElementById('sponCompany').textContent  = company;
+    document.getElementById('sponType').value           = type || '';
+    document.getElementById('sponShowLanding').checked  = !!showLanding;
+    document.getElementById('sponTestimonial').value    = testimonial || '';
+    document.getElementById('sponContact').value        = contact || '';
+    document.getElementById('sponResult').style.display = 'none';
+    $('#sponsorModal').modal('show');
+}
+document.getElementById('btnSponsor').addEventListener('click', function () {
+    var btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
+    var result = document.getElementById('sponResult');
+    var params = new URLSearchParams();
+    params.append('csrf_token',          '<?= $_SESSION['csrf_token'] ?? '' ?>');
+    params.append('subscription_id',     sponSubId);
+    params.append('sponsor_type',        document.getElementById('sponType').value);
+    params.append('show_on_landing',     document.getElementById('sponShowLanding').checked ? '1' : '0');
+    params.append('testimonial',         document.getElementById('sponTestimonial').value);
+    params.append('testimonial_contact', document.getElementById('sponContact').value);
+    fetch('index.php?page=api_subscription_sponsor', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        result.style.cssText = 'display:block;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;background:'
+            + (data.success ? '#f0fdfa;border:1px solid #99f6e4;color:#0f766e' : '#fef2f2;border:1px solid #fecaca;color:#dc2626');
+        result.innerHTML = '<i class="fa fa-' + (data.success ? 'check-circle' : 'times-circle') + '"></i> ' + data.message;
+        if (data.success) setTimeout(function(){ location.reload(); }, 1200);
+    })
+    .catch(e => {
+        result.style.cssText = 'display:block;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626';
+        result.innerHTML = '<i class="fa fa-times-circle"></i> Request failed: ' + e.message;
+    })
+    .finally(function(){ btn.disabled = false; btn.innerHTML = '<i class="fa fa-save"></i> Save'; });
 });
 </script>
 

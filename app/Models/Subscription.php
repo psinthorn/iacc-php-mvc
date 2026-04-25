@@ -112,11 +112,21 @@ class Subscription extends BaseModel
     }
 
     /**
-     * Check if subscription is active and not expired
+     * Check if subscription is active and not expired.
+     * Adopters and sponsors have lifetime access — expiry is ignored.
      */
     public function isActive(array $subscription): bool
     {
-        if ($subscription['status'] !== 'active' || !$subscription['enabled']) {
+        if (!$subscription['enabled']) {
+            return false;
+        }
+
+        // Lifetime access for adopters and sponsors
+        if (!empty($subscription['sponsor_type'])) {
+            return true;
+        }
+
+        if ($subscription['status'] !== 'active') {
             return false;
         }
 
