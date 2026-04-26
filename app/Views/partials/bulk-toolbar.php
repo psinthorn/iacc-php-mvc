@@ -90,6 +90,33 @@ tr.bulk-selected td { border-color: #bfdbfe; }
     </div>
 </div>
 
+<!-- Status Change Modal -->
+<div id="bulkStatusModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:24px; width:100%; max-width:360px; margin:16px; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h5 style="margin:0 0 16px; font-size:16px; font-weight:700; color:#1e293b;">
+            <i class="fa fa-exchange" style="color:#6366f1;"></i> Change Status
+        </h5>
+        <div>
+            <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:6px;">New Status *</label>
+            <select id="bulkNewStatus" style="width:100%; padding:9px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                <option value="draft">Draft</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+        <p style="font-size:12px; color:#94a3b8; margin-top:10px; line-height:1.5;">
+            <i class="fa fa-info-circle"></i> This will overwrite the current status of all selected bookings.
+        </p>
+        <div style="display:flex; gap:8px; margin-top:20px; justify-content:flex-end;">
+            <button type="button" id="bulkStatusCancel" class="btn btn-secondary btn-sm">Cancel</button>
+            <button type="button" id="bulkStatusConfirm" class="btn btn-primary btn-sm">
+                <i class="fa fa-check"></i> Apply
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 // Set today's date as default for payment modal
 document.addEventListener('DOMContentLoaded', function () {

@@ -138,6 +138,11 @@ const BulkSelect = (function () {
       return;
     }
 
+    if (actionCfg.modal === 'status') {
+      openStatusModal(actionCfg);
+      return;
+    }
+
     postAction({ action: actionCfg.key });
   }
 
@@ -186,6 +191,27 @@ const BulkSelect = (function () {
     };
 
     // Close on backdrop click
+    modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+  }
+
+  // ─── Status modal ────────────────────────────────────────────────────────
+  function openStatusModal(actionCfg) {
+    const modal = document.getElementById('bulkStatusModal');
+    if (!modal) { postAction({ action: actionCfg.key }); return; }
+
+    modal.style.display = 'flex';
+
+    document.getElementById('bulkStatusCancel').onclick = () => {
+      modal.style.display = 'none';
+    };
+
+    document.getElementById('bulkStatusConfirm').onclick = () => {
+      const newStatus = document.getElementById('bulkNewStatus').value;
+      if (!newStatus) return;
+      modal.style.display = 'none';
+      postAction({ action: actionCfg.key, new_status: newStatus });
+    };
+
     modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
   }
 

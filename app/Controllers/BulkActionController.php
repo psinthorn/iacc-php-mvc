@@ -20,7 +20,7 @@ class BulkActionController extends BaseController
 
     protected function allowedBulkActions(): array
     {
-        return ['delete', 'export_csv', 'confirm', 'mark_payment', 'send_vouchers', 'send_invoices'];
+        return ['delete', 'export_csv', 'confirm', 'change_status', 'mark_payment', 'send_vouchers', 'send_invoices'];
     }
 
     protected function executeBulkAction(string $action, array $ids): array
@@ -39,6 +39,7 @@ class BulkActionController extends BaseController
             'delete'         => $this->bulkDelete($ownedIds, $errors),
             'export_csv'     => $this->bulkExportCsv($ownedIds, $comId),
             'confirm'        => $this->bulkConfirm($ownedIds, $errors),
+            'change_status'  => $this->bulkChangeStatus($ownedIds, $errors),
             'mark_payment'   => $this->bulkMarkPayment($ownedIds, $comId, $errors),
             'send_vouchers'  => $this->bulkSendVouchers($ownedIds, $comId, $errors),
             'send_invoices'  => $this->bulkSendInvoices($ownedIds, $comId, $errors),
@@ -150,6 +151,46 @@ class BulkActionController extends BaseController
         mysqli_stmt_close($stmt);
 
         return ['processed' => $processed, 'failed' => $skipped, 'errors' => $errors];
+    }
+
+    // ─── Change Status ─────────────────────────────────────────────────────────
+
+    private function bulkChangeStatus(array $ids, array $errors = []): array
+    {
+        $status = trim($_POST['new_status'] ?? '');
+
+        if (!in_array($status, self::ALLOWED_STATUSES, true)) {
+            return ['processed' => 0, 'failed' => count($ids), 'errors' => ["Invalid status: $status"]];
+        }
+
+        $comId     = $this->user['com_id'];
+        $processed = 0;
+        $skipped   = 0;
+
+        $stmt = mysqli_prepare(
+            $this->conn,
+            "UPDATE tour_bookings SET status = ?, updated_at = NOW()
+             WHERE id = ? AND company_id = ? AND deleted_at IS NULL"
+        );
+
+        if (!$stmt) {
+            return ['processed' => 0, 'failed' => count($ids), 'errors' => ['DB prepare failed']];
+        }
+
+        foreach ($ids as $id) {
+            mysqli_stmt_bind_param($stmt, 'sii', $status, $id, $comId);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_affected_rows($stmt) > 0 ? $processed++ : $skipped++;
+        }
+        mysqli_stmt_close($stmt);
+
+        $label = ucfirst($status);
+        return [
+            'processed' => $processed,
+            'failed'    => $skipped,
+            'errors'    => $errors,
+            'message'   => "$processed booking(s) changed to $label" . ($skipped > 0 ? ", $skipped skipped" : ''),
+        ];
     }
 
     // ─── Mark Payment Received ─────────────────────────────────────────────────
