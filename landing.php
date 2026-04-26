@@ -1891,17 +1891,28 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
     // Load sponsors/adopters with testimonials from DB (only if DB is available)
     $testimonials = [];
     if (isset($db) && $db->conn) {
-        $res = mysqli_query($db->conn,
-            "SELECT s.sponsor_type, s.testimonial, s.testimonial_contact,
-                    COALESCE(c.name_en, c.name_th, 'Company') AS company_name,
-                    c.logo
-             FROM api_subscriptions s
-             JOIN company c ON c.id = s.company_id
-             WHERE s.show_on_landing = 1 AND s.sponsor_type IS NOT NULL
-             ORDER BY FIELD(s.sponsor_type,'sponsor','adopter'), c.name_en ASC"
+        // Guard: columns may not exist yet if migration hasn't been run on this environment
+        $colCheck = mysqli_query($db->conn,
+            "SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = 'api_subscriptions'
+               AND COLUMN_NAME = 'sponsor_type'"
         );
-        while ($row = mysqli_fetch_assoc($res)) {
-            $testimonials[] = $row;
+        $colExists = $colCheck && (int)(mysqli_fetch_assoc($colCheck)['cnt'] ?? 0) > 0;
+
+        if ($colExists) {
+            $res = mysqli_query($db->conn,
+                "SELECT s.sponsor_type, s.testimonial, s.testimonial_contact,
+                        COALESCE(c.name_en, c.name_th, 'Company') AS company_name,
+                        c.logo
+                 FROM api_subscriptions s
+                 JOIN company c ON c.id = s.company_id
+                 WHERE s.show_on_landing = 1 AND s.sponsor_type IS NOT NULL
+                 ORDER BY FIELD(s.sponsor_type,'sponsor','adopter'), c.name_en ASC"
+            );
+            while ($res && $row = mysqli_fetch_assoc($res)) {
+                $testimonials[] = $row;
+            }
         }
     }
     if (!empty($testimonials)):
