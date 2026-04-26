@@ -260,6 +260,16 @@ class TourBookingPayment extends BaseModel
         //   draft     → confirmed  (payment received, booking is now confirmed)
         //   confirmed → completed  (fully paid + already confirmed = job done)
         if ($paymentStatus === 'paid') {
+            // Read current status before update (for allotment integration)
+            $sqlCur = sprintf(
+                "SELECT status, travel_date, pax_adult, pax_child FROM tour_bookings
+                 WHERE id = %d AND company_id = %d AND deleted_at IS NULL",
+                intval($bookingId), intval($comId)
+            );
+            $curResult = mysqli_query($this->conn, $sqlCur);
+            $curBooking = $curResult ? mysqli_fetch_assoc($curResult) : null;
+            $oldStatus = $curBooking['status'] ?? 'draft';
+
             $sql4 = sprintf(
                 "UPDATE tour_bookings
                  SET status = CASE
@@ -273,6 +283,16 @@ class TourBookingPayment extends BaseModel
                 intval($comId)
             );
             mysqli_query($this->conn, $sql4);
+
+            // Allotment: book seats when auto-advancing draft → confirmed
+            if ($oldStatus === 'draft' && $curBooking) {
+                $allotmentModel = new TourAllotment();
+                $seatPax = intval($curBooking['pax_adult']) + intval($curBooking['pax_child']);
+                $allotmentModel->handleStatusChange(
+                    $comId, $bookingId, $curBooking['travel_date'],
+                    'draft', 'confirmed', $seatPax, 0
+                );
+            }
         }
     }
 

@@ -224,6 +224,12 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=tour_location_list"><i class="fa fa-map-marker"></i> <?=$xml->tourlocations ?? 'Locations'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=tour_allotment_list"><i class="fa fa-calendar-check-o"></i> <?=$xml->tourallotments ?? 'Allotments'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_fleet_list"><i class="fa fa-ship"></i> <?=$xml->tourfleets ?? 'Fleets'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=tour_report"><i class="fa fa-bar-chart"></i> <?=$xml->tourreports ?? 'Reports'?></a>
                             </li>
                             <li>

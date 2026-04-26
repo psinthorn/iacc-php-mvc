@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\TourBooking;
 use App\Models\TourBookingPayment;
+use App\Models\TourAllotment;
 use App\Services\TourBookingService;
 
 class TourBookingController extends BaseController
@@ -249,6 +250,75 @@ class TourBookingController extends BaseController
             ];
             $this->bookingModel->saveBookingContact($bookingId, $contactData);
 
+            // ── Allotment Integration ──────────────────────────
+            $allotmentModel = new TourAllotment();
+            $newStatus = $data['status'];
+            $seatPax   = intval($data['pax_adult']) + intval($data['pax_child']); // infants don't take seats
+            $allotmentWarning = '';
+
+            if ($isEdit) {
+                $oldStatus = $existing['status'] ?? 'draft';
+                $oldDate   = $existing['travel_date'] ?? '';
+
+                // Handle travel date change while confirmed
+                if ($oldDate !== $travelDate && in_array($oldStatus, ['confirmed', 'completed'])) {
+                    $oldPax = intval($existing['pax_adult']) + intval($existing['pax_child']);
+                    $dateResult = $allotmentModel->handleDateChange(
+                        $comId, $bookingId, $oldDate, $travelDate, $newStatus, $seatPax, $this->user['id']
+                    );
+                    if ($dateResult['is_overbooked']) {
+                        $allotmentWarning = 'overbooking';
+                    }
+                    if ($dateResult['is_closed']) {
+                        $allotmentWarning = 'date_closed';
+                    }
+                } else {
+                    // Handle status change
+                    $statusResult = $allotmentModel->handleStatusChange(
+                        $comId, $bookingId, $travelDate, $oldStatus, $newStatus, $seatPax, $this->user['id']
+                    );
+                    if ($statusResult['is_overbooked']) {
+                        $allotmentWarning = 'overbooking';
+                    }
+                    if ($statusResult['is_closed'] && in_array($newStatus, ['confirmed', 'completed'])) {
+                        $allotmentWarning = 'date_closed';
+                    }
+                }
+
+                // Handle pax change while confirmed (release old, book new)
+                if ($oldStatus === $newStatus && in_array($newStatus, ['confirmed', 'completed']) && $oldDate === $travelDate) {
+                    $oldPax = intval($existing['pax_adult']) + intval($existing['pax_child']);
+                    if ($oldPax !== $seatPax) {
+                        $allotment = $allotmentModel->getOrCreateAllotment($comId, $travelDate);
+                        if ($allotment) {
+                            $allotmentModel->releaseSeats(intval($allotment['id']), $bookingId, $oldPax, $this->user['id']);
+                            $bookResult = $allotmentModel->bookSeats(intval($allotment['id']), $bookingId, $seatPax, $this->user['id']);
+                            if ($bookResult['is_overbooked']) {
+                                $allotmentWarning = 'overbooking';
+                            }
+                        }
+                    }
+                }
+            } else {
+                // New booking: if created directly as confirmed, book seats
+                if (in_array($newStatus, ['confirmed', 'completed'])) {
+                    $statusResult = $allotmentModel->handleStatusChange(
+                        $comId, $bookingId, $travelDate, null, $newStatus, $seatPax, $this->user['id']
+                    );
+                    if ($statusResult['is_overbooked']) {
+                        $allotmentWarning = 'overbooking';
+                    }
+                    if ($statusResult['is_closed']) {
+                        $allotmentWarning = 'date_closed';
+                    }
+                }
+            }
+
+            if ($allotmentWarning) {
+                $_SESSION['allotment_warning'] = $allotmentWarning;
+            }
+            // ── End Allotment Integration ──────────────────────
+
             mysqli_commit($this->bookingModel->getConnection());
 
             $msg = $isEdit ? 'updated' : 'created';
@@ -268,6 +338,19 @@ class TourBookingController extends BaseController
 
         $comId = $this->user['com_id'];
         $id = intval($_POST['id'] ?? 0);
+
+        // Release allotment seats if booking was confirmed
+        if ($id > 0) {
+            $existing = $this->bookingModel->findBooking($id, $comId);
+            if ($existing && in_array($existing['status'], ['confirmed', 'completed'])) {
+                $allotmentModel = new TourAllotment();
+                $seatPax = intval($existing['pax_adult']) + intval($existing['pax_child']);
+                $allotmentModel->handleStatusChange(
+                    $comId, $id, $existing['travel_date'],
+                    $existing['status'], 'cancelled', $seatPax, $this->user['id']
+                );
+            }
+        }
 
         if ($id > 0 && $this->bookingModel->deleteBooking($id, $comId)) {
             $this->redirect('tour_booking_list', ['msg' => 'deleted']);
