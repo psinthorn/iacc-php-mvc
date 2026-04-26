@@ -159,7 +159,7 @@ $pct        = $total > 0 ? round(($checkedIn / $total) * 100) : 0;
                     <th><?= $isThai ? 'จัดการ' : 'Action' ?></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="checkin-tbody">
             <?php foreach ($bookings as $i => $bk): ?>
             <?php $isIn = intval($bk['checkin_status']) === 1; ?>
             <tr class="<?= $isIn ? 'is-checked' : '' ?>" id="row-<?= intval($bk['id']) ?>">
@@ -228,6 +228,7 @@ $pct        = $total > 0 ? round(($checkedIn / $total) * 100) : 0;
 <script>
 function ciAction(action, bookingId, btn) {
     var route = action === 'reset' ? 'tour_checkin_reset' : 'tour_checkin_override';
+    var isThai = <?= json_encode($isThai) ?>;
     btn.disabled = true;
     btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
 
@@ -238,14 +239,65 @@ function ciAction(action, bookingId, btn) {
     })
     .then(function(r) { return r.json(); })
     .then(function(d) {
-        if (d.success) {
-            // Reload just the row state — full page reload is simplest and matches meta-refresh behaviour
-            location.reload();
-        } else {
+        if (!d.success) {
+            alert(d.message || 'Action failed');
             btn.disabled = false;
-            btn.innerHTML = action === 'reset' ? '<i class="fa fa-undo"></i> Reset' : '<i class="fa fa-check"></i> Check In';
+            btn.innerHTML = action === 'reset'
+                ? '<i class="fa fa-undo"></i> ' + (isThai ? 'รีเซ็ต' : 'Reset')
+                : '<i class="fa fa-check"></i> ' + (isThai ? 'เช็คอิน' : 'Check In');
+            return;
         }
+
+        // Update the row DOM in-place — no full page reload needed
+        var row = document.getElementById('row-' + bookingId);
+        if (!row) { location.reload(); return; }
+
+        if (action === 'reset') {
+            row.classList.remove('is-checked');
+            // Status badge cell (col index 5)
+            row.cells[5].innerHTML = '<span class="badge-out"><i class="fa fa-clock-o"></i> ' + (isThai ? 'ยังไม่เช็คอิน' : 'Pending') + '</span>';
+            // Time cell (col index 6)
+            row.cells[6].textContent = '—';
+            // Action cell (col index 7)
+            row.cells[7].innerHTML = '<button class="btn-ci-action btn-override" onclick="ciAction(\'override\',' + bookingId + ',this)">'
+                + '<i class="fa fa-check"></i> ' + (isThai ? 'เช็คอิน' : 'Check In') + '</button>';
+        } else {
+            row.classList.add('is-checked');
+            row.cells[5].innerHTML = '<span class="badge-in"><i class="fa fa-check-circle"></i> ' + (isThai ? 'เช็คอินแล้ว' : 'Checked In') + '</span>';
+            row.cells[6].textContent = d.time_label || '—';
+            row.cells[7].innerHTML = '<button class="btn-ci-action btn-reset" onclick="ciAction(\'reset\',' + bookingId + ',this)" style="border:1px solid #fecaca;">'
+                + '<i class="fa fa-undo"></i> ' + (isThai ? 'รีเซ็ต' : 'Reset') + '</button>';
+        }
+
+        // Move row to bottom (checked) or top (reset) — optional visual re-sort
+        var tbody = row.parentNode;
+        if (action === 'override') {
+            tbody.appendChild(row);
+        } else {
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+
+        // Update KPI counter
+        updateKpiCounters();
     })
     .catch(function() { location.reload(); });
+}
+
+function updateKpiCounters() {
+    var rows        = document.querySelectorAll('#checkin-tbody tr');
+    var total       = rows.length;
+    var checkedIn   = document.querySelectorAll('#checkin-tbody tr.is-checked').length;
+    var notYet      = total - checkedIn;
+    var pct         = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
+
+    var kpiVals = document.querySelectorAll('.kpi-tile .val');
+    // tiles: total, checked_in, not_yet, total_pax, pax_checked_in, rate
+    if (kpiVals[1]) kpiVals[1].textContent = checkedIn;
+    if (kpiVals[2]) kpiVals[2].textContent = notYet;
+    if (kpiVals[5]) {
+        kpiVals[5].textContent = pct + '%';
+        var fill = document.querySelector('.progress-bar-fill');
+        if (fill) fill.style.width = pct + '%';
+    }
 }
 </script>
