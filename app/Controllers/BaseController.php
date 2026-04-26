@@ -152,6 +152,14 @@ class BaseController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrf_verify()) {
+                http_response_code(403);
+                // Return JSON if the endpoint already set JSON content type
+                if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'json') ||
+                    str_contains(implode('', headers_list()), 'application/json')) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'CSRF token expired. Please refresh the page and try again.']);
+                    exit;
+                }
                 die('CSRF token validation failed. Please refresh the page and try again.');
             }
         }

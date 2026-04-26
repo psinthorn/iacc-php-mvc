@@ -102,7 +102,7 @@ class AdminApiController extends BaseController
     public function setSponsor(): void
     {
         header('Content-Type: application/json');
-        $this->requireLevel(3);
+        $this->requireLevel(2);
         $this->verifyCsrf();
 
         $id           = $this->inputInt('subscription_id');
@@ -158,7 +158,7 @@ class AdminApiController extends BaseController
     public function extendTrial(): void
     {
         header('Content-Type: application/json');
-        $this->requireLevel(3);
+        $this->requireLevel(2);
         $this->verifyCsrf();
 
         $id      = $this->inputInt('subscription_id');
@@ -790,8 +790,10 @@ class AdminApiController extends BaseController
     private function requireLevel(int $minLevel): void
     {
         if ($this->user['level'] < $minLevel) {
-            header('HTTP/1.1 403 Forbidden');
-            die('Access denied. Required level: ' . $minLevel);
+            http_response_code(403);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Access denied. Required level: ' . $minLevel]);
+            exit;
         }
     }
 
