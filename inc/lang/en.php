@@ -193,8 +193,8 @@ return [
     'pricing_enterprise_feature_5' => 'Dedicated support',
     
     // CTA Section
-    'cta_title' => 'Ready to Get Started?',
-    'cta_subtitle' => 'Join hundreds of businesses already using iACC to manage their finances.',
+    'cta_title' => 'Start Automating Your Business',
+    'cta_subtitle' => 'From accounting to AI-powered automation — one platform for your entire business.',
     'cta_button' => 'Start Your Free Trial',
     
     // Footer
