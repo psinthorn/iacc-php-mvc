@@ -294,8 +294,9 @@ $pax   = $booking['pax'] ?? [];
                         <label><?= $isThai ? 'วันเดินทาง' : 'Trip Date' ?> <span class="req">*</span></label>
                         <div class="bk-input-icon">
                             <i class="fa fa-plane"></i>
-                            <input type="date" name="travel_date" value="<?= htmlspecialchars($booking['travel_date'] ?? date('Y-m-d')) ?>" required>
+                            <input type="date" name="travel_date" id="travelDateInput" value="<?= htmlspecialchars($booking['travel_date'] ?? date('Y-m-d')) ?>" required>
                         </div>
+                        <div id="allotmentBadge" style="margin-top:4px;font-size:12px;font-weight:600;display:none;"></div>
                     </div>
                     <div class="bk-field">
                         <label><?= $isThai ? 'เลข Voucher' : 'Voucher Number' ?></label>
@@ -1515,10 +1516,54 @@ function serializePaxLines() {
     });
 }
 
+// ─── Allotment Availability Check ─────────────────────────
+function checkAllotment(date) {
+    var badge = document.getElementById('allotmentBadge');
+    if (!date || !badge) return;
+    badge.style.display = 'inline-block';
+    badge.style.color = '#6b7280';
+    badge.innerHTML = '<i class="fa fa-spinner fa-spin"></i> <?= $isThai ? "ตรวจสอบที่นั่ง..." : "Checking seats..." ?>';
+
+    fetch('index.php?page=tour_allotment_availability&date=' + encodeURIComponent(date))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.no_fleet) {
+                badge.style.display = 'none';
+                return;
+            }
+            var avail = d.available;
+            var total = d.total_seats;
+            var booked = d.booked_seats;
+            if (d.is_closed) {
+                badge.style.color = '#dc2626';
+                badge.innerHTML = '<i class="fa fa-lock"></i> <?= $isThai ? "ปิดรับจอง" : "Date Closed" ?>';
+            } else if (avail < 0) {
+                badge.style.color = '#dc2626';
+                badge.innerHTML = '<i class="fa fa-exclamation-triangle"></i> <?= $isThai ? "จองเกิน" : "Overbooked" ?>: ' + booked + '/' + total + ' <?= $isThai ? "ที่นั่ง" : "seats" ?>';
+            } else if (avail <= Math.ceil(total * 0.1)) {
+                badge.style.color = '#f59e0b';
+                badge.innerHTML = '<i class="fa fa-exclamation-circle"></i> ' + avail + '/' + total + ' <?= $isThai ? "ที่นั่งว��าง" : "seats available" ?>';
+            } else {
+                badge.style.color = '#059669';
+                badge.innerHTML = '<i class="fa fa-check-circle"></i> ' + avail + '/' + total + ' <?= $isThai ? "ที่นั่งว่าง" : "seats available" ?>';
+            }
+        })
+        .catch(function() {
+            badge.style.display = 'none';
+        });
+}
+
 // ─── Init ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     updatePaxDisplay();
     var form = document.getElementById('bookingForm');
     if (form) form.addEventListener('submit', function() { serializePaxLines(); });
+
+    // Allotment: check on load and on date change
+    var dateInput = document.getElementById('travelDateInput');
+    if (dateInput) {
+        if (dateInput.value) checkAllotment(dateInput.value);
+        dateInput.addEventListener('change', function() { checkAllotment(this.value); });
+    }
 });
 </script>

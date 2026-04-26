@@ -399,6 +399,21 @@ return [
     'tour_report_pickup'     => ['TourReportController', 'pickupPrint', 'standalone'],
     'tour_report_insurance'  => ['TourReportController', 'insurancePrint', 'standalone'],
 
+    // ── Tour Allotment Management ─────────────────────────────────────
+    'tour_allotment_list'         => ['TourAllotmentController', 'index'],
+    'tour_allotment_date'         => ['TourAllotmentController', 'dateDetail'],
+    'tour_allotment_manual_set'   => ['TourAllotmentController', 'manualSet'],
+    'tour_allotment_close'        => ['TourAllotmentController', 'closeDate'],
+    'tour_allotment_reopen'       => ['TourAllotmentController', 'reopenDate'],
+    'tour_allotment_recalc'       => ['TourAllotmentController', 'recalculate'],
+    'tour_allotment_availability' => ['TourAllotmentController', 'apiAvailability', 'standalone'],
+
+    // ── Tour Fleet Management ──────────────────────────────────────────
+    'tour_fleet_list'    => ['TourAllotmentController', 'fleetIndex'],
+    'tour_fleet_make'    => ['TourAllotmentController', 'fleetMake'],
+    'tour_fleet_store'   => ['TourAllotmentController', 'fleetStore'],
+    'tour_fleet_delete'  => ['TourAllotmentController', 'fleetDelete'],
+
     // ── Customer Self-Check-In (public — no session auth) ───────────
     'tour_checkin'           => ['TourCheckinController', 'index',         'public'],
     'tour_checkin_submit'    => ['TourCheckinController', 'submit',        'public'],
