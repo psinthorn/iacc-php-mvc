@@ -406,6 +406,13 @@ $statusConfig = [
                     confirmMsg: '<?= $isThai ? 'ยืนยัน {n} การจอง?' : 'Confirm {n} booking(s)?' ?>'
                 },
                 {
+                    key: 'change_status',
+                    label: '<?= $isThai ? 'เปลี่ยนสถานะ' : 'Change Status' ?>',
+                    icon: 'fa-exchange',
+                    class: 'btn-default',
+                    modal: 'status'
+                },
+                {
                     key: 'mark_payment',
                     label: '<?= $isThai ? 'รับชำระเงิน' : 'Mark Payment' ?>',
                     icon: 'fa-money',

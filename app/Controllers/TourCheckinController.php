@@ -193,7 +193,7 @@ class TourCheckinController extends BaseController
     }
 
     /**
-     * POST tour_checkin_staff_override  {booking_id}
+     * POST tour_checkin_override  {booking_id}
      */
     public function staffOverride(): void
     {
@@ -201,14 +201,26 @@ class TourCheckinController extends BaseController
         $this->requirePost();
 
         $bookingId = intval($_POST['booking_id'] ?? 0);
-        $staffId   = intval($this->user['usr_id'] ?? 0);
+        $staffId   = intval($this->user['id'] ?? 0);
         $ip        = $_SERVER['REMOTE_ADDR'] ?? '';
 
-        if ($bookingId) {
-            $this->checkinModel->staffOverride($bookingId, $staffId, $ip);
+        if (!$bookingId) {
+            $this->jsonError('Missing booking_id');
+            return;
         }
 
-        $this->jsonSuccess(['message' => 'Checked in']);
+        $checkinAt = $this->checkinModel->staffOverride($bookingId, $staffId, $ip);
+
+        if ($checkinAt === null) {
+            $this->jsonError('Check-in failed — booking not found or already deleted');
+            return;
+        }
+
+        $this->jsonSuccess([
+            'message'    => 'Checked in',
+            'checkin_at' => $checkinAt,
+            'time_label' => date('H:i', strtotime($checkinAt)),
+        ]);
     }
 
     /**
@@ -220,13 +232,15 @@ class TourCheckinController extends BaseController
         $this->requirePost();
 
         $bookingId = intval($_POST['booking_id'] ?? 0);
-        $staffId   = intval($this->user['usr_id'] ?? 0);
+        $staffId   = intval($this->user['id'] ?? 0);
         $ip        = $_SERVER['REMOTE_ADDR'] ?? '';
 
-        if ($bookingId) {
-            $this->checkinModel->resetCheckin($bookingId, $staffId, $ip);
+        if (!$bookingId) {
+            $this->jsonError('Missing booking_id');
+            return;
         }
 
+        $this->checkinModel->resetCheckin($bookingId, $staffId, $ip);
         $this->jsonSuccess(['message' => 'Reset']);
     }
 

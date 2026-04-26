@@ -90,20 +90,25 @@ class TourCheckin extends BaseModel
 
     /**
      * Staff manual check-in override.
+     * Returns the checkin_at timestamp string on success, or null on failure.
      */
-    public function staffOverride(int $bookingId, int $staffId, string $ip = ''): bool
+    public function staffOverride(int $bookingId, int $staffId, string $ip = ''): ?string
     {
         $bid = intval($bookingId);
         $now = date('Y-m-d H:i:s');
 
-        mysqli_query($this->conn,
+        $ok = mysqli_query($this->conn,
             "UPDATE tour_bookings
              SET checkin_status=1, checkin_at='$now', checkin_by='staff'
              WHERE id=$bid AND deleted_at IS NULL"
         );
 
+        if (!$ok || mysqli_affected_rows($this->conn) < 1) {
+            return null;
+        }
+
         $this->log($bookingId, 'staff_override', 'staff', $staffId, $ip);
-        return true;
+        return $now;
     }
 
     /**
@@ -113,14 +118,16 @@ class TourCheckin extends BaseModel
     {
         $bid = intval($bookingId);
 
-        mysqli_query($this->conn,
+        $ok = mysqli_query($this->conn,
             "UPDATE tour_bookings
-             SET checkin_status=0, checkin_at=NULL, checkin_by='self'
+             SET checkin_status=0, checkin_at=NULL, checkin_by=NULL
              WHERE id=$bid AND deleted_at IS NULL"
         );
 
-        $this->log($bookingId, 'reset', 'staff', $staffId, $ip);
-        return true;
+        if ($ok && mysqli_affected_rows($this->conn) > 0) {
+            $this->log($bookingId, 'reset', 'staff', $staffId, $ip);
+        }
+        return (bool) $ok;
     }
 
     // ─── Rate Limiting ────────────────────────────────────────
