@@ -327,6 +327,9 @@ class EmailService
         $company  = htmlspecialchars($booking['company_name'] ?? 'iACC Tour');
         $pickup   = htmlspecialchars($booking['pickup_hotel'] ?? '');
         $pickupT  = !empty($booking['pickup_time']) ? date('H:i', strtotime($booking['pickup_time'])) : '';
+        $pickupRow = $pickup
+            ? '<tr><td style="padding:6px 0;color:#94a3b8;">Pickup</td><td>' . $pickup . ($pickupT ? " @ {$pickupT}" : '') . '</td></tr>'
+            : '';
 
         return <<<HTML
 <!DOCTYPE html>
@@ -347,7 +350,7 @@ class EmailService
                 <tr><td style="padding:6px 0;color:#94a3b8;width:40%;">Booking Ref</td><td style="font-weight:700;color:#0d9488;">{$bNum}</td></tr>
                 <tr><td style="padding:6px 0;color:#94a3b8;">Tour Date</td><td style="font-weight:600;">{$date}</td></tr>
                 <tr><td style="padding:6px 0;color:#94a3b8;">Passengers</td><td style="font-weight:600;">{$pax} pax</td></tr>
-                {$pickup ? "<tr><td style=\"padding:6px 0;color:#94a3b8;\">Pickup</td><td>{$pickup}" . ($pickupT ? " @ {$pickupT}" : "") . "</td></tr>" : ""}
+                {$pickupRow}
                 <tr><td style="padding:6px 0;color:#94a3b8;">Amount</td><td style="font-weight:700;font-size:16px;">฿{$amount}</td></tr>
             </table>
         </div>
