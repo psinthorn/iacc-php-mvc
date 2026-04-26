@@ -1888,20 +1888,17 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
 
     <!-- ── Sponsors, Adopters & Testimonials ───────────────────── -->
     <?php
-    // Load sponsors/adopters with testimonials from DB (only if DB is available)
+    // Load sponsors/adopters with testimonials from DB
+    // On the fast-path (anonymous visitor), $db is not set — open a lightweight connection
     $testimonials = [];
-    if (isset($db) && $db->conn) {
-        // Guard: columns may not exist yet if migration hasn't been run on this environment
-        $colCheck = mysqli_query($db->conn,
-            "SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
-             WHERE TABLE_SCHEMA = DATABASE()
-               AND TABLE_NAME = 'api_subscriptions'
-               AND COLUMN_NAME = 'sponsor_type'"
-        );
-        $colExists = $colCheck && (int)(mysqli_fetch_assoc($colCheck)['cnt'] ?? 0) > 0;
-
-        if ($colExists) {
-            $res = mysqli_query($db->conn,
+    try {
+        $__conn = (isset($db) && $db->conn) ? $db->conn : null;
+        if (!$__conn) {
+            // Lightweight connection just for this query — config is already loaded via sys.configs.php
+            $__conn = @mysqli_connect($config['hostname'], $config['username'], $config['password'], $config['dbname']);
+        }
+        if ($__conn) {
+            $res = @mysqli_query($__conn,
                 "SELECT s.sponsor_type, s.testimonial, s.testimonial_contact,
                         COALESCE(c.name_en, c.name_th, 'Company') AS company_name,
                         c.logo
@@ -1913,7 +1910,14 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
             while ($res && $row = mysqli_fetch_assoc($res)) {
                 $testimonials[] = $row;
             }
+            // Close only if we opened it ourselves
+            if (!(isset($db) && $db->conn)) {
+                mysqli_close($__conn);
+            }
         }
+    } catch (\Throwable $e) {
+        // Silently skip — landing page must never crash for testimonials
+        $testimonials = [];
     }
     if (!empty($testimonials)):
     ?>
