@@ -241,7 +241,7 @@ class TourAllotmentController extends BaseController
         $sql2 = sprintf(
             "SELECT b.travel_date,
                     COALESCE(
-                        NULLIF(CONCAT_WS(' - ', NULLIF(t.name,''), NULLIF(m.des,'')), ''),
+                        NULLIF(m.des, ''),
                         NULLIF(m.model_name, ''),
                         NULLIF(bi.description, ''),
                         'Trip'
