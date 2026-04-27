@@ -215,25 +215,50 @@ class TourAllotmentController extends BaseController
 
     private function getBookingsByDateRange(int $comId, string $from, string $to): array
     {
+        // 1. Bookings with customer name (ordered by latest first)
         $sql = sprintf(
             "SELECT b.id, b.booking_number, b.travel_date, b.status,
                     b.pax_adult, b.pax_child, b.pax_infant,
                     (b.pax_adult + b.pax_child) AS seat_pax,
-                    COALESCE(c.name_en, c.name_th, 'Walk-in') AS customer_name
+                    COALESCE(c.name_en, c.name_th, 'Walk-in') AS customer_name,
+                    b.created_at
              FROM tour_bookings b
              LEFT JOIN company c ON b.customer_id = c.id
              WHERE b.company_id = %d
                AND b.travel_date BETWEEN '%s' AND '%s'
                AND b.deleted_at IS NULL
-             ORDER BY b.travel_date ASC, b.status ASC, b.booking_number ASC",
+             ORDER BY b.travel_date ASC, b.created_at DESC",
             intval($comId), sql_escape($from), sql_escape($to)
         );
         $result = mysqli_query($this->allotmentModel->getConnection(), $sql);
-        $grouped = [];
+        $bookings = [];
         while ($result && $row = mysqli_fetch_assoc($result)) {
-            $grouped[$row['travel_date']][] = $row;
+            $bookings[$row['travel_date']][] = $row;
         }
-        return $grouped;
+
+        // 2. Model/product breakdown per date (pax grouped by model)
+        $sql2 = sprintf(
+            "SELECT b.travel_date,
+                    COALESCE(m.model_name, bi.description, 'Trip') AS model_name,
+                    SUM(b.pax_adult + b.pax_child) AS model_pax
+             FROM tour_bookings b
+             JOIN tour_booking_items bi ON bi.booking_id = b.id
+             LEFT JOIN model m ON bi.model_id = m.id
+             WHERE b.company_id = %d
+               AND b.travel_date BETWEEN '%s' AND '%s'
+               AND b.status IN ('confirmed', 'completed')
+               AND b.deleted_at IS NULL
+             GROUP BY b.travel_date, COALESCE(m.model_name, bi.description, 'Trip')
+             ORDER BY b.travel_date ASC, model_pax DESC",
+            intval($comId), sql_escape($from), sql_escape($to)
+        );
+        $result2 = mysqli_query($this->allotmentModel->getConnection(), $sql2);
+        $models = [];
+        while ($result2 && $row = mysqli_fetch_assoc($result2)) {
+            $models[$row['travel_date']][] = $row;
+        }
+
+        return ['bookings' => $bookings, 'models' => $models];
     }
 
     // ─── Fleet CRUD ───────────────────────────────────────────

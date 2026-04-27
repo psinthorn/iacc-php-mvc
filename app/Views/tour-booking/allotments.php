@@ -17,12 +17,10 @@ $statusColors = [
     'completed' => '#3b82f6',
     'cancelled' => '#ef4444',
 ];
-$statusIcons = [
-    'draft'     => 'fa-pencil',
-    'confirmed' => 'fa-check',
-    'completed' => 'fa-check-circle',
-    'cancelled' => 'fa-times',
-];
+
+$modelColors = ['#8e44ad', '#2563eb', '#0d9488', '#d97706', '#dc2626', '#6366f1'];
+$bkByDate   = $bookingsByDate['bookings'] ?? [];
+$mdByDate   = $bookingsByDate['models'] ?? [];
 ?>
 
 <link rel="stylesheet" href="css/master-data.css">
@@ -56,12 +54,16 @@ $statusIcons = [
 
 .cal-lock { font-size: 10px; color: #dc2626; font-weight: 600; margin-bottom: 4px; }
 
-.cal-bookings { display: flex; flex-direction: column; gap: 2px; max-height: 80px; overflow-y: auto; }
-.cal-bk { display: flex; align-items: center; gap: 4px; font-size: 10px; line-height: 1.3; padding: 2px 4px; border-radius: 4px; text-decoration: none; color: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cal-bk:hover { background: #f1f5f9; }
-.cal-bk .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.cal-bk .bk-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
-.cal-bk .bk-pax { color: #64748b; font-weight: 600; flex-shrink: 0; }
+.cal-models { display: flex; flex-direction: column; gap: 2px; margin-bottom: 3px; }
+.cal-model { display: flex; align-items: center; gap: 4px; font-size: 10px; line-height: 1.3; padding: 2px 4px; border-radius: 4px; background: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-model .m-dot { width: 5px; height: 5px; border-radius: 2px; flex-shrink: 0; }
+.cal-model .m-name { overflow: hidden; text-overflow: ellipsis; flex: 1; color: #334155; }
+.cal-model .m-pax { font-weight: 700; flex-shrink: 0; font-size: 9px; padding: 0 4px; border-radius: 4px; }
+
+.cal-latest { display: flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 4px; border-radius: 4px; text-decoration: none; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid #f1f5f9; margin-top: 2px; padding-top: 4px; }
+.cal-latest:hover { background: #f1f5f9; }
+.cal-latest .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.cal-latest .bk-name { overflow: hidden; text-overflow: ellipsis; flex: 1; font-weight: 500; }
 .cal-more { font-size: 10px; color: #8e44ad; font-weight: 600; padding: 2px 4px; }
 .cal-no-bk { font-size: 10px; color: #cbd5e1; padding: 2px 0; }
 
@@ -130,29 +132,29 @@ $statusIcons = [
         <?php endfor;
 
         $today = date('Y-m-d');
-        $maxShow = 4; // max bookings to show inline before "+N more"
 
         for ($d = 1; $d <= $daysInMonth; $d++):
             $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $d);
             $a = $allotments[$dateStr] ?? null;
-            $dayBookings = $bookingsByDate[$dateStr] ?? [];
+            $dayBookings = $bkByDate[$dateStr] ?? [];
+            $dayModels   = $mdByDate[$dateStr] ?? [];
             $isToday = ($dateStr === $today);
             $isClosed = $a && $a['is_closed'];
             $cellClass = 'cal-cell';
             if ($isToday) $cellClass .= ' today';
             if ($isClosed) $cellClass .= ' closed';
+
+            $total = $a['total_seats'] ?? 0;
+            $booked = $a['booked_seats'] ?? 0;
+            $pct = $total > 0 ? min(100, round(($booked / $total) * 100)) : 0;
+            $barClass = $a ? ($pct > 90 ? 'red' : ($pct > 70 ? 'yellow' : 'green')) : 'green';
+            if ($a && $a['is_overbooked']) $barClass = 'red';
         ?>
         <div class="<?= $cellClass ?>" onclick="window.location='index.php?page=tour_allotment_date&date=<?= $dateStr ?>'">
-            <!-- Top row: day number + seat badge -->
+            <!-- Top: day + seat badge -->
             <div class="cal-top">
                 <span class="cal-day"><?= $d ?></span>
-                <?php if ($a):
-                    $total = $a['total_seats'];
-                    $booked = $a['booked_seats'];
-                    $pct = $total > 0 ? min(100, round(($booked / $total) * 100)) : 0;
-                    $barClass = $pct > 90 ? 'red' : ($pct > 70 ? 'yellow' : 'green');
-                    if ($a['is_overbooked']) $barClass = 'red';
-                ?>
+                <?php if ($a): ?>
                 <span class="cal-seats-badge <?= $barClass ?>"><?= $booked ?>/<?= $total ?></span>
                 <?php endif; ?>
             </div>
@@ -165,27 +167,39 @@ $statusIcons = [
             <div class="cal-lock"><i class="fa fa-lock"></i> <?= $isThai ? 'ปิด' : 'Closed' ?></div>
             <?php endif; ?>
 
-            <!-- Booking list -->
-            <div class="cal-bookings">
-                <?php if (empty($dayBookings)): ?>
-                    <?php if (!$isClosed): ?>
-                    <div class="cal-no-bk">-</div>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <?php foreach (array_slice($dayBookings, 0, $maxShow) as $bk):
-                        $sColor = $statusColors[$bk['status']] ?? '#94a3b8';
-                    ?>
-                    <a href="index.php?page=tour_booking_view&id=<?= intval($bk['id']) ?>" class="cal-bk" onclick="event.stopPropagation();" title="<?= htmlspecialchars($bk['booking_number'] . ' - ' . $bk['customer_name'] . ' (' . $bk['seat_pax'] . ' pax)') ?>">
-                        <span class="dot" style="background:<?= $sColor ?>"></span>
-                        <span class="bk-name"><?= htmlspecialchars($bk['customer_name']) ?></span>
-                        <span class="bk-pax"><?= intval($bk['seat_pax']) ?></span>
-                    </a>
-                    <?php endforeach; ?>
-                    <?php if (count($dayBookings) > $maxShow): ?>
-                    <div class="cal-more">+<?= count($dayBookings) - $maxShow ?> <?= $isThai ? 'อีก' : 'more' ?></div>
-                    <?php endif; ?>
-                <?php endif; ?>
+            <!-- Models breakdown -->
+            <?php if (!empty($dayModels)): ?>
+            <div class="cal-models">
+                <?php foreach ($dayModels as $mi => $md):
+                    $mColor = $modelColors[$mi % count($modelColors)];
+                    $mPax = intval($md['model_pax']);
+                    $paxColor = ($mPax > $total && $total > 0) ? '#dc2626' : '#475569';
+                ?>
+                <div class="cal-model">
+                    <span class="m-dot" style="background:<?= $mColor ?>"></span>
+                    <span class="m-name"><?= htmlspecialchars($md['model_name']) ?></span>
+                    <span class="m-pax" style="color:<?= $paxColor ?>">(<?= $mPax ?>/<?= $total ?>)</span>
+                </div>
+                <?php endforeach; ?>
             </div>
+            <?php endif; ?>
+
+            <!-- Latest booking + more count -->
+            <?php if (!empty($dayBookings)):
+                $latest = $dayBookings[0]; // already ordered by created_at DESC
+                $sColor = $statusColors[$latest['status']] ?? '#94a3b8';
+                $totalBk = count($dayBookings);
+            ?>
+            <a href="index.php?page=tour_booking_view&id=<?= intval($latest['id']) ?>" class="cal-latest" onclick="event.stopPropagation();" title="<?= htmlspecialchars($latest['booking_number'] . ' - ' . $latest['customer_name']) ?>">
+                <span class="dot" style="background:<?= $sColor ?>"></span>
+                <span class="bk-name"><?= htmlspecialchars($latest['customer_name']) ?></span>
+            </a>
+            <?php if ($totalBk > 1): ?>
+            <div class="cal-more">+<?= $totalBk - 1 ?> <?= $isThai ? 'อีก' : 'more' ?></div>
+            <?php endif; ?>
+            <?php elseif (!$isClosed): ?>
+            <div class="cal-no-bk">-</div>
+            <?php endif; ?>
         </div>
         <?php endfor;
 
@@ -207,7 +221,9 @@ $statusIcons = [
             <span class="legend-circle" style="background:#94a3b8"></span> <?= $isThai ? 'ร่าง' : 'Draft' ?>
             <span class="legend-circle" style="background:#10b981;margin-left:8px;"></span> <?= $isThai ? 'ยืนยัน' : 'Confirmed' ?>
             <span class="legend-circle" style="background:#3b82f6;margin-left:8px;"></span> <?= $isThai ? 'สำเร็จ' : 'Completed' ?>
-            <span class="legend-circle" style="background:#ef4444;margin-left:8px;"></span> <?= $isThai ? 'ยกเลิก' : 'Cancelled' ?>
+        </span>
+        <span style="border-left:1px solid #e2e8f0;padding-left:16px;">
+            <?= $isThai ? 'ชื่อทริป (จอง/ที่นั่ง) = แยกตามโปรแกรม' : 'Model (booked/seats) = breakdown by trip' ?>
         </span>
     </div>
 
