@@ -31,9 +31,9 @@ $mdByDate   = $bookingsByDate['models'] ?? [];
 .cal-nav a { text-decoration: none; color: #475569; font-weight: 600; font-size: 14px; padding: 6px 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
 .cal-nav a:hover { background: #f1f5f9; }
 
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.cal-header { text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8; padding: 8px 0; text-transform: uppercase; }
-.cal-cell { background: white; border-radius: 10px; border: 1px solid #e2e8f0; min-height: 120px; padding: 8px; transition: all 0.2s; cursor: pointer; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; overflow: hidden; }
+.cal-header { text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8; padding: 8px 0; text-transform: uppercase; min-width: 0; }
+.cal-cell { background: white; border-radius: 10px; border: 1px solid #e2e8f0; min-height: 120px; padding: 6px; transition: all 0.2s; cursor: pointer; min-width: 0; overflow: hidden; }
 .cal-cell:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
 .cal-cell.empty { background: #fafafa; border-color: transparent; min-height: 40px; cursor: default; }
 .cal-cell.today { border-color: #8e44ad; border-width: 2px; }
@@ -54,16 +54,16 @@ $mdByDate   = $bookingsByDate['models'] ?? [];
 
 .cal-lock { font-size: 10px; color: #dc2626; font-weight: 600; margin-bottom: 4px; }
 
-.cal-models { display: flex; flex-direction: column; gap: 2px; margin-bottom: 3px; }
-.cal-model { display: flex; align-items: center; gap: 4px; font-size: 10px; line-height: 1.3; padding: 2px 4px; border-radius: 4px; background: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-models { display: flex; flex-direction: column; gap: 2px; margin-bottom: 3px; overflow: hidden; }
+.cal-model { display: flex; align-items: center; gap: 3px; font-size: 10px; line-height: 1.3; padding: 2px 3px; border-radius: 4px; background: #f8fafc; overflow: hidden; min-width: 0; }
 .cal-model .m-dot { width: 5px; height: 5px; border-radius: 2px; flex-shrink: 0; }
-.cal-model .m-name { overflow: hidden; text-overflow: ellipsis; flex: 1; color: #334155; }
-.cal-model .m-pax { font-weight: 700; flex-shrink: 0; font-size: 9px; padding: 0 4px; border-radius: 4px; }
+.cal-model .m-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; color: #334155; }
+.cal-model .m-pax { font-weight: 700; flex-shrink: 0; font-size: 9px; white-space: nowrap; }
 
-.cal-latest { display: flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 4px; border-radius: 4px; text-decoration: none; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid #f1f5f9; margin-top: 2px; padding-top: 4px; }
+.cal-latest { display: flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 3px; border-radius: 4px; text-decoration: none; color: #475569; overflow: hidden; min-width: 0; border-top: 1px solid #f1f5f9; margin-top: 2px; padding-top: 4px; }
 .cal-latest:hover { background: #f1f5f9; }
 .cal-latest .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.cal-latest .bk-name { overflow: hidden; text-overflow: ellipsis; flex: 1; font-weight: 500; }
+.cal-latest .bk-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; font-weight: 500; }
 .cal-more { font-size: 10px; color: #8e44ad; font-weight: 600; padding: 2px 4px; }
 .cal-no-bk { font-size: 10px; color: #cbd5e1; padding: 2px 0; }
 
