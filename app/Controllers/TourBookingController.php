@@ -48,15 +48,20 @@ class TourBookingController extends BaseController
         $stats      = $this->bookingModel->getStats($comId);
         $agents     = $this->bookingModel->getAgentDropdown($comId);
 
+        // Allotment dashboard: upcoming 7 days
+        $allotmentModel = new TourAllotment();
+        $allotmentDays  = $allotmentModel->getUpcomingAllotmentSummary($comId, 7);
+
         $this->render('tour-booking/list', [
-            'bookings'   => $bookings,
-            'stats'      => $stats,
-            'agents'     => $agents,
-            'filters'    => $filters,
-            'page'       => $page,
-            'totalPages' => $totalPages,
-            'totalCount' => $totalCount,
-            'message'    => $_GET['msg'] ?? '',
+            'bookings'      => $bookings,
+            'stats'         => $stats,
+            'agents'        => $agents,
+            'filters'       => $filters,
+            'page'          => $page,
+            'totalPages'    => $totalPages,
+            'totalCount'    => $totalCount,
+            'message'       => $_GET['msg'] ?? '',
+            'allotmentDays' => $allotmentDays,
         ]);
     }
 
