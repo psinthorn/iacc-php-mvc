@@ -10,6 +10,19 @@ $prevMonth = $month - 1; $prevYear = $year;
 if ($prevMonth < 1) { $prevMonth = 12; $prevYear--; }
 $nextMonth = $month + 1; $nextYear = $year;
 if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
+
+$statusColors = [
+    'draft'     => '#94a3b8',
+    'confirmed' => '#10b981',
+    'completed' => '#3b82f6',
+    'cancelled' => '#ef4444',
+];
+$statusIcons = [
+    'draft'     => 'fa-pencil',
+    'confirmed' => 'fa-check',
+    'completed' => 'fa-check-circle',
+    'cancelled' => 'fa-times',
+];
 ?>
 
 <link rel="stylesheet" href="css/master-data.css">
@@ -22,27 +35,48 @@ if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
 
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .cal-header { text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8; padding: 8px 0; text-transform: uppercase; }
-.cal-cell { background: white; border-radius: 10px; border: 1px solid #e2e8f0; min-height: 90px; padding: 8px; transition: all 0.2s; }
+.cal-cell { background: white; border-radius: 10px; border: 1px solid #e2e8f0; min-height: 120px; padding: 8px; transition: all 0.2s; cursor: pointer; }
 .cal-cell:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
-.cal-cell.empty { background: #fafafa; border-color: transparent; }
+.cal-cell.empty { background: #fafafa; border-color: transparent; min-height: 40px; cursor: default; }
 .cal-cell.today { border-color: #8e44ad; border-width: 2px; }
 .cal-cell.closed { background: #fef2f2; border-color: #fecaca; }
-.cal-day { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
-.cal-fill { height: 6px; border-radius: 3px; background: #e2e8f0; overflow: hidden; margin-bottom: 4px; }
-.cal-fill-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+.cal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.cal-day { font-size: 13px; font-weight: 700; color: #1e293b; }
+.cal-seats-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+.cal-seats-badge.green { background: #dcfce7; color: #16a34a; }
+.cal-seats-badge.yellow { background: #fef3c7; color: #b45309; }
+.cal-seats-badge.red { background: #fee2e2; color: #dc2626; }
+
+.cal-fill { height: 4px; border-radius: 2px; background: #e2e8f0; overflow: hidden; margin-bottom: 4px; }
+.cal-fill-bar { height: 100%; border-radius: 2px; }
 .cal-fill-bar.green { background: #10b981; }
 .cal-fill-bar.yellow { background: #f59e0b; }
 .cal-fill-bar.red { background: #ef4444; }
-.cal-seats { font-size: 11px; color: #64748b; font-weight: 600; }
-.cal-seats.overbooked { color: #dc2626; }
-.cal-lock { font-size: 10px; color: #dc2626; font-weight: 600; }
 
-.legend { display: flex; gap: 20px; margin-top: 16px; padding: 12px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 12px; color: #64748b; align-items: center; }
+.cal-lock { font-size: 10px; color: #dc2626; font-weight: 600; margin-bottom: 4px; }
+
+.cal-bookings { display: flex; flex-direction: column; gap: 2px; max-height: 80px; overflow-y: auto; }
+.cal-bk { display: flex; align-items: center; gap: 4px; font-size: 10px; line-height: 1.3; padding: 2px 4px; border-radius: 4px; text-decoration: none; color: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-bk:hover { background: #f1f5f9; }
+.cal-bk .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.cal-bk .bk-name { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.cal-bk .bk-pax { color: #64748b; font-weight: 600; flex-shrink: 0; }
+.cal-more { font-size: 10px; color: #8e44ad; font-weight: 600; padding: 2px 4px; }
+.cal-no-bk { font-size: 10px; color: #cbd5e1; padding: 2px 0; }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding: 12px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 12px; color: #64748b; align-items: center; }
 .legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+.legend-circle { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+/* Scrollbar for booking lists */
+.cal-bookings::-webkit-scrollbar { width: 3px; }
+.cal-bookings::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
 @media (max-width: 768px) {
-    .cal-cell { min-height: 60px; padding: 4px; }
-    .cal-seats { font-size: 10px; }
+    .cal-cell { min-height: 80px; padding: 4px; }
+    .cal-bk { font-size: 9px; }
+    .cal-seats-badge { font-size: 9px; }
 }
 </style>
 
@@ -96,31 +130,63 @@ if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
         <?php endfor;
 
         $today = date('Y-m-d');
+        $maxShow = 4; // max bookings to show inline before "+N more"
+
         for ($d = 1; $d <= $daysInMonth; $d++):
             $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $d);
             $a = $allotments[$dateStr] ?? null;
+            $dayBookings = $bookingsByDate[$dateStr] ?? [];
             $isToday = ($dateStr === $today);
             $isClosed = $a && $a['is_closed'];
             $cellClass = 'cal-cell';
             if ($isToday) $cellClass .= ' today';
             if ($isClosed) $cellClass .= ' closed';
         ?>
-        <a href="index.php?page=tour_allotment_date&date=<?= $dateStr ?>" class="<?= $cellClass ?>" style="text-decoration:none;color:inherit;">
-            <div class="cal-day"><?= $d ?></div>
-            <?php if ($a):
-                $total = $a['total_seats'];
-                $booked = $a['booked_seats'];
-                $pct = $total > 0 ? min(100, round(($booked / $total) * 100)) : 0;
-                $barClass = $pct > 90 ? 'red' : ($pct > 70 ? 'yellow' : 'green');
-                if ($a['is_overbooked']) $barClass = 'red';
-            ?>
+        <div class="<?= $cellClass ?>" onclick="window.location='index.php?page=tour_allotment_date&date=<?= $dateStr ?>'">
+            <!-- Top row: day number + seat badge -->
+            <div class="cal-top">
+                <span class="cal-day"><?= $d ?></span>
+                <?php if ($a):
+                    $total = $a['total_seats'];
+                    $booked = $a['booked_seats'];
+                    $pct = $total > 0 ? min(100, round(($booked / $total) * 100)) : 0;
+                    $barClass = $pct > 90 ? 'red' : ($pct > 70 ? 'yellow' : 'green');
+                    if ($a['is_overbooked']) $barClass = 'red';
+                ?>
+                <span class="cal-seats-badge <?= $barClass ?>"><?= $booked ?>/<?= $total ?></span>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($a): ?>
             <div class="cal-fill"><div class="cal-fill-bar <?= $barClass ?>" style="width:<?= min(100, $pct) ?>%"></div></div>
-            <div class="cal-seats <?= $a['is_overbooked'] ? 'overbooked' : '' ?>"><?= $booked ?>/<?= $total ?></div>
+            <?php endif; ?>
+
             <?php if ($isClosed): ?>
             <div class="cal-lock"><i class="fa fa-lock"></i> <?= $isThai ? 'ปิด' : 'Closed' ?></div>
             <?php endif; ?>
-            <?php endif; ?>
-        </a>
+
+            <!-- Booking list -->
+            <div class="cal-bookings">
+                <?php if (empty($dayBookings)): ?>
+                    <?php if (!$isClosed): ?>
+                    <div class="cal-no-bk">-</div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?php foreach (array_slice($dayBookings, 0, $maxShow) as $bk):
+                        $sColor = $statusColors[$bk['status']] ?? '#94a3b8';
+                    ?>
+                    <a href="index.php?page=tour_booking_view&id=<?= intval($bk['id']) ?>" class="cal-bk" onclick="event.stopPropagation();" title="<?= htmlspecialchars($bk['booking_number'] . ' - ' . $bk['customer_name'] . ' (' . $bk['seat_pax'] . ' pax)') ?>">
+                        <span class="dot" style="background:<?= $sColor ?>"></span>
+                        <span class="bk-name"><?= htmlspecialchars($bk['customer_name']) ?></span>
+                        <span class="bk-pax"><?= intval($bk['seat_pax']) ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                    <?php if (count($dayBookings) > $maxShow): ?>
+                    <div class="cal-more">+<?= count($dayBookings) - $maxShow ?> <?= $isThai ? 'อีก' : 'more' ?></div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
         <?php endfor;
 
         // Fill remaining cells
@@ -137,6 +203,12 @@ if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
         <span><span class="legend-dot" style="background:#f59e0b"></span> <?= $isThai ? 'เกือบเต็ม (70-90%)' : 'Filling up (70-90%)' ?></span>
         <span><span class="legend-dot" style="background:#ef4444"></span> <?= $isThai ? 'เต็ม / จองเกิน' : 'Full / Overbooked' ?></span>
         <span><i class="fa fa-lock" style="color:#dc2626;margin-right:4px;"></i> <?= $isThai ? 'ปิดรับจอง' : 'Closed' ?></span>
+        <span style="border-left:1px solid #e2e8f0;padding-left:16px;">
+            <span class="legend-circle" style="background:#94a3b8"></span> <?= $isThai ? 'ร่าง' : 'Draft' ?>
+            <span class="legend-circle" style="background:#10b981;margin-left:8px;"></span> <?= $isThai ? 'ยืนยัน' : 'Confirmed' ?>
+            <span class="legend-circle" style="background:#3b82f6;margin-left:8px;"></span> <?= $isThai ? 'สำเร็จ' : 'Completed' ?>
+            <span class="legend-circle" style="background:#ef4444;margin-left:8px;"></span> <?= $isThai ? 'ยกเลิก' : 'Cancelled' ?>
+        </span>
     </div>
 
     <?php endif; ?>

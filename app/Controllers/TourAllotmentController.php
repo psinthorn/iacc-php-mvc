@@ -41,13 +41,17 @@ class TourAllotmentController extends BaseController
         $allotments = $this->allotmentModel->getAllotmentsByDateRange($comId, $from, $to);
         $fleets = $this->allotmentModel->getFleets($comId);
 
+        // Fetch confirmed bookings grouped by date for inline display
+        $bookingsByDate = $this->getBookingsByDateRange($comId, $from, $to);
+
         $this->render('tour-booking/allotments', [
-            'allotments' => $allotments,
-            'fleets'     => $fleets,
-            'month'      => $month,
-            'year'       => $year,
-            'from'       => $from,
-            'to'         => $to,
+            'allotments'     => $allotments,
+            'fleets'         => $fleets,
+            'bookingsByDate' => $bookingsByDate,
+            'month'          => $month,
+            'year'           => $year,
+            'from'           => $from,
+            'to'             => $to,
         ]);
     }
 
@@ -205,6 +209,31 @@ class TourAllotmentController extends BaseController
 
         $data['has_allotment'] = true;
         $this->json($data);
+    }
+
+    // ─── Helper: bookings grouped by date ────────────────────
+
+    private function getBookingsByDateRange(int $comId, string $from, string $to): array
+    {
+        $sql = sprintf(
+            "SELECT b.id, b.booking_number, b.travel_date, b.status,
+                    b.pax_adult, b.pax_child, b.pax_infant,
+                    (b.pax_adult + b.pax_child) AS seat_pax,
+                    COALESCE(c.name_en, c.name_th, 'Walk-in') AS customer_name
+             FROM tour_bookings b
+             LEFT JOIN company c ON b.customer_id = c.id
+             WHERE b.company_id = %d
+               AND b.travel_date BETWEEN '%s' AND '%s'
+               AND b.deleted_at IS NULL
+             ORDER BY b.travel_date ASC, b.status ASC, b.booking_number ASC",
+            intval($comId), sql_escape($from), sql_escape($to)
+        );
+        $result = mysqli_query($this->allotmentModel->getConnection(), $sql);
+        $grouped = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $grouped[$row['travel_date']][] = $row;
+        }
+        return $grouped;
     }
 
     // ─── Fleet CRUD ───────────────────────────────────────────
