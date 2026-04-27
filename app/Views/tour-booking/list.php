@@ -444,10 +444,10 @@ $statusConfig = [
                 <tr>
                     <th class="bulk-col"><input type="checkbox" class="bulk-select-all" title="Select all"></th>
                     <th><?= $isThai ? 'เลขจอง' : 'Booking #' ?></th>
-                    <th><?= $isThai ? 'วันที่จอง' : 'Booking Date' ?></th>
                     <th><?= $isThai ? 'วันเดินทาง' : 'Trip Date' ?></th>
                     <th><?= $isThai ? 'ลูกค้า' : 'Customer' ?></th>
                     <th><?= $isThai ? 'ตัวแทน' : 'Agent' ?></th>
+                    <th><?= $isThai ? 'พนักงานขาย' : 'Sales Rep' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'ผู้เดินทาง' : 'Pax' ?></th>
                     <th style="text-align:right;"><?= $isThai ? 'ยอดรวม' : 'Total' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'สถานะ' : 'Status' ?></th>
@@ -472,10 +472,6 @@ $statusConfig = [
                             <?= htmlspecialchars($b['booking_number']) ?>
                         </a>
                     </td>
-                    <td style="white-space:nowrap; color:#64748b; font-size:12px;">
-                        <i class="fa fa-calendar" style="color:#6366f1; margin-right:3px;"></i>
-                        <?= !empty($b['booking_date']) ? date('d M Y', strtotime($b['booking_date'])) : '-' ?>
-                    </td>
                     <td style="white-space:nowrap; font-weight:500;">
                         <i class="fa fa-plane" style="color:#0d9488; margin-right:3px;"></i>
                         <?= date('d M Y', strtotime($b['travel_date'])) ?>
@@ -484,6 +480,17 @@ $statusConfig = [
                     <td style="color:#64748b;">
                         <?= htmlspecialchars($b['agent_name'] ?: '') ?>
                         <?php if (!$b['agent_name']): ?>
+                        <span style="font-size:11px; color:#cbd5e1;">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td style="color:#64748b;">
+                        <?php
+                            $srepName = ($isThai && !empty($b['sales_rep_name_th']))
+                                ? $b['sales_rep_name_th']
+                                : ($b['sales_rep_name'] ?? '');
+                        ?>
+                        <?= htmlspecialchars($srepName ?: '') ?>
+                        <?php if (!$srepName): ?>
                         <span style="font-size:11px; color:#cbd5e1;">—</span>
                         <?php endif; ?>
                     </td>
