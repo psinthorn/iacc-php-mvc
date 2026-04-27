@@ -237,18 +237,25 @@ class TourAllotmentController extends BaseController
         }
 
         // 2. Model/product breakdown per date (pax grouped by model)
+        // Use type.name + model description for readable labels
         $sql2 = sprintf(
             "SELECT b.travel_date,
-                    COALESCE(m.model_name, bi.description, 'Trip') AS model_name,
+                    COALESCE(
+                        NULLIF(CONCAT_WS(' - ', NULLIF(t.name,''), NULLIF(m.des,'')), ''),
+                        NULLIF(m.model_name, ''),
+                        NULLIF(bi.description, ''),
+                        'Trip'
+                    ) AS model_name,
                     SUM(b.pax_adult + b.pax_child) AS model_pax
              FROM tour_bookings b
              JOIN tour_booking_items bi ON bi.booking_id = b.id
              LEFT JOIN model m ON bi.model_id = m.id
+             LEFT JOIN type t ON m.type_id = t.id
              WHERE b.company_id = %d
                AND b.travel_date BETWEEN '%s' AND '%s'
                AND b.status IN ('confirmed', 'completed')
                AND b.deleted_at IS NULL
-             GROUP BY b.travel_date, COALESCE(m.model_name, bi.description, 'Trip')
+             GROUP BY b.travel_date, model_name
              ORDER BY b.travel_date ASC, model_pax DESC",
             intval($comId), sql_escape($from), sql_escape($to)
         );
