@@ -70,11 +70,13 @@ class TourBooking extends BaseModel
         $sql = "SELECT b.*,
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        agt.name_en AS agent_name,
+                       srep.name_en AS sales_rep_name, srep.name_th AS sales_rep_name_th,
                        (SELECT contact_name FROM tour_booking_contacts
                         WHERE booking_id = b.id ORDER BY id LIMIT 1) AS contact_name
                 FROM tour_bookings b
                 LEFT JOIN company cust ON b.customer_id = cust.id
                 LEFT JOIN company agt  ON b.agent_id = agt.id
+                LEFT JOIN company srep ON b.sales_rep_id = srep.id
                 WHERE $where
                 ORDER BY b.id DESC
                 LIMIT $offset, $limit";

@@ -104,8 +104,50 @@ $statusConfig = [
 .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
 .empty-state i { font-size: 48px; display: block; margin-bottom: 16px; }
 
+/* Allotment Dashboard */
+.allot-dash { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.allot-dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.allot-dash-title { font-size: 14px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+.allot-dash-title i { color: #0d9488; font-size: 16px; }
+.allot-dash-link { font-size: 12px; font-weight: 600; color: #8e44ad; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+.allot-dash-link:hover { text-decoration: underline; }
+
+.allot-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.allot-day-card { display: flex; flex-direction: column; align-items: center; padding: 10px 6px 8px; border-radius: 10px; border: 1.5px solid #e2e8f0; text-decoration: none; transition: all 0.2s; min-width: 0; }
+.allot-day-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.allot-day-card.is-today { border-width: 2px; box-shadow: 0 0 0 3px rgba(142,68,173,0.1); }
+.allot-day-card.is-closed { background: #fef2f2 !important; }
+
+.allot-day-label { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.3px; }
+.allot-day-card.is-today .allot-day-label { color: #8e44ad; }
+.allot-day-date { font-size: 10px; color: #94a3b8; margin-bottom: 6px; }
+
+.allot-day-seats { display: flex; align-items: baseline; gap: 1px; font-family: 'JetBrains Mono', monospace; }
+.allot-booked { font-size: 18px; font-weight: 800; line-height: 1; }
+.allot-slash { font-size: 12px; color: #cbd5e1; font-weight: 400; }
+.allot-total { font-size: 12px; color: #94a3b8; font-weight: 600; }
+
+.allot-day-bar { width: 100%; height: 4px; background: #f1f5f9; border-radius: 2px; margin: 4px 0; overflow: hidden; }
+.allot-day-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+.allot-day-avail { font-size: 10px; font-weight: 600; margin-bottom: 4px; }
+.allot-day-closed { font-size: 11px; color: #dc2626; font-weight: 600; margin: 6px 0; }
+.allot-day-closed i { margin-right: 2px; }
+
+.allot-day-bk { font-size: 10px; color: #64748b; display: flex; align-items: center; gap: 3px; border-top: 1px solid #f1f5f9; padding-top: 4px; margin-top: auto; }
+.allot-day-bk i { color: #94a3b8; font-size: 9px; }
+.allot-day-bk.allot-empty { color: #e2e8f0; }
+.allot-draft-count { color: #94a3b8; font-size: 9px; }
+
 @media (max-width: 768px) {
+    .allot-days { grid-template-columns: repeat(4, 1fr); }
+    .allot-day-card:nth-child(n+5) { display: none; }
     .filter-bar input[type="text"] { min-width: 160px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .allot-days { grid-template-columns: repeat(7, 1fr); }
+    .allot-booked { font-size: 16px; }
 }
 </style>
 
@@ -195,6 +237,108 @@ $statusConfig = [
             </div>
         </div>
     </div>
+
+    <!-- Allotment Dashboard -->
+    <?php if (!empty($allotmentDays)): ?>
+    <div class="allot-dash">
+        <div class="allot-dash-header">
+            <div class="allot-dash-title">
+                <i class="fa fa-ship"></i>
+                <?= $isThai ? 'ที่นั่งรายวัน' : 'Daily Seats' ?>
+            </div>
+            <a href="index.php?page=tour_allotment_list" class="allot-dash-link">
+                <?= $isThai ? 'ดูปฏิทิน' : 'Full Calendar' ?> <i class="fa fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="allot-days">
+            <?php
+            $dayLabels = $isThai
+                ? ['อา','จ','อ','พ','พฤ','ศ','ส']
+                : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            $today = date('Y-m-d');
+            $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+            foreach ($allotmentDays as $ad):
+                $dateStr = $ad['date'];
+                $isToday = ($dateStr === $today);
+                $isTomorrow = ($dateStr === $tomorrow);
+                $dow = intval(date('w', strtotime($dateStr)));
+                $dayNum = date('j', strtotime($dateStr));
+
+                if ($isToday) {
+                    $label = $isThai ? 'วันนี้' : 'Today';
+                } elseif ($isTomorrow) {
+                    $label = $isThai ? 'พรุ่งนี้' : 'Tomorrow';
+                } else {
+                    $label = $dayLabels[$dow] . ' ' . $dayNum;
+                }
+
+                $pct = $ad['fill_pct'];
+                $isClosed = $ad['is_closed'];
+                $isOver = $ad['is_overbooked'];
+
+                if ($isClosed) {
+                    $barColor = '#94a3b8';
+                    $cardBorder = '#fecaca';
+                    $cardBg = '#fef2f2';
+                } elseif ($isOver) {
+                    $barColor = '#ef4444';
+                    $cardBorder = '#fecaca';
+                    $cardBg = '#fff';
+                } elseif ($pct > 90) {
+                    $barColor = '#ef4444';
+                    $cardBorder = '#fecaca';
+                    $cardBg = '#fff';
+                } elseif ($pct > 70) {
+                    $barColor = '#f59e0b';
+                    $cardBorder = '#fde68a';
+                    $cardBg = '#fff';
+                } else {
+                    $barColor = '#10b981';
+                    $cardBorder = '#a7f3d0';
+                    $cardBg = '#fff';
+                }
+                if ($isToday) $cardBorder = '#8e44ad';
+            ?>
+            <a href="index.php?page=tour_allotment_date&date=<?= $dateStr ?>" class="allot-day-card<?= $isToday ? ' is-today' : '' ?><?= $isClosed ? ' is-closed' : '' ?>" style="border-color:<?= $cardBorder ?>;background:<?= $cardBg ?>;">
+                <div class="allot-day-label"><?= $label ?></div>
+                <div class="allot-day-date"><?= date('d M', strtotime($dateStr)) ?></div>
+
+                <?php if ($isClosed): ?>
+                <div class="allot-day-closed"><i class="fa fa-lock"></i> <?= $isThai ? 'ปิด' : 'Closed' ?></div>
+                <?php else: ?>
+                <div class="allot-day-seats">
+                    <span class="allot-booked" style="color:<?= $barColor ?>"><?= $ad['booked_seats'] ?></span>
+                    <span class="allot-slash">/</span>
+                    <span class="allot-total"><?= $ad['total_seats'] ?></span>
+                </div>
+                <div class="allot-day-bar">
+                    <div class="allot-day-bar-fill" style="width:<?= min(100, $pct) ?>%;background:<?= $barColor ?>"></div>
+                </div>
+                <div class="allot-day-avail" style="color:<?= $barColor ?>">
+                    <?php if ($isOver): ?>
+                        <?= $isThai ? 'จองเกิน' : 'Overbooked' ?>
+                    <?php else: ?>
+                        <?= $ad['available'] ?> <?= $isThai ? 'ว่าง' : 'avail' ?>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($ad['total_bookings'] > 0): ?>
+                <div class="allot-day-bk">
+                    <i class="fa fa-file-text-o"></i> <?= $ad['total_bookings'] ?>
+                    <?php if ($ad['draft_bookings'] > 0): ?>
+                    <span class="allot-draft-count">(<?= $ad['draft_bookings'] ?> <?= $isThai ? 'ร่าง' : 'draft' ?>)</span>
+                    <?php endif; ?>
+                </div>
+                <?php else: ?>
+                <div class="allot-day-bk allot-empty">—</div>
+                <?php endif; ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Filters -->
     <?php
@@ -300,10 +444,10 @@ $statusConfig = [
                 <tr>
                     <th class="bulk-col"><input type="checkbox" class="bulk-select-all" title="Select all"></th>
                     <th><?= $isThai ? 'เลขจอง' : 'Booking #' ?></th>
-                    <th><?= $isThai ? 'วันที่จอง' : 'Booking Date' ?></th>
                     <th><?= $isThai ? 'วันเดินทาง' : 'Trip Date' ?></th>
                     <th><?= $isThai ? 'ลูกค้า' : 'Customer' ?></th>
                     <th><?= $isThai ? 'ตัวแทน' : 'Agent' ?></th>
+                    <th><?= $isThai ? 'พนักงานขาย' : 'Sales Rep' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'ผู้เดินทาง' : 'Pax' ?></th>
                     <th style="text-align:right;"><?= $isThai ? 'ยอดรวม' : 'Total' ?></th>
                     <th style="text-align:center;"><?= $isThai ? 'สถานะ' : 'Status' ?></th>
@@ -328,10 +472,6 @@ $statusConfig = [
                             <?= htmlspecialchars($b['booking_number']) ?>
                         </a>
                     </td>
-                    <td style="white-space:nowrap; color:#64748b; font-size:12px;">
-                        <i class="fa fa-calendar" style="color:#6366f1; margin-right:3px;"></i>
-                        <?= !empty($b['booking_date']) ? date('d M Y', strtotime($b['booking_date'])) : '-' ?>
-                    </td>
                     <td style="white-space:nowrap; font-weight:500;">
                         <i class="fa fa-plane" style="color:#0d9488; margin-right:3px;"></i>
                         <?= date('d M Y', strtotime($b['travel_date'])) ?>
@@ -340,6 +480,17 @@ $statusConfig = [
                     <td style="color:#64748b;">
                         <?= htmlspecialchars($b['agent_name'] ?: '') ?>
                         <?php if (!$b['agent_name']): ?>
+                        <span style="font-size:11px; color:#cbd5e1;">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td style="color:#64748b;">
+                        <?php
+                            $srepName = ($isThai && !empty($b['sales_rep_name_th']))
+                                ? $b['sales_rep_name_th']
+                                : ($b['sales_rep_name'] ?? '');
+                        ?>
+                        <?= htmlspecialchars($srepName ?: '') ?>
+                        <?php if (!$srepName): ?>
                         <span style="font-size:11px; color:#cbd5e1;">—</span>
                         <?php endif; ?>
                     </td>

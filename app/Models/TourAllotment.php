@@ -567,6 +567,77 @@ class TourAllotment extends BaseModel
         return $rows;
     }
 
+    // ─── Dashboard Summary ───────────────────────────────────
+
+    /**
+     * Get allotment summary for upcoming dates (for booking list dashboard).
+     * Returns array of dates with allotment + booking count data.
+     */
+    public function getUpcomingAllotmentSummary(int $comId, int $days = 7): array
+    {
+        $today = date('Y-m-d');
+        $endDate = date('Y-m-d', strtotime("+{$days} days"));
+
+        // Get allotments for the range
+        $allotments = $this->getAllotmentsByDateRange($comId, $today, $endDate);
+
+        // Get default fleet for capacity fallback
+        $fleet = $this->getDefaultFleet($comId);
+        $defaultCapacity = $fleet ? intval($fleet['capacity']) * intval($fleet['unit_count']) : 0;
+
+        // Count bookings per date (all statuses)
+        $sql = sprintf(
+            "SELECT travel_date,
+                    COUNT(*) AS total_bookings,
+                    SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) AS confirmed_bookings,
+                    SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) AS draft_bookings,
+                    SUM(CASE WHEN status IN ('confirmed','completed') THEN pax_adult + pax_child ELSE 0 END) AS confirmed_pax,
+                    SUM(pax_adult + pax_child) AS total_pax
+             FROM tour_bookings
+             WHERE company_id = %d
+               AND travel_date BETWEEN '%s' AND '%s'
+               AND deleted_at IS NULL
+             GROUP BY travel_date",
+            intval($comId), sql_escape($today), sql_escape($endDate)
+        );
+        $result = mysqli_query($this->conn, $sql);
+        $bookingCounts = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $bookingCounts[$row['travel_date']] = $row;
+        }
+
+        // Build day-by-day array
+        $summary = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = date('Y-m-d', strtotime("+{$i} days"));
+            $a = $allotments[$date] ?? null;
+            $bc = $bookingCounts[$date] ?? null;
+
+            $totalSeats = $a ? intval($a['total_seats']) : $defaultCapacity;
+            $bookedSeats = $a ? intval($a['booked_seats']) : 0;
+            $available = $totalSeats - $bookedSeats;
+            $fillPct = $totalSeats > 0 ? min(100, round(($bookedSeats / $totalSeats) * 100)) : 0;
+
+            $summary[] = [
+                'date'               => $date,
+                'total_seats'        => $totalSeats,
+                'booked_seats'       => $bookedSeats,
+                'available'          => $available,
+                'fill_pct'           => $fillPct,
+                'is_closed'          => $a ? intval($a['is_closed']) : 0,
+                'is_overbooked'      => $a ? (bool)$a['is_overbooked'] : false,
+                'has_allotment'      => (bool)$a,
+                'total_bookings'     => intval($bc['total_bookings'] ?? 0),
+                'confirmed_bookings' => intval($bc['confirmed_bookings'] ?? 0),
+                'draft_bookings'     => intval($bc['draft_bookings'] ?? 0),
+                'confirmed_pax'      => intval($bc['confirmed_pax'] ?? 0),
+                'total_pax'          => intval($bc['total_pax'] ?? 0),
+            ];
+        }
+
+        return $summary;
+    }
+
     // ─── Static Helpers (bilingual labels) ────────────────────
 
     public static function getFleetTypeLabels(bool $isThai = false): array
