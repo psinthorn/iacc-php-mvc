@@ -388,6 +388,10 @@ return [
     'agent_portal_documents'     => ['OperatorDocumentController', 'agentList'],
     'agent_portal_doc_download'  => ['OperatorDocumentController', 'agentDownload'],
 
+    // V2: Contract reports + email digests
+    'tour_contract_report'      => ['ContractReportController', 'dashboard'],
+    'tour_contract_report_send' => ['ContractReportController', 'sendNow'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],

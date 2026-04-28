@@ -230,6 +230,9 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=tour_doc_list"><i class="fa fa-folder-open-o"></i> <?=$xml->tourdocuments ?? 'Documents'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=tour_contract_report"><i class="fa fa-bar-chart"></i> <?=$xml->tourcontractreport ?? 'Contract Reports'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=tour_location_list"><i class="fa fa-map-marker"></i> <?=$xml->tourlocations ?? 'Locations'?></a>
                             </li>
                             <li>
