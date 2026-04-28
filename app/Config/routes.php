@@ -352,6 +352,18 @@ return [
     'agent_contract_make'    => ['AgentContractController', 'make'],
     'agent_contract_store'   => ['AgentContractController', 'store'],
     'agent_contract_delete'  => ['AgentContractController', 'delete'],
+
+    // V2: Operator-level contract management
+    'tour_contract_list'     => ['AgentContractController', 'contractList'],
+    'tour_contract_make'     => ['AgentContractController', 'contractMake'],
+    'tour_contract_store'    => ['AgentContractController', 'contractStore'],
+    'tour_contract_delete'   => ['AgentContractController', 'contractDelete'],
+    'tour_contract_assign'   => ['AgentContractController', 'assignAgent'],
+    'tour_contract_unassign' => ['AgentContractController', 'unassignAgent'],
+    'tour_contract_default'  => ['AgentContractController', 'setDefault'],
+    'tour_contract_clone'    => ['AgentContractController', 'cloneContract'],
+    'tour_contract_resync'   => ['AgentContractController', 'resync'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],
