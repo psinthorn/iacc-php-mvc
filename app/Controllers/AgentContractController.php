@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\AgentContract;
 use App\Models\TourAgentProfile;
+use App\Services\ContractSyncService;
 
 /**
  * AgentContractController — CRUD for agent contracts
@@ -371,10 +372,9 @@ class AgentContractController extends BaseController
         if ($contractId > 0 && $agentCompanyId > 0) {
             $this->model->unassignAgent($contractId, $agentCompanyId, $comId);
             // Remove synced products for this agent from this contract
-            mysqli_query($this->model->getConnection(),
-                "DELETE FROM tour_operator_agent_products
-                 WHERE contract_id = '$contractId' AND agent_company_id = '$agentCompanyId'
-                   AND operator_company_id = '$comId'");
+            $syncModel = new \App\Models\ContractSync();
+            $removed = $syncModel->deleteAgentProducts($agentCompanyId, $contractId, $comId);
+            $syncModel->logSync($comId, $contractId, $agentCompanyId, 'contract_unassigned', 'operator', 0, $removed);
         }
 
         $this->redirect('tour_contract_make', ['contract_id' => $contractId, 'msg' => 'agent_unassigned']);
@@ -443,11 +443,11 @@ class AgentContractController extends BaseController
     }
 
     /**
-     * Trigger sync for a contract (placeholder — full implementation in Phase 3)
+     * Trigger sync for a contract — rebuild agent product catalogs
      */
     private function triggerSync(int $contractId, int $comId): void
     {
-        // Phase 3 will replace this with ContractSyncService call
-        // For now, just log intent
+        $syncService = new ContractSyncService();
+        $syncService->syncContractToAgents($contractId, $comId, 'operator');
     }
 }
