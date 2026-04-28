@@ -6,7 +6,11 @@ use App\Models\ApiUsageLog;
 use App\Models\ChannelOrder;
 use App\Models\Subscription;
 use App\Models\Webhook;
+use App\Models\AgentContract;
+use App\Models\ContractSync;
+use App\Models\TourOperatorAgent;
 use App\Services\ChannelService;
+use App\Services\ContractSyncService;
 
 /**
  * ChannelApiController — REST API endpoint for channel orders
@@ -93,6 +97,26 @@ class ChannelApiController
 
                 case $method === 'GET' && $path === 'categories':
                     $this->listCategories();
+                    break;
+
+                // Tour Operator endpoints (V2 contract management)
+                case $method === 'GET' && $path === 'tour-contracts' && $resourceId === null:
+                    $this->listTourContracts();
+                    break;
+                case $method === 'GET' && $path === 'tour-contracts' && $resourceId && $subAction === null:
+                    $this->getTourContract($resourceId);
+                    break;
+                case $method === 'GET' && $path === 'tour-contracts' && $resourceId && $subAction === 'rates':
+                    $this->getTourContractRates($resourceId);
+                    break;
+                case $method === 'POST' && $path === 'tour-contracts' && $resourceId && $subAction === 'resync':
+                    $this->resyncTourContract($resourceId);
+                    break;
+                case $method === 'GET' && $path === 'tour-products' && $resourceId === null:
+                    $this->listTourProducts();
+                    break;
+                case $method === 'POST' && $path === 'tour-pricing' && $resourceId === null && $subAction === null:
+                    $this->calculateTourPricing();
                     break;
 
                 // Webhook endpoints
@@ -1008,6 +1032,282 @@ class ChannelApiController
             // Webhook delivery is best-effort — never fail the API response
             error_log("Webhook fire failed for event $event: " . $e->getMessage());
         }
+    }
+
+    // =========================================================
+    // Tour Operator V2 endpoints
+    // =========================================================
+
+    /**
+     * GET /api/v1/tour-contracts — list operator contracts
+     * Authorization: API key's company is the operator
+     */
+    private function listTourContracts(): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $contractModel = new AgentContract();
+        $contracts = $contractModel->getOperatorContracts($companyId);
+
+        $out = [];
+        foreach ($contracts as $c) {
+            $out[] = [
+                'id'              => intval($c['id']),
+                'contract_number' => $c['contract_number'] ?? null,
+                'name'            => $c['contract_name'] ?? '',
+                'status'          => $c['status'] ?? 'draft',
+                'valid_from'      => $c['valid_from'] ?? null,
+                'valid_to'        => $c['valid_to'] ?? null,
+                'payment_terms'   => $c['payment_terms'] ?? null,
+                'credit_days'     => intval($c['credit_days'] ?? 0),
+                'deposit_pct'     => floatval($c['deposit_pct'] ?? 0),
+                'agent_count'     => intval($c['agent_count'] ?? 0),
+                'season_count'    => intval($c['season_count'] ?? 0),
+                'rate_count'      => intval($c['rate_count'] ?? 0),
+            ];
+        }
+
+        $this->logRequest('GET /api/v1/tour-contracts', '', 200);
+        $this->jsonSuccess(['contracts' => $out, 'total' => count($out)]);
+    }
+
+    /**
+     * GET /api/v1/tour-contracts/{id}
+     */
+    private function getTourContract(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $contractModel = new AgentContract();
+        $contract = $contractModel->getContract($id, $companyId);
+        if (!$contract) {
+            $this->jsonError('Contract not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        $this->logRequest("GET /api/v1/tour-contracts/$id", '', 200);
+        $this->jsonSuccess(['contract' => [
+            'id'              => intval($contract['id']),
+            'contract_number' => $contract['contract_number'] ?? null,
+            'name'            => $contract['contract_name'] ?? '',
+            'status'          => $contract['status'] ?? 'draft',
+            'valid_from'      => $contract['valid_from'] ?? null,
+            'valid_to'        => $contract['valid_to'] ?? null,
+            'payment_terms'   => $contract['payment_terms'] ?? null,
+            'credit_days'     => intval($contract['credit_days'] ?? 0),
+            'deposit_pct'     => floatval($contract['deposit_pct'] ?? 0),
+            'conditions'      => $contract['conditions'] ?? null,
+            'created_at'      => $contract['created_at'] ?? null,
+            'updated_at'      => $contract['updated_at'] ?? null,
+        ]]);
+    }
+
+    /**
+     * GET /api/v1/tour-contracts/{id}/rates — all rates grouped by season
+     */
+    private function getTourContractRates(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $contractModel = new AgentContract();
+        $contract = $contractModel->getContract($id, $companyId);
+        if (!$contract) {
+            $this->jsonError('Contract not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        $rates = $contractModel->getContractRatesBySeason($id);
+        $bySeason = [];
+        foreach ($rates as $r) {
+            $key = $r['season_name'] ?: '__base__';
+            if (!isset($bySeason[$key])) {
+                $bySeason[$key] = [
+                    'season_name'  => $r['season_name'],
+                    'season_start' => $r['season_start'] ?? null,
+                    'season_end'   => $r['season_end'] ?? null,
+                    'priority'     => intval($r['priority'] ?? 0),
+                    'rates'        => [],
+                ];
+            }
+            $bySeason[$key]['rates'][] = [
+                'model_id'                  => intval($r['model_id']),
+                'model_name'                => $r['model_name'] ?? null,
+                'rate_type'                 => $r['rate_type'] ?? 'net_rate',
+                'adult_default'             => floatval($r['adult_default']),
+                'adult_thai'                => floatval($r['adult_thai']),
+                'adult_foreigner'           => floatval($r['adult_foreigner']),
+                'child_default'             => floatval($r['child_default']),
+                'child_thai'                => floatval($r['child_thai']),
+                'child_foreigner'           => floatval($r['child_foreigner']),
+                'entrance_adult_default'    => floatval($r['entrance_adult_default']),
+                'entrance_adult_thai'       => floatval($r['entrance_adult_thai']),
+                'entrance_adult_foreigner'  => floatval($r['entrance_adult_foreigner']),
+                'entrance_child_default'    => floatval($r['entrance_child_default']),
+                'entrance_child_thai'       => floatval($r['entrance_child_thai']),
+                'entrance_child_foreigner'  => floatval($r['entrance_child_foreigner']),
+            ];
+        }
+
+        $this->logRequest("GET /api/v1/tour-contracts/$id/rates", '', 200);
+        $this->jsonSuccess([
+            'contract_id' => $id,
+            'seasons'     => array_values($bySeason),
+        ]);
+    }
+
+    /**
+     * POST /api/v1/tour-contracts/{id}/resync — trigger sync to all assigned agents
+     */
+    private function resyncTourContract(int $id): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $contractModel = new AgentContract();
+        if (!$contractModel->getContract($id, $companyId)) {
+            $this->jsonError('Contract not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        $sync = new ContractSyncService();
+        $result = $sync->syncContractToAgents($id, $companyId, 'api');
+
+        $this->logRequest("POST /api/v1/tour-contracts/$id/resync", '', $result['success'] ? 200 : 500);
+        if (!$result['success']) {
+            $this->jsonError($result['error'] ?? 'Sync failed', 500, 'SYNC_FAILED');
+            return;
+        }
+        $this->jsonSuccess($result['data']);
+    }
+
+    /**
+     * GET /api/v1/tour-products — list synced products
+     * Query params:
+     *   ?agent_id=N  → filter for a specific agent (operator scope)
+     *   ?contract_id=N → filter for a specific contract
+     */
+    private function listTourProducts(): void
+    {
+        $companyId = intval($this->authData['company_id']);
+        $agentId    = isset($_GET['agent_id']) ? intval($_GET['agent_id']) : null;
+        $contractId = isset($_GET['contract_id']) ? intval($_GET['contract_id']) : null;
+
+        $where = ['p.operator_company_id = ' . $companyId, 'p.is_active = 1'];
+        if ($agentId) $where[] = 'p.agent_company_id = ' . $agentId;
+        if ($contractId) $where[] = 'p.contract_id = ' . $contractId;
+        $whereSql = implode(' AND ', $where);
+
+        $sql = "SELECT p.*, m.model_name, m.des AS model_desc,
+                       t.id AS type_id, t.name AS type_name,
+                       ac.contract_name,
+                       ag.name_en AS agent_name
+                FROM tour_operator_agent_products p
+                LEFT JOIN model m ON p.model_id = m.id
+                LEFT JOIN type t ON m.type_id = t.id
+                LEFT JOIN agent_contracts ac ON p.contract_id = ac.id
+                LEFT JOIN company ag ON p.agent_company_id = ag.id
+                WHERE $whereSql
+                ORDER BY ag.name_en, t.name, m.model_name";
+        $res = mysqli_query($this->conn, $sql);
+
+        $out = [];
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $out[] = [
+                    'id'                 => intval($row['id']),
+                    'model_id'           => intval($row['model_id']),
+                    'model_name'         => $row['model_name'] ?? null,
+                    'description'        => $row['model_desc'] ?? null,
+                    'type_id'            => intval($row['type_id']),
+                    'type_name'          => $row['type_name'] ?? null,
+                    'contract_id'        => intval($row['contract_id']),
+                    'contract_name'      => $row['contract_name'] ?? null,
+                    'agent_company_id'   => intval($row['agent_company_id']),
+                    'agent_name'         => $row['agent_name'] ?? null,
+                    'synced_at'          => $row['synced_at'] ?? null,
+                ];
+            }
+        }
+
+        $this->logRequest('GET /api/v1/tour-products', '', 200);
+        $this->jsonSuccess(['products' => $out, 'total' => count($out)]);
+    }
+
+    /**
+     * POST /api/v1/tour-pricing — calculate applicable rate
+     * Body: {contract_id, model_id, travel_date, [pax_adult], [pax_child], [nationality]}
+     * Returns the resolved rate (season-aware) plus optional total breakdown.
+     */
+    private function calculateTourPricing(): void
+    {
+        $input = $this->getJsonInput();
+        $companyId = intval($this->authData['company_id']);
+        $contractId = intval($input['contract_id'] ?? 0);
+        $modelId    = intval($input['model_id'] ?? 0);
+        $travelDate = $input['travel_date'] ?? '';
+        $paxAdult   = intval($input['pax_adult'] ?? 0);
+        $paxChild   = intval($input['pax_child'] ?? 0);
+        $nationality = strtolower($input['nationality'] ?? 'default');  // default | thai | foreigner
+
+        if (!$contractId || !$modelId || !$travelDate) {
+            $this->jsonError('contract_id, model_id, and travel_date are required', 422, 'VALIDATION_ERROR');
+            return;
+        }
+        if (!in_array($nationality, ['default', 'thai', 'foreigner'], true)) {
+            $this->jsonError("nationality must be 'default', 'thai', or 'foreigner'", 422, 'VALIDATION_ERROR');
+            return;
+        }
+
+        // Verify contract belongs to operator
+        $contractModel = new AgentContract();
+        if (!$contractModel->getContract($contractId, $companyId)) {
+            $this->jsonError('Contract not found', 404, 'NOT_FOUND');
+            return;
+        }
+
+        $rate = $contractModel->findApplicableRate($contractId, $modelId, $travelDate);
+        if (!$rate) {
+            $this->jsonError('No rate available for the given product and travel date', 404, 'RATE_NOT_FOUND');
+            return;
+        }
+
+        // Pick price per nationality (override > default)
+        $pickPrice = function (string $base) use ($rate, $nationality): float {
+            if ($nationality !== 'default') {
+                $key = $base . '_' . $nationality;
+                $override = floatval($rate[$key] ?? 0);
+                if ($override > 0) return $override;
+            }
+            return floatval($rate[$base . '_default'] ?? 0);
+        };
+
+        $adultPrice    = $pickPrice('adult');
+        $childPrice    = $pickPrice('child');
+        $entranceAdult = $pickPrice('entrance_adult');
+        $entranceChild = $pickPrice('entrance_child');
+
+        $serviceTotal  = ($adultPrice    * $paxAdult) + ($childPrice    * $paxChild);
+        $entranceTotal = ($entranceAdult * $paxAdult) + ($entranceChild * $paxChild);
+
+        $this->logRequest('POST /api/v1/tour-pricing', '', 200);
+        $this->jsonSuccess([
+            'contract_id' => $contractId,
+            'model_id'    => $modelId,
+            'travel_date' => $travelDate,
+            'season'      => $rate['season_name'] ?? null,
+            'rate_type'   => $rate['rate_type'] ?? 'net_rate',
+            'unit_prices' => [
+                'adult'          => $adultPrice,
+                'child'          => $childPrice,
+                'entrance_adult' => $entranceAdult,
+                'entrance_child' => $entranceChild,
+            ],
+            'pax' => [
+                'adult'      => $paxAdult,
+                'child'      => $paxChild,
+                'nationality' => $nationality,
+            ],
+            'totals' => [
+                'service'   => round($serviceTotal, 2),
+                'entrance'  => round($entranceTotal, 2),
+                'grand'     => round($serviceTotal + $entranceTotal, 2),
+            ],
+        ]);
     }
 
     private function logRequest(string $endpoint, string $channel, int $statusCode, ?array $request = null, ?array $response = null): void
