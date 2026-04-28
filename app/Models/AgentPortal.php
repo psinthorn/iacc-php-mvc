@@ -88,7 +88,7 @@ class AgentPortal extends BaseModel
             $opFilter = ' AND p.operator_company_id = ' . intval($operatorComId);
         }
         $sql = "SELECT p.*,
-                       m.model_name, m.description AS model_desc, m.image AS model_image,
+                       m.model_name, m.des AS model_desc,
                        t.name AS type_name,
                        ac.contract_name,
                        co.name_en AS operator_name

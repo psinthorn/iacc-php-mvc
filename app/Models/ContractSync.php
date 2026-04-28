@@ -21,7 +21,7 @@ class ContractSync extends BaseModel
     {
         $agentCompanyId = intval($agentCompanyId);
         $contractId = intval($contractId);
-        $sql = "SELECT p.*, m.model_name, m.description AS model_desc
+        $sql = "SELECT p.*, m.model_name, m.des AS model_desc
                 FROM tour_operator_agent_products p
                 LEFT JOIN model m ON p.model_id = m.id
                 WHERE p.agent_company_id = $agentCompanyId
@@ -39,7 +39,7 @@ class ContractSync extends BaseModel
     {
         $agentCompanyId = intval($agentCompanyId);
         $operatorComId = intval($operatorComId);
-        $sql = "SELECT p.*, m.model_name, m.description AS model_desc,
+        $sql = "SELECT p.*, m.model_name, m.des AS model_desc,
                        ac.contract_name
                 FROM tour_operator_agent_products p
                 LEFT JOIN model m ON p.model_id = m.id
@@ -109,7 +109,7 @@ class ContractSync extends BaseModel
         $contractId = intval($contractId);
         $comId = intval($comId);
         // Get type IDs for the contract
-        $sql = "SELECT type_id FROM contract_type WHERE contract_id = $contractId";
+        $sql = "SELECT type_id FROM agent_contract_types WHERE contract_id = $contractId";
         $res = mysqli_query($this->conn, $sql);
         if (!$res) return [];
 

@@ -9,9 +9,11 @@
  *   wget -qO- "https://yourdomain.com/cron.php?task=weekly_reports&token=YOUR_SECRET"
  *
  * Tasks:
- *   daily_reports   — send daily contract digest to each operator's admin
- *   weekly_reports  — send weekly digest (run on Mondays)
- *   monthly_reports — send monthly digest (run on the 1st)
+ *   daily_reports        — send daily contract digest to each operator's admin
+ *   weekly_reports       — send weekly digest (run on Mondays)
+ *   monthly_reports      — send monthly digest (run on the 1st)
+ *   sync_all_contracts   — one-time/periodic full sync of all V2 operator contracts
+ *                          to all assigned agents (rebuilds tour_operator_agent_products)
  *
  * Auth: ?token=... must match config['cron_token'] (set via env or config file)
  *
@@ -29,6 +31,7 @@ set_time_limit(300);  // 5 minutes for big batches
 // ── Load minimal core ──
 require_once __DIR__ . '/inc/sys.configs.php';
 require_once __DIR__ . '/inc/class.dbconn.php';
+require_once __DIR__ . '/inc/security.php';
 
 $db = new DbConn($config);
 
@@ -49,10 +52,14 @@ if (!hash_equals($expectedToken, $providedToken)) {
 
 $task = $_GET['task'] ?? '';
 
-// ── Load deps for reporting ──
+// ── Load deps for reporting & sync ──
+require_once __DIR__ . '/inc/class.hard.php';
 require_once __DIR__ . '/app/Models/BaseModel.php';
 require_once __DIR__ . '/app/Models/ContractReport.php';
+require_once __DIR__ . '/app/Models/AgentContract.php';
+require_once __DIR__ . '/app/Models/ContractSync.php';
 require_once __DIR__ . '/app/Services/EmailService.php';
+require_once __DIR__ . '/app/Services/ContractSyncService.php';
 require_once __DIR__ . '/app/Controllers/BaseController.php';
 require_once __DIR__ . '/app/Controllers/ContractReportController.php';
 
@@ -68,9 +75,12 @@ switch ($task) {
     case 'monthly_reports':
         runReports('monthly');
         break;
+    case 'sync_all_contracts':
+        runSyncAllContracts();
+        break;
     default:
         http_response_code(400);
-        echo "Unknown task. Available: daily_reports, weekly_reports, monthly_reports\n";
+        echo "Unknown task. Available: daily_reports, weekly_reports, monthly_reports, sync_all_contracts\n";
         exit;
 }
 
@@ -128,4 +138,51 @@ function runReports(string $period): void
     }
 
     echo "\nSummary: $sent sent, $failed failed, $skipped skipped.\n";
+}
+
+function runSyncAllContracts(): void
+{
+    global $db;
+
+    // Find all V2 operator-level contracts and group by company
+    $sql = "SELECT id, company_id, contract_name FROM agent_contracts
+            WHERE is_operator_level = 1 AND deleted_at IS NULL
+            ORDER BY company_id, id";
+    $res = mysqli_query($db->conn, $sql);
+    if (!$res || mysqli_num_rows($res) === 0) {
+        echo "No V2 operator-level contracts found.\n";
+        return;
+    }
+
+    $service = new \App\Services\ContractSyncService();
+    $synced = 0;
+    $skipped = 0;
+    $totalAdded = 0;
+    $totalRemoved = 0;
+
+    while ($row = mysqli_fetch_assoc($res)) {
+        $cid = intval($row['id']);
+        $comId = intval($row['company_id']);
+        $name = $row['contract_name'];
+
+        $result = $service->syncContractToAgents($cid, $comId, 'cron');
+        if ($result['success']) {
+            $agents = $result['data']['agents'] ?? 0;
+            $added = $result['data']['added'] ?? 0;
+            $removed = $result['data']['removed'] ?? 0;
+            if ($agents === 0) {
+                echo "  - SKIP $name (#$cid): no agents assigned\n";
+                $skipped++;
+            } else {
+                echo "  - SYNC $name (#$cid): $agents agents, +$added/-$removed products\n";
+                $synced++;
+                $totalAdded += $added;
+                $totalRemoved += $removed;
+            }
+        } else {
+            echo "  - FAIL $name (#$cid): " . ($result['error'] ?? 'unknown error') . "\n";
+        }
+    }
+
+    echo "\nSummary: $synced contracts synced, $skipped skipped (no agents), +$totalAdded products added, -$totalRemoved removed.\n";
 }
