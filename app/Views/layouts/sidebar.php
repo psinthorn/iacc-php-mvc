@@ -245,6 +245,30 @@ include_once 'inc/top-navbar.php';
                     </li>
                     <?php endif; ?>
 
+                    <!-- Agent Portal (visible if this company is an approved agent for any operator) -->
+                    <?php
+                    $__agentPortalShow = false;
+                    if (!empty($_SESSION['com_id'])) {
+                        $__cid = intval($_SESSION['com_id']);
+                        $__db = $GLOBALS['db'] ?? null;
+                        if ($__db && isset($__db->conn)) {
+                            $__r = mysqli_query($__db->conn, "SELECT 1 FROM tour_operator_agents WHERE agent_company_id = $__cid AND status = 'approved' AND deleted_at IS NULL LIMIT 1");
+                            $__agentPortalShow = ($__r && mysqli_num_rows($__r) > 0);
+                        }
+                    }
+                    if ($__agentPortalShow):
+                    ?>
+                    <li>
+                        <a href="#"><i class="fa fa-id-badge"></i> <?=$xml->agentportal ?? 'Agent Portal'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li><a href="index.php?page=agent_portal_dashboard"><i class="fa fa-tachometer"></i> <?=$xml->dashboard ?? 'Dashboard'?></a></li>
+                            <li><a href="index.php?page=agent_portal_products"><i class="fa fa-cubes"></i> <?=$xml->products ?? 'Products'?></a></li>
+                            <li><a href="index.php?page=agent_portal_contracts"><i class="fa fa-file-text-o"></i> <?=$xml->contracts ?? 'Contracts'?></a></li>
+                            <li><a href="index.php?page=agent_portal_bookings"><i class="fa fa-calendar-check-o"></i> <?=$xml->bookings ?? 'Bookings'?></a></li>
+                        </ul>
+                    </li>
+                    <?php endif; ?>
+
                   <!-- Quick Create -->
                     <li>
                         <a href="#"><i class="fa fa-bolt" style="color:#f59e0b"></i> <?=$xml->quickcreate ?? 'Quick Create'?><span class="fa arrow"></span></a>

@@ -373,6 +373,14 @@ return [
     'tour_agent_reg_reactivate' => ['TourAgentRegistrationController', 'reactivate'],
     'tour_agent_reg_invite'     => ['TourAgentRegistrationController', 'invite'],
 
+    // V2: Agent portal (agent-facing)
+    'agent_portal_dashboard' => ['AgentPortalController', 'dashboard'],
+    'agent_portal_products'  => ['AgentPortalController', 'products'],
+    'agent_portal_contracts' => ['AgentPortalController', 'contracts'],
+    'agent_portal_contract'  => ['AgentPortalController', 'contract'],
+    'agent_portal_bookings'  => ['AgentPortalController', 'bookings'],
+    'agent_portal_resync'    => ['AgentPortalController', 'resync'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],
