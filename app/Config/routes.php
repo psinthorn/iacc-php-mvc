@@ -392,6 +392,10 @@ return [
     'tour_contract_report'      => ['ContractReportController', 'dashboard'],
     'tour_contract_report_send' => ['ContractReportController', 'sendNow'],
 
+    // V2: Super admin platform-wide tour overview
+    'super_admin_tour'          => ['SuperAdminTourController', 'overview'],
+    'super_admin_tour_send_all' => ['SuperAdminTourController', 'sendAllNow'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],

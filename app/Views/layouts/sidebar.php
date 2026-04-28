@@ -461,6 +461,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=module_manager"><i class="fa fa-cubes"></i> <?=$xml->modulemanager ?? 'Module Manager'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=super_admin_tour"><i class="fa fa-globe"></i> <?=$xml->touroperatorplatform ?? 'Tour Operator Platform'?></a>
+                            </li>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=payment_method_list"><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></a>
