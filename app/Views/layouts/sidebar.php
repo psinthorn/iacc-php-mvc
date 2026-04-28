@@ -227,6 +227,9 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=tour_contract_list"><i class="fa fa-file-text-o"></i> <?=$xml->tourcontracts ?? 'Contracts'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=tour_doc_list"><i class="fa fa-folder-open-o"></i> <?=$xml->tourdocuments ?? 'Documents'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=tour_location_list"><i class="fa fa-map-marker"></i> <?=$xml->tourlocations ?? 'Locations'?></a>
                             </li>
                             <li>
@@ -265,6 +268,7 @@ include_once 'inc/top-navbar.php';
                             <li><a href="index.php?page=agent_portal_products"><i class="fa fa-cubes"></i> <?=$xml->products ?? 'Products'?></a></li>
                             <li><a href="index.php?page=agent_portal_contracts"><i class="fa fa-file-text-o"></i> <?=$xml->contracts ?? 'Contracts'?></a></li>
                             <li><a href="index.php?page=agent_portal_bookings"><i class="fa fa-calendar-check-o"></i> <?=$xml->bookings ?? 'Bookings'?></a></li>
+                            <li><a href="index.php?page=agent_portal_documents"><i class="fa fa-folder-open-o"></i> <?=$xml->documents ?? 'Documents'?></a></li>
                         </ul>
                     </li>
                     <?php endif; ?>

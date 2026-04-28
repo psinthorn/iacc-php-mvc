@@ -32,4 +32,7 @@ $currentPage = $_GET['page'] ?? 'agent_portal_dashboard';
     <a href="index.php?page=agent_portal_bookings" class="<?= $currentPage === 'agent_portal_bookings' ? 'active' : '' ?>">
         <i class="fa fa-calendar-check-o"></i> <?= $isThai ? 'การจอง' : 'Bookings' ?>
     </a>
+    <a href="index.php?page=agent_portal_documents" class="<?= $currentPage === 'agent_portal_documents' ? 'active' : '' ?>">
+        <i class="fa fa-folder-open-o"></i> <?= $isThai ? 'เอกสาร' : 'Documents' ?>
+    </a>
 </div>

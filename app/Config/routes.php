@@ -381,6 +381,13 @@ return [
     'agent_portal_bookings'  => ['AgentPortalController', 'bookings'],
     'agent_portal_resync'    => ['AgentPortalController', 'resync'],
 
+    // V2: Operator documents (operator side + agent side)
+    'tour_doc_list'              => ['OperatorDocumentController', 'list'],
+    'tour_doc_upload'            => ['OperatorDocumentController', 'upload'],
+    'tour_doc_delete'            => ['OperatorDocumentController', 'delete'],
+    'agent_portal_documents'     => ['OperatorDocumentController', 'agentList'],
+    'agent_portal_doc_download'  => ['OperatorDocumentController', 'agentDownload'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],
