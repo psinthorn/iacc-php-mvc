@@ -364,6 +364,15 @@ return [
     'tour_contract_clone'    => ['AgentContractController', 'cloneContract'],
     'tour_contract_resync'   => ['AgentContractController', 'resync'],
 
+    // V2: Agent registration & approval workflow
+    'tour_agent_reg_list'       => ['TourAgentRegistrationController', 'list'],
+    'tour_agent_reg_view'       => ['TourAgentRegistrationController', 'view'],
+    'tour_agent_reg_approve'    => ['TourAgentRegistrationController', 'approve'],
+    'tour_agent_reg_reject'     => ['TourAgentRegistrationController', 'reject'],
+    'tour_agent_reg_suspend'    => ['TourAgentRegistrationController', 'suspend'],
+    'tour_agent_reg_reactivate' => ['TourAgentRegistrationController', 'reactivate'],
+    'tour_agent_reg_invite'     => ['TourAgentRegistrationController', 'invite'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],

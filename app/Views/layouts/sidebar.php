@@ -221,6 +221,9 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=tour_agent_list"><i class="fa fa-handshake-o"></i> <?=$xml->touragents ?? 'Agents'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=tour_agent_reg_list"><i class="fa fa-user-plus"></i> <?=$xml->touragentregs ?? 'Agent Registrations'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=tour_contract_list"><i class="fa fa-file-text-o"></i> <?=$xml->tourcontracts ?? 'Contracts'?></a>
                             </li>
                             <li>
