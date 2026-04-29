@@ -604,9 +604,9 @@ foreach ($contractRates as $r) {
                 <?php foreach ($contractAgents as $agent): ?>
                 <div class="agent-row">
                     <div class="agent-info">
-                        <div class="agent-avatar"><?= mb_strtoupper(mb_substr($agent['name_en'] ?: $agent['name_th'] ?: '?', 0, 1)) ?></div>
+                        <div class="agent-avatar"><?= mb_strtoupper(mb_substr($agent['agent_name'] ?: $agent['agent_name_th'] ?: '?', 0, 1)) ?></div>
                         <div>
-                            <div class="agent-name"><?= htmlspecialchars($agent['name_en'] ?: $agent['name_th'] ?: 'ID#' . $agent['agent_company_id']) ?></div>
+                            <div class="agent-name"><?= htmlspecialchars($agent['agent_name'] ?: $agent['agent_name_th'] ?: 'ID#' . $agent['agent_company_id']) ?></div>
                             <div class="agent-detail">
                                 <?= $isThai ? 'มอบหมายเมื่อ' : 'Assigned' ?>: <?= date('d M Y', strtotime($agent['assigned_at'])) ?>
                             </div>
