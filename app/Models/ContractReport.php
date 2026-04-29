@@ -114,7 +114,7 @@ class ContractReport extends BaseModel
         ];
 
         // Top products by booking count
-        $sqlProducts = "SELECT bi.model_id, m.model_name, COUNT(*) AS bookings, SUM(bi.subtotal) AS revenue
+        $sqlProducts = "SELECT bi.model_id, m.model_name, COUNT(*) AS bookings, SUM(bi.amount) AS revenue
                         FROM tour_booking_items bi
                         INNER JOIN tour_bookings b ON bi.booking_id = b.id
                         LEFT JOIN model m ON bi.model_id = m.id
