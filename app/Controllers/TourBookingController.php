@@ -326,6 +326,21 @@ class TourBookingController extends BaseController
 
             mysqli_commit($this->bookingModel->getConnection());
 
+            // Safety net: detect MySQL silently truncating an enum value (happens
+            // when a status like 'paid' is sent but the schema doesn't include it
+            // — e.g. migration not run yet). Compare what we asked for vs. what's
+            // actually in the DB, surface a loud error instead of fake success.
+            $saved = $this->bookingModel->findBooking($bookingId, $comId);
+            if ($saved && ($saved['status'] ?? null) !== $newStatus) {
+                $this->redirect('tour_booking_view', [
+                    'id'   => $bookingId,
+                    'msg'  => 'status_save_failed',
+                    'want' => $newStatus,
+                    'got'  => $saved['status'] ?? '',
+                ]);
+                return;
+            }
+
             $msg = $isEdit ? 'updated' : 'created';
             $this->redirect('tour_booking_view', ['id' => $bookingId, 'msg' => $msg]);
         } catch (\Exception $e) {

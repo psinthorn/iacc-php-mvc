@@ -491,6 +491,28 @@ WHERE @season_id > 0
 COMMIT;
 
 
+-- ╔══════════════════════════════════════════════════════════════════════════╗
+-- ║ PART E — Booking statuses: add 'paid' and 'no_show' (was migration 019)  ║
+-- ╚══════════════════════════════════════════════════════════════════════════╝
+-- Adds the two new booking statuses.
+--   draft → confirmed → paid → completed
+--                              ↓
+--                            no_show
+--   any → cancelled
+-- Allotment counting includes confirmed/paid/completed/no_show.
+-- Idempotent: only ALTERs if the new values are missing from the enum.
+
+SET @needs_alter := (
+    SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tour_bookings'
+      AND COLUMN_NAME = 'status' AND COLUMN_TYPE LIKE '%paid%'
+);
+SET @sql := IF(@needs_alter,
+    'ALTER TABLE `tour_bookings` MODIFY COLUMN `status` ENUM(''draft'',''confirmed'',''paid'',''completed'',''no_show'',''cancelled'') NOT NULL DEFAULT ''draft''',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+
 -- ============================================================================
 -- POST-MIGRATION
 -- ============================================================================
@@ -504,6 +526,8 @@ COMMIT;
 --        FROM contract_rate WHERE deleted_at IS NULL GROUP BY contract_id;
 --      SELECT contract_id, COUNT(*) AS agents
 --        FROM tour_contract_agents GROUP BY contract_id;
+--      SHOW COLUMNS FROM tour_bookings LIKE 'status';
+--      -- expected: enum('draft','confirmed','paid','completed','no_show','cancelled')
 --
 -- 3. Login as super admin → Admin → Tour Operator Platform → confirm operators show up.
 -- ============================================================================

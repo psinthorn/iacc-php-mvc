@@ -43,6 +43,9 @@ $salesRepName = ($isThai && !empty($booking['sales_rep_name_th'])) ? $booking['s
 $messages = [
     'created'        => ['✅', $isThai ? 'สร้างการจองสำเร็จ' : 'Booking created successfully'],
     'updated'        => ['✅', $isThai ? 'อัพเดทสำเร็จ' : 'Booking updated successfully'],
+    'status_save_failed' => ['⚠️', ($isThai ? 'บันทึกสถานะไม่สำเร็จ — ฐานข้อมูลปฏิเสธค่า' : 'Status not saved — database rejected the value')
+        . (isset($_GET['want'], $_GET['got']) ? ' (want: ' . htmlspecialchars($_GET['want']) . ', got: ' . htmlspecialchars($_GET['got']) . '). '
+            . ($isThai ? 'มักเกิดจาก migration ยังไม่ได้รัน' : 'Usually means a migration was not run yet') . '.' : '')],
     'docs_generated' => ['✅', $isThai ? 'สร้างเอกสารสำเร็จ (PR, PO, ใบส่งของ, ใบแจ้งหนี้)' : 'Documents generated (PR, PO, Delivery, Invoice)'],
     'docs_error'     => ['⚠️', $isThai ? 'สร้างเอกสารไม่สำเร็จ' : 'Failed to generate documents'],
     'payment_recorded' => ['✅', $isThai ? 'บันทึกการชำระเงินสำเร็จ' : 'Payment recorded successfully'],
