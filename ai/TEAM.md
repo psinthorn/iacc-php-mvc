@@ -15,6 +15,7 @@
 | Project Tracker  | `prompts/agent-tracker.md` | claude-opus-4-6 | Milestones, tasks, timeline summaries |
 | Database Analyst | `prompts/agent-dba.md`     | claude-opus-4-6 | Schema design, query optimization, migrations, reporting SQL |
 | Security Engineer | `prompts/agent-security.md` | claude-opus-4-6 | OWASP audits, SQL injection, CSRF, tenant isolation, auth review |
+| Cleaner | `prompts/agent-cleaner.md` | claude-opus-4-6 | **Advisory-first** repo cleanup — stale docs, orphan files, dead code. **Never deletes; outputs review-only reports.** On-demand + quarterly cron. |
 
 ---
 

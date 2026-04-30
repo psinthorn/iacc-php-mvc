@@ -61,7 +61,7 @@ After writing the PM spec, **automatically continue** through the pipeline below
 | 6 | **QA** | `ai/prompts/agent-qa.md` | Edge cases, test checklist, verify |
 | 7 | **Security** | `ai/prompts/agent-security.md` | OWASP audit, tenant isolation, vulnerability scan |
 | 8 | **DevOps** | `ai/prompts/agent-devops.md` | Migration deploy plan, cPanel steps, CI/CD |
-| 9 | **Tracker** | `ai/prompts/agent-tracker.md` | Create milestone, tasks, log to GitHub Issues |
+| 9 | **Tracker** | `ai/prompts/agent-tracker.md` | Create milestone, tasks, log to GitHub Issues. **On merge-to-main: bump README version + version.json + add Changelog entry** (footer auto-syncs from README). |
 | 10 | **Reporter** | `ai/prompts/agent-reporter.md` | Progress report, management presentation, email summary |
 
 ### On-Demand Agents (not in auto-pipeline, call manually)
@@ -70,6 +70,7 @@ After writing the PM spec, **automatically continue** through the pipeline below
 |---|---|---|
 | **Marketing** | `ai/prompts/agent-marketing.md` | Landing pages, copy, SEO, campaign planning |
 | **Support** | `ai/prompts/agent-support.md` | Help docs, FAQs, user troubleshooting |
+| **Cleaner** | `ai/prompts/agent-cleaner.md` | Repo cleanup — stale docs, orphan files, dead code. **Advisory only — never deletes.** On-demand + quarterly cron. First 3 runs require dual PM+Security review. |
 
 ### Pipeline Rules
 1. **Always start as PM** — write the spec first, get user approval

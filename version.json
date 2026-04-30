@@ -1,9 +1,9 @@
 {
-  "version": "5.10-i18n-complete",
-  "commit": "4ff64ee",
-  "commit_short": "4ff64ee",
+  "version": "5.11-demo-data",
+  "commit": "1892cf3",
+  "commit_short": "1892cf3",
   "branch": "main",
-  "build_date": "2026-03-30T12:00:00Z",
+  "build_date": "2026-04-02T12:00:00Z",
   "environment": "development",
   "deployed_by": "manual"
 }
