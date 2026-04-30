@@ -2008,10 +2008,10 @@ $htmlLang = $lang === 'th' ? 'th' : 'en';
     <!-- CTA Section -->
     <section class="cta">
         <div class="section-container">
-            <h2><?= __('cta_title') ?></h2>
-            <p><?= __('cta_subtitle') ?></p>
+            <h2><?= $lang === 'th' ? 'เริ่มระบบอัตโนมัติให้ธุรกิจของคุณ' : 'Start Automating Your Business' ?></h2>
+            <p><?= $lang === 'th' ? 'จากระบบบัญชีสู่ระบบอัตโนมัติด้วย AI — แพลตฟอร์มเดียวสำหรับธุรกิจทั้งหมดของคุณ' : 'From accounting to AI-powered automation — one platform for your entire business.' ?></p>
             <a href="login.php" class="btn btn-white btn-lg">
-                <i class="fa fa-rocket"></i> <?= __('cta_button') ?>
+                <i class="fa fa-rocket"></i> <?= $lang === 'th' ? 'เริ่มทดลองใช้ฟรี' : 'Start Your Free Trial' ?>
             </a>
         </div>
     </section>
