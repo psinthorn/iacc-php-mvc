@@ -361,13 +361,18 @@ foreach ($contractRates as $r) {
                                 ?>
                                 <div class="model-rate-card <?= $hasRate ? 'has-rate' : '' ?>" style="<?= $hasRate ? 'opacity:1;border-color:#0d9488;background:#fff;' : '' ?>">
                                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:<?= $hasRate ? '10px' : '0' ?>;">
-                                        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;">
-                                            <input type="checkbox" class="model-rate-toggle"
+                                        <label style="display:inline-flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;font-weight:500;flex:1;min-width:0;">
+                                            <input type="checkbox" class="model-rate-toggle" style="margin-top:3px;flex-shrink:0;"
                                                    <?= $hasRate ? 'checked' : '' ?>
                                                    onchange="toggleModelRate(this, 'base', <?= $mid ?>)">
-                                            <?= htmlspecialchars($model['model_name']) ?>
+                                            <span style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+                                                <span><?= htmlspecialchars($model['model_name']) ?></span>
+                                                <?php if (!empty($model['description'])): ?>
+                                                <span style="font-size:11px;color:#94a3b8;font-weight:400;line-height:1.4;"><?= htmlspecialchars(mb_strimwidth(strip_tags($model['description']), 0, 140, '…')) ?></span>
+                                                <?php endif; ?>
+                                            </span>
                                         </label>
-                                        <div class="model-rate-type" style="<?= $hasRate ? '' : 'display:none;' ?>">
+                                        <div class="model-rate-type" style="<?= $hasRate ? '' : 'display:none;' ?>;flex-shrink:0;">
                                             <select name="season_rates[0][rates][<?= $mid ?>][rate_type]" class="rate-type-select" <?= $hasRate ? '' : 'disabled' ?>>
                                                 <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>><?= $isThai ? 'อัตราสุทธิ (฿)' : 'Net Rate (฿)' ?></option>
                                                 <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>><?= $isThai ? 'เปอร์เซ็นต์ (%)' : 'Percentage (%)' ?></option>
@@ -491,13 +496,18 @@ foreach ($contractRates as $r) {
                                 ?>
                                 <div class="model-rate-card <?= $hasRate ? 'has-rate' : '' ?>" style="<?= $hasRate ? 'opacity:1;border-color:#0d9488;background:#fff;' : '' ?>">
                                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:<?= $hasRate ? '10px' : '0' ?>;">
-                                        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;">
-                                            <input type="checkbox" class="model-rate-toggle"
+                                        <label style="display:inline-flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;font-weight:500;flex:1;min-width:0;">
+                                            <input type="checkbox" class="model-rate-toggle" style="margin-top:3px;flex-shrink:0;"
                                                    <?= $hasRate ? 'checked' : '' ?>
                                                    onchange="toggleModelRate(this, '<?= $seasonIdx ?>', <?= $mid ?>)">
-                                            <?= htmlspecialchars($model['model_name']) ?>
+                                            <span style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+                                                <span><?= htmlspecialchars($model['model_name']) ?></span>
+                                                <?php if (!empty($model['description'])): ?>
+                                                <span style="font-size:11px;color:#94a3b8;font-weight:400;line-height:1.4;"><?= htmlspecialchars(mb_strimwidth(strip_tags($model['description']), 0, 140, '…')) ?></span>
+                                                <?php endif; ?>
+                                            </span>
                                         </label>
-                                        <div class="model-rate-type" style="<?= $hasRate ? '' : 'display:none;' ?>">
+                                        <div class="model-rate-type" style="<?= $hasRate ? '' : 'display:none;' ?>;flex-shrink:0;">
                                             <select name="season_rates[<?= $seasonIdx ?>][rates][<?= $mid ?>][rate_type]" <?= $hasRate ? '' : 'disabled' ?>>
                                                 <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>><?= $isThai ? 'อัตราสุทธิ (฿)' : 'Net Rate (฿)' ?></option>
                                                 <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>><?= $isThai ? 'เปอร์เซ็นต์ (%)' : 'Percentage (%)' ?></option>
@@ -585,8 +595,11 @@ foreach ($contractRates as $r) {
                 <input type="hidden" name="contract_id" value="<?= $contractId ?>">
                 <select name="agent_company_id" required>
                     <option value=""><?= $isThai ? '— เลือกตัวแทน —' : '— Select Agent —' ?></option>
-                    <?php foreach ($availableAgents as $ag): ?>
-                    <option value="<?= $ag['id'] ?>"><?= htmlspecialchars($ag['name_en'] ?: $ag['name_th'] ?: 'ID#' . $ag['id']) ?></option>
+                    <?php foreach ($availableAgents as $ag):
+                        $agId = (int)$ag['agent_company_id'];
+                        $agName = $ag['agent_name'] ?: $ag['agent_name_th'] ?: ($isThai ? 'ไม่มีชื่อ' : 'Untitled');
+                    ?>
+                    <option value="<?= $agId ?>">ID#<?= $agId ?> | <?= htmlspecialchars($agName) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <button type="submit" class="btn-assign"><i class="fa fa-plus"></i> <?= $isThai ? 'มอบหมาย' : 'Assign' ?></button>
