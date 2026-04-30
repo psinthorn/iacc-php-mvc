@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 5.11-demo-data  
+**Version**: 5.12-tour-booking-suite  
 **Status**: Production Ready  
-**Last Updated**: April 2, 2026  
+**Last Updated**: April 30, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 5.7 | **Nginx**: Alpine
 
@@ -605,26 +605,35 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 ## �️ Planned Roadmap (v6.0 – v6.7)
 
-| # | Version | Feature | Quarter | Dependencies |
-|---|---------|---------|---------|-------------|
-| 1 | **v6.0** | Self-Registration → Trial → Payment | Q4 2026 | None |
-| 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q4 2026 | v6.0 |
-| 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | v6.1 + Sales Channel API |
-| 4 | **v6.3** | Agent Automation Workers | Q1 2027 | v6.1 |
-| 5 | **v6.4** | AI Document Processing (OCR) | Q2 2027 | v6.1 |
-| 6 | **v6.5** | Conversational BI & Smart Insights | Q2 2027 | Existing AI (29 tools) |
-| 7 | **v6.6** | Native Sales Channel Connectors | Q3 2027 | v6.2 |
-| 8 | **v6.7** | Multi-LLM Router & AI Platform Strategy | Q3 2027 | v6.5 |
+| # | Version | Feature | Quarter | GitHub Status | Dependencies |
+|---|---------|---------|---------|---------------|--------------|
+| 1 | **v6.0** | Self-Registration → Trial → Payment | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.0) — 4 closed / 5 open | None |
+| 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.1) — no issues filed yet | v6.0 |
+| 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.2) — no issues filed yet | v6.1 + Sales Channel API |
+| 4 | **v6.3** | Agent Automation Workers | Q1 2027 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.3) — no issues filed yet | v6.1 |
+| 5 | **v6.4** | AI Document Processing (OCR) | Q2 2027 | _no milestone yet — text-only roadmap_ | v6.1 |
+| 6 | **v6.5** | Conversational BI & Smart Insights | Q2 2027 | _no milestone yet — text-only roadmap_ | Existing AI (29 tools) |
+| 7 | **v6.6** | Native Sales Channel Connectors | Q3 2027 | _no milestone yet — text-only roadmap_ | v6.2 |
+| 8 | **v6.7** | Multi-LLM Router & AI Platform Strategy | Q3 2027 | _no milestone yet — text-only roadmap_ | v6.5 |
+
+> **Roadmap-vs-issues policy:** v6.0 – v6.3 are **active milestones** with traceable issues. v6.4 – v6.7 are **directional intent** — they get a milestone + issues only when sized into a quarter. Tracker agent reconciles this section against `gh api .../milestones` on every merge to `main` (see [`ai/prompts/agent-tracker.md`](ai/prompts/agent-tracker.md) Version Sync section).
 
 ### v6.0 — Self-Registration → Trial → Payment
-- Public signup form with email verification (MailHog in dev)
-- Auto company/user creation on registration
-- 14-day trial with 50 order limit (website channel only)
-- Plan comparison page with upgrade flow
-- PromptPay/bank transfer payment integration
-- New user onboarding wizard
+
+📋 **GitHub:** [milestone v6.0](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.0) · **Shipped:** [#36](https://github.com/psinthorn/iacc-php-mvc/issues/36) · [#53](https://github.com/psinthorn/iacc-php-mvc/issues/53) · [#54](https://github.com/psinthorn/iacc-php-mvc/issues/54) · [#55](https://github.com/psinthorn/iacc-php-mvc/issues/55) · **Open:** [#32](https://github.com/psinthorn/iacc-php-mvc/issues/32) (mobile app) · [#33](https://github.com/psinthorn/iacc-php-mvc/issues/33) (push notifs) · [#34](https://github.com/psinthorn/iacc-php-mvc/issues/34) (bank reconciliation) · [#35](https://github.com/psinthorn/iacc-php-mvc/issues/35) (e-commerce integrations) · [#37](https://github.com/psinthorn/iacc-php-mvc/issues/37) (OCR receipt scanning)
+
+- Public signup form with email verification (MailHog in dev) — _shipped #53_
+- Auto company/user creation on registration — _shipped #53_
+- 14-day trial with 50 order limit (website channel only) — _shipped #54_
+- Plan comparison page with upgrade flow — _shipped #55_
+- PromptPay/bank transfer payment integration — _shipped #55_
+- Public Developer API + docs portal — _shipped #36_
+- New user onboarding wizard — _open (no issue yet — file before next sprint)_
 
 ### v6.1 — Task Queue & Background Worker Infrastructure
+
+📋 **GitHub:** [milestone v6.1](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.1) — milestone exists, **no issues filed yet** (file via `act as tracker` before sprint planning)
+
 - `task_queue` + `task_results` database tables
 - PHP cron worker script (`scripts/worker.php`) — polls queue every minute
 - Dead-letter queue for permanently failed tasks
@@ -633,6 +642,9 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - Task locking to prevent duplicate execution
 
 ### v6.2 — AI-Powered Sales Channel Automation
+
+📋 **GitHub:** [milestone v6.2](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.2) — milestone exists, **no issues filed yet**
+
 - **AI Order Parser**: LINE/Facebook/email messages → AI extracts guest name, dates, room type → structured `channel_orders`
 - **Smart Order Router**: AI classifies orders by channel + content → routes to correct handler
 - **AI Price Optimizer**: Historical data analysis → dynamic pricing per channel (weekend/season/margin)
@@ -641,6 +653,9 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - **AI Response Generator**: AI-generated customer replies based on product catalog + availability
 
 ### v6.3 — Agent Automation Workers
+
+📋 **GitHub:** [milestone v6.3](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v6.3) — milestone exists, **no issues filed yet**
+
 - Overdue invoice reminders (daily 9am)
 - Trial expiry notifier (3/1/0 days before expiry)
 - Auto subscription renewal/suspension
@@ -651,12 +666,18 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - Data cleanup worker (weekly — old task_results, expired sessions, orphaned uploads)
 
 ### v6.4 — AI Document Processing (OCR)
+
+📋 **GitHub:** _no milestone yet_ — directional roadmap only. Create milestone before issue tracking.
+
 - Receipt photo upload → AI extracts vendor, amount, date, category → auto-create expense
 - Invoice email parser → AI parses PDF/image → creates expense or PO draft
 - Contract analyzer → extracts key terms, dates, obligations
 - Thai + English language support for document parsing
 
 ### v6.5 — Conversational BI & Smart Insights
+
+📋 **GitHub:** _no milestone yet_ — directional roadmap only.
+
 - Chart generation from AI chat ("Show revenue trend this year" → inline Chart.js)
 - Predictive cash flow: AI forecasts 30/60/90 day cash position
 - Transaction anomaly detection (amount outliers, duplicates, missing receipts)
@@ -664,6 +685,9 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - Natural language → SQL query execution
 
 ### v6.6 — Native Sales Channel Connectors
+
+📋 **GitHub:** _no milestone yet_ — directional roadmap only.
+
 - LINE Official Account (Messaging API — receive bookings, AI auto-reply, push status updates)
 - Facebook Messenger (Graph API — inquiry bot, auto-quote generation)
 - Shopee Open Platform (product sync, order import, inventory update, price sync)
@@ -673,6 +697,9 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - WhatsApp Business (Cloud API — order confirmation, delivery notifications)
 
 ### v6.7 — Multi-LLM Router & AI Platform Strategy
+
+📋 **GitHub:** _no milestone yet_ — directional roadmap only.
+
 - Smart Model Selector: route tasks to optimal provider (Ollama for simple, OpenAI for OCR, Claude for analysis)
 - Cost Optimizer: track token usage per provider → auto-route to cheapest model meeting quality threshold
 - Failover Chain: Ollama → OpenAI → Claude for high availability
@@ -681,6 +708,27 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## �📋 Changelog
+
+### v5.12-tour-booking-suite (April 29, 2026) — Tour Booking Payment + Bulk Actions + AI Agent Team
+
+**Milestone:** [v5.12 — Tour Booking Suite](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v5.12) — 9 issues closed (6 shipped + 3 deferred to next sprint)
+
+**Shipped:**
+
+- **Tour Booking Payment System** ([#44](https://github.com/psinthorn/iacc-php-mvc/issues/44)): record payment, slip approve/reject, refund flow with full status state machine (pending → paid → refunded / no_show)
+- **Customer Payment Links + Gateway Toggle** ([#45](https://github.com/psinthorn/iacc-php-mvc/issues/45)): public payment URLs (signed-token) + per-company gateway on/off
+- **Reusable Multi-Row Bulk Selection** ([#46](https://github.com/psinthorn/iacc-php-mvc/issues/46)): shared component for all list pages (select-all, range-shift, count badge)
+- **6 Bulk Actions for Tour Bookings** ([#47](https://github.com/psinthorn/iacc-php-mvc/issues/47)): Confirm, Mark Payment, Vouchers, Invoices, CSV export, Delete (capped at 500/batch)
+- **AI Agent Team — 9 specialised agents** ([#48](https://github.com/psinthorn/iacc-php-mvc/issues/48)): PM, Backend, Frontend, QA, DevOps, Designer, Marketing, Support, Tracker — orchestrated via [`CLAUDE.md`](CLAUDE.md). Cleaner agent added in v5.13 ([#74](https://github.com/psinthorn/iacc-php-mvc/issues/74)).
+- **Dynamic Page Titles** ([#49](https://github.com/psinthorn/iacc-php-mvc/issues/49)): all 125 view files now show contextual `<title>` tags
+
+**Deferred to next sprint** (closed milestone but features pushed):
+
+- [#50](https://github.com/psinthorn/iacc-php-mvc/issues/50) Email SMTP — actually send vouchers/invoices
+- [#51](https://github.com/psinthorn/iacc-php-mvc/issues/51) Tour Booking dashboard KPI widget
+- [#52](https://github.com/psinthorn/iacc-php-mvc/issues/52) Bulk import tour bookings via CSV
+
+**Files changed:** 200+ across `app/Controllers/Tour*.php`, `app/Models/TourBooking*.php`, `app/Views/tour-booking/`, `ai/prompts/`, `database/migrations/2026_04_*` | **PRs merged:** #57, #66, e67a1a5
 
 ### v5.11-demo-data (April 2, 2026) — Demo Data & Company Seeder
 

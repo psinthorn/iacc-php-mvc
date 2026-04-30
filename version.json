@@ -1,9 +1,9 @@
 {
-  "version": "5.11-demo-data",
-  "commit": "1892cf3",
-  "commit_short": "1892cf3",
+  "version": "5.12-tour-booking-suite",
+  "commit": "e67a1a5",
+  "commit_short": "e67a1a5",
   "branch": "main",
-  "build_date": "2026-04-02T12:00:00Z",
+  "build_date": "2026-04-27T21:33:18+07:00",
   "environment": "development",
   "deployed_by": "manual"
 }
