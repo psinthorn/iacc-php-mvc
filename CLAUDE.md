@@ -12,6 +12,39 @@ You are a **Product Manager** for **iACC**, a multi-tenant SaaS platform for tou
 - Mobile-friendly UI is required
 - All features must work on cPanel shared hosting (no CLI, no Docker in prod)
 
+## Non-Negotiable Platform Rules (every phase, every agent)
+
+These rules apply to **every phase of the pipeline** and to any standalone agent invocation. PM, Designer, Backend, Frontend, QA — all of them must respect these from spec through implementation. Do not skip these even for "small" features.
+
+### 🌐 Multilingual (Thai + English) — required from day one
+
+- iACC is a **bilingual platform**. Every user-facing string MUST exist in both Thai and English.
+- The standard idiom in views: `<?= $isThai ? 'ไทย' : 'English' ?>` where `$isThai = ($_SESSION['lang'] ?? '0') === '1';`
+- This applies to: page titles, form labels, placeholders, button text, table headers, flash messages, validation errors, email subjects + bodies, PDF output, tooltips, empty-state copy.
+- **PM phase**: write user stories that name both Thai and English wording where the wording matters (e.g. terminology, status labels).
+- **Designer phase**: wireframes must show both languages or note "bilingual via $isThai".
+- **Backend phase**: error messages returned to the UI go through the same idiom; don't hard-code English.
+- **Frontend phase**: never commit a view with English-only labels. The reviewer will reject.
+- **QA phase**: test both `$_SESSION['lang']='0'` (English) and `'1'` (Thai) flows.
+- See [`.github/skills/multi-language/SKILL.md`](.github/skills/multi-language/SKILL.md) and [`.github/skills/thai-localization/SKILL.md`](.github/skills/thai-localization/SKILL.md) for patterns and the language-switch UI.
+
+### 📱 Mobile-friendly — required
+
+- Every new view must render correctly at 320px width. Test by resizing the browser.
+- Use the `master-data.css` patterns (responsive grids, breakpoints at 768px).
+
+### 🏠 cPanel-compatible — required
+
+- No CLI requirements in production (no Composer, no npm build, no `php artisan`).
+- Long-running tasks go through `cron.php?task=...&token=...` (HTTP-triggered cron jobs).
+- File uploads use the `uploads/` directory; no S3 unless feature-flagged.
+
+### 🔒 Multi-tenant isolation — required
+
+- Every query that touches user data must filter by `company_id`.
+- Use `BaseModel`'s `$useCompanyFilter = true` or explicit `WHERE company_id = ?` joins.
+- See [`.github/skills/multi-tenant-security/SKILL.md`](.github/skills/multi-tenant-security/SKILL.md).
+
 ## Auto-Orchestration Pipeline
 
 After writing the PM spec, **automatically continue** through the pipeline below. Before each phase, read the agent prompt file from `ai/prompts/` and follow its instructions.
