@@ -607,7 +607,6 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 | # | Version | Feature | Quarter | GitHub Status | Dependencies |
 |---|---------|---------|---------|---------------|--------------|
-| 0 | **v5.13** | Tour Booking Operations (Email + KPI + Import) | Q2 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/17) — 3 open | v5.12 |
 | 1 | **v6.0** | Self-Registration → Trial → Payment | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/12) — 4 closed / 5 open | None |
 | 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/14) — 4 skeleton issues filed | v6.0 |
 | 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/15) — 6 skeleton issues filed | v6.1 + Sales Channel API |
@@ -630,14 +629,6 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - PromptPay/bank transfer payment integration — _shipped #55_
 - Public Developer API + docs portal — _shipped #36_
 - New user onboarding wizard — _open (no issue yet — file before next sprint)_
-
-### v5.13 — Tour Booking Operations (Email + KPI + Import)
-
-📋 **GitHub:** [milestone v5.13](https://github.com/psinthorn/iacc-php-mvc/milestone/17) — 3 open · re-milestoned from v5.12 deferred items
-
-- [#50](https://github.com/psinthorn/iacc-php-mvc/issues/50) Email SMTP — actually send vouchers and invoices
-- [#51](https://github.com/psinthorn/iacc-php-mvc/issues/51) Tour Booking dashboard KPI widget (revenue, pax count, top agents)
-- [#52](https://github.com/psinthorn/iacc-php-mvc/issues/52) Bulk import tour bookings via CSV upload
 
 ### v6.1 — Task Queue & Background Worker Infrastructure
 
@@ -716,26 +707,28 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 ## �📋 Changelog
 
-### v5.12-tour-booking-suite (April 29, 2026) — Tour Booking Payment + Bulk Actions + AI Agent Team
+### v5.12-tour-booking-suite (April 29, 2026) — Tour Booking Payment + Bulk Actions + AI Agent Team + Email/KPI/CSV
 
-**Milestone:** [v5.12 — Tour Booking Suite](https://github.com/psinthorn/iacc-php-mvc/milestone/?q=v5.12) — 9 issues closed (6 shipped + 3 deferred to next sprint)
+**Milestone:** [v5.12 — Tour Booking Suite](https://github.com/psinthorn/iacc-php-mvc/milestone/13) — 9 issues, all shipped (closed)
 
-**Shipped:**
+**Core suite (#44–#49):**
 
 - **Tour Booking Payment System** ([#44](https://github.com/psinthorn/iacc-php-mvc/issues/44)): record payment, slip approve/reject, refund flow with full status state machine (pending → paid → refunded / no_show)
 - **Customer Payment Links + Gateway Toggle** ([#45](https://github.com/psinthorn/iacc-php-mvc/issues/45)): public payment URLs (signed-token) + per-company gateway on/off
 - **Reusable Multi-Row Bulk Selection** ([#46](https://github.com/psinthorn/iacc-php-mvc/issues/46)): shared component for all list pages (select-all, range-shift, count badge)
 - **6 Bulk Actions for Tour Bookings** ([#47](https://github.com/psinthorn/iacc-php-mvc/issues/47)): Confirm, Mark Payment, Vouchers, Invoices, CSV export, Delete (capped at 500/batch)
-- **AI Agent Team — 9 specialised agents** ([#48](https://github.com/psinthorn/iacc-php-mvc/issues/48)): PM, Backend, Frontend, QA, DevOps, Designer, Marketing, Support, Tracker — orchestrated via [`CLAUDE.md`](CLAUDE.md). Cleaner agent added in v5.13 ([#74](https://github.com/psinthorn/iacc-php-mvc/issues/74)).
+- **AI Agent Team — 9 specialised agents** ([#48](https://github.com/psinthorn/iacc-php-mvc/issues/48)): PM, Backend, Frontend, QA, DevOps, Designer, Marketing, Support, Tracker — orchestrated via [`CLAUDE.md`](CLAUDE.md). Cleaner agent ([#74](https://github.com/psinthorn/iacc-php-mvc/issues/74)) added next minor.
 - **Dynamic Page Titles** ([#49](https://github.com/psinthorn/iacc-php-mvc/issues/49)): all 125 view files now show contextual `<title>` tags
 
-**Re-milestoned to [v5.13](https://github.com/psinthorn/iacc-php-mvc/milestone/17)** (deferred from v5.12, now scheduled):
+**Operational tooling (#50–#52)** — verified shipped in PM audit on 2026-04-30:
 
-- [#50](https://github.com/psinthorn/iacc-php-mvc/issues/50) Email SMTP — actually send vouchers/invoices
-- [#51](https://github.com/psinthorn/iacc-php-mvc/issues/51) Tour Booking dashboard KPI widget
-- [#52](https://github.com/psinthorn/iacc-php-mvc/issues/52) Bulk import tour bookings via CSV
+- **Email SMTP delivery** ([#50](https://github.com/psinthorn/iacc-php-mvc/issues/50)): per-tenant SMTP config in [`smtp_settings`](database/migrations/email_smtp_settings.sql) table + [`SmtpSettingsController`](app/Controllers/SmtpSettingsController.php) UI + [`EmailService::sendVoucher/sendInvoiceNotification`](app/Services/EmailService.php) wired into [`BulkActionController`](app/Controllers/BulkActionController.php#L288) (STARTTLS + SSL + PHP `mail()` fallback chain)
+- **Tour Booking KPI dashboard** ([#51](https://github.com/psinthorn/iacc-php-mvc/issues/51)): Revenue (฿) · Total Pax · Total Bookings cards + Top Agents table at [`/index.php?page=tour_report`](app/Views/tour-report/index.php#L112-L152), powered by `TourBooking::getKpiByRange()`
+- **Bulk CSV booking import** ([#52](https://github.com/psinthorn/iacc-php-mvc/issues/52)): 3-step wizard ([upload](app/Views/tour-booking/csv-import.php) → [preview](app/Views/tour-booking/csv-preview.php) → [done](app/Views/tour-booking/csv-import-done.php)) at [`TourBookingController::csvImport/csvPreview`](app/Controllers/TourBookingController.php#L639)
 
-**Files changed:** 200+ across `app/Controllers/Tour*.php`, `app/Models/TourBooking*.php`, `app/Views/tour-booking/`, `ai/prompts/`, `database/migrations/2026_04_*` | **PRs merged:** #57, #66, e67a1a5
+> **Note:** #50, #51, #52 were originally tracked as deferred from v5.12 → v5.13. PM audit on 2026-04-30 found all three already shipped in v5.12 work; v5.13 milestone closed empty as a result.
+
+**Files changed:** 200+ across `app/Controllers/Tour*.php`, `app/Models/TourBooking*.php`, `app/Views/tour-booking/`, `app/Views/tour-report/`, `app/Views/smtp-settings/`, `app/Services/EmailService.php`, `ai/prompts/`, `database/migrations/2026_04_*`, `database/migrations/email_smtp_settings.sql` | **PRs merged:** #57, #66, e67a1a5
 
 ### v5.11-demo-data (April 2, 2026) — Demo Data & Company Seeder
 
