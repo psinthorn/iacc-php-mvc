@@ -67,6 +67,8 @@
 <details>รายละเอียด</details>
 <discount>ส่วนลด</discount>
 <draft>ร่าง</draft>
+<paid>ชำระแล้ว</paid>
+<noshow>ไม่มาตามนัด</noshow>
 <duedate>กำหนดชำระ</duedate>
 <email>อีเมล</email>
 <error>ข้อผิดพลาด</error>

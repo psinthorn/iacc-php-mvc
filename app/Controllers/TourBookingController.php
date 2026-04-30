@@ -266,7 +266,7 @@ class TourBookingController extends BaseController
                 $oldDate   = $existing['travel_date'] ?? '';
 
                 // Handle travel date change while confirmed
-                if ($oldDate !== $travelDate && in_array($oldStatus, ['confirmed', 'completed'])) {
+                if ($oldDate !== $travelDate && in_array($oldStatus, ['confirmed', 'paid', 'completed', 'no_show'])) {
                     $oldPax = intval($existing['pax_adult']) + intval($existing['pax_child']);
                     $dateResult = $allotmentModel->handleDateChange(
                         $comId, $bookingId, $oldDate, $travelDate, $newStatus, $seatPax, $this->user['id']
@@ -285,13 +285,13 @@ class TourBookingController extends BaseController
                     if ($statusResult['is_overbooked']) {
                         $allotmentWarning = 'overbooking';
                     }
-                    if ($statusResult['is_closed'] && in_array($newStatus, ['confirmed', 'completed'])) {
+                    if ($statusResult['is_closed'] && in_array($newStatus, ['confirmed', 'paid', 'completed', 'no_show'])) {
                         $allotmentWarning = 'date_closed';
                     }
                 }
 
                 // Handle pax change while confirmed (release old, book new)
-                if ($oldStatus === $newStatus && in_array($newStatus, ['confirmed', 'completed']) && $oldDate === $travelDate) {
+                if ($oldStatus === $newStatus && in_array($newStatus, ['confirmed', 'paid', 'completed', 'no_show']) && $oldDate === $travelDate) {
                     $oldPax = intval($existing['pax_adult']) + intval($existing['pax_child']);
                     if ($oldPax !== $seatPax) {
                         $allotment = $allotmentModel->getOrCreateAllotment($comId, $travelDate);
@@ -306,7 +306,7 @@ class TourBookingController extends BaseController
                 }
             } else {
                 // New booking: if created directly as confirmed, book seats
-                if (in_array($newStatus, ['confirmed', 'completed'])) {
+                if (in_array($newStatus, ['confirmed', 'paid', 'completed', 'no_show'])) {
                     $statusResult = $allotmentModel->handleStatusChange(
                         $comId, $bookingId, $travelDate, null, $newStatus, $seatPax, $this->user['id']
                     );
@@ -347,7 +347,7 @@ class TourBookingController extends BaseController
         // Release allotment seats if booking was confirmed
         if ($id > 0) {
             $existing = $this->bookingModel->findBooking($id, $comId);
-            if ($existing && in_array($existing['status'], ['confirmed', 'completed'])) {
+            if ($existing && in_array($existing['status'], ['confirmed', 'paid', 'completed', 'no_show'])) {
                 $allotmentModel = new TourAllotment();
                 $seatPax = intval($existing['pax_adult']) + intval($existing['pax_child']);
                 $allotmentModel->handleStatusChange(
@@ -429,7 +429,9 @@ class TourBookingController extends BaseController
         $statusColors = [
             'draft'     => '#94a3b8',
             'confirmed' => '#10b981',
+            'paid'      => '#0d9488',
             'completed' => '#3b82f6',
+            'no_show'   => '#d97706',
             'cancelled' => '#ef4444',
         ];
 
@@ -749,7 +751,7 @@ class TourBookingController extends BaseController
             if ($paxAdult + $paxChild + $paxInfant < 1) $errs[] = 'pax must be >= 1';
 
             $status = trim(strtolower($row['status'] ?? 'draft'));
-            if (!in_array($status, ['draft', 'confirmed', 'completed', 'cancelled'], true)) {
+            if (!in_array($status, ['draft', 'confirmed', 'paid', 'completed', 'no_show', 'cancelled'], true)) {
                 $status = 'draft';
             }
 

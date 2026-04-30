@@ -16,10 +16,12 @@ $pageTitle = $isEdit
     : ($isThai ? 'สร้างการจองใหม่' : 'New Booking');
 
 $statusOptions = [
-    'draft'     => $isThai ? 'ฉบับร่าง' : 'Draft',
-    'confirmed' => $isThai ? 'ยืนยัน' : 'Confirmed',
-    'completed' => $isThai ? 'เสร็จสิ้น' : 'Completed',
-    'cancelled' => $isThai ? 'ยกเลิก' : 'Cancelled',
+    'draft'     => $isThai ? 'ฉบับร่าง'   : 'Draft',
+    'confirmed' => $isThai ? 'ยืนยัน'     : 'Confirmed',
+    'paid'      => $isThai ? 'ชำระแล้ว'   : 'Paid',
+    'completed' => $isThai ? 'เสร็จสิ้น'  : 'Completed',
+    'no_show'   => $isThai ? 'ไม่มาตามนัด' : 'No Show',
+    'cancelled' => $isThai ? 'ยกเลิก'     : 'Cancelled',
 ];
 
 $itemTypes = [

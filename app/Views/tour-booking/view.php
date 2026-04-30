@@ -10,10 +10,12 @@ $pageTitle = 'Tour Bookings — Details';
 $isThai = ($_SESSION['lang'] ?? '0') === '1';
 
 $statusConfig = [
-    'draft'     => ['label' => $isThai ? 'ฉบับร่าง' : 'Draft',     'bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => 'fa-pencil'],
-    'confirmed' => ['label' => $isThai ? 'ยืนยัน' : 'Confirmed',   'bg' => '#d1fae5', 'color' => '#059669', 'icon' => 'fa-check-circle'],
-    'completed' => ['label' => $isThai ? 'เสร็จสิ้น' : 'Completed', 'bg' => '#dbeafe', 'color' => '#2563eb', 'icon' => 'fa-flag-checkered'],
-    'cancelled' => ['label' => $isThai ? 'ยกเลิก' : 'Cancelled',   'bg' => '#fee2e2', 'color' => '#dc2626', 'icon' => 'fa-ban'],
+    'draft'     => ['label' => $isThai ? 'ฉบับร่าง'   : 'Draft',     'bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => 'fa-pencil'],
+    'confirmed' => ['label' => $isThai ? 'ยืนยัน'     : 'Confirmed', 'bg' => '#d1fae5', 'color' => '#059669', 'icon' => 'fa-check-circle'],
+    'paid'      => ['label' => $isThai ? 'ชำระแล้ว'   : 'Paid',      'bg' => '#ccfbf1', 'color' => '#0d9488', 'icon' => 'fa-money'],
+    'completed' => ['label' => $isThai ? 'เสร็จสิ้น'  : 'Completed', 'bg' => '#dbeafe', 'color' => '#2563eb', 'icon' => 'fa-flag-checkered'],
+    'no_show'   => ['label' => $isThai ? 'ไม่มาตามนัด' : 'No Show',   'bg' => '#ffedd5', 'color' => '#d97706', 'icon' => 'fa-user-times'],
+    'cancelled' => ['label' => $isThai ? 'ยกเลิก'     : 'Cancelled', 'bg' => '#fee2e2', 'color' => '#dc2626', 'icon' => 'fa-ban'],
 ];
 
 $sc = $statusConfig[$booking['status']] ?? $statusConfig['draft'];

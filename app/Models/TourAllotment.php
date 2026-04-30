@@ -274,7 +274,7 @@ class TourAllotment extends BaseModel
              LEFT JOIN company c ON b.customer_id = c.id
              WHERE b.company_id = %d
                AND b.travel_date = '%s'
-               AND b.status IN ('confirmed', 'completed')
+               AND b.status IN ('confirmed', 'paid', 'completed', 'no_show')
                AND b.deleted_at IS NULL
              ORDER BY b.booking_number ASC",
             intval($comId), sql_escape($travelDate)
@@ -374,8 +374,8 @@ class TourAllotment extends BaseModel
     ): array {
         $result = ['success' => true, 'is_overbooked' => false, 'is_closed' => false];
 
-        $wasConfirmed = in_array($oldStatus, ['confirmed', 'completed']);
-        $isNowConfirmed = in_array($newStatus, ['confirmed', 'completed']);
+        $wasConfirmed = in_array($oldStatus, ['confirmed', 'paid', 'completed', 'no_show']);
+        $isNowConfirmed = in_array($newStatus, ['confirmed', 'paid', 'completed', 'no_show']);
 
         if (!$wasConfirmed && $isNowConfirmed) {
             // Transitioning TO confirmed/completed → book seats
@@ -413,7 +413,7 @@ class TourAllotment extends BaseModel
     ): array {
         $result = ['success' => true, 'is_overbooked' => false, 'is_closed' => false];
 
-        if (!in_array($status, ['confirmed', 'completed'])) return $result;
+        if (!in_array($status, ['confirmed', 'paid', 'completed', 'no_show'])) return $result;
         if ($oldDate === $newDate) return $result;
 
         // Release from old date
@@ -445,7 +445,7 @@ class TourAllotment extends BaseModel
             "SELECT COALESCE(SUM(pax_adult + pax_child), 0) AS total_pax
              FROM tour_bookings
              WHERE company_id = %d AND travel_date = '%s'
-               AND status IN ('confirmed', 'completed')
+               AND status IN ('confirmed', 'paid', 'completed', 'no_show')
                AND deleted_at IS NULL",
             intval($comId), sql_escape($travelDate)
         );
@@ -591,7 +591,7 @@ class TourAllotment extends BaseModel
                     COUNT(*) AS total_bookings,
                     SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) AS confirmed_bookings,
                     SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) AS draft_bookings,
-                    SUM(CASE WHEN status IN ('confirmed','completed') THEN pax_adult + pax_child ELSE 0 END) AS confirmed_pax,
+                    SUM(CASE WHEN status IN ('confirmed','paid','completed','no_show') THEN pax_adult + pax_child ELSE 0 END) AS confirmed_pax,
                     SUM(pax_adult + pax_child) AS total_pax
              FROM tour_bookings
              WHERE company_id = %d

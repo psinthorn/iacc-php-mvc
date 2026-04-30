@@ -174,7 +174,10 @@ $csrf = $_SESSION['csrf_token'] ?? '';
                     <td><?= intval($b['pax_adult']) ?></td>
                     <td><?= intval($b['pax_child']) ?></td>
                     <td><strong><?= intval($b['seat_pax']) ?></strong></td>
-                    <td><span style="font-size:11px;font-weight:600;color:<?= $b['status'] === 'confirmed' ? '#059669' : '#3b82f6' ?>;"><?= ucfirst($b['status']) ?></span></td>
+                    <td><?php
+                        $statusColors = ['confirmed' => '#059669', 'paid' => '#0d9488', 'completed' => '#2563eb', 'no_show' => '#d97706', 'cancelled' => '#dc2626', 'draft' => '#64748b'];
+                        $color = $statusColors[$b['status']] ?? '#64748b';
+                    ?><span style="font-size:11px;font-weight:600;color:<?= $color ?>;"><?= ucfirst(str_replace('_', ' ', $b['status'])) ?></span></td>
                 </tr>
                 <?php endforeach; ?>
                 <tr style="background:#f8fafc;">

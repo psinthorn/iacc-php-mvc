@@ -3,10 +3,12 @@ $pageTitle = 'Agent Portal — Bookings';
 $isThai = ($_SESSION['lang'] ?? '0') === '1';
 
 $statusBadges = [
-    'pending'   => [$isThai ? 'รอ' : 'Pending',     '#d97706', '#fffbeb'],
-    'confirmed' => [$isThai ? 'ยืนยัน' : 'Confirmed', '#059669', '#ecfdf5'],
-    'cancelled' => [$isThai ? 'ยกเลิก' : 'Cancelled', '#dc2626', '#fef2f2'],
-    'completed' => [$isThai ? 'สำเร็จ' : 'Completed', '#2563eb', '#eff6ff'],
+    'draft'     => [$isThai ? 'ฉบับร่าง'   : 'Draft',     '#64748b', '#f1f5f9'],
+    'confirmed' => [$isThai ? 'ยืนยัน'     : 'Confirmed', '#059669', '#ecfdf5'],
+    'paid'      => [$isThai ? 'ชำระแล้ว'   : 'Paid',      '#0d9488', '#f0fdfa'],
+    'completed' => [$isThai ? 'เสร็จสิ้น'  : 'Completed', '#2563eb', '#eff6ff'],
+    'no_show'   => [$isThai ? 'ไม่มาตามนัด' : 'No Show',   '#d97706', '#fffbeb'],
+    'cancelled' => [$isThai ? 'ยกเลิก'     : 'Cancelled', '#dc2626', '#fef2f2'],
 ];
 ?>
 
@@ -57,7 +59,7 @@ $statusBadges = [
             </thead>
             <tbody>
                 <?php foreach ($bookings as $b):
-                    $st = $statusBadges[$b['status'] ?? 'pending'] ?? $statusBadges['pending'];
+                    $st = $statusBadges[$b['status'] ?? 'draft'] ?? $statusBadges['draft'];
                 ?>
                 <tr>
                     <td><span class="booking-no"><?= htmlspecialchars($b['booking_number'] ?? '#' . $b['id']) ?></span></td>

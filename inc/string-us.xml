@@ -67,6 +67,8 @@
 <details>Details</details>
 <discount>Discount</discount>
 <draft>Draft</draft>
+<paid>Paid</paid>
+<noshow>No Show</noshow>
 <duedate>Due Date</duedate>
 <email>Email</email>
 <error>Error</error>
