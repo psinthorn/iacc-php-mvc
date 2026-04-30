@@ -141,7 +141,7 @@ class SuperAdminTourController extends BaseController
     private function getCompanyAdminEmail(int $comId): ?string
     {
         global $db;
-        $sql = "SELECT email FROM user WHERE company_id = " . intval($comId) . " AND user_level >= 1 AND email != '' ORDER BY user_level DESC LIMIT 1";
+        $sql = "SELECT email FROM user WHERE com_id = " . intval($comId) . " AND user_level >= 1 AND email != '' ORDER BY user_level DESC LIMIT 1";
         $res = mysqli_query($db->conn, $sql);
         $row = $res ? mysqli_fetch_assoc($res) : null;
         return $row['email'] ?? null;
