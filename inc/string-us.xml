@@ -552,8 +552,23 @@
 <touroperator>Tour Operator</touroperator>
 <tourbookings>Bookings</tourbookings>
 <touragents>Agents</touragents>
+<touragentregs>Agent Registrations</touragentregs>
+<tourcontracts>Contracts</tourcontracts>
+<tourdocuments>Documents</tourdocuments>
+<tourcontractreport>Contract Reports</tourcontractreport>
 <tourlocations>Locations</tourlocations>
+<tourallotments>Allotments</tourallotments>
+<tourfleets>Fleets</tourfleets>
 <tourreports>Reports</tourreports>
+<tourcheckin>Check-In Dashboard</tourcheckin>
+<touroperatorplatform>Tour Operator Platform</touroperatorplatform>
+<!-- Agent Portal sub-items -->
+<agentportal>Agent Portal</agentportal>
+<agentportaldashboard>Dashboard</agentportaldashboard>
+<agentportalproducts>Products</agentportalproducts>
+<agentportalcontracts>Contracts</agentportalcontracts>
+<agentportalbookings>Bookings</agentportalbookings>
+<agentportaldocuments>Documents</agentportaldocuments>
 <tourbookingnumber>Booking No.</tourbookingnumber>
 <tourtraveldate>Travel Date</tourtraveldate>
 <tourpaxadult>Adult</tourpaxadult>

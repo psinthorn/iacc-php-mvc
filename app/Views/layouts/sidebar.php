@@ -267,11 +267,11 @@ include_once 'inc/top-navbar.php';
                     <li>
                         <a href="#"><i class="fa fa-id-badge"></i> <?=$xml->agentportal ?? 'Agent Portal'?><span class="fa arrow"></span></a>
                         <ul class="nav nav-second-level">
-                            <li><a href="index.php?page=agent_portal_dashboard"><i class="fa fa-tachometer"></i> <?=$xml->dashboard ?? 'Dashboard'?></a></li>
-                            <li><a href="index.php?page=agent_portal_products"><i class="fa fa-cubes"></i> <?=$xml->products ?? 'Products'?></a></li>
-                            <li><a href="index.php?page=agent_portal_contracts"><i class="fa fa-file-text-o"></i> <?=$xml->contracts ?? 'Contracts'?></a></li>
-                            <li><a href="index.php?page=agent_portal_bookings"><i class="fa fa-calendar-check-o"></i> <?=$xml->bookings ?? 'Bookings'?></a></li>
-                            <li><a href="index.php?page=agent_portal_documents"><i class="fa fa-folder-open-o"></i> <?=$xml->documents ?? 'Documents'?></a></li>
+                            <li><a href="index.php?page=agent_portal_dashboard"><i class="fa fa-tachometer"></i> <?=$xml->agentportaldashboard ?? 'Dashboard'?></a></li>
+                            <li><a href="index.php?page=agent_portal_products"><i class="fa fa-cubes"></i> <?=$xml->agentportalproducts ?? 'Products'?></a></li>
+                            <li><a href="index.php?page=agent_portal_contracts"><i class="fa fa-file-text-o"></i> <?=$xml->agentportalcontracts ?? 'Contracts'?></a></li>
+                            <li><a href="index.php?page=agent_portal_bookings"><i class="fa fa-calendar-check-o"></i> <?=$xml->agentportalbookings ?? 'Bookings'?></a></li>
+                            <li><a href="index.php?page=agent_portal_documents"><i class="fa fa-folder-open-o"></i> <?=$xml->agentportaldocuments ?? 'Documents'?></a></li>
                         </ul>
                     </li>
                     <?php endif; ?>

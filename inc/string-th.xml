@@ -552,8 +552,23 @@
 <touroperator>ทัวร์โอเปอเรเตอร์</touroperator>
 <tourbookings>การจอง</tourbookings>
 <touragents>ตัวแทน</touragents>
+<touragentregs>การลงทะเบียนตัวแทน</touragentregs>
+<tourcontracts>สัญญา</tourcontracts>
+<tourdocuments>เอกสาร</tourdocuments>
+<tourcontractreport>รายงานสัญญา</tourcontractreport>
 <tourlocations>สถานที่</tourlocations>
+<tourallotments>โควต้า</tourallotments>
+<tourfleets>ยานพาหนะ</tourfleets>
 <tourreports>รายงาน</tourreports>
+<tourcheckin>เช็คอินทัวร์</tourcheckin>
+<touroperatorplatform>แพลตฟอร์มทัวร์โอเปอเรเตอร์</touroperatorplatform>
+<!-- Agent Portal sub-items -->
+<agentportal>พอร์ทัลตัวแทน</agentportal>
+<agentportaldashboard>แดชบอร์ด</agentportaldashboard>
+<agentportalproducts>สินค้า</agentportalproducts>
+<agentportalcontracts>สัญญา</agentportalcontracts>
+<agentportalbookings>การจอง</agentportalbookings>
+<agentportaldocuments>เอกสาร</agentportaldocuments>
 <tourbookingnumber>เลขที่จอง</tourbookingnumber>
 <tourtraveldate>วันที่เดินทาง</tourtraveldate>
 <tourpaxadult>ผู้ใหญ่</tourpaxadult>
