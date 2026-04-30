@@ -116,7 +116,7 @@ function runReports(string $period): void
         $name = $row['name_en'];
 
         // Find admin email
-        $emailSql = "SELECT email FROM user WHERE com_id = $comId AND user_level >= 1 AND email != '' ORDER BY user_level DESC, usr_id ASC LIMIT 1";
+        $emailSql = "SELECT email FROM authorize WHERE company_id = $comId AND level >= 1 AND email != '' ORDER BY level DESC, id ASC LIMIT 1";
         $emailRes = mysqli_query($db->conn, $emailSql);
         $emailRow = $emailRes ? mysqli_fetch_assoc($emailRes) : null;
         $email = $emailRow['email'] ?? null;

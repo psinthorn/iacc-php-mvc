@@ -37,7 +37,7 @@ class TourOperatorAgent extends BaseModel
                 FROM tour_operator_agents oa
                 LEFT JOIN company c ON oa.agent_company_id = c.id
                 LEFT JOIN agent_contracts ac ON oa.default_contract_id = ac.id
-                LEFT JOIN user au ON oa.approved_by = au.usr_id
+                LEFT JOIN authorize au ON oa.approved_by = au.id
                 WHERE oa.operator_company_id = $operatorComId
                   AND oa.deleted_at IS NULL
                   $statusFilter

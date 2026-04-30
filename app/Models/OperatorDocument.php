@@ -25,7 +25,7 @@ class OperatorDocument extends BaseModel
                        u.email AS uploader_email
                 FROM tour_operator_documents d
                 LEFT JOIN agent_contracts ac ON d.contract_id = ac.id
-                LEFT JOIN user u ON d.uploaded_by = u.usr_id
+                LEFT JOIN authorize u ON d.uploaded_by = u.id
                 WHERE d.operator_company_id = $operatorComId
                   AND d.deleted_at IS NULL
                 ORDER BY d.created_at DESC";
