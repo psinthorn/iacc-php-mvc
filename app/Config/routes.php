@@ -352,6 +352,50 @@ return [
     'agent_contract_make'    => ['AgentContractController', 'make'],
     'agent_contract_store'   => ['AgentContractController', 'store'],
     'agent_contract_delete'  => ['AgentContractController', 'delete'],
+
+    // V2: Operator-level contract management
+    'tour_contract_list'     => ['AgentContractController', 'contractList'],
+    'tour_contract_make'     => ['AgentContractController', 'contractMake'],
+    'tour_contract_store'    => ['AgentContractController', 'contractStore'],
+    'tour_contract_delete'   => ['AgentContractController', 'contractDelete'],
+    'tour_contract_assign'   => ['AgentContractController', 'assignAgent'],
+    'tour_contract_unassign' => ['AgentContractController', 'unassignAgent'],
+    'tour_contract_default'  => ['AgentContractController', 'setDefault'],
+    'tour_contract_clone'    => ['AgentContractController', 'cloneContract'],
+    'tour_contract_resync'   => ['AgentContractController', 'resync'],
+
+    // V2: Agent registration & approval workflow
+    'tour_agent_reg_list'       => ['TourAgentRegistrationController', 'list'],
+    'tour_agent_reg_view'       => ['TourAgentRegistrationController', 'view'],
+    'tour_agent_reg_approve'    => ['TourAgentRegistrationController', 'approve'],
+    'tour_agent_reg_reject'     => ['TourAgentRegistrationController', 'reject'],
+    'tour_agent_reg_suspend'    => ['TourAgentRegistrationController', 'suspend'],
+    'tour_agent_reg_reactivate' => ['TourAgentRegistrationController', 'reactivate'],
+    'tour_agent_reg_invite'     => ['TourAgentRegistrationController', 'invite'],
+
+    // V2: Agent portal (agent-facing)
+    'agent_portal_dashboard' => ['AgentPortalController', 'dashboard'],
+    'agent_portal_products'  => ['AgentPortalController', 'products'],
+    'agent_portal_contracts' => ['AgentPortalController', 'contracts'],
+    'agent_portal_contract'  => ['AgentPortalController', 'contract'],
+    'agent_portal_bookings'  => ['AgentPortalController', 'bookings'],
+    'agent_portal_resync'    => ['AgentPortalController', 'resync'],
+
+    // V2: Operator documents (operator side + agent side)
+    'tour_doc_list'              => ['OperatorDocumentController', 'list'],
+    'tour_doc_upload'            => ['OperatorDocumentController', 'upload'],
+    'tour_doc_delete'            => ['OperatorDocumentController', 'delete'],
+    'agent_portal_documents'     => ['OperatorDocumentController', 'agentList'],
+    'agent_portal_doc_download'  => ['OperatorDocumentController', 'agentDownload'],
+
+    // V2: Contract reports + email digests
+    'tour_contract_report'      => ['ContractReportController', 'dashboard'],
+    'tour_contract_report_send' => ['ContractReportController', 'sendNow'],
+
+    // V2: Super admin platform-wide tour overview
+    'super_admin_tour'          => ['SuperAdminTourController', 'overview'],
+    'super_admin_tour_send_all' => ['SuperAdminTourController', 'sendAllNow'],
+
     'tour_location_list'     => ['TourLocationController', 'index'],
     'tour_location_make'     => ['TourLocationController', 'make'],
     'tour_location_store'    => ['TourLocationController', 'store'],

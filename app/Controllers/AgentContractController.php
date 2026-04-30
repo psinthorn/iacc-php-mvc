@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\AgentContract;
 use App\Models\TourAgentProfile;
+use App\Services\ContractSyncService;
 
 /**
  * AgentContractController — CRUD for agent contracts
@@ -186,5 +187,267 @@ class AgentContractController extends BaseController
         }
 
         $this->redirect('agent_contract_list', ['agent_id' => $agentCompanyId, 'msg' => 'deleted']);
+    }
+
+    // ─── V2: Operator-Level Contract Management ────────────────
+
+    /**
+     * List all operator-level contracts
+     */
+    public function contractList(): void
+    {
+        if (!$this->guardModule()) return;
+
+        $comId = $this->getCompanyId();
+        $contracts = $this->model->getOperatorContracts($comId);
+        $defaultContractId = $this->model->getDefaultContractId($comId);
+        $message = $_GET['msg'] ?? '';
+
+        $this->render('tour-agent/contract-list-v2', compact(
+            'contracts', 'defaultContractId', 'message'
+        ));
+    }
+
+    /**
+     * Create / Edit operator-level contract form
+     */
+    public function contractMake(): void
+    {
+        if (!$this->guardModule()) return;
+
+        $comId = $this->getCompanyId();
+        $contractId = $this->inputInt('contract_id');
+
+        $contract = null;
+        $contractRates = [];
+        $contractAgents = [];
+        $seasons = [];
+
+        if ($contractId > 0) {
+            $contract = $this->model->getContract($contractId, $comId);
+            if (!$contract) {
+                $this->redirect('tour_contract_list', ['msg' => 'not_found']);
+                return;
+            }
+            $contractRates = $this->model->getContractRatesBySeason($contractId);
+            $contractAgents = $this->model->getContractAgents($contractId, $comId);
+            $seasons = $this->model->getSeasons($contractId);
+        }
+
+        $allTypes = $this->model->getAllTypes($comId);
+        $modelsByType = $this->agentModel->getModelsGroupedByType($comId);
+        $availableAgents = $contractId > 0
+            ? $this->model->getAvailableAgents($contractId, $comId)
+            : [];
+        $message = $_GET['msg'] ?? '';
+
+        $this->render('tour-agent/contract-make-v2', compact(
+            'contract', 'contractId', 'allTypes', 'modelsByType',
+            'contractRates', 'contractAgents', 'availableAgents',
+            'seasons', 'message'
+        ));
+    }
+
+    /**
+     * POST: Save operator-level contract
+     */
+    public function contractStore(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('tour_contract_list');
+            return;
+        }
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+
+        $data = [
+            'company_id'    => $comId,
+            'contract_name' => trim($_POST['contract_name'] ?? ''),
+            'status'        => $_POST['status'] ?? 'draft',
+            'valid_from'    => trim($_POST['valid_from'] ?? ''),
+            'valid_to'      => trim($_POST['valid_to'] ?? ''),
+            'payment_terms' => trim($_POST['payment_terms'] ?? ''),
+            'credit_days'   => intval($_POST['credit_days'] ?? 0),
+            'deposit_pct'   => floatval($_POST['deposit_pct'] ?? 0),
+            'conditions'    => trim($_POST['conditions'] ?? ''),
+            'notes'         => trim($_POST['notes'] ?? ''),
+            'type_ids'      => $_POST['type_ids'] ?? [],
+        ];
+
+        if ($contractId > 0) {
+            $existing = $this->model->getContract($contractId, $comId);
+            if (!$existing) {
+                $this->redirect('tour_contract_list', ['msg' => 'error']);
+                return;
+            }
+            $this->model->updateContract($contractId, $data, $comId);
+            $msg = 'updated';
+        } else {
+            $contractId = $this->model->createOperatorContract($data);
+            $msg = 'created';
+        }
+
+        // Save season rates if provided
+        if (!empty($_POST['season_rates']) && is_array($_POST['season_rates'])) {
+            foreach ($_POST['season_rates'] as $season) {
+                $seasonName  = !empty($season['season_name']) ? trim($season['season_name']) : null;
+                $seasonStart = !empty($season['season_start']) ? trim($season['season_start']) : null;
+                $seasonEnd   = !empty($season['season_end']) ? trim($season['season_end']) : null;
+                $priority    = intval($season['priority'] ?? 0);
+                $rates       = $season['rates'] ?? [];
+
+                if (!empty($rates)) {
+                    $this->model->saveSeasonRates($contractId, $comId, $rates,
+                        $seasonName, $seasonStart, $seasonEnd, $priority);
+                }
+            }
+        }
+
+        // Trigger sync if contract has agents assigned
+        $this->triggerSync($contractId, $comId);
+
+        $this->redirect('tour_contract_make', ['contract_id' => $contractId, 'msg' => $msg]);
+    }
+
+    /**
+     * POST: Delete operator-level contract
+     */
+    public function contractDelete(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('tour_contract_list');
+            return;
+        }
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+
+        if ($contractId > 0) {
+            $this->model->deleteOperatorContract($contractId, $comId);
+        }
+
+        $this->redirect('tour_contract_list', ['msg' => 'deleted']);
+    }
+
+    /**
+     * POST: Assign agent to contract
+     */
+    public function assignAgent(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+        $agentCompanyId = intval($_POST['agent_company_id'] ?? 0);
+        $userId = $this->user['id'] ?? null;
+
+        if ($contractId > 0 && $agentCompanyId > 0) {
+            $this->model->assignAgent($contractId, $agentCompanyId, $comId, $userId);
+            $this->triggerSync($contractId, $comId);
+        }
+
+        $this->redirect('tour_contract_make', ['contract_id' => $contractId, 'msg' => 'agent_assigned']);
+    }
+
+    /**
+     * POST: Unassign agent from contract
+     */
+    public function unassignAgent(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+        $agentCompanyId = intval($_POST['agent_company_id'] ?? 0);
+
+        if ($contractId > 0 && $agentCompanyId > 0) {
+            $this->model->unassignAgent($contractId, $agentCompanyId, $comId);
+            // Remove synced products for this agent from this contract
+            $syncModel = new \App\Models\ContractSync();
+            $removed = $syncModel->deleteAgentProducts($agentCompanyId, $contractId, $comId);
+            $syncModel->logSync($comId, $contractId, $agentCompanyId, 'contract_unassigned', 'operator', 0, $removed);
+        }
+
+        $this->redirect('tour_contract_make', ['contract_id' => $contractId, 'msg' => 'agent_unassigned']);
+    }
+
+    /**
+     * POST: Set contract as default
+     */
+    public function setDefault(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+
+        if ($contractId > 0) {
+            $this->model->setDefaultContract($contractId, $comId);
+        }
+
+        $this->redirect('tour_contract_list', ['msg' => 'default_set']);
+    }
+
+    /**
+     * POST: Clone a contract
+     */
+    public function cloneContract(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+        $newName = trim($_POST['new_name'] ?? '');
+
+        if ($contractId > 0) {
+            $newId = $this->model->cloneContract($contractId, $comId, $newName);
+            if ($newId) {
+                $this->redirect('tour_contract_make', ['contract_id' => $newId, 'msg' => 'cloned']);
+                return;
+            }
+        }
+
+        $this->redirect('tour_contract_list', ['msg' => 'error']);
+    }
+
+    /**
+     * POST: Manual resync for a contract
+     */
+    public function resync(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+        if (!$this->guardModule()) return;
+        $this->verifyCsrf();
+
+        $comId = $this->getCompanyId();
+        $contractId = intval($_POST['contract_id'] ?? 0);
+
+        if ($contractId > 0) {
+            $this->triggerSync($contractId, $comId);
+        }
+
+        $this->redirect('tour_contract_make', ['contract_id' => $contractId, 'msg' => 'resynced']);
+    }
+
+    /**
+     * Trigger sync for a contract — rebuild agent product catalogs
+     */
+    private function triggerSync(int $contractId, int $comId): void
+    {
+        $syncService = new ContractSyncService();
+        $syncService->syncContractToAgents($contractId, $comId, 'operator');
     }
 }

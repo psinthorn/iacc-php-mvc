@@ -363,6 +363,402 @@ class AgentContract extends BaseModel
         return '';
     }
 
+    // ─── V2: Operator-Level Contract Methods ───────────────────
+
+    /**
+     * List all operator-level contracts (not per-agent)
+     */
+    public function getOperatorContracts(int $comId): array
+    {
+        $comId = \sql_int($comId);
+        $sql = "SELECT ac.*,
+                       (SELECT COUNT(*) FROM agent_contract_types act WHERE act.contract_id = ac.id) AS type_count,
+                       (SELECT COUNT(*) FROM contract_rate cr WHERE cr.contract_id = ac.id AND cr.deleted_at IS NULL) AS rate_count,
+                       (SELECT COUNT(*) FROM tour_contract_agents tca WHERE tca.contract_id = ac.id) AS agent_count,
+                       (SELECT COUNT(DISTINCT cr2.season_name) FROM contract_rate cr2 WHERE cr2.contract_id = ac.id AND cr2.deleted_at IS NULL AND cr2.season_name IS NOT NULL) AS season_count
+                FROM agent_contracts ac
+                WHERE ac.company_id = '$comId'
+                  AND ac.deleted_at IS NULL
+                ORDER BY ac.is_default DESC, ac.created_at DESC";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Create an operator-level contract (no agent_company_id)
+     */
+    public function createOperatorContract(array $data): int
+    {
+        $comId = \sql_int($data['company_id']);
+        $contractNumber = $data['contract_number'] ?? $this->generateContractNumber((int)$comId);
+
+        $sql = "INSERT INTO agent_contracts
+                (company_id, agent_company_id, contract_number, contract_name, status,
+                 valid_from, valid_to, payment_terms, credit_days, deposit_pct,
+                 conditions, notes, is_default, is_operator_level)
+                VALUES (
+                    '$comId', NULL,
+                    '" . \sql_escape($contractNumber) . "',
+                    " . (!empty($data['contract_name']) ? "'" . \sql_escape($data['contract_name']) . "'" : "NULL") . ",
+                    '" . \sql_escape($data['status'] ?? 'draft') . "',
+                    " . (!empty($data['valid_from']) ? "'" . \sql_escape($data['valid_from']) . "'" : "NULL") . ",
+                    " . (!empty($data['valid_to']) ? "'" . \sql_escape($data['valid_to']) . "'" : "NULL") . ",
+                    " . (!empty($data['payment_terms']) ? "'" . \sql_escape($data['payment_terms']) . "'" : "NULL") . ",
+                    '" . intval($data['credit_days'] ?? 0) . "',
+                    '" . floatval($data['deposit_pct'] ?? 0) . "',
+                    " . (!empty($data['conditions']) ? "'" . \sql_escape($data['conditions']) . "'" : "NULL") . ",
+                    " . (!empty($data['notes']) ? "'" . \sql_escape($data['notes']) . "'" : "NULL") . ",
+                    '" . intval($data['is_default'] ?? 0) . "',
+                    1
+                )";
+        mysqli_query($this->conn, $sql);
+        $contractId = mysqli_insert_id($this->conn);
+
+        if (!empty($data['type_ids']) && is_array($data['type_ids'])) {
+            $this->syncContractTypes($contractId, $data['type_ids'], (int)$comId);
+        }
+
+        return $contractId;
+    }
+
+    // ─── V2: Many-to-Many Agent Assignment ─────────────────────
+
+    /**
+     * Get agents assigned to a contract
+     */
+    public function getContractAgents(int $contractId, int $comId): array
+    {
+        $contractId = \sql_int($contractId);
+        $comId = \sql_int($comId);
+        $sql = "SELECT tca.*, c.name_en AS agent_name, c.name_th AS agent_name_th,
+                       tap.contact_email, tap.contact_mobile
+                FROM tour_contract_agents tca
+                JOIN company c ON c.id = tca.agent_company_id
+                LEFT JOIN tour_agent_profiles tap ON tap.company_ref_id = tca.agent_company_id AND tap.company_id = '$comId'
+                WHERE tca.contract_id = '$contractId' AND tca.company_id = '$comId'
+                ORDER BY c.name_en ASC";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Assign an agent to a contract
+     */
+    public function assignAgent(int $contractId, int $agentCompanyId, int $comId, ?int $userId = null): bool
+    {
+        $contractId = \sql_int($contractId);
+        $agentCompanyId = \sql_int($agentCompanyId);
+        $comId = \sql_int($comId);
+        $userId = $userId ? \sql_int($userId) : 'NULL';
+
+        $sql = "INSERT IGNORE INTO tour_contract_agents
+                (contract_id, agent_company_id, company_id, assigned_by)
+                VALUES ('$contractId', '$agentCompanyId', '$comId', $userId)";
+        return mysqli_query($this->conn, $sql);
+    }
+
+    /**
+     * Unassign an agent from a contract
+     */
+    public function unassignAgent(int $contractId, int $agentCompanyId, int $comId): bool
+    {
+        $contractId = \sql_int($contractId);
+        $agentCompanyId = \sql_int($agentCompanyId);
+        $comId = \sql_int($comId);
+
+        return mysqli_query($this->conn,
+            "DELETE FROM tour_contract_agents
+             WHERE contract_id = '$contractId' AND agent_company_id = '$agentCompanyId' AND company_id = '$comId'");
+    }
+
+    /**
+     * Get all agents available for assignment (not already on this contract)
+     */
+    public function getAvailableAgents(int $contractId, int $comId): array
+    {
+        $contractId = \sql_int($contractId);
+        $comId = \sql_int($comId);
+        $sql = "SELECT toa.agent_company_id, c.name_en AS agent_name, c.name_th AS agent_name_th
+                FROM tour_operator_agents toa
+                JOIN company c ON c.id = toa.agent_company_id
+                WHERE toa.operator_company_id = '$comId'
+                  AND toa.status = 'approved'
+                  AND toa.deleted_at IS NULL
+                  AND toa.agent_company_id NOT IN (
+                      SELECT agent_company_id FROM tour_contract_agents WHERE contract_id = '$contractId'
+                  )
+                ORDER BY c.name_en ASC";
+        return $this->fetchAll($sql);
+    }
+
+    // ─── V2: Default Contract ──────────────────────────────────
+
+    /**
+     * Set a contract as the default for new agents
+     */
+    public function setDefaultContract(int $contractId, int $comId): bool
+    {
+        $contractId = \sql_int($contractId);
+        $comId = \sql_int($comId);
+
+        // Update company_modules
+        mysqli_query($this->conn,
+            "UPDATE company_modules SET default_contract_id = '$contractId'
+             WHERE company_id = '$comId' AND module_key = 'tour_operator'");
+
+        // Also update is_default flag on contracts
+        mysqli_query($this->conn,
+            "UPDATE agent_contracts SET is_default = 0 WHERE company_id = '$comId' AND is_operator_level = 1");
+        return mysqli_query($this->conn,
+            "UPDATE agent_contracts SET is_default = 1 WHERE id = '$contractId' AND company_id = '$comId'");
+    }
+
+    /**
+     * Get the default contract ID for an operator
+     */
+    public function getDefaultContractId(int $comId): ?int
+    {
+        $comId = \sql_int($comId);
+        $sql = "SELECT default_contract_id FROM company_modules
+                WHERE company_id = '$comId' AND module_key = 'tour_operator' LIMIT 1";
+        $r = mysqli_query($this->conn, $sql);
+        if ($r && $row = mysqli_fetch_assoc($r)) {
+            return $row['default_contract_id'] ? (int)$row['default_contract_id'] : null;
+        }
+        return null;
+    }
+
+    // ─── V2: Season Rate Management ────────────────────────────
+
+    /**
+     * Get contract rates grouped by season
+     * Returns: ['default' => [...rates], 'High Season' => [...rates], ...]
+     */
+    public function getContractRatesBySeason(int $contractId): array
+    {
+        $contractId = \sql_int($contractId);
+        $sql = "SELECT * FROM contract_rate
+                WHERE contract_id = '$contractId' AND deleted_at IS NULL
+                ORDER BY priority DESC, season_name ASC, model_id ASC";
+        $rows = $this->fetchAll($sql);
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $season = $row['season_name'] ?: 'default';
+            if (!isset($grouped[$season])) {
+                $grouped[$season] = [
+                    'season_name'  => $row['season_name'],
+                    'season_start' => $row['season_start'],
+                    'season_end'   => $row['season_end'],
+                    'priority'     => (int)$row['priority'],
+                    'rates'        => [],
+                ];
+            }
+            $key = $row['model_id'] ? (int)$row['model_id'] : 0;
+            $grouped[$season]['rates'][$key] = $row;
+        }
+        return $grouped;
+    }
+
+    /**
+     * Get distinct seasons for a contract
+     */
+    public function getSeasons(int $contractId): array
+    {
+        $contractId = \sql_int($contractId);
+        $sql = "SELECT DISTINCT season_name, season_start, season_end, priority
+                FROM contract_rate
+                WHERE contract_id = '$contractId' AND deleted_at IS NULL
+                ORDER BY priority DESC, season_name ASC";
+        return $this->fetchAll($sql);
+    }
+
+    /**
+     * Save contract rates with season support
+     */
+    public function saveSeasonRates(int $contractId, int $comId, array $rates, ?string $seasonName = null,
+                                     ?string $seasonStart = null, ?string $seasonEnd = null, int $priority = 0): void
+    {
+        $contractId = \sql_int($contractId);
+        $comId = \sql_int($comId);
+
+        // Soft-delete existing rates for this contract + season
+        $seasonWhere = $seasonName
+            ? "AND season_name = '" . \sql_escape($seasonName) . "'"
+            : "AND season_name IS NULL";
+        mysqli_query($this->conn,
+            "UPDATE contract_rate SET deleted_at = NOW()
+             WHERE contract_id = '$contractId' $seasonWhere AND deleted_at IS NULL");
+
+        $seasonNameSql = $seasonName ? "'" . \sql_escape($seasonName) . "'" : "NULL";
+        $seasonStartSql = $seasonStart ? "'" . \sql_escape($seasonStart) . "'" : "NULL";
+        $seasonEndSql = $seasonEnd ? "'" . \sql_escape($seasonEnd) . "'" : "NULL";
+
+        foreach ($rates as $rate) {
+            $modelId    = !empty($rate['model_id']) ? \sql_int($rate['model_id']) : 'NULL';
+            $rateType   = \sql_escape($rate['rate_type'] ?? 'net_rate');
+            $adultDef   = floatval($rate['adult_default'] ?? 0);
+            $childDef   = floatval($rate['child_default'] ?? 0);
+            $adultThai  = floatval($rate['adult_thai'] ?? 0);
+            $adultFor   = floatval($rate['adult_foreigner'] ?? 0);
+            $childThai  = floatval($rate['child_thai'] ?? 0);
+            $childFor   = floatval($rate['child_foreigner'] ?? 0);
+            $entAdultDef = floatval($rate['entrance_adult_default'] ?? 0);
+            $entChildDef = floatval($rate['entrance_child_default'] ?? 0);
+            $entAT      = floatval($rate['entrance_adult_thai'] ?? 0);
+            $entAF      = floatval($rate['entrance_adult_foreigner'] ?? 0);
+            $entCT      = floatval($rate['entrance_child_thai'] ?? 0);
+            $entCF      = floatval($rate['entrance_child_foreigner'] ?? 0);
+
+            // Skip all-zero rows
+            if ($adultDef == 0 && $childDef == 0
+                && $adultThai == 0 && $adultFor == 0 && $childThai == 0 && $childFor == 0
+                && $entAdultDef == 0 && $entChildDef == 0
+                && $entAT == 0 && $entAF == 0 && $entCT == 0 && $entCF == 0) {
+                continue;
+            }
+
+            $sql = "INSERT INTO contract_rate
+                    (contract_id, company_id, agent_company_id, model_id, rate_type,
+                     season_name, season_start, season_end, priority,
+                     adult_default, child_default,
+                     adult_thai, adult_foreigner, child_thai, child_foreigner,
+                     entrance_adult_default, entrance_child_default,
+                     entrance_adult_thai, entrance_adult_foreigner, entrance_child_thai, entrance_child_foreigner,
+                     valid_from, valid_to)
+                    VALUES ('$contractId', '$comId', 0, $modelId, '$rateType',
+                            $seasonNameSql, $seasonStartSql, $seasonEndSql, '$priority',
+                            '$adultDef', '$childDef',
+                            '$adultThai', '$adultFor', '$childThai', '$childFor',
+                            '$entAdultDef', '$entChildDef',
+                            '$entAT', '$entAF', '$entCT', '$entCF',
+                            '2026-01-01', '2026-12-31')
+                    ON DUPLICATE KEY UPDATE
+                        rate_type = VALUES(rate_type),
+                        season_start = VALUES(season_start), season_end = VALUES(season_end),
+                        priority = VALUES(priority),
+                        adult_default = VALUES(adult_default), child_default = VALUES(child_default),
+                        adult_thai = VALUES(adult_thai), adult_foreigner = VALUES(adult_foreigner),
+                        child_thai = VALUES(child_thai), child_foreigner = VALUES(child_foreigner),
+                        entrance_adult_default = VALUES(entrance_adult_default),
+                        entrance_child_default = VALUES(entrance_child_default),
+                        entrance_adult_thai = VALUES(entrance_adult_thai),
+                        entrance_adult_foreigner = VALUES(entrance_adult_foreigner),
+                        entrance_child_thai = VALUES(entrance_child_thai),
+                        entrance_child_foreigner = VALUES(entrance_child_foreigner),
+                        deleted_at = NULL";
+            mysqli_query($this->conn, $sql);
+        }
+    }
+
+    /**
+     * Delete all rates for a specific season in a contract
+     */
+    public function deleteSeasonRates(int $contractId, string $seasonName): bool
+    {
+        $contractId = \sql_int($contractId);
+        $seasonName = \sql_escape($seasonName);
+        return mysqli_query($this->conn,
+            "UPDATE contract_rate SET deleted_at = NOW()
+             WHERE contract_id = '$contractId' AND season_name = '$seasonName' AND deleted_at IS NULL");
+    }
+
+    /**
+     * Find the applicable rate for a product on a specific travel date.
+     * Priority: season-specific rate (highest priority) > base rate (no season)
+     */
+    public function findApplicableRate(int $contractId, int $modelId, string $travelDate): ?array
+    {
+        $contractId = \sql_int($contractId);
+        $modelId = \sql_int($modelId);
+        $travelDate = \sql_escape($travelDate);
+
+        $sql = "SELECT * FROM contract_rate
+                WHERE contract_id = '$contractId'
+                  AND model_id = '$modelId'
+                  AND deleted_at IS NULL
+                  AND (
+                      (season_start IS NOT NULL AND season_end IS NOT NULL
+                       AND '$travelDate' BETWEEN season_start AND season_end)
+                      OR season_name IS NULL
+                  )
+                ORDER BY
+                  CASE WHEN season_name IS NOT NULL THEN 0 ELSE 1 END,
+                  priority DESC
+                LIMIT 1";
+        $r = mysqli_query($this->conn, $sql);
+        if ($r && $row = mysqli_fetch_assoc($r)) return $row;
+        return null;
+    }
+
+    // ─── V2: Clone Contract ────────────────────────────────────
+
+    /**
+     * Clone a contract with all its rates and type links
+     */
+    public function cloneContract(int $contractId, int $comId, string $newName = ''): int
+    {
+        $contract = $this->getContract($contractId, $comId);
+        if (!$contract) return 0;
+
+        $newContractId = $this->createOperatorContract([
+            'company_id'    => $comId,
+            'contract_name' => $newName ?: ($contract['contract_name'] . ' (Copy)'),
+            'status'        => 'draft',
+            'valid_from'    => $contract['valid_from'],
+            'valid_to'      => $contract['valid_to'],
+            'payment_terms' => $contract['payment_terms'],
+            'credit_days'   => $contract['credit_days'],
+            'deposit_pct'   => $contract['deposit_pct'],
+            'conditions'    => $contract['conditions'],
+            'notes'         => $contract['notes'],
+            'type_ids'      => $contract['type_ids'],
+        ]);
+
+        if ($newContractId) {
+            // Clone rates
+            $rates = $this->getContractRatesBySeason($contractId);
+            foreach ($rates as $season => $seasonData) {
+                $this->saveSeasonRates(
+                    $newContractId, $comId, $seasonData['rates'],
+                    $seasonData['season_name'], $seasonData['season_start'],
+                    $seasonData['season_end'], $seasonData['priority']
+                );
+            }
+        }
+
+        return $newContractId;
+    }
+
+    // ─── V2: Soft-delete with sync cleanup ─────────────────────
+
+    /**
+     * Soft-delete an operator-level contract + clean up junctions
+     */
+    public function deleteOperatorContract(int $id, int $comId): bool
+    {
+        $id = \sql_int($id);
+        $comId = \sql_int($comId);
+
+        // Soft-delete rates
+        mysqli_query($this->conn,
+            "UPDATE contract_rate SET deleted_at = NOW() WHERE contract_id = '$id' AND deleted_at IS NULL");
+
+        // Remove type links
+        mysqli_query($this->conn,
+            "DELETE FROM agent_contract_types WHERE contract_id = '$id'");
+
+        // Remove agent assignments
+        mysqli_query($this->conn,
+            "DELETE FROM tour_contract_agents WHERE contract_id = '$id' AND company_id = '$comId'");
+
+        // Remove synced products from this contract
+        mysqli_query($this->conn,
+            "DELETE FROM tour_operator_agent_products WHERE contract_id = '$id' AND operator_company_id = '$comId'");
+
+        // Soft-delete the contract
+        return mysqli_query($this->conn,
+            "UPDATE agent_contracts SET deleted_at = NOW() WHERE id = '$id' AND company_id = '$comId' AND deleted_at IS NULL");
+    }
+
     private function fetchAll(string $sql): array
     {
         $result = mysqli_query($this->conn, $sql);

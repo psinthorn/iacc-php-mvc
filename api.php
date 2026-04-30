@@ -113,6 +113,12 @@ if (empty($resource)) {
                 'PUT /api.php/v1/webhooks/{id}'          => 'Update webhook URL or events',
                 'DELETE /api.php/v1/webhooks/{id}'        => 'Delete a webhook',
                 'POST /api.php/v1/webhooks/{id}/test'    => 'Send test ping to webhook',
+                'GET /api.php/v1/tour-contracts'         => 'List operator contracts',
+                'GET /api.php/v1/tour-contracts/{id}'    => 'Get a single contract',
+                'GET /api.php/v1/tour-contracts/{id}/rates' => 'Get contract rates (all seasons)',
+                'POST /api.php/v1/tour-contracts/{id}/resync' => 'Resync contract products to all assigned agents',
+                'GET /api.php/v1/tour-products'          => 'List products synced under contracts (agent or operator scope)',
+                'POST /api.php/v1/tour-pricing'          => 'Calculate applicable rate (body: {contract_id, model_id, travel_date})',
             ],
             'features' => [
                 'rate_limiting'  => 'Per-minute limits by plan (X-RateLimit headers)',
@@ -135,7 +141,11 @@ require_once __DIR__ . '/app/Models/ApiUsageLog.php';
 require_once __DIR__ . '/app/Models/ChannelOrder.php';
 require_once __DIR__ . '/app/Models/Subscription.php';
 require_once __DIR__ . '/app/Models/Webhook.php';
+require_once __DIR__ . '/app/Models/AgentContract.php';
+require_once __DIR__ . '/app/Models/ContractSync.php';
+require_once __DIR__ . '/app/Models/TourOperatorAgent.php';
 require_once __DIR__ . '/app/Services/ChannelService.php';
+require_once __DIR__ . '/app/Services/ContractSyncService.php';
 require_once __DIR__ . '/app/Controllers/ChannelApiController.php';
 
 $controller = new \App\Controllers\ChannelApiController();
