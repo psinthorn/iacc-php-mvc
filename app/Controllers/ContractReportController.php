@@ -84,10 +84,11 @@ class ContractReportController extends BaseController
         $data = $this->reportModel->{$period}($comId);
         $companyName = $this->getCompanyName($comId);
 
+        // Bilingual subject (EN / TH)
         $subject = match ($period) {
-            'daily'   => "[$companyName] Daily Tour Operator Report — " . date('d M Y'),
-            'weekly'  => "[$companyName] Weekly Tour Operator Report — " . date('d M Y'),
-            'monthly' => "[$companyName] Monthly Tour Operator Report — " . date('M Y'),
+            'daily'   => "[$companyName] Daily Report / รายงานรายวัน — " . date('d M Y'),
+            'weekly'  => "[$companyName] Weekly Report / รายงานรายสัปดาห์ — " . date('d M Y'),
+            'monthly' => "[$companyName] Monthly Report / รายงานรายเดือน — " . date('M Y'),
         };
 
         $html = $this->buildEmailHtml($period, $data, $companyName);
@@ -103,41 +104,58 @@ class ContractReportController extends BaseController
 
     private function buildEmailHtml(string $period, array $data, string $companyName): string
     {
-        $title = ucfirst($period) . ' Tour Operator Report';
-        $when = $period === 'daily'   ? ('for ' . date('d M Y'))
-              : ($period === 'weekly' ? ("for {$data['period_start']} → {$data['period_end']}")
-              :                          ("for " . date('M Y', strtotime($data['period_start']))));
+        // Bilingual labels — EN line + TH line in <small> for compact layout
+        $titleEn = match ($period) {
+            'daily'   => 'Daily Tour Operator Report',
+            'weekly'  => 'Weekly Tour Operator Report',
+            'monthly' => 'Monthly Tour Operator Report',
+        };
+        $titleTh = match ($period) {
+            'daily'   => 'รายงานผู้ประกอบการทัวร์รายวัน',
+            'weekly'  => 'รายงานผู้ประกอบการทัวร์รายสัปดาห์',
+            'monthly' => 'รายงานผู้ประกอบการทัวร์รายเดือน',
+        };
+        $when = $period === 'daily'   ? date('d M Y')
+              : ($period === 'weekly' ? "{$data['period_start']} → {$data['period_end']}"
+              :                          date('M Y', strtotime($data['period_start'])));
+
+        // Helper: bilingual table row
+        $row = function (string $en, string $th, string $value): string {
+            return "<tr><td><strong>$en</strong><br><span style=\"color:#94a3b8;font-size:12px;\">$th</span></td>"
+                 . "<td align=\"right\" style=\"font-size:18px;font-weight:600;\">$value</td></tr>";
+        };
 
         $html = "<div style=\"font-family:Arial,sans-serif;max-width:640px;margin:0 auto;\">"
-              . "<h1 style=\"color:#0d9488;\">$title</h1>"
+              . "<h1 style=\"color:#0d9488;margin-bottom:4px;\">$titleEn</h1>"
+              . "<h2 style=\"color:#0d9488;font-size:16px;margin-top:0;font-weight:normal;\">$titleTh</h2>"
               . "<p style=\"color:#64748b;\">$companyName · $when</p>";
 
         if ($period === 'daily') {
             $html .= "<table cellspacing=\"0\" cellpadding=\"12\" style=\"width:100%;border-collapse:collapse;background:#f8fafc;border-radius:8px;\">"
-                  . "<tr><td><strong>New Contracts</strong></td><td align=\"right\">{$data['new_contracts']}</td></tr>"
-                  . "<tr><td><strong>New Agents Approved</strong></td><td align=\"right\">{$data['new_agents']}</td></tr>"
-                  . "<tr><td><strong>New Registrations</strong></td><td align=\"right\">{$data['new_registrations']}</td></tr>"
-                  . "<tr><td><strong>Pending Approvals</strong></td><td align=\"right\">{$data['pending_approvals']}</td></tr>"
-                  . "<tr><td><strong>Sync Events</strong></td><td align=\"right\">{$data['sync_events']}</td></tr>"
-                  . "<tr><td><strong>New Bookings</strong></td><td align=\"right\">{$data['bookings_today']}</td></tr>"
+                  . $row('New Contracts',       'สัญญาใหม่',         (string)$data['new_contracts'])
+                  . $row('New Agents Approved', 'ตัวแทนใหม่ที่อนุมัติ', (string)$data['new_agents'])
+                  . $row('New Registrations',   'การลงทะเบียนใหม่',   (string)$data['new_registrations'])
+                  . $row('Pending Approvals',   'รออนุมัติ',          (string)$data['pending_approvals'])
+                  . $row('Sync Events',         'การซิงค์',           (string)$data['sync_events'])
+                  . $row('New Bookings',        'การจองใหม่',         (string)$data['bookings_today'])
                   . "</table>";
         } elseif ($period === 'weekly') {
             $rev = number_format($data['revenue'], 2);
             $html .= "<table cellspacing=\"0\" cellpadding=\"12\" style=\"width:100%;border-collapse:collapse;background:#f8fafc;border-radius:8px;\">"
-                  . "<tr><td><strong>New Contracts</strong></td><td align=\"right\">{$data['new_contracts']}</td></tr>"
-                  . "<tr><td><strong>New Agents</strong></td><td align=\"right\">{$data['new_agents']}</td></tr>"
-                  . "<tr><td><strong>Bookings (7 days)</strong></td><td align=\"right\">{$data['bookings']}</td></tr>"
-                  . "<tr><td><strong>Revenue (7 days)</strong></td><td align=\"right\">฿$rev</td></tr>"
-                  . "<tr><td><strong>Sync Events</strong></td><td align=\"right\">{$data['sync_events']}</td></tr>"
+                  . $row('New Contracts',     'สัญญาใหม่',          (string)$data['new_contracts'])
+                  . $row('New Agents',        'ตัวแทนใหม่',          (string)$data['new_agents'])
+                  . $row('Bookings (7 days)', 'การจอง (7 วัน)',     (string)$data['bookings'])
+                  . $row('Revenue (7 days)',  'รายได้ (7 วัน)',      "฿$rev")
+                  . $row('Sync Events',       'การซิงค์',           (string)$data['sync_events'])
                   . "</table>";
             if (!empty($data['top_agents'])) {
-                $html .= "<h3 style=\"color:#0d9488;margin-top:24px;\">Top 5 Agents</h3>"
+                $html .= "<h3 style=\"color:#0d9488;margin-top:24px;\">Top 5 Agents <span style=\"font-size:13px;color:#94a3b8;font-weight:normal;\">/ 5 อันดับตัวแทน</span></h3>"
                       . "<table cellspacing=\"0\" cellpadding=\"10\" style=\"width:100%;border-collapse:collapse;\">";
                 foreach ($data['top_agents'] as $i => $a) {
                     $rank = $i + 1;
                     $rev = number_format($a['revenue'], 2);
                     $name = htmlspecialchars($a['agent_name'] ?: 'Agent #' . $a['agent_id']);
-                    $html .= "<tr><td>$rank. $name</td><td align=\"right\">{$a['booking_count']} bookings · ฿$rev</td></tr>";
+                    $html .= "<tr><td>$rank. $name</td><td align=\"right\">{$a['booking_count']} bookings / การจอง · ฿$rev</td></tr>";
                 }
                 $html .= "</table>";
             }
@@ -146,25 +164,28 @@ class ContractReportController extends BaseController
             $bookingChg = $data['change_pct']['bookings'] !== null ? sprintf('%+.1f%%', $data['change_pct']['bookings']) : 'n/a';
             $revChg = $data['change_pct']['revenue'] !== null ? sprintf('%+.1f%%', $data['change_pct']['revenue']) : 'n/a';
             $html .= "<table cellspacing=\"0\" cellpadding=\"12\" style=\"width:100%;border-collapse:collapse;background:#f8fafc;border-radius:8px;\">"
-                  . "<tr><td><strong>Bookings</strong></td><td align=\"right\">{$data['current']['bookings']} <span style=\"color:#94a3b8;font-size:12px;\">($bookingChg)</span></td></tr>"
-                  . "<tr><td><strong>Revenue</strong></td><td align=\"right\">฿$rev <span style=\"color:#94a3b8;font-size:12px;\">($revChg)</span></td></tr>"
-                  . "<tr><td><strong>New Contracts</strong></td><td align=\"right\">{$data['new_contracts']}</td></tr>"
-                  . "<tr><td><strong>New Agents</strong></td><td align=\"right\">{$data['new_agents']}</td></tr>"
+                  . $row('Bookings',      'การจอง',     "{$data['current']['bookings']} <span style=\"color:#94a3b8;font-size:12px;font-weight:normal;\">($bookingChg)</span>")
+                  . $row('Revenue',       'รายได้',     "฿$rev <span style=\"color:#94a3b8;font-size:12px;font-weight:normal;\">($revChg)</span>")
+                  . $row('New Contracts', 'สัญญาใหม่',   (string)$data['new_contracts'])
+                  . $row('New Agents',    'ตัวแทนใหม่', (string)$data['new_agents'])
                   . "</table>";
             if (!empty($data['top_products'])) {
-                $html .= "<h3 style=\"color:#0d9488;margin-top:24px;\">Top 10 Products</h3>"
+                $html .= "<h3 style=\"color:#0d9488;margin-top:24px;\">Top 10 Products <span style=\"font-size:13px;color:#94a3b8;font-weight:normal;\">/ 10 อันดับสินค้า</span></h3>"
                       . "<table cellspacing=\"0\" cellpadding=\"10\" style=\"width:100%;border-collapse:collapse;\">";
                 foreach ($data['top_products'] as $i => $p) {
                     $rank = $i + 1;
                     $rev = number_format(floatval($p['revenue']), 2);
                     $name = htmlspecialchars($p['model_name'] ?: 'Product #' . $p['model_id']);
-                    $html .= "<tr><td>$rank. $name</td><td align=\"right\">{$p['bookings']} bookings · ฿$rev</td></tr>";
+                    $html .= "<tr><td>$rank. $name</td><td align=\"right\">{$p['bookings']} bookings / การจอง · ฿$rev</td></tr>";
                 }
                 $html .= "</table>";
             }
         }
 
-        $html .= "<p style=\"margin-top:24px;color:#94a3b8;font-size:12px;\">Generated by iACC. Reply to this email if anything looks off.</p></div>";
+        $html .= "<p style=\"margin-top:24px;color:#94a3b8;font-size:12px;\">"
+               . "Generated by iACC. Reply to this email if anything looks off.<br>"
+               . "สร้างโดย iACC ตอบกลับอีเมลนี้หากพบความผิดปกติ"
+               . "</p></div>";
         return $html;
     }
 

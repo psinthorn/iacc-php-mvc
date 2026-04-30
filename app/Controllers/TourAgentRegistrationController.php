@@ -221,11 +221,22 @@ class TourAgentRegistrationController extends BaseController
         $operatorName = $this->getOperatorName();
         $portalUrl = $this->buildAbsoluteUrl('agent_portal_dashboard');
 
-        $subject = "Your agent account has been approved by $operatorName";
-        $html = "<h2>Welcome aboard, $name</h2>"
+        // Bilingual email — recipient may speak either language
+        $subject = "[$operatorName] Agent account approved / บัญชีตัวแทนได้รับการอนุมัติ";
+        $btnStyle = "background:#0d9488;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;";
+        $html = "<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">"
+              // English block
+              . "<h2 style=\"color:#0d9488;\">Welcome aboard, $name</h2>"
               . "<p>Your registration as an agent for <strong>$operatorName</strong> has been approved.</p>"
-              . "<p>You can now access the agent portal to view contracts, products, and bookings:</p>"
-              . "<p><a href=\"$portalUrl\" style=\"background:#0d9488;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;\">Open Agent Portal</a></p>";
+              . "<p>You can now access the agent portal to view contracts, products, and bookings.</p>"
+              . "<p><a href=\"$portalUrl\" style=\"$btnStyle\">Open Agent Portal</a></p>"
+              . "<hr style=\"margin:24px 0;border:none;border-top:1px solid #e2e8f0;\">"
+              // Thai block
+              . "<h2 style=\"color:#0d9488;\">ยินดีต้อนรับ $name</h2>"
+              . "<p>การลงทะเบียนของคุณในฐานะตัวแทนของ <strong>$operatorName</strong> ได้รับการอนุมัติแล้ว</p>"
+              . "<p>คุณสามารถเข้าสู่พอร์ทัลตัวแทนเพื่อดูสัญญา สินค้า และการจองได้แล้ว</p>"
+              . "<p><a href=\"$portalUrl\" style=\"$btnStyle\">เปิดพอร์ทัลตัวแทน</a></p>"
+              . "</div>";
 
         try {
             $svc = new EmailService(null, $this->getCompanyId());
@@ -248,11 +259,21 @@ class TourAgentRegistrationController extends BaseController
         $operatorName = $this->getOperatorName();
         $acceptUrl = $this->buildAbsoluteUrl('tour_agent_reg_accept', ['token' => $token]);
 
-        $subject = "Invitation to become an agent for $operatorName";
-        $html = "<h2>Hi $name</h2>"
+        $subject = "[$operatorName] Agent invitation / คำเชิญเป็นตัวแทน";
+        $btnStyle = "background:#0d9488;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;";
+        $html = "<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">"
+              // English block
+              . "<h2 style=\"color:#0d9488;\">Hi $name</h2>"
               . "<p><strong>$operatorName</strong> has invited you to join as an authorized agent.</p>"
-              . "<p>Click the link below to accept the invitation (expires in 14 days):</p>"
-              . "<p><a href=\"$acceptUrl\" style=\"background:#0d9488;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;\">Accept Invitation</a></p>";
+              . "<p>Click the button below to accept the invitation (expires in 14 days):</p>"
+              . "<p><a href=\"$acceptUrl\" style=\"$btnStyle\">Accept Invitation</a></p>"
+              . "<hr style=\"margin:24px 0;border:none;border-top:1px solid #e2e8f0;\">"
+              // Thai block
+              . "<h2 style=\"color:#0d9488;\">สวัสดี $name</h2>"
+              . "<p><strong>$operatorName</strong> ได้เชิญคุณเข้าร่วมเป็นตัวแทนที่ได้รับอนุญาต</p>"
+              . "<p>คลิกปุ่มด้านล่างเพื่อยอมรับคำเชิญ (หมดอายุภายใน 14 วัน):</p>"
+              . "<p><a href=\"$acceptUrl\" style=\"$btnStyle\">ยอมรับคำเชิญ</a></p>"
+              . "</div>";
 
         try {
             $svc = new EmailService(null, $operatorComId);

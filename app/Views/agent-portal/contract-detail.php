@@ -161,7 +161,7 @@ foreach ($rates as $r) {
                 <tr>
                     <td>
                         <strong><?= htmlspecialchars($r['model_name']) ?></strong>
-                        <span class="rate-type-badge <?= $rt === 'net_rate' ? 'rate-type-net' : 'rate-type-pct' ?>"><?= $rt === 'net_rate' ? 'Net' : '%' ?></span>
+                        <span class="rate-type-badge <?= $rt === 'net_rate' ? 'rate-type-net' : 'rate-type-pct' ?>"><?= $rt === 'net_rate' ? ($isThai ? 'สุทธิ' : 'Net') : '%' ?></span>
                     </td>
                     <td><span class="type-name"><?= htmlspecialchars($r['type_name'] ?? '—') ?></span></td>
                     <td class="text-right"><?= $sym ?><?= number_format(floatval($r['adult_default']), 2) ?></td>

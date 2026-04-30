@@ -369,8 +369,8 @@ foreach ($contractRates as $r) {
                                         </label>
                                         <div class="model-rate-type" style="<?= $hasRate ? '' : 'display:none;' ?>">
                                             <select name="season_rates[0][rates][<?= $mid ?>][rate_type]" class="rate-type-select" <?= $hasRate ? '' : 'disabled' ?>>
-                                                <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>>Net Rate (฿)</option>
-                                                <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
+                                                <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>><?= $isThai ? 'อัตราสุทธิ (฿)' : 'Net Rate (฿)' ?></option>
+                                                <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>><?= $isThai ? 'เปอร์เซ็นต์ (%)' : 'Percentage (%)' ?></option>
                                             </select>
                                         </div>
                                     </div>
@@ -499,8 +499,8 @@ foreach ($contractRates as $r) {
                                         </label>
                                         <div class="model-rate-type" style="<?= $hasRate ? '' : 'display:none;' ?>">
                                             <select name="season_rates[<?= $seasonIdx ?>][rates][<?= $mid ?>][rate_type]" <?= $hasRate ? '' : 'disabled' ?>>
-                                                <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>>Net Rate (฿)</option>
-                                                <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>>Percentage (%)</option>
+                                                <option value="net_rate" <?= ($mr['rate_type'] ?? 'net_rate') === 'net_rate' ? 'selected' : '' ?>><?= $isThai ? 'อัตราสุทธิ (฿)' : 'Net Rate (฿)' ?></option>
+                                                <option value="percentage" <?= ($mr['rate_type'] ?? '') === 'percentage' ? 'selected' : '' ?>><?= $isThai ? 'เปอร์เซ็นต์ (%)' : 'Percentage (%)' ?></option>
                                             </select>
                                         </div>
                                     </div>
