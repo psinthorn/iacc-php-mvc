@@ -128,6 +128,7 @@ jobs:
           STAGING_DB_USER: ${{ secrets.DB_USERNAME_STAGING }}
           STAGING_DB_PASS: ${{ secrets.DB_PASSWORD_STAGING }}
           STAGING_DB_NAME: ${{ secrets.DB_NAME_STAGING }}
+          STAGING_CRON_TOKEN: ${{ secrets.CRON_TOKEN_STAGING }}
         run: |
           # Use cPanel htaccess for staging
           if [ -f deploy/.htaccess.cpanel ]; then
@@ -151,6 +152,7 @@ jobs:
             echo "\$config[\"username\"] = \"${STAGING_DB_USER}\";"
             echo "\$config[\"password\"] = \"${STAGING_DB_PASS}\";"
             echo "\$config[\"dbname\"]   = \"${STAGING_DB_NAME}\";"
+            echo "\$config[\"cron_token\"] = \"${STAGING_CRON_TOKEN}\";"
             echo 'date_default_timezone_set("Asia/Bangkok");'
             echo '$config["docker_tools"] = "off";'
             echo '$config["container_manager"] = "off";'
@@ -158,6 +160,7 @@ jobs:
           } > deploy/inc/sys.configs.php
 
           echo "✅ Staging config generated"
+          # Print first 5 lines without revealing the cron_token
           head -5 deploy/inc/sys.configs.php
           
       - name: 📤 Deploy via FTP (attempt 1)
