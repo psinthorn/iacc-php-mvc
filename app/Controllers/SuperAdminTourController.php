@@ -71,7 +71,7 @@ class SuperAdminTourController extends BaseController
         global $db;
         $sql = "SELECT DISTINCT cm.company_id
                 FROM company_modules cm
-                WHERE cm.module = 'tour_operator' AND cm.is_enabled = 1";
+                WHERE cm.module_key = 'tour_operator' AND cm.is_enabled = 1";
         $res = mysqli_query($db->conn, $sql);
         if ($res) {
             while ($row = mysqli_fetch_assoc($res)) {
@@ -99,7 +99,7 @@ class SuperAdminTourController extends BaseController
                        COUNT(DISTINCT ac.id) AS contract_count,
                        (SELECT COUNT(*) FROM tour_bookings WHERE company_id = c.id AND deleted_at IS NULL AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) AS bookings_30d
                 FROM company c
-                INNER JOIN company_modules cm ON cm.company_id = c.id AND cm.module = 'tour_operator' AND cm.is_enabled = 1
+                INNER JOIN company_modules cm ON cm.company_id = c.id AND cm.module_key = 'tour_operator' AND cm.is_enabled = 1
                 LEFT JOIN tour_operator_agents oa ON oa.operator_company_id = c.id AND oa.status = 'approved' AND oa.deleted_at IS NULL
                 LEFT JOIN agent_contracts ac ON ac.company_id = c.id AND ac.is_operator_level = 1
                 GROUP BY c.id

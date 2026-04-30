@@ -96,7 +96,7 @@ function runReports(string $period): void
     $sql = "SELECT DISTINCT cm.company_id, c.name_en
             FROM company_modules cm
             INNER JOIN company c ON cm.company_id = c.id
-            WHERE cm.module = 'tour_operator' AND cm.is_enabled = 1";
+            WHERE cm.module_key = 'tour_operator' AND cm.is_enabled = 1";
     $res = mysqli_query($db->conn, $sql);
     if (!$res || mysqli_num_rows($res) === 0) {
         echo "No operators with tour_operator module enabled.\n";
