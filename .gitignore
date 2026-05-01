@@ -97,4 +97,16 @@ products/
 # But DO track migration SQL files
 !database/migrations/*.sql
 !migrations/**/*.sql
+
+# EXCEPT: never commit phpMyAdmin staging/prod dumps (contain real PII).
+# Pattern: f2coth_*, *_backup_*, *-staging-*, *-prod-*
+database/migrations/f2coth_*.sql
+database/migrations/*_backup_*.sql
+database/migrations/*-staging-*.sql
+database/migrations/*-prod-*.sql
+
+# Seed files derived from staging dumps also contain real PII.
+# (Already caught by *.sql above, listed here for clarity.)
+database/seed/*.sql
+
 templates/tour-company-demo/data/template.db
