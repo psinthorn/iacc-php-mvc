@@ -22,6 +22,7 @@ if (!isset($db) || !$db instanceof DbConn) {
     exit(1);
 }
 
+require_once __DIR__ . '/../app/Workers/Config/RetryPolicy.php';
 require_once __DIR__ . '/../app/Workers/Handlers/TaskHandler.php';
 require_once __DIR__ . '/../app/Workers/Handlers/EchoHandler.php';
 require_once __DIR__ . '/../app/Workers/WorkerRunner.php';

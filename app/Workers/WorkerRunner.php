@@ -2,6 +2,7 @@
 namespace App\Workers;
 
 use App\Workers\Handlers\TaskHandler;
+use App\Workers\Config\RetryPolicy;
 
 /**
  * WorkerRunner — core logic for #76 (v6.1 sprint).
@@ -39,17 +40,18 @@ class WorkerRunner
         // future: 'sync_channel_inventory' => Handlers\SyncChannelInventoryHandler::class,
     ];
 
-    /** Backoff schedule (seconds). attempts=1→60s, 2→300s, 3→1500s, 4→7200s, then dead-letter. */
-    private const BACKOFF_SECONDS = [60, 300, 1500, 7200];
-
     /** Stale-lock threshold: rows locked longer than this get reset to pending. */
     private const STALE_LOCK_MINUTES = 10;
 
-    /** Hard ceiling on max_attempts no matter what handler declares (anti-footgun, see #77 EC1). */
-    private const ABSOLUTE_MAX_ATTEMPTS = 20;
-
     /** Max bytes stored in task_queue.last_error (full error goes in task_results). */
     private const LAST_ERROR_TRUNCATE = 4096;
+
+    /*
+     * Retry policy is centralized in App\Workers\Config\RetryPolicy (#77).
+     * Per-handler overrides via:
+     *   public static int $maxAttempts;
+     *   public static array $backoffSchedule;
+     */
 
     private \mysqli $conn;
     private string $workerId;
@@ -199,13 +201,13 @@ class WorkerRunner
         $taskId = intval($task['id']);
         $taskType = (string)$task['task_type'];
         $attempts = intval($task['attempts']);
-        $maxAttempts = intval($task['max_attempts']);
+        $rowMaxAttempts = intval($task['max_attempts']);
 
         // Decode payload
         $payload = json_decode((string)$task['payload'], true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return $this->recordFailure(
-                $taskId, $attempts, $maxAttempts,
+                $taskId, $attempts, /*handlerClass*/ null, $rowMaxAttempts,
                 'malformed payload JSON: ' . json_last_error_msg(),
                 /*forceDeadLetter*/ true,  // bad data won't fix on retry
                 /*startedAt*/ microtime(true)
@@ -216,7 +218,7 @@ class WorkerRunner
         $handlerClass = self::HANDLERS[$taskType] ?? null;
         if ($handlerClass === null) {
             return $this->recordFailure(
-                $taskId, $attempts, $maxAttempts,
+                $taskId, $attempts, null, $rowMaxAttempts,
                 "no handler registered for task_type='$taskType'",
                 /*forceDeadLetter*/ true,
                 /*startedAt*/ microtime(true)
@@ -225,7 +227,7 @@ class WorkerRunner
 
         if (!class_exists($handlerClass)) {
             return $this->recordFailure(
-                $taskId, $attempts, $maxAttempts,
+                $taskId, $attempts, null, $rowMaxAttempts,
                 "handler class not loadable: $handlerClass",
                 /*forceDeadLetter*/ true,
                 /*startedAt*/ microtime(true)
@@ -235,7 +237,7 @@ class WorkerRunner
         $handler = new $handlerClass();
         if (!$handler instanceof TaskHandler) {
             return $this->recordFailure(
-                $taskId, $attempts, $maxAttempts,
+                $taskId, $attempts, null, $rowMaxAttempts,
                 "handler does not implement TaskHandler: $handlerClass",
                 /*forceDeadLetter*/ true,
                 /*startedAt*/ microtime(true)
@@ -254,7 +256,7 @@ class WorkerRunner
             return $this->recordSuccess($taskId, $attempts, $result, $startedAt);
         } catch (\Throwable $e) {
             return $this->recordFailure(
-                $taskId, $attempts, $maxAttempts,
+                $taskId, $attempts, $handlerClass, $rowMaxAttempts,
                 $this->formatError($e),
                 /*forceDeadLetter*/ false,
                 $startedAt
@@ -288,11 +290,17 @@ class WorkerRunner
     }
 
     /**
-     * Record a failure attempt. Decides retry vs dead-letter based on attempts and
-     * the forceDeadLetter flag (used for unrecoverable errors like missing handler).
+     * Record a failure attempt. Decides retry vs dead-letter based on attempts,
+     * handler-declared overrides (via RetryPolicy), and the forceDeadLetter flag.
+     *
+     * @param string|null $handlerClass FQN for handler-static-override lookup;
+     *                                  null when error is "no handler" / "bad payload"
+     *                                  (those force dead-letter regardless).
+     * @param int|null    $rowMax       task_queue.max_attempts as a fallback for
+     *                                  RetryPolicy::resolveMaxAttempts().
      */
     private function recordFailure(
-        int $taskId, int $attempt, int $maxAttempts,
+        int $taskId, int $attempt, ?string $handlerClass, ?int $rowMax,
         string $errorMessage, bool $forceDeadLetter, float $startedAt
     ): array {
         $durationMs = intval((microtime(true) - $startedAt) * 1000);
@@ -308,9 +316,18 @@ class WorkerRunner
              VALUES ($taskId, $attempt, 0, '$errorEsc', $durationMs, NOW())"
         );
 
-        // Cap max attempts (anti-footgun per #77 EC1)
-        $effectiveMax = min($maxAttempts, self::ABSOLUTE_MAX_ATTEMPTS);
-        $exhausted = ($attempt >= $effectiveMax);
+        // Resolve effective policy (#77): handler-static > row > class default,
+        // clamped to ABSOLUTE_MAX_ATTEMPTS.
+        $effectiveMax = $handlerClass !== null
+            ? RetryPolicy::resolveMaxAttempts($handlerClass, $rowMax)
+            : min($rowMax ?? RetryPolicy::DEFAULT_MAX_ATTEMPTS, RetryPolicy::ABSOLUTE_MAX_ATTEMPTS);
+
+        $backoffSchedule = $handlerClass !== null
+            ? RetryPolicy::resolveBackoff($handlerClass)
+            : RetryPolicy::DEFAULT_BACKOFF;
+
+        $nextDelay = RetryPolicy::nextDelay($attempt, $backoffSchedule);
+        $exhausted = ($attempt >= $effectiveMax) || ($nextDelay === null);
 
         if ($forceDeadLetter || $exhausted) {
             mysqli_query($this->conn,
@@ -327,8 +344,7 @@ class WorkerRunner
         }
 
         // Retry: schedule next attempt per backoff schedule.
-        // attempts is 1-indexed; backoff[attempt-1] is delay until next run.
-        $delaySeconds = self::BACKOFF_SECONDS[$attempt - 1] ?? end(self::BACKOFF_SECONDS);
+        $delaySeconds = intval($nextDelay);
         mysqli_query($this->conn,
             "UPDATE task_queue
                 SET status        = 'pending',
