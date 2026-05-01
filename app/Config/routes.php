@@ -148,6 +148,13 @@ return [
     'smtp_settings'      => ['SmtpSettingsController', 'index'],
     'smtp_settings_test' => ['SmtpSettingsController', 'test', 'standalone'],
 
+    // Task Queue Admin (v6.1 #78)
+    'admin_task_queue'         => ['AdminTaskQueueController', 'index'],
+    'admin_task_queue_details' => ['AdminTaskQueueController', 'details', 'standalone'],
+    'admin_task_queue_retry'   => ['AdminTaskQueueController', 'retry'],
+    'admin_task_queue_delete'  => ['AdminTaskQueueController', 'delete'],
+    'admin_task_queue_bulk'    => ['AdminTaskQueueController', 'bulk'],
+
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
     'payment_gateway_save'   => ['PaymentGatewayController', 'save'],

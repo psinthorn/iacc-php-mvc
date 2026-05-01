@@ -474,6 +474,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=smtp_settings"><i class="fa fa-envelope-o"></i> <?=$xml->smtpsettings ?? 'Email Settings'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=admin_task_queue"><i class="fa fa-tasks"></i> <?=$xml->taskqueue ?? 'Task Queue'?></a>
+                            </li>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=tax_reports"><i class="fa fa-file-text"></i> <?=$xml->taxreports ?? 'Tax Reports'?></a>
