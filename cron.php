@@ -14,6 +14,7 @@
  *   monthly_reports      — send monthly digest (run on the 1st)
  *   sync_all_contracts   — one-time/periodic full sync of all V2 operator contracts
  *                          to all assigned agents (rebuilds tour_operator_agent_products)
+ *   run_worker           — drain one task from task_queue (v6.1 #76); schedule every minute
  *
  * Auth: ?token=... must match config['cron_token'] (set via env or config file)
  *
@@ -78,9 +79,12 @@ switch ($task) {
     case 'sync_all_contracts':
         runSyncAllContracts();
         break;
+    case 'run_worker':
+        require_once __DIR__ . '/scripts/worker.php';
+        break;
     default:
         http_response_code(400);
-        echo "Unknown task. Available: daily_reports, weekly_reports, monthly_reports, sync_all_contracts\n";
+        echo "Unknown task. Available: daily_reports, weekly_reports, monthly_reports, sync_all_contracts, run_worker\n";
         exit;
 }
 
