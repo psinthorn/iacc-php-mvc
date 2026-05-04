@@ -24,7 +24,7 @@ class TourReport extends BaseModel
 
         $where = "b.company_id = $cid
                   AND b.travel_date = '$date'
-                  AND b.status IN ('confirmed','completed')
+                  AND b.status IN ('confirmed','paid','completed','no_show')
                   AND b.deleted_at IS NULL";
 
         // Optional tour activity filter — 'type:{id}' or 'model:{id}'
@@ -105,7 +105,7 @@ class TourReport extends BaseModel
 
         $where = "b.company_id = $cid
                   AND b.travel_date = '$date'
-                  AND b.status IN ('confirmed','completed')
+                  AND b.status IN ('confirmed','paid','completed','no_show')
                   AND b.deleted_at IS NULL";
 
         if (!empty($tourActivity) && strpos($tourActivity, ':') !== false) {
@@ -218,7 +218,7 @@ class TourReport extends BaseModel
 
         $where = "b.company_id = $cid 
                   AND b.travel_date = '$date' 
-                  AND b.status IN ('confirmed','completed') 
+                  AND b.status IN ('confirmed','paid','completed','no_show') 
                   AND b.deleted_at IS NULL";
 
         // Optional tour activity filter — 'type:{id}' or 'model:{id}'

@@ -160,6 +160,7 @@ jobs:
           PROD_DB_USER: ${{ secrets.DB_USERNAME }}
           PROD_DB_PASS: ${{ secrets.DB_PASSWORD }}
           PROD_DB_NAME: ${{ secrets.DB_NAME }}
+          PROD_CRON_TOKEN: ${{ secrets.CRON_TOKEN_PRODUCTION }}
         run: |
           {
             echo '<?PHP'
@@ -178,6 +179,7 @@ jobs:
             echo "\$config[\"username\"] = \"${PROD_DB_USER}\";"
             echo "\$config[\"password\"] = \"${PROD_DB_PASS}\";"
             echo "\$config[\"dbname\"]   = \"${PROD_DB_NAME}\";"
+            echo "\$config[\"cron_token\"] = \"${PROD_CRON_TOKEN}\";"
             echo 'date_default_timezone_set("Asia/Bangkok");'
             echo '$config["docker_tools"] = "off";'
             echo '$config["container_manager"] = "off";'
@@ -185,6 +187,7 @@ jobs:
           } > deploy/inc/sys.configs.php
 
           echo "✅ Production config generated"
+          # Print first 5 lines without revealing the cron_token
           head -5 deploy/inc/sys.configs.php
 
       - name: 📤 Upload artifact

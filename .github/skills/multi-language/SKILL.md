@@ -283,6 +283,8 @@ $t = $labels[$lang];
 
 ### 3. Add Keys to XML Language Files
 
+> ⚠️ **MUST DO when adding a sidebar/navbar menu item, footer link, or any shared layout text.** The `$xml->key ?? 'Fallback'` pattern silently shows the English fallback to Thai users when the key is missing — bug looks like the page works, but Thai users see English bleed-through. ALWAYS add to BOTH `inc/string-us.xml` AND `inc/string-th.xml` in the same edit.
+
 **Step 1:** Add key before `</note>` in `inc/string-us.xml`:
 ```xml
 <newkey>English Text</newkey>
@@ -300,6 +302,16 @@ docker exec iacc_php php -r "simplexml_load_file('inc/string-th.xml') ? print('O
 ```
 
 **Step 4:** Use in view: `<?=$xml->newkey ?? 'English Text'?>`
+
+**Step 5 (sidebar items only — coverage check):** confirm both languages render:
+```bash
+# Returns "MISSING" if either file lacks the key
+for k in newkey1 newkey2; do
+  for f in inc/string-us.xml inc/string-th.xml; do
+    grep -q "<$k>" "$f" || echo "❌ $k missing from $f"
+  done
+done
+```
 
 ### 4. Add Bilingual Database Fields
 
@@ -440,6 +452,13 @@ $name = ($isThaiLang && !empty($row['name_th'])) ? $row['name_th'] : $row['name'
 <?=$xml->mykey?>  // Returns empty SimpleXMLElement object if key missing
 // GOOD:
 <?=$xml->mykey ?? 'My Key'?>
+
+// BAD: Adding sidebar item with $xml->key but never adding the XML keys
+<a href="..."><?=$xml->mynewmenu ?? 'My New Menu'?></a>
+// (forgot to add <mynewmenu> to BOTH inc/string-us.xml and inc/string-th.xml)
+// → English users see "My New Menu" (fallback works)
+// → Thai users ALSO see "My New Menu" (silently broken — no error, just English bleed-through)
+// GOOD: edit sidebar.php + string-us.xml + string-th.xml in the SAME commit
 
 // BAD: Using underscores in XML key names (inconsistent with existing pattern)
 <my_key>Value</my_key>

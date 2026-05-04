@@ -104,7 +104,7 @@ services:
     image: phpmyadmin:latest
     container_name: iacc_phpmyadmin
     ports:
-      - "8083:80"
+      - "${PMA_HOST_PORT:-8083}:80"
     environment:
       PMA_HOST: mysql
       PMA_USER: root
@@ -121,8 +121,8 @@ services:
     image: mailhog/mailhog:latest
     container_name: iacc_mailhog_server
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
     networks:
       - iacc-network
     restart: unless-stopped

@@ -10,10 +10,12 @@ $pageTitle = 'Tour Bookings — Details';
 $isThai = ($_SESSION['lang'] ?? '0') === '1';
 
 $statusConfig = [
-    'draft'     => ['label' => $isThai ? 'ฉบับร่าง' : 'Draft',     'bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => 'fa-pencil'],
-    'confirmed' => ['label' => $isThai ? 'ยืนยัน' : 'Confirmed',   'bg' => '#d1fae5', 'color' => '#059669', 'icon' => 'fa-check-circle'],
-    'completed' => ['label' => $isThai ? 'เสร็จสิ้น' : 'Completed', 'bg' => '#dbeafe', 'color' => '#2563eb', 'icon' => 'fa-flag-checkered'],
-    'cancelled' => ['label' => $isThai ? 'ยกเลิก' : 'Cancelled',   'bg' => '#fee2e2', 'color' => '#dc2626', 'icon' => 'fa-ban'],
+    'draft'     => ['label' => $isThai ? 'ฉบับร่าง'   : 'Draft',     'bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => 'fa-pencil'],
+    'confirmed' => ['label' => $isThai ? 'ยืนยัน'     : 'Confirmed', 'bg' => '#d1fae5', 'color' => '#059669', 'icon' => 'fa-check-circle'],
+    'paid'      => ['label' => $isThai ? 'ชำระแล้ว'   : 'Paid',      'bg' => '#ccfbf1', 'color' => '#0d9488', 'icon' => 'fa-money'],
+    'completed' => ['label' => $isThai ? 'เสร็จสิ้น'  : 'Completed', 'bg' => '#dbeafe', 'color' => '#2563eb', 'icon' => 'fa-flag-checkered'],
+    'no_show'   => ['label' => $isThai ? 'ไม่มาตามนัด' : 'No Show',   'bg' => '#ffedd5', 'color' => '#d97706', 'icon' => 'fa-user-times'],
+    'cancelled' => ['label' => $isThai ? 'ยกเลิก'     : 'Cancelled', 'bg' => '#fee2e2', 'color' => '#dc2626', 'icon' => 'fa-ban'],
 ];
 
 $sc = $statusConfig[$booking['status']] ?? $statusConfig['draft'];
@@ -41,6 +43,9 @@ $salesRepName = ($isThai && !empty($booking['sales_rep_name_th'])) ? $booking['s
 $messages = [
     'created'        => ['✅', $isThai ? 'สร้างการจองสำเร็จ' : 'Booking created successfully'],
     'updated'        => ['✅', $isThai ? 'อัพเดทสำเร็จ' : 'Booking updated successfully'],
+    'status_save_failed' => ['⚠️', ($isThai ? 'บันทึกสถานะไม่สำเร็จ — ฐานข้อมูลปฏิเสธค่า' : 'Status not saved — database rejected the value')
+        . (isset($_GET['want'], $_GET['got']) ? ' (want: ' . htmlspecialchars($_GET['want']) . ', got: ' . htmlspecialchars($_GET['got']) . '). '
+            . ($isThai ? 'มักเกิดจาก migration ยังไม่ได้รัน' : 'Usually means a migration was not run yet') . '.' : '')],
     'docs_generated' => ['✅', $isThai ? 'สร้างเอกสารสำเร็จ (PR, PO, ใบส่งของ, ใบแจ้งหนี้)' : 'Documents generated (PR, PO, Delivery, Invoice)'],
     'docs_error'     => ['⚠️', $isThai ? 'สร้างเอกสารไม่สำเร็จ' : 'Failed to generate documents'],
     'payment_recorded' => ['✅', $isThai ? 'บันทึกการชำระเงินสำเร็จ' : 'Payment recorded successfully'],

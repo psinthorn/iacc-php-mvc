@@ -109,10 +109,12 @@ $paxTypeLabels = [
 ];
 
 $statusLabels = [
-    'draft'     => $isThai ? 'ฉบับร่าง' : 'Draft',
-    'confirmed' => $isThai ? 'ยืนยัน' : 'Confirmed',
-    'completed' => $isThai ? 'เสร็จสิ้น' : 'Completed',
-    'cancelled' => $isThai ? 'ยกเลิก' : 'Cancelled',
+    'draft'     => $isThai ? 'ฉบับร่าง'   : 'Draft',
+    'confirmed' => $isThai ? 'ยืนยัน'     : 'Confirmed',
+    'paid'      => $isThai ? 'ชำระแล้ว'   : 'Paid',
+    'completed' => $isThai ? 'เสร็จสิ้น'  : 'Completed',
+    'no_show'   => $isThai ? 'ไม่มาตามนัด' : 'No Show',
+    'cancelled' => $isThai ? 'ยกเลิก'     : 'Cancelled',
 ];
 
 $travelDate = !empty($booking['travel_date']) ? date('d/m/Y', strtotime($booking['travel_date'])) : '-';
@@ -185,7 +187,7 @@ $html .= '</div>';
 
 // ── Booking Info ─────────────────────────────
 $statusLabel = $statusLabels[$booking['status']] ?? $booking['status'];
-$statusColor = ['draft' => '#94a3b8', 'confirmed' => '#10b981', 'completed' => '#3b82f6', 'cancelled' => '#ef4444'];
+$statusColor = ['draft' => '#94a3b8', 'confirmed' => '#10b981', 'paid' => '#0d9488', 'completed' => '#3b82f6', 'no_show' => '#d97706', 'cancelled' => '#ef4444'];
 $stColor = $statusColor[$booking['status']] ?? '#94a3b8';
 
 $html .= '<div class="section-title">' . ($isThai ? 'ข้อมูลการจอง' : 'Booking Information') . '</div>';

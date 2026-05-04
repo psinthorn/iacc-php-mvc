@@ -221,6 +221,18 @@ include_once 'inc/top-navbar.php';
                                 <a href="index.php?page=tour_agent_list"><i class="fa fa-handshake-o"></i> <?=$xml->touragents ?? 'Agents'?></a>
                             </li>
                             <li>
+                                <a href="index.php?page=tour_agent_reg_list"><i class="fa fa-user-plus"></i> <?=$xml->touragentregs ?? 'Agent Registrations'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_contract_list"><i class="fa fa-file-text-o"></i> <?=$xml->tourcontracts ?? 'Contracts'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_doc_list"><i class="fa fa-folder-open-o"></i> <?=$xml->tourdocuments ?? 'Documents'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=tour_contract_report"><i class="fa fa-bar-chart"></i> <?=$xml->tourcontractreport ?? 'Contract Reports'?></a>
+                            </li>
+                            <li>
                                 <a href="index.php?page=tour_location_list"><i class="fa fa-map-marker"></i> <?=$xml->tourlocations ?? 'Locations'?></a>
                             </li>
                             <li>
@@ -235,6 +247,31 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=tour_checkin_staff"><i class="fa fa-check-square-o"></i> <?=$xml->tourcheckin ?? 'Check-In Dashboard'?></a>
                             </li>
+                        </ul>
+                    </li>
+                    <?php endif; ?>
+
+                    <!-- Agent Portal (visible if this company is an approved agent for any operator) -->
+                    <?php
+                    $__agentPortalShow = false;
+                    if (!empty($_SESSION['com_id'])) {
+                        $__cid = intval($_SESSION['com_id']);
+                        $__db = $GLOBALS['db'] ?? null;
+                        if ($__db && isset($__db->conn)) {
+                            $__r = mysqli_query($__db->conn, "SELECT 1 FROM tour_operator_agents WHERE agent_company_id = $__cid AND status = 'approved' AND deleted_at IS NULL LIMIT 1");
+                            $__agentPortalShow = ($__r && mysqli_num_rows($__r) > 0);
+                        }
+                    }
+                    if ($__agentPortalShow):
+                    ?>
+                    <li>
+                        <a href="#"><i class="fa fa-id-badge"></i> <?=$xml->agentportal ?? 'Agent Portal'?><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li><a href="index.php?page=agent_portal_dashboard"><i class="fa fa-tachometer"></i> <?=$xml->agentportaldashboard ?? 'Dashboard'?></a></li>
+                            <li><a href="index.php?page=agent_portal_products"><i class="fa fa-cubes"></i> <?=$xml->agentportalproducts ?? 'Products'?></a></li>
+                            <li><a href="index.php?page=agent_portal_contracts"><i class="fa fa-file-text-o"></i> <?=$xml->agentportalcontracts ?? 'Contracts'?></a></li>
+                            <li><a href="index.php?page=agent_portal_bookings"><i class="fa fa-calendar-check-o"></i> <?=$xml->agentportalbookings ?? 'Bookings'?></a></li>
+                            <li><a href="index.php?page=agent_portal_documents"><i class="fa fa-folder-open-o"></i> <?=$xml->agentportaldocuments ?? 'Documents'?></a></li>
                         </ul>
                     </li>
                     <?php endif; ?>
@@ -424,6 +461,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=module_manager"><i class="fa fa-cubes"></i> <?=$xml->modulemanager ?? 'Module Manager'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=super_admin_tour"><i class="fa fa-globe"></i> <?=$xml->touroperatorplatform ?? 'Tour Operator Platform'?></a>
+                            </li>
                             <li class="divider"></li>
                             <li>
                                 <a href="index.php?page=payment_method_list"><i class="fa fa-credit-card-alt"></i> <?=$xml->paymentmethods ?? 'Payment Methods'?></a>
@@ -433,6 +473,9 @@ include_once 'inc/top-navbar.php';
                             </li>
                             <li>
                                 <a href="index.php?page=smtp_settings"><i class="fa fa-envelope-o"></i> <?=$xml->smtpsettings ?? 'Email Settings'?></a>
+                            </li>
+                            <li>
+                                <a href="index.php?page=admin_task_queue"><i class="fa fa-tasks"></i> <?=$xml->taskqueue ?? 'Task Queue'?></a>
                             </li>
                             <li class="divider"></li>
                             <li>

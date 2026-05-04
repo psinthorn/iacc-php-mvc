@@ -168,3 +168,43 @@ gh issue close NNN --repo psinthorn/iacc-php-mvc --comment "✅ Merged to develo
 2. Show what's in progress and by whom
 3. Show next 3 upcoming features
 4. Give a simple % complete metric
+
+## Version Sync Responsibility (Critical — Run On Every Merge To `main`)
+
+The website footer ([inc/footer.php](../../inc/footer.php)) **auto-reads** the version from README.md, so the footer never needs manual editing — but README and `version.json` **do** need updating, and that's your job. Skipping this leaves the public-facing version label wrong on production.
+
+### Trigger
+Run this checklist **every time** a feature is merged from `develop` → `main` (i.e. shipping to production at `iacc.f2.co.th`). Do **not** run on every commit to `develop` — only on the merge-to-main.
+
+### Checklist
+1. **Pick a new version number** following the pattern `vX.Y-{kebab-feature-tag}` (see Changelog history for examples: `v5.10-i18n-complete`, `v5.11-demo-data`).
+2. **Update `README.md` line 3** — `**Version**: X.Y-...`
+3. **Update `README.md` line 5** — `**Last Updated**: Month DD, YYYY`
+4. **Add a Changelog entry** at the top of the Changelog section (search for `## 📋 Changelog`):
+   ```markdown
+   ### vX.Y-tag (YYYY-MM-DD) — Short Title
+   **Highlights:**
+   - Feature 1 (one line)
+   - Feature 2 (one line)
+
+   **Files changed:** N | **PRs merged:** #NN, #NN
+   ```
+5. **Update `version.json`** — bump `version`, `commit` (latest sha), `commit_short`, `branch` (`main`), `build_date` (ISO 8601 UTC), `deployed_by`.
+6. **Verify footer auto-pickup** — load the staging site, confirm footer shows the new version. The regex in [inc/footer.php:17](../../inc/footer.php#L17) only captures `[0-9.]+` (it stops at the dash), so visible footer version will be the numeric prefix only — that's expected behavior.
+7. **Do NOT manually edit** `inc/footer.php` or any other view to inject the version. The auto-read is the contract.
+
+### What gets the new version label
+Anything in the merge-to-main commit range. Use `git log --oneline {prev_main_sha}..main` to enumerate. Group the highlights by user-visible feature, not by commit.
+
+### Common Mistakes (Don't Repeat These)
+- **Forgetting `version.json`** — staging will show README version, but `/version.json` endpoint will lie. (This is exactly how `5.10-i18n-complete` got stuck while README moved to `5.11-demo-data`.)
+- **Bumping version on every develop merge** — too noisy; only on prod releases.
+- **Manually editing footer.php** — breaks the auto-sync contract. The footer is intentionally dumb.
+- **Skipping the Changelog entry** — even small ships need one line; otherwise feature history rots.
+
+### Quick Verify Command
+```bash
+README_VERSION=$(grep -m1 '\*\*Version\*\*:' README.md | sed -E 's/.*: *([^ ]+).*/\1/')
+JSON_VERSION=$(grep -m1 '"version"' version.json | sed -E 's/.*"([^"]+)".*/\1/')
+[ "$README_VERSION" = "$JSON_VERSION" ] && echo "✅ in sync ($README_VERSION)" || echo "❌ DRIFT: README=$README_VERSION json=$JSON_VERSION"
+```

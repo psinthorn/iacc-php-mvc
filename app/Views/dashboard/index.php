@@ -292,6 +292,9 @@ function get_status_badge($status) {
                             <a href="index.php?page=user" class="btn btn-sm" style="background: #667eea; color: white; margin: 2px;">
                                 <i class="fa fa-users"></i> <?=$xml->manage_users ?? 'Manage Users'?>
                             </a>
+                            <a href="index.php?page=super_admin_tour" class="btn btn-sm" style="background: #0d9488; color: white; margin: 2px;">
+                                <i class="fa fa-globe"></i> Tour Platform
+                            </a>
                             <?php endif; ?>
                             <a href="index.php?page=company" class="btn btn-sm" style="background: #51cf66; color: white; margin: 2px;">
                                 <i class="fa fa-building"></i> Companies

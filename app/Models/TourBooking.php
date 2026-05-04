@@ -182,11 +182,11 @@ class TourBooking extends BaseModel
                     SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) AS completed,
                     SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled,
                     SUM(CASE WHEN travel_date = '$today' THEN 1 ELSE 0 END) AS today_bookings,
-                    COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue,
+                    COALESCE(SUM(CASE WHEN status IN ('confirmed','paid','completed','no_show') THEN total_amount ELSE 0 END), 0) AS revenue,
                     COALESCE(SUM(total_pax), 0) AS total_pax,
                     SUM(CASE WHEN booking_date >= '$monthStart' THEN 1 ELSE 0 END) AS month_bookings,
                     COALESCE(SUM(CASE WHEN booking_date >= '$monthStart'
-                                      AND status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS month_revenue,
+                                      AND status IN ('confirmed','paid','completed','no_show') THEN total_amount ELSE 0 END), 0) AS month_revenue,
                     COALESCE(SUM(CASE WHEN booking_date >= '$monthStart' THEN total_pax ELSE 0 END), 0) AS month_pax
                 FROM tour_bookings
                 WHERE company_id = $cid AND deleted_at IS NULL";
@@ -220,7 +220,7 @@ class TourBooking extends BaseModel
 
         $sql = "SELECT
                     COUNT(*) AS total_bookings,
-                    COALESCE(SUM(CASE WHEN status IN ('confirmed','completed') THEN total_amount ELSE 0 END), 0) AS revenue,
+                    COALESCE(SUM(CASE WHEN status IN ('confirmed','paid','completed','no_show') THEN total_amount ELSE 0 END), 0) AS revenue,
                     COALESCE(SUM(total_pax), 0) AS total_pax,
                     SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) AS confirmed,
                     SUM(CASE WHEN status='pending'   THEN 1 ELSE 0 END) AS pending,
