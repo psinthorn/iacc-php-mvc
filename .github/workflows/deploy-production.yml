@@ -103,11 +103,16 @@ jobs:
           fi
 
       - name: 🏷️ Generate version.json
+        # Read the canonical app version from the committed version.json,
+        # then re-render the file with deploy-time CI metadata. Without this,
+        # the version field was hardcoded "5.0-mvc" so every deploy silently
+        # regressed the release tag in the production footer.
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          APP_VERSION=$(jq -r '.version' version.json)
           cat > version.json <<EOF
           {
-            "version": "5.0-mvc",
+            "version": "${APP_VERSION}",
             "commit": "${{ github.sha }}",
             "commit_short": "${SHORT_SHA}",
             "branch": "${{ github.ref_name }}",
