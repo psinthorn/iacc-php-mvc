@@ -47,7 +47,13 @@ class DbConn {
 		mysqli_query($this->conn, "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 		mysqli_query($this->conn, "SET CHARACTER SET utf8mb4");
 		mysqli_query($this->conn, "SET COLLATION_CONNECTION = utf8mb4_unicode_ci");
-		
+
+		// Pin session timezone to Bangkok so MySQL NOW() agrees with PHP date().
+		// Without this, cPanel hosts whose server defaults to IST/UTC drift 1.5–7h
+		// from PHP's Asia/Bangkok, breaking task_queue.scheduled_for polling and
+		// any timestamp display logic that compares MySQL and PHP times.
+		mysqli_query($this->conn, "SET time_zone = '+07:00'");
+
 		// Register for compatibility layer
 		__registerMySQLCompatConnection($this);
 	}
