@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 5.12-tour-booking-suite  
+**Version**: 6.1-task-queue-workers  
 **Status**: Production Ready  
-**Last Updated**: April 30, 2026  
+**Last Updated**: May 4, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 5.7 | **Nginx**: Alpine
 
@@ -608,7 +608,7 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 | # | Version | Feature | Quarter | GitHub Status | Dependencies |
 |---|---------|---------|---------|---------------|--------------|
 | 1 | **v6.0** | Self-Registration → Trial → Payment | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/12) — 4 closed / 5 open | None |
-| 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/14) — 4 skeleton issues filed | v6.0 |
+| 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q2 2026 | ✅ **shipped 2026-05-04** ([milestone v6.1](https://github.com/psinthorn/iacc-php-mvc/milestone/14)) — 4 issues closed via [PR #94](https://github.com/psinthorn/iacc-php-mvc/pull/94) | v6.0 |
 | 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/15) — 6 skeleton issues filed | v6.1 + Sales Channel API |
 | 4 | **v6.3** | Agent Automation Workers | Q1 2027 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/16) — 8 skeleton issues filed | v6.1 |
 | 5 | **v6.4** | AI Document Processing (OCR) | Q2 2027 | _no milestone yet — text-only roadmap_ | v6.1 |
@@ -630,14 +630,18 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 - Public Developer API + docs portal — _shipped #36_
 - New user onboarding wizard — _open (no issue yet — file before next sprint)_
 
-### v6.1 — Task Queue & Background Worker Infrastructure
+### v6.1 — Task Queue & Background Worker Infrastructure ✅ shipped 2026-05-04
 
-📋 **GitHub:** [milestone v6.1](https://github.com/psinthorn/iacc-php-mvc/milestone/14) — 4 skeleton issues filed (run `act as pm` to spec each before sprint)
+📋 **GitHub:** [milestone v6.1](https://github.com/psinthorn/iacc-php-mvc/milestone/14) — all 4 issues closed via [PR #94](https://github.com/psinthorn/iacc-php-mvc/pull/94)
 
-- [#75](https://github.com/psinthorn/iacc-php-mvc/issues/75) `task_queue` + `task_results` database schema
-- [#76](https://github.com/psinthorn/iacc-php-mvc/issues/76) `worker.php` cron script with poll/lock/retry
-- [#77](https://github.com/psinthorn/iacc-php-mvc/issues/77) Dead-letter queue + priority lanes
-- [#78](https://github.com/psinthorn/iacc-php-mvc/issues/78) Admin queue dashboard (view, retry, clear)
+- [#75](https://github.com/psinthorn/iacc-php-mvc/issues/75) `task_queue` + `task_results` database schema — _shipped_
+- [#76](https://github.com/psinthorn/iacc-php-mvc/issues/76) `worker.php` cron script with poll/lock/retry — _shipped_
+- [#77](https://github.com/psinthorn/iacc-php-mvc/issues/77) Dead-letter queue + priority lanes — _shipped_
+- [#78](https://github.com/psinthorn/iacc-php-mvc/issues/78) Admin queue dashboard (view, retry, clear) — _shipped_
+
+**Hotfix shipped in same release:** [PR #93](https://github.com/psinthorn/iacc-php-mvc/pull/93) — pin MySQL session timezone to `+07:00` so `NOW()` agrees with PHP `date()` regardless of cPanel host's default. Forward-only.
+
+**Operational notes:** Cron contract is `cron.php?task=run_worker&token=$CRON_TOKEN_PRODUCTION` every minute. cPanel job uses `/usr/bin/curl` (NOT `/usr/local/bin/curl` — host-specific path). Worker processes ≤ 1 task per tick, ceiling ≈ 1,440/day per server.
 
 ### v6.2 — AI-Powered Sales Channel Automation
 

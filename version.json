@@ -1,9 +1,9 @@
 {
-  "version": "5.12-tour-booking-suite",
-  "commit": "e67a1a5",
-  "commit_short": "e67a1a5",
+  "version": "6.1-task-queue-workers",
+  "commit": "711702c",
+  "commit_short": "711702c",
   "branch": "main",
-  "build_date": "2026-04-27T21:33:18+07:00",
-  "environment": "development",
+  "build_date": "2026-05-04T15:20:00+07:00",
+  "environment": "production",
   "deployed_by": "manual"
 }
