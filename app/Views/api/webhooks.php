@@ -3,11 +3,16 @@ $pageTitle = 'API — Webhooks';
 
 /**
  * Webhook Management View
- * 
+ *
  * Variables from AdminApiController::webhooks():
  *   $webhooks, $subscription
  */
-$validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cancelled', 'order.updated'];
+$validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cancelled', 'order.updated',
+                'allotment.created', 'allotment.updated', 'allotment.depleted', 'allotment.closed', 'allotment.snapshot'];
+$isThai = ($_SESSION['lang'] ?? '0') === '1';
+$flashMsg  = $_SESSION['flash_msg']  ?? null;
+$flashType = $_SESSION['flash_type'] ?? 'info';
+unset($_SESSION['flash_msg'], $_SESSION['flash_type']);
 ?>
 <link rel="stylesheet" href="css/master-data.css">
 
@@ -20,6 +25,12 @@ $validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cance
         <a href="index.php?page=api_docs" class="btn btn-sm btn-outline-info"><i class="fa fa-book"></i> API Docs</a>
     </div>
 </div>
+
+<?php if (!empty($flashMsg)): ?>
+<div class="alert alert-<?= htmlspecialchars($flashType) ?>" style="margin-bottom:15px;">
+    <?= htmlspecialchars($flashMsg) ?>
+</div>
+<?php endif; ?>
 
 <?php if (!$subscription): ?>
 <div style="text-align:center; padding:40px 20px; color:#999;">
@@ -53,6 +64,31 @@ $validEvents = ['order.created', 'order.completed', 'order.failed', 'order.cance
         <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Register Webhook</button>
     </form>
 </div>
+
+<!-- Inventory Snapshot Backfill (v6.2 #82) — admin tool for catching up new partner subscribers -->
+<?php if (!empty($webhooks)): ?>
+<div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:16px; margin-bottom:20px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px;">
+            <strong><i class="fa fa-refresh"></i>
+                <?= $isThai ? 'ส่งข้อมูลคงเหลือทั้งหมดให้พาร์ทเนอร์' : 'Send full inventory snapshot to partners' ?>
+            </strong>
+            <div style="font-size:12px; color:#475569; margin-top:4px;">
+                <?= $isThai
+                    ? 'ส่งสถานะปัจจุบันของ allotments ทั้งหมด (ที่ยังไม่ปิดและวันที่ยังไม่ผ่าน) เป็นเหตุการณ์ allotment.snapshot — ใช้เมื่อมีพาร์ทเนอร์ใหม่ที่ต้องการซิงก์ข้อมูลเริ่มต้น'
+                    : 'Re-emits the current state of every active allotment (not closed, future travel date) as allotment.snapshot events. Useful when a new partner subscribes and needs to backfill their inventory cache.' ?>
+            </div>
+        </div>
+        <form method="post" action="index.php?page=api_webhook_snapshot" style="margin:0;"
+              onsubmit="return confirm('<?= $isThai ? 'ส่ง snapshot ให้พาร์ทเนอร์ทั้งหมด?' : 'Queue snapshot events for all active allotments?' ?>');">
+            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+            <button type="submit" class="btn btn-sm btn-outline-info">
+                <i class="fa fa-paper-plane"></i> <?= $isThai ? 'ส่ง snapshot' : 'Send snapshot' ?>
+            </button>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Webhook List -->
 <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">

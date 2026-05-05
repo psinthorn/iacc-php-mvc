@@ -469,6 +469,55 @@ class AdminApiController extends BaseController
     }
 
     /**
+     * Snapshot backfill — enqueue allotment.snapshot events for every active
+     * allotment in the company (v6.2 #82, AC8). Useful when a partner
+     * subscribes mid-month and needs to backfill the current inventory state.
+     *
+     * Multi-tenant: scoped by company_id. CSRF + level check enforced.
+     */
+    public function snapshotAllotments(): void
+    {
+        $this->requireLevel(0);
+        $this->verifyCsrf();
+
+        $companyId = $this->getCompanyId();
+        if ($companyId <= 0) {
+            $this->redirect('api_webhooks');
+            return;
+        }
+
+        // Cap at 5000 to protect the queue from runaway snapshots; admin
+        // dashboard surfaces this number for transparency.
+        $sql = sprintf(
+            "INSERT INTO task_queue (company_id, task_type, payload, priority, status, scheduled_for, max_attempts)
+             SELECT a.company_id, 'sync_inventory_change',
+                    JSON_OBJECT('allotment_id', a.id,
+                                'event',        'allotment.snapshot',
+                                'occurred_at',  DATE_FORMAT(NOW(),'%%Y-%%m-%%dT%%H:%%i:%%s+07:00'),
+                                'triggered_by', 'admin_snapshot_backfill'),
+                    7,  /* low priority — bulk operation, don't starve real-time events */
+                    'pending', NOW(), 2
+               FROM tour_allotments a
+              WHERE a.company_id = %d
+                AND a.deleted_at IS NULL
+                AND a.is_closed = 0
+                AND a.travel_date >= CURDATE()
+              LIMIT 5000",
+            $companyId
+        );
+
+        $ok = mysqli_query($this->conn, $sql);
+        $count = $ok ? mysqli_affected_rows($this->conn) : 0;
+
+        $_SESSION['flash_msg'] = $count > 0
+            ? "Queued $count allotment snapshots — partners will receive allotment.snapshot events as the worker drains them."
+            : 'No active allotments found to snapshot.';
+        $_SESSION['flash_type'] = $count > 0 ? 'success' : 'info';
+
+        $this->redirect('api_webhooks');
+    }
+
+    /**
      * Rotate an API key (generates new credentials with grace period)
      */
     public function rotateKey(): void
