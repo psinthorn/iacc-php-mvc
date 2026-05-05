@@ -1,6 +1,6 @@
 # iACC - Accounting Management System
 
-**Version**: 6.2-channel-health-monitor  
+**Version**: 6.2-inventory-sync-worker  
 **Status**: Production Ready  
 **Last Updated**: May 5, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
@@ -609,7 +609,7 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 |---|---------|---------|---------|---------------|--------------|
 | 1 | **v6.0** | Self-Registration → Trial → Payment | Q4 2026 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/12) — 4 closed / 5 open | None |
 | 2 | **v6.1** | Task Queue & Background Worker Infrastructure | Q2 2026 | ✅ **shipped 2026-05-04** ([milestone v6.1](https://github.com/psinthorn/iacc-php-mvc/milestone/14)) — 4 issues closed via [PR #94](https://github.com/psinthorn/iacc-php-mvc/pull/94) | v6.0 |
-| 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | 🚧 **in progress** — 1 / 6 shipped ([milestone v6.2](https://github.com/psinthorn/iacc-php-mvc/milestone/15)). #83 Channel Health Monitor live 2026-05-05 ([PR #100](https://github.com/psinthorn/iacc-php-mvc/pull/100)) | v6.1 + Sales Channel API |
+| 3 | **v6.2** | AI-Powered Sales Channel Automation | Q1 2027 | 🚧 **in progress** — 2 / 6 shipped ([milestone v6.2](https://github.com/psinthorn/iacc-php-mvc/milestone/15)). #83 Channel Health + #82 Inventory Sync live 2026-05-05 ([PR #100](https://github.com/psinthorn/iacc-php-mvc/pull/100), [PR #105](https://github.com/psinthorn/iacc-php-mvc/pull/105)) | v6.1 + Sales Channel API |
 | 4 | **v6.3** | Agent Automation Workers | Q1 2027 | [milestone open](https://github.com/psinthorn/iacc-php-mvc/milestone/16) — 8 skeleton issues filed | v6.1 |
 | 5 | **v6.4** | AI Document Processing (OCR) | Q2 2027 | _no milestone yet — text-only roadmap_ | v6.1 |
 | 6 | **v6.5** | Conversational BI & Smart Insights | Q2 2027 | _no milestone yet — text-only roadmap_ | Existing AI (29 tools) |
@@ -643,18 +643,20 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 **Operational notes:** Cron contract is `cron.php?task=run_worker&token=$CRON_TOKEN_PRODUCTION` every minute. cPanel job uses `/usr/bin/curl` (NOT `/usr/local/bin/curl` — host-specific path). Worker processes ≤ 1 task per tick, ceiling ≈ 1,440/day per server.
 
-### v6.2 — AI-Powered Sales Channel Automation 🚧 1 of 6 shipped
+### v6.2 — AI-Powered Sales Channel Automation 🚧 2 of 6 shipped
 
 📋 **GitHub:** [milestone v6.2](https://github.com/psinthorn/iacc-php-mvc/milestone/15) · sprint-1 in progress per [Option B](https://github.com/psinthorn/iacc-php-mvc/pull/100) (LINE-only MVP for AI features; #81 + #84 deferred to v6.3)
 
-- [#79](https://github.com/psinthorn/iacc-php-mvc/issues/79) **AI Order Parser** — LINE/Facebook/email → structured `channel_orders`
-- [#80](https://github.com/psinthorn/iacc-php-mvc/issues/80) **Smart Order Router** — classify orders by channel + content
+- [#79](https://github.com/psinthorn/iacc-php-mvc/issues/79) **AI Order Parser** — LINE/Facebook/email → structured `channel_orders` — _next sprint_
+- [#80](https://github.com/psinthorn/iacc-php-mvc/issues/80) **Smart Order Router** — classify orders by channel + content — _next sprint_
 - [#81](https://github.com/psinthorn/iacc-php-mvc/issues/81) **AI Price Optimizer** — dynamic pricing per channel (weekend/season/margin) — _deferred to v6.3_
-- [#82](https://github.com/psinthorn/iacc-php-mvc/issues/82) **Inventory Sync Worker** — iACC products ↔ external channels — _next sprint_
+- [#82](https://github.com/psinthorn/iacc-php-mvc/issues/82) **Inventory Sync Worker** — iACC products ↔ external channels — _shipped 2026-05-05 ([PR #105](https://github.com/psinthorn/iacc-php-mvc/pull/105))_
 - [#83](https://github.com/psinthorn/iacc-php-mvc/issues/83) **Channel Health Monitor** — API health checks + webhook delivery alerts — _shipped 2026-05-05 ([PR #100](https://github.com/psinthorn/iacc-php-mvc/pull/100))_
 - [#84](https://github.com/psinthorn/iacc-php-mvc/issues/84) **AI Response Generator** — auto-reply with catalog + availability — _deferred to v6.3_
 
 **#83 — what shipped:** Periodic heartbeat (every minute via v6.1 task queue) probing 4 channels per tenant — LINE OA (`/v2/bot/info`), Sales Channel API (loopback), outbound webhook (passive telemetry from `api_webhook_deliveries`), email SMTP (TCP probe). Alerts open after 5 consecutive failures, auto-resolve on first success, bilingual TH/EN email notifications to admins (capped at 2 per downtime episode). Admin dashboard at `/?page=channel_health` with status grid, 24h response chart (Chart.js), open-alerts panel, last-100 timeline. New tables: `channel_health_log` (BIGINT PK, 30-day retention) + `channel_alerts` (state machine).
+
+**#82 — what shipped:** Real-time outbound inventory broadcast. Whenever `tour_allotments` changes via the model layer (create / book / release / set-capacity / close / reopen — 6 hook points), enqueues a `sync_inventory_change` task on the v6.1 task queue. Handler loads the row, resolves the final event type (auto-upgrades `updated` → `depleted` when booked >= total, → `closed` when soft-deleted or `is_closed=1`), and dispatches HMAC-signed POSTs via existing `Webhook::fireEvent()` chain. Event types: `allotment.created` / `allotment.updated` / `allotment.depleted` / `allotment.closed` / `allotment.snapshot`. Admin "Send snapshot" button on the webhooks admin page enqueues backfill events for all active allotments — useful when a partner subscribes mid-month and needs to seed their inventory cache. **Zero new tables, zero migrations** — reuses existing `api_webhooks` + `api_webhook_deliveries`.
 
 ### v6.3 — Agent Automation Workers
 
