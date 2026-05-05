@@ -19,15 +19,19 @@ $priClass = $priority <= 3 ? 'high' : ($priority >= 7 ? 'low' : '');
 $priLabel = $priority <= 3 ? 'high' : ($priority >= 7 ? 'low' : 'normal');
 
 // Humanize times: "in 30s" / "5m ago"
-function _tq_humanize($ts) {
-    if (!$ts) return '—';
-    $delta = strtotime($ts) - time();
-    $abs = abs($delta);
-    if ($abs < 60)        $human = $abs . 's';
-    elseif ($abs < 3600)  $human = floor($abs/60) . 'm';
-    elseif ($abs < 86400) $human = floor($abs/3600) . 'h';
-    else                  $human = floor($abs/86400) . 'd';
-    return $delta >= 0 ? "in $human" : "$human ago";
+// Guard with function_exists — this partial is included once per task row,
+// so without the guard PHP throws a "Cannot redeclare" fatal on the 2nd row.
+if (!function_exists('_tq_humanize')) {
+    function _tq_humanize($ts) {
+        if (!$ts) return '—';
+        $delta = strtotime($ts) - time();
+        $abs = abs($delta);
+        if ($abs < 60)        $human = $abs . 's';
+        elseif ($abs < 3600)  $human = floor($abs/60) . 'm';
+        elseif ($abs < 86400) $human = floor($abs/3600) . 'h';
+        else                  $human = floor($abs/86400) . 'd';
+        return $delta >= 0 ? "in $human" : "$human ago";
+    }
 }
 
 $canRetry  = in_array($status, ['failed', 'dead_letter'], true);
