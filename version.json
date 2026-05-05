@@ -1,9 +1,9 @@
 {
-  "version": "6.2-channel-health-monitor",
-  "commit": "0433576",
-  "commit_short": "0433576",
+  "version": "6.2-inventory-sync-worker",
+  "commit": "138e841",
+  "commit_short": "138e841",
   "branch": "main",
-  "build_date": "2026-05-05T15:01:00+07:00",
+  "build_date": "2026-05-05T22:50:00+07:00",
   "environment": "production",
   "deployed_by": "manual"
 }
