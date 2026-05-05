@@ -227,6 +227,7 @@ return [
     'api_webhook_create'     => ['AdminApiController', 'createWebhook'],
     'api_webhook_toggle'     => ['AdminApiController', 'toggleWebhook'],
     'api_webhook_delete'     => ['AdminApiController', 'deleteAdminWebhook'],
+    'api_webhook_snapshot'   => ['AdminApiController', 'snapshotAllotments'],  // v6.2 #82 AC8
     'api_key_rotate'         => ['AdminApiController', 'rotateKey'],
     'api_docs'               => ['AdminApiController', 'docs'],
     'api_orders_export'      => ['AdminApiController', 'exportOrders', 'standalone'],
