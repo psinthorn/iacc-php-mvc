@@ -1,9 +1,9 @@
 {
-  "version": "6.1-task-queue-workers",
-  "commit": "711702c",
-  "commit_short": "711702c",
+  "version": "6.2-channel-health-monitor",
+  "commit": "0433576",
+  "commit_short": "0433576",
   "branch": "main",
-  "build_date": "2026-05-04T15:20:00+07:00",
+  "build_date": "2026-05-05T15:01:00+07:00",
   "environment": "production",
   "deployed_by": "manual"
 }
