@@ -218,10 +218,13 @@ class ChannelHeartbeatHandler implements TaskHandler
             return ['status' => ChannelHealthLog::STATUS_NOT_CONFIGURED];
         }
 
+        // Qualify created_at and error with table aliases — both api_webhook_deliveries
+        // and api_webhooks have a created_at column, so unqualified references throw
+        // "Column 'created_at' in field list is ambiguous".
         $statsSql = "SELECT
-                        SUM(success)                            AS ok_count,
-                        COUNT(*)                                AS total,
-                        SUBSTRING_INDEX(GROUP_CONCAT(error ORDER BY created_at DESC), ',', 1) AS last_error
+                        SUM(d.success)                              AS ok_count,
+                        COUNT(*)                                    AS total,
+                        SUBSTRING_INDEX(GROUP_CONCAT(d.error ORDER BY d.created_at DESC), ',', 1) AS last_error
                       FROM api_webhook_deliveries d
                       JOIN api_webhooks w ON w.id = d.webhook_id
                      WHERE w.company_id = $companyId
