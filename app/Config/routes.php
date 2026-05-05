@@ -155,6 +155,11 @@ return [
     'admin_task_queue_delete'  => ['AdminTaskQueueController', 'delete'],
     'admin_task_queue_bulk'    => ['AdminTaskQueueController', 'bulk'],
 
+    // Channel Health Monitor (v6.2 #83)
+    'channel_health'             => ['ChannelHealthController', 'index'],
+    'channel_health_test_now'    => ['ChannelHealthController', 'testNow', 'standalone'],
+    'channel_health_acknowledge' => ['ChannelHealthController', 'acknowledge', 'standalone'],
+
     // ========== Phase 5A: Payment Gateway (MVC) ==========
     'payment_gateway_config' => ['PaymentGatewayController', 'index'],
     'payment_gateway_save'   => ['PaymentGatewayController', 'save'],
