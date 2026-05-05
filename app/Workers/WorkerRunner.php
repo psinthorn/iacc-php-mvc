@@ -34,11 +34,11 @@ class WorkerRunner
      * Adding a new task type: one line below + create the handler class.
      */
     private const HANDLERS = [
-        'echo'              => Handlers\EchoHandler::class,
-        'channel_heartbeat' => Handlers\ChannelHeartbeatHandler::class,
+        'echo'                  => Handlers\EchoHandler::class,
+        'channel_heartbeat'     => Handlers\ChannelHeartbeatHandler::class,
+        'sync_inventory_change' => Handlers\SyncInventoryChangeHandler::class,
         // future: 'send_email' => Handlers\SendEmailHandler::class,
         // future: 'generate_pdf_invoice' => Handlers\GeneratePdfInvoiceHandler::class,
-        // future: 'sync_channel_inventory' => Handlers\SyncChannelInventoryHandler::class,
     ];
 
     /** Stale-lock threshold: rows locked longer than this get reset to pending. */

@@ -163,6 +163,9 @@ class TourAllotment extends BaseModel
 
         if (!$id) return null;
 
+        // #82: notify subscribed partners that a new allotment opened
+        $this->notifyAllotmentChange(intval($id), intval($comId), 'allotment.created');
+
         return [
             'id'              => $id,
             'company_id'      => $comId,
@@ -314,6 +317,9 @@ class TourAllotment extends BaseModel
         // Audit log
         $this->writeLog($allotmentId, $bookingId, 'book', $pax, $bookedAfter, null, $userId);
 
+        // #82: notify partners of inventory change (handler decides updated vs depleted)
+        if ($ok) $this->notifyAllotmentChange($allotmentId, 0, 'allotment.updated');
+
         return [
             'success'         => (bool)$ok,
             'is_overbooked'   => $isOverbooked,
@@ -344,6 +350,9 @@ class TourAllotment extends BaseModel
         $bookedAfter = intval($row['booked_seats'] ?? 0);
 
         $this->writeLog($allotmentId, $bookingId, 'release', -$pax, $bookedAfter, null, $userId);
+
+        // #82: notify partners that capacity freed up
+        if ($ok) $this->notifyAllotmentChange($allotmentId, 0, 'allotment.updated');
 
         return (bool)$ok;
     }
@@ -484,6 +493,8 @@ class TourAllotment extends BaseModel
 
         if ($ok) {
             $this->writeLog($allotmentId, null, 'manual_set', 0, 0, "Capacity set to {$newTotal}", $userId);
+            // #82: total_seats changed — partners need updated availability
+            $this->notifyAllotmentChange($allotmentId, 0, 'allotment.updated');
         }
         return $ok;
     }
@@ -502,6 +513,8 @@ class TourAllotment extends BaseModel
 
         if ($ok) {
             $this->writeLog($allotmentId, null, 'close', 0, 0, $reason, $userId);
+            // #82: notify partners — date no longer bookable
+            $this->notifyAllotmentChange($allotmentId, 0, 'allotment.closed');
         }
         return (bool)$ok;
     }
@@ -520,6 +533,8 @@ class TourAllotment extends BaseModel
 
         if ($ok) {
             $this->writeLog($allotmentId, null, 'reopen', 0, 0, null, $userId);
+            // #82: notify partners — date is bookable again
+            $this->notifyAllotmentChange($allotmentId, 0, 'allotment.updated');
         }
         return (bool)$ok;
     }
@@ -543,6 +558,52 @@ class TourAllotment extends BaseModel
             intval($userId)
         );
         mysqli_query($this->conn, $sql);
+    }
+
+    /**
+     * Enqueue a sync_inventory_change task on the v6.1 task queue (#82).
+     *
+     * Best-effort, never throws — webhook delivery is fire-and-forget. Caller
+     * passes a hint; the handler may upgrade the event (e.g. updated→depleted)
+     * based on current row state at fire time.
+     *
+     * If $companyId is 0 the method looks it up from the allotment row itself —
+     * convenient for callers that only have allotment_id in scope (bookSeats,
+     * closeDate, etc).
+     *
+     * @param int    $allotmentId  Row that changed
+     * @param int    $companyId    Tenant scope; 0 = auto-lookup from row
+     * @param string $eventHint    'allotment.created' | 'allotment.updated' | 'allotment.closed' | 'allotment.snapshot'
+     */
+    private function notifyAllotmentChange(int $allotmentId, int $companyId, string $eventHint): void
+    {
+        if ($allotmentId <= 0) return;
+        try {
+            if ($companyId <= 0) {
+                $r = mysqli_query($this->conn, sprintf(
+                    "SELECT company_id FROM tour_allotments WHERE id = %d LIMIT 1",
+                    $allotmentId
+                ));
+                $row = $r ? mysqli_fetch_assoc($r) : null;
+                $companyId = intval($row['company_id'] ?? 0);
+                if ($companyId <= 0) return; // row vanished; nothing to notify about
+            }
+            $payload = json_encode([
+                'allotment_id' => $allotmentId,
+                'event'        => $eventHint,
+                'occurred_at'  => date('c'),
+            ]);
+            $payloadEsc = mysqli_real_escape_string($this->conn, $payload);
+            // priority=5 (normal). Webhook delivery is non-urgent; OK to wait
+            // a minute. max_attempts=2 (Webhook model has its own retry chain).
+            $sql = "INSERT INTO task_queue
+                      (company_id, task_type, payload, priority, status, scheduled_for, max_attempts)
+                    VALUES
+                      ($companyId, 'sync_inventory_change', '$payloadEsc', 5, 'pending', NOW(), 2)";
+            @mysqli_query($this->conn, $sql);
+        } catch (\Throwable $e) {
+            error_log('[TourAllotment::notifyAllotmentChange] ' . $e->getMessage());
+        }
     }
 
     /**
