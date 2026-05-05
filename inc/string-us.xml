@@ -347,6 +347,7 @@
 <apikeys>API Keys</apikeys>
 <apisubscriptions>API Subscriptions</apisubscriptions>
 <apiwebhooks>API Webhooks</apiwebhooks>
+<channelhealth>Channel Health</channelhealth>
 <apiusagelogs>API Usage Logs</apiusagelogs>
 <apiorders>API Orders</apiorders>
 <apiinvoices>API Invoices</apiinvoices>

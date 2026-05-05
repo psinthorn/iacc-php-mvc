@@ -347,6 +347,7 @@
 <apikeys>คีย์ API</apikeys>
 <apisubscriptions>สมัครสมาชิก API</apisubscriptions>
 <apiwebhooks>เว็บฮุค API</apiwebhooks>
+<channelhealth>สถานะช่องทาง</channelhealth>
 <apiusagelogs>บันทึกการใช้งาน API</apiusagelogs>
 <apiorders>คำสั่งซื้อ API</apiorders>
 <apiinvoices>ใบแจ้งหนี้ API</apiinvoices>

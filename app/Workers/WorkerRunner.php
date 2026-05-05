@@ -34,7 +34,8 @@ class WorkerRunner
      * Adding a new task type: one line below + create the handler class.
      */
     private const HANDLERS = [
-        'echo' => Handlers\EchoHandler::class,
+        'echo'              => Handlers\EchoHandler::class,
+        'channel_heartbeat' => Handlers\ChannelHeartbeatHandler::class,
         // future: 'send_email' => Handlers\SendEmailHandler::class,
         // future: 'generate_pdf_invoice' => Handlers\GeneratePdfInvoiceHandler::class,
         // future: 'sync_channel_inventory' => Handlers\SyncChannelInventoryHandler::class,

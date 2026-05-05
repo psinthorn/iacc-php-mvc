@@ -520,6 +520,9 @@ include_once 'inc/top-navbar.php';
                             <li>
                                 <a href="index.php?page=api_subscriptions"><i class="fa fa-users"></i> <?=$xml->apisubscriptions ?? 'Subscriptions'?></a>
                             </li>
+                            <li>
+                                <a href="index.php?page=channel_health"><i class="fa fa-heartbeat"></i> <?=$xml->channelhealth ?? 'Channel Health'?></a>
+                            </li>
                             <?php endif; ?>
                         </ul>
                     </li>
