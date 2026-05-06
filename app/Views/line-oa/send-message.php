@@ -62,7 +62,7 @@ $t = $labels[$lang];
                         <select name="line_user_id" class="form-control" required>
                             <option value="">-- <?= $t['select_user'] ?> --</option>
                             <?php foreach ($lineUsers as $u): ?>
-                            <option value="<?= $u['line_user_id'] ?>"><?= htmlspecialchars($u['display_name'] ?: $u['line_user_id'], ENT_QUOTES, 'UTF-8') ?></option>
+                            <option value="<?= (int)$u['id'] ?>"><?= htmlspecialchars($u['display_name'] ?: $u['line_user_id'], ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
