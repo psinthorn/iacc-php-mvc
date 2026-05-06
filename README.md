@@ -668,37 +668,44 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 **#82 — what shipped:** Real-time outbound inventory broadcast. Whenever `tour_allotments` changes via the model layer (create / book / release / set-capacity / close / reopen — 6 hook points), enqueues a `sync_inventory_change` task on the v6.1 task queue. Handler loads the row, resolves the final event type (auto-upgrades `updated` → `depleted` when booked >= total, → `closed` when soft-deleted or `is_closed=1`), and dispatches HMAC-signed POSTs via existing `Webhook::fireEvent()` chain. Event types: `allotment.created` / `allotment.updated` / `allotment.depleted` / `allotment.closed` / `allotment.snapshot`. Admin "Send snapshot" button on the webhooks admin page enqueues backfill events for all active allotments — useful when a partner subscribes mid-month and needs to seed their inventory cache. **Zero new tables, zero migrations** — reuses existing `api_webhooks` + `api_webhook_deliveries`.
 
-### v6.3 — Agent Automation Workers
+### v6.3 — Agent Booking Capture (LINE OA → tour_bookings)
 
-📋 **GitHub:** [milestone v6.3](https://github.com/psinthorn/iacc-php-mvc/milestone/16) — 8 skeleton issues filed
+📋 **GitHub:** [milestone v6.3](https://github.com/psinthorn/iacc-php-mvc/milestone/19) — 3 skeleton issues filed · target Q3 2026
 
-- [#85](https://github.com/psinthorn/iacc-php-mvc/issues/85) Overdue invoice reminders (daily 9am)
-- [#86](https://github.com/psinthorn/iacc-php-mvc/issues/86) Trial expiry notifier (3/1/0 days before expiry)
-- [#87](https://github.com/psinthorn/iacc-php-mvc/issues/87) Auto subscription renewal/suspension
-- [#88](https://github.com/psinthorn/iacc-php-mvc/issues/88) Weekly AR Aging alert to admin
-- [#89](https://github.com/psinthorn/iacc-php-mvc/issues/89) Monthly auto-generated reports (P&L, Revenue) as PDF
-- [#90](https://github.com/psinthorn/iacc-php-mvc/issues/90) Webhook retry worker with exponential backoff
-- [#91](https://github.com/psinthorn/iacc-php-mvc/issues/91) BOT exchange rate updater (daily)
-- [#92](https://github.com/psinthorn/iacc-php-mvc/issues/92) Data cleanup worker (weekly — old task_results, expired sessions, orphaned uploads)
+Sales-agent input flows via LINE OA. Agent-as-user (not customer-as-user) — field reps submit booking data straight from the LINE chat instead of waiting to enter it via the web form back at the office. Three modes, shipping incrementally:
 
-### v6.4 — AI Document Processing (OCR)
+- [#120](https://github.com/psinthorn/iacc-php-mvc/issues/120) **Text-template booking** — structured TH/EN message → parsed → `tour_bookings` row with sales-agent attribution. Ships first (no AI dep, builds the parser harness).
+- [#121](https://github.com/psinthorn/iacc-php-mvc/issues/121) **File-upload booking** — agent attaches CSV/Excel via LINE → preview-and-confirm flow → bulk booking creation. Reuses existing tour-booking CSV import code path.
+- [#122](https://github.com/psinthorn/iacc-php-mvc/issues/122) **Image-OCR booking** — agent snaps voucher photo → vision OCR + LLM field extraction → booking. Hardest; shipped last. Absorbs the old v6.4 "AI Document Processing" directional scope.
 
-📋 **GitHub:** _no milestone yet_ — directional roadmap only. Create milestone before issue tracking.
+> **Roadmap rebalance (2026-05-06):** Original v6.3 was "Agent Automation Workers" (milestone #16, issues #85–#92). Per Option B PM call, customer-facing booking-capture work was prioritized over internal worker automation. Worker automation moved to v6.5 (milestone #16 renamed). BI shifted up from old v6.5 → v6.4. See PR [chore/roadmap-rebalance-v6.3-v6.5] for the README change and milestone audit trail.
 
-- Receipt photo upload → AI extracts vendor, amount, date, category → auto-create expense
-- Invoice email parser → AI parses PDF/image → creates expense or PO draft
-- Contract analyzer → extracts key terms, dates, obligations
-- Thai + English language support for document parsing
+### v6.4 — Conversational BI & Smart Insights
 
-### v6.5 — Conversational BI & Smart Insights
-
-📋 **GitHub:** _no milestone yet_ — directional roadmap only.
+📋 **GitHub:** _no milestone yet_ — directional roadmap only · shifted up from old v6.5 on 2026-05-06
 
 - Chart generation from AI chat ("Show revenue trend this year" → inline Chart.js)
 - Predictive cash flow: AI forecasts 30/60/90 day cash position
 - Transaction anomaly detection (amount outliers, duplicates, missing receipts)
 - Smart automation suggestions based on user behavior patterns
 - Natural language → SQL query execution
+
+### v6.5 — Agent Automation Workers
+
+📋 **GitHub:** [milestone v6.5](https://github.com/psinthorn/iacc-php-mvc/milestone/16) — 8 skeleton issues, all open · target Q1 2027 · _renumbered from old v6.3 on 2026-05-06; same milestone #16, title + labels updated_
+
+Background workers that run while operators sleep — revenue recovery, retention, reliability:
+
+- [#85](https://github.com/psinthorn/iacc-php-mvc/issues/85) Overdue invoice reminders (daily 9am)
+- [#86](https://github.com/psinthorn/iacc-php-mvc/issues/86) Trial expiry notifier (3/1/0 days before expiry)
+- [#87](https://github.com/psinthorn/iacc-php-mvc/issues/87) Auto subscription renewal/suspension
+- [#88](https://github.com/psinthorn/iacc-php-mvc/issues/88) Weekly AR Aging alert to admin
+- [#89](https://github.com/psinthorn/iacc-php-mvc/issues/89) Monthly auto-generated reports (P&L, Revenue) as PDF
+- [#90](https://github.com/psinthorn/iacc-php-mvc/issues/90) Webhook retry worker with exponential backoff — _important: protects v6.2 LINE OA broadcasts_
+- [#91](https://github.com/psinthorn/iacc-php-mvc/issues/91) BOT exchange rate updater (daily)
+- [#92](https://github.com/psinthorn/iacc-php-mvc/issues/92) Data cleanup worker (weekly — old task_results, expired sessions, orphaned uploads)
+
+> **PM recommendation for v6.5 sprint scope:** ship 4 of 8 first — #85, #86, #87 (revenue cluster) + #90 (reliability for v6.2 broadcasts). Defer #88, #89, #91, #92 to v6.5.x or backlog. See conversation log 2026-05-06.
 
 ### v6.6 — Native Sales Channel Connectors
 
