@@ -1,8 +1,8 @@
 # iACC - Accounting Management System
 
-**Version**: 6.2-inventory-sync-worker  
+**Version**: 6.2-line-oa-rich-messaging  
 **Status**: Production Ready  
-**Last Updated**: May 5, 2026  
+**Last Updated**: May 6, 2026  
 **Architecture**: MVC (Model-View-Controller) + REST API  
 **PHP**: 8.2+ | **MySQL**: 5.7 | **Nginx**: Alpine
 
@@ -643,18 +643,28 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 
 **Operational notes:** Cron contract is `cron.php?task=run_worker&token=$CRON_TOKEN_PRODUCTION` every minute. cPanel job uses `/usr/bin/curl` (NOT `/usr/local/bin/curl` — host-specific path). Worker processes ≤ 1 task per tick, ceiling ≈ 1,440/day per server.
 
-### v6.2 — AI-Powered Sales Channel Automation 🚧 2 of 6 shipped
+### v6.2 — AI-Powered Sales Channel Automation 🚧 5 of 9 shipped
 
-📋 **GitHub:** [milestone v6.2](https://github.com/psinthorn/iacc-php-mvc/milestone/15) · sprint-1 in progress per [Option B](https://github.com/psinthorn/iacc-php-mvc/pull/100) (LINE-only MVP for AI features; #81 + #84 deferred to v6.3)
+📋 **GitHub:** [milestone v6.2](https://github.com/psinthorn/iacc-php-mvc/milestone/15) · sprint-1 in progress per [Option B](https://github.com/psinthorn/iacc-php-mvc/pull/100) (LINE-only MVP for AI features; #81 + #84 deferred to v6.3) · scope expanded 2026-05-06 with LINE OA Rich Messaging (#110–#113)
+
+**Original sprint plan (6 items):**
 
 - [#79](https://github.com/psinthorn/iacc-php-mvc/issues/79) **AI Order Parser** — LINE/Facebook/email → structured `channel_orders` — _next sprint_
 - [#80](https://github.com/psinthorn/iacc-php-mvc/issues/80) **Smart Order Router** — classify orders by channel + content — _next sprint_
-- [#81](https://github.com/psinthorn/iacc-php-mvc/issues/81) **AI Price Optimizer** — dynamic pricing per channel (weekend/season/margin) — _deferred to v6.3_
+- [#81](https://github.com/psinthorn/iacc-php-mvc/issues/81) **AI Price Optimizer** — dynamic pricing per channel (weekend/season/margin) — _deferred_
 - [#82](https://github.com/psinthorn/iacc-php-mvc/issues/82) **Inventory Sync Worker** — iACC products ↔ external channels — _shipped 2026-05-05 ([PR #105](https://github.com/psinthorn/iacc-php-mvc/pull/105))_
 - [#83](https://github.com/psinthorn/iacc-php-mvc/issues/83) **Channel Health Monitor** — API health checks + webhook delivery alerts — _shipped 2026-05-05 ([PR #100](https://github.com/psinthorn/iacc-php-mvc/pull/100))_
-- [#84](https://github.com/psinthorn/iacc-php-mvc/issues/84) **AI Response Generator** — auto-reply with catalog + availability — _deferred to v6.3_
+- [#84](https://github.com/psinthorn/iacc-php-mvc/issues/84) **AI Response Generator** — auto-reply with catalog + availability — _superseded by #111+#112 below_
+
+**LINE OA Rich Messaging (3 items added 2026-05-06):**
+
+- [#110](https://github.com/psinthorn/iacc-php-mvc/issues/110) **LINE Channel Health Probe** — real `/v2/bot/info` probe with bot info cache — _shipped 2026-05-06 ([PR #114](https://github.com/psinthorn/iacc-php-mvc/pull/114))_
+- [#111](https://github.com/psinthorn/iacc-php-mvc/issues/111) **Bilingual Flex Templates** — TH/EN with `{variable}` substitution; tour-package template seeded — _shipped 2026-05-06 ([PR #114](https://github.com/psinthorn/iacc-php-mvc/pull/114))_
+- [#112](https://github.com/psinthorn/iacc-php-mvc/issues/112) **Broadcast Campaigns** — 3-step composer, multicast in 500-chunks, scheduled cron, monthly quota with enforcement (#113) — _shipped 2026-05-06 ([PR #114](https://github.com/psinthorn/iacc-php-mvc/pull/114))_
 
 **#83 — what shipped:** Periodic heartbeat (every minute via v6.1 task queue) probing 4 channels per tenant — LINE OA (`/v2/bot/info`), Sales Channel API (loopback), outbound webhook (passive telemetry from `api_webhook_deliveries`), email SMTP (TCP probe). Alerts open after 5 consecutive failures, auto-resolve on first success, bilingual TH/EN email notifications to admins (capped at 2 per downtime episode). Admin dashboard at `/?page=channel_health` with status grid, 24h response chart (Chart.js), open-alerts panel, last-100 timeline. New tables: `channel_health_log` (BIGINT PK, 30-day retention) + `channel_alerts` (state machine).
+
+**#110–#112 — what shipped (LINE OA Rich Messaging):** Turns LINE OA from a passive inbox into a sales channel for tour operators. (1) Real channel health probe replaces the `is_active` toggle-mirror — calls `/v2/bot/info`, surfaces 3 states (Connected / Invalid credentials / Unreachable), caches bot display name + picture + basicId in `line_oa_config`, dashboard shows "last checked" timestamp + inline ↻ Re-test button. (2) Bilingual Flex message templates with `{variable}` token substitution at render time — TH and EN content per template, seeded "Tour Package Card" per company. (3) Broadcast campaigns with a 3-step composer (Audience → Message → Schedule), 500-recipient multicast chunking with per-row delivery log in `line_broadcast_recipients`, scheduled send via new `cron.php?task=process_broadcasts` (every 5 min), monthly quota meter + send-time enforcement (#113 blocker — drafts always allowed). New tables: `line_message_templates`, `line_broadcasts`, `line_broadcast_recipients`, `line_user_tags`, `line_user_tag_map`. Migration is idempotent (stored-procedure column checks). Pre-existing Send Message form bug fixed in [PR #115](https://github.com/psinthorn/iacc-php-mvc/pull/115) — option value mismatch (LINE userId string vs DB int id) that meant the form had never worked.
 
 **#82 — what shipped:** Real-time outbound inventory broadcast. Whenever `tour_allotments` changes via the model layer (create / book / release / set-capacity / close / reopen — 6 hook points), enqueues a `sync_inventory_change` task on the v6.1 task queue. Handler loads the row, resolves the final event type (auto-upgrades `updated` → `depleted` when booked >= total, → `closed` when soft-deleted or `is_closed=1`), and dispatches HMAC-signed POSTs via existing `Webhook::fireEvent()` chain. Event types: `allotment.created` / `allotment.updated` / `allotment.depleted` / `allotment.closed` / `allotment.snapshot`. Admin "Send snapshot" button on the webhooks admin page enqueues backfill events for all active allotments — useful when a partner subscribes mid-month and needs to seed their inventory cache. **Zero new tables, zero migrations** — reuses existing `api_webhooks` + `api_webhook_deliveries`.
 
@@ -714,6 +724,25 @@ docker exec iacc_php php /var/www/html/tests/test-mvc-comprehensive.php
 ---
 
 ## �📋 Changelog
+
+### v6.2-line-oa-rich-messaging (May 6, 2026) — LINE OA Rich Messaging (Probe + Templates + Broadcasts)
+
+**Highlights:**
+
+- **LINE channel health probe** ([#110](https://github.com/psinthorn/iacc-php-mvc/issues/110)): real `/v2/bot/info` probe with 60s DB cache, 3 states (Connected / Invalid credentials / Unreachable), bot name + picture surfaced on dashboard, inline ↻ Re-test button. Replaces the previous `is_active` toggle-mirror that misled operators into thinking the channel was disconnected.
+- **Bilingual Flex message templates** ([#111](https://github.com/psinthorn/iacc-php-mvc/issues/111)): new `line_message_templates` table with TH+EN content per template, `{variable}` token substitution at render time, "Tour Package Card" seeded per company on migration.
+- **Broadcast campaigns** ([#112](https://github.com/psinthorn/iacc-php-mvc/issues/112)): 3-step composer (Audience → Message → Schedule), 500-recipient multicast chunking with per-row delivery audit (`line_broadcast_recipients`), scheduled send via new `cron.php?task=process_broadcasts` (every 5 min), monthly quota meter.
+- **Quota enforcement** ([#113](https://github.com/psinthorn/iacc-php-mvc/issues/113)): blocks `send_now` and `schedule` actions when `monthly_used + audience_count > broadcast_quota_monthly`. Drafts always allowed.
+- **Send Message form bug fix** ([PR #115](https://github.com/psinthorn/iacc-php-mvc/pull/115)): pre-existing — dropdown emitted LINE userId string but controller did `intval()` so the form had never actually worked.
+- **Auto-reply seed library** ([PR #117](https://github.com/psinthorn/iacc-php-mvc/pull/117)): 14 bilingual starter rules (TH + EN × 7 intents — greeting, price, booking, payment, location, contact, cancellation) seeded per company on migration. Idempotent per `(company_id, trigger_keyword)` so it never overwrites operator-customized rules. Location/contact rules default to `is_active=0` because they contain `[placeholder]` text the operator must edit before going live.
+
+**Files changed:** 15 across `app/Models/LineMessaging.php` (new), `app/Models/LineOA.php`, `app/Services/LineService.php`, `app/Controllers/LineOAController.php`, `app/Views/line-oa/` (5 new views + 2 modified), `app/Config/routes.php`, `cron.php`, `database/migrations/2026_05_06_line_oa_v6_3_rich_messaging.sql` (new — 5 new tables, 7 new columns on `line_oa_config`, idempotent).
+
+**PRs merged:** [#114](https://github.com/psinthorn/iacc-php-mvc/pull/114), [#115](https://github.com/psinthorn/iacc-php-mvc/pull/115)
+
+**Cron registration required (cPanel):** `*/5 * * * * curl -fsS "https://iacc.f2.co.th/cron.php?task=process_broadcasts&token=$CRON_TOKEN" >> ~/logs/cron-broadcasts.log 2>&1`
+
+**Roadmap reconciliation note:** Originally tracked under a new "v6.3 — LINE OA Rich Messaging" milestone (#18). Re-slotted into v6.2 on the same day per Option A reconciliation — the work is sales-channel automation, which is v6.2's theme, and supersedes the deferred #84 "AI Response Generator". Milestone #18 closed empty; the original v6.3 "Agent Automation Workers" (#85–#92, milestone #16) is unaffected.
 
 ### v5.12-tour-booking-suite (April 29, 2026) — Tour Booking Payment + Bulk Actions + AI Agent Team + Email/KPI/CSV
 

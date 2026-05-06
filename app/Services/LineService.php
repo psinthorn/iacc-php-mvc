@@ -128,6 +128,69 @@ class LineService
         return $this->get("/profile/{$userId}");
     }
 
+    // ========== Bot / Channel Health ==========
+
+    /**
+     * Probe LINE channel: returns ['status' => connected|invalid_credentials|unreachable, ...]
+     * Wraps GET /v2/bot/info — the cheapest call that requires a valid token.
+     */
+    public function probeChannel(): array
+    {
+        $resp = $this->get('/info');
+        $code = $resp['http_code'] ?? 0;
+
+        if ($code === 200) {
+            return [
+                'status'       => 'connected',
+                'display_name' => $resp['displayName'] ?? null,
+                'picture_url'  => $resp['pictureUrl'] ?? null,
+                'basic_id'     => $resp['basicId'] ?? null,
+                'user_id'      => $resp['userId'] ?? null,
+            ];
+        }
+
+        if ($code === 401 || $code === 403) {
+            return [
+                'status' => 'invalid_credentials',
+                'error'  => $resp['message'] ?? 'Authentication failed',
+            ];
+        }
+
+        return [
+            'status' => 'unreachable',
+            'error'  => $resp['error'] ?? ($resp['message'] ?? "HTTP $code"),
+        ];
+    }
+
+    /**
+     * Get follower count from /v2/bot/insight/followers
+     * (LINE returns yesterday's number; today's is unavailable in real time.)
+     */
+    public function getFollowerCount(?string $date = null): ?int
+    {
+        $date = $date ?? date('Ymd', strtotime('-1 day'));
+        $resp = $this->get('/insight/followers?date=' . urlencode($date));
+        return isset($resp['followers']) ? (int)$resp['followers'] : null;
+    }
+
+    // ========== Multicast (broadcast to many users) ==========
+
+    /**
+     * Send the same messages to up to 500 users in one API call.
+     * Returns ['success' => bool, 'http_code' => int, ...].
+     * Caller is responsible for chunking >500 recipients across multiple calls.
+     */
+    public function multicast(array $userIds, array $messages): array
+    {
+        if (count($userIds) > 500) {
+            return ['success' => false, 'error' => 'multicast supports max 500 recipients per call', 'http_code' => 0];
+        }
+        return $this->post('/message/multicast', [
+            'to'       => array_values($userIds),
+            'messages' => $messages,
+        ]);
+    }
+
     // ========== Message Content ==========
 
     /**
