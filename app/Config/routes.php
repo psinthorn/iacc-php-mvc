@@ -248,6 +248,9 @@ return [
     'line_auto_replies'  => ['LineOAController', 'autoReplies'],
     'line_webhook_log'   => ['LineOAController', 'webhookLog'],
     'line_send_message'  => ['LineOAController', 'sendMessagePage'],
+    // v6.3 #120 — agent text-template booking + admin bindings
+    'line_agent_bindings'         => ['LineAgentController', 'bindings'],
+    'line_agent_bind_save'        => ['LineAgentController', 'bindSave'],
     // v6.3 — rich messaging
     'line_probe'                  => ['LineOAController', 'probeConnection'],
     'line_templates'              => ['LineOAController', 'templates'],
