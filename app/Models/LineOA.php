@@ -30,6 +30,30 @@ class LineOA extends BaseModel
         return $result;
     }
 
+    /**
+     * Persist the latest LINE channel probe result + cached bot info.
+     * Called by LineOAController::probeConnection().
+     */
+    public function updateProbeResult(int $companyId, array $probe): bool
+    {
+        $name  = $probe['display_name'] ?? null;
+        $pic   = $probe['picture_url']  ?? null;
+        $basic = $probe['basic_id']     ?? null;
+        $stat  = $probe['status']       ?? 'unknown';
+        $err   = $probe['error']        ?? null;
+
+        $stmt = $this->conn->prepare(
+            "UPDATE line_oa_config
+             SET bot_display_name = ?, bot_picture_url = ?, bot_basic_id = ?,
+                 last_probe_at = NOW(), last_probe_status = ?, last_probe_error = ?
+             WHERE company_id = ? AND deleted_at IS NULL"
+        );
+        $stmt->bind_param('sssssi', $name, $pic, $basic, $stat, $err, $companyId);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
+
     public function saveConfig(int $companyId, array $data): bool
     {
         $existing = $this->getConfig($companyId);
