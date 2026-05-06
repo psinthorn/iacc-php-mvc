@@ -248,6 +248,15 @@ return [
     'line_auto_replies'  => ['LineOAController', 'autoReplies'],
     'line_webhook_log'   => ['LineOAController', 'webhookLog'],
     'line_send_message'  => ['LineOAController', 'sendMessagePage'],
+    // v6.3 — rich messaging
+    'line_probe'                  => ['LineOAController', 'probeConnection'],
+    'line_templates'              => ['LineOAController', 'templates'],
+    'line_template_edit'          => ['LineOAController', 'templateEdit'],
+    'line_template_save'          => ['LineOAController', 'templateSave'],
+    'line_broadcasts'             => ['LineOAController', 'broadcasts'],
+    'line_broadcast_compose'      => ['LineOAController', 'broadcastCompose'],
+    'line_broadcast_save'         => ['LineOAController', 'broadcastSave'],
+    'line_broadcast_audience_count' => ['LineOAController', 'broadcastAudienceCount'],
 
     // ========== Pre-Auth Routes (no login required, standalone HTML) ==========
     'authorize'              => ['AuthController', 'authenticate', 'public'],
