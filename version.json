@@ -1,9 +1,9 @@
 {
-  "version": "6.2-inventory-sync-worker",
-  "commit": "138e841",
-  "commit_short": "138e841",
+  "version": "6.2-line-oa-rich-messaging",
+  "commit": "5e70a0d",
+  "commit_short": "5e70a0d",
   "branch": "main",
-  "build_date": "2026-05-05T22:50:00+07:00",
+  "build_date": "2026-05-06T17:46:00+07:00",
   "environment": "production",
   "deployed_by": "manual"
 }
