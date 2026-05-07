@@ -191,8 +191,6 @@ class LineAgentController extends BaseController
         // Past-date warning prefix for the reply (still write the booking)
         $pastDateWarn = $parser::isDatePast($fields['date']);
 
-        $bookingNumber = self::generateBookingNumber($companyId);
-
         // Compose remark — captures the tour name (line item is added later via web UI) +
         // any agent notes + agent_code provenance
         $remarkParts = [];
@@ -202,30 +200,33 @@ class LineAgentController extends BaseController
         if (!empty($fields['notes']))      $remarkParts[] = 'Notes: ' . $fields['notes'];
         $remark = implode("\n", $remarkParts);
 
-        $bookingData = [
-            'company_id'     => $companyId,
-            'booking_number' => $bookingNumber,
-            'booking_date'   => date('Y-m-d'),
-            'travel_date'    => $fields['date'],
-            'agent_id'       => 0,
-            'sales_rep_id'   => 0,
-            'customer_id'    => 0,
-            'booking_by'     => trim(($fields['customer_name'] ?? '') . ' ' . ($fields['customer_phone'] ?? '')),
-            'pax_adult'      => (int)$fields['adults'],
-            'pax_child'      => (int)($fields['children'] ?? 0),
-            'pax_infant'     => 0,
-            'status'         => 'pending',
-            'remark'         => $remark,
-            'created_by'     => $iaccUserId,
-            'created_via'    => 'line_oa_agent_text',
-        ];
-
         try {
             $tourBookingModel = new \App\Models\TourBooking();
+            $bookingNumber = $tourBookingModel->generateBookingNumber($companyId);
+
+            $bookingData = [
+                'company_id'     => $companyId,
+                'booking_number' => $bookingNumber,
+                'booking_date'   => date('Y-m-d'),
+                'travel_date'    => $fields['date'],
+                'agent_id'       => 0,
+                'sales_rep_id'   => 0,
+                'customer_id'    => 0,
+                'booking_by'     => trim(($fields['customer_name'] ?? '') . ' ' . ($fields['customer_phone'] ?? '')),
+                'pax_adult'      => (int)$fields['adults'],
+                'pax_child'      => (int)($fields['children'] ?? 0),
+                'pax_infant'     => 0,
+                'status'         => 'pending',
+                'remark'         => $remark,
+                'created_by'     => $iaccUserId,
+                'created_via'    => 'line_oa_agent_text',
+            ];
+
             $bookingId = $tourBookingModel->createBooking($bookingData);
         } catch (\Throwable $e) {
             error_log('LineAgentController::ingestText createBooking failed: ' . $e->getMessage());
             $bookingId = 0;
+            $bookingNumber = '';
         }
 
         if ($bookingId <= 0) {
@@ -288,27 +289,6 @@ class LineAgentController extends BaseController
         if (empty($rows))    return ['status' => 'none',     'tour' => null,    'candidates' => []];
         if (count($rows) === 1) return ['status' => 'one',  'tour' => $rows[0],'candidates' => $rows];
         return ['status' => 'multiple', 'tour' => null, 'candidates' => $rows];
-    }
-
-    private static function generateBookingNumber(int $companyId): string
-    {
-        // Mirrors existing convention: TB-YYYYMMDD-NNN per company per day
-        global $db;
-        $today = date('Ymd');
-        $prefix = 'TB-' . $today . '-';
-
-        $stmt = $db->conn->prepare(
-            "SELECT COUNT(*) AS cnt FROM tour_bookings
-             WHERE company_id = ? AND booking_number LIKE ?"
-        );
-        $like = $prefix . '%';
-        $stmt->bind_param('is', $companyId, $like);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        $next = ((int)($row['cnt'] ?? 0)) + 1;
-        return $prefix . str_pad((string)$next, 3, '0', STR_PAD_LEFT);
     }
 
     // ----- Flex / text reply builders -----
