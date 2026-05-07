@@ -293,11 +293,19 @@ function handlePostback(array $event, int $companyId, int $dbUserId, \App\Models
             // template scoped to the tenant; defensive against postback
             // tampering via the tenancy filter in fetchTour().
             $tourId = intval($params['tour_id'] ?? 0);
-            // Use the LINE user's last inbound message language as a hint
-            // for the reply language; default EN for postbacks (button
-            // taps don't carry text).
-            $lineUser = $model->getLineUserById($dbUserId);
-            $lang = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', (string)($lineUser['display_name'] ?? '')) ? 'th' : 'en';
+            // Language is carried in the postback data (set by the
+            // carousel that produced the button), so the prefill reply
+            // matches the user's original message language. Falls back
+            // to the LINE display_name regex only when lang is missing —
+            // unreliable for Thai users with English-spelled names but
+            // a reasonable last resort for legacy carousels.
+            $postbackLang = (string)($params['lang'] ?? '');
+            if ($postbackLang === 'th' || $postbackLang === 'en') {
+                $lang = $postbackLang;
+            } else {
+                $lineUser = $model->getLineUserById($dbUserId);
+                $lang = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', (string)($lineUser['display_name'] ?? '')) ? 'th' : 'en';
+            }
             $reply = \App\Services\LineTourCatalog::buildPrefillReply($companyId, $tourId, $lang);
             if ($reply) {
                 $service->replyMessage($replyToken, [$reply]);
