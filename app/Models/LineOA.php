@@ -275,19 +275,23 @@ class LineOA extends BaseModel
 
     /**
      * v6.3 #132 — Lookup the bound iACC user's authorize record for a given
-     * LINE userId string. Returns ['authorize_id', 'authorize_name', 'email']
+     * LINE userId string. Returns ['authorize_id', 'authorize_name', 'email', 'phone']
      * or null if the LINE user isn't bound (or isn't user_type='agent').
      *
      * Used so the booking write can populate `tour_bookings.booking_by` with
      * the human-readable identity of the agent who entered the booking,
      * instead of the customer's name+phone (the placeholder bug from #120).
+     *
+     * The JOIN deliberately does NOT constrain `authorize.company_id` —
+     * tenancy is already enforced by `bindAgentToUser` at bind time, and
+     * #136 will extend bindings to agent-tenant users (different com_id).
      */
     public function getBoundUserDetails(int $companyId, string $lineUserIdStr): ?array
     {
         $stmt = $this->conn->prepare(
-            "SELECT a.id AS authorize_id, a.name AS authorize_name, a.email
+            "SELECT a.id AS authorize_id, a.name AS authorize_name, a.email, a.phone
              FROM line_users u
-             JOIN authorize a ON a.id = u.linked_user_id AND a.company_id = u.company_id
+             JOIN authorize a ON a.id = u.linked_user_id
              WHERE u.company_id = ?
                AND u.line_user_id = ?
                AND u.user_type = 'agent'
