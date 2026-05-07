@@ -161,7 +161,10 @@ class ProductModel extends BaseModel
     {
         $companyId = intval($_SESSION['com_id'] ?? 0);
         $excludeId = intval($excludeId);
-        $sql = "SELECT id, model_name FROM model
+        // `des` included so the dropdown can show "SM-IT-01-ST — Ang Thong
+        // Marine Park One-Day Trip" instead of just the code. Helpful for
+        // admins who don't have the model_name → tour mapping memorized.
+        $sql = "SELECT id, model_name, des FROM model
                 WHERE company_id = " . \sql_int($companyId) . "
                   AND deleted_at IS NULL
                   AND parent_model_id IS NULL";

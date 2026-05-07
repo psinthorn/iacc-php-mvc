@@ -137,6 +137,23 @@ class LineAgentController extends BaseController
 
         $lang = $parsed['lang'];
 
+        // v6.6 — when the user sends just the trigger ("จองทัวร์", "book tour")
+        // with no field anchors at all, treat it as "browse intent" and
+        // return the tour carousel instead of an "incomplete booking"
+        // Flex. The carousel guides them to a real tour via the Book
+        // button, which sends back a pre-filled template they can complete.
+        // If the message has at least one anchor, it's an incomplete
+        // booking attempt — fall through to the existing validation Flex.
+        if (!$parsed['ok'] && !\App\Models\AgentBookingParser::hasAnyAnchor($messageText)) {
+            $carousel = \App\Services\LineTourCatalog::buildCarousel($companyId, $lang);
+            return [
+                'handled'        => true,
+                'reason'         => 'browse_intent',
+                'booking_id'     => null,
+                'reply_messages' => [$carousel],
+            ];
+        }
+
         // Validation errors => reply with a missing-fields card
         if (!$parsed['ok']) {
             return [

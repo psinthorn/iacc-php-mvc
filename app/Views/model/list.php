@@ -210,8 +210,19 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 <select class="form-control" name="parent_model_id">
                     <option value="0">— <?= $_isThai ? 'รายการหลัก (ไม่ใช่รายการย่อย)' : 'Top-level (not a sub-item)' ?> —</option>
                     <?php foreach (($parentOptions ?? []) as $p): ?>
+                        <?php
+                            // Show "<model_name> — <description>" so admins recognise
+                            // the tour by name, not just by code.
+                            $_pName = (string)($p['model_name'] ?? '');
+                            $_pDes  = trim(strip_tags((string)($p['des'] ?? '')));
+                            $_pDes  = preg_replace('/\s+/', ' ', $_pDes);
+                            $_pLabel = $_pName;
+                            if ($_pDes !== '') {
+                                $_pLabel .= ' — ' . mb_strimwidth($_pDes, 0, 60, '…');
+                            }
+                        ?>
                         <option value="<?= (int)$p['id'] ?>" <?= $_parentModelId === (int)$p['id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($p['model_name']) ?>
+                            <?= htmlspecialchars($_pLabel) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

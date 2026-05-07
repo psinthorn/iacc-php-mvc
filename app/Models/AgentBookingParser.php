@@ -161,10 +161,12 @@ class AgentBookingParser
 
     /**
      * True if the message contains at least one "<field-keyword>:" anchor.
-     * Used to distinguish a structured agent template from a bare legacy
-     * command like "book 2026-04-15 14:00".
+     * Used internally to gate weak triggers, and externally by
+     * LineAgentController to distinguish "browse intent" (`จองทัวร์` alone)
+     * from "incomplete booking attempt" (anchors present but missing
+     * required values).
      */
-    private static function hasAnyAnchor(string $message): bool
+    public static function hasAnyAnchor(string $message): bool
     {
         foreach (self::FIELD_KEYWORDS as $keywords) {
             foreach ($keywords as $kw) {
