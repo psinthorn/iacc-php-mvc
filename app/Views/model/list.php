@@ -174,6 +174,32 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                        placeholder="Enter description..." style="min-height:100px;"><?=htmlspecialchars($edit_data['des'] ?? '')?></textarea>
             </div>
         </div>
+        <?php
+            // v6.6 #135 follow-up — LINE catalog visibility toggle.
+            // Defaults to 1 (visible) for new rows; admins uncheck to hide
+            // non-tour models like entrance fees from the customer-facing
+            // carousel triggered by "ดูทัวร์" / "show tours".
+            $_isThai = ($_SESSION['lang'] ?? '0') === '1';
+            $_isCustomerBookable = (int)($edit_data['is_customer_bookable'] ?? 1);
+        ?>
+        <div class="form-row">
+            <div class="form-group" style="width:100%;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="is_customer_bookable" value="1"
+                           <?= $_isCustomerBookable === 1 ? 'checked' : '' ?>
+                           style="width:auto; margin:0;">
+                    <span style="font-weight:500;">
+                        <i class="fa fa-line-chart" style="color:#06C755;"></i>
+                        <?= $_isThai ? 'แสดงในรายการทัวร์ LINE OA' : 'Show in LINE OA catalog' ?>
+                    </span>
+                </label>
+                <small class="text-muted" style="display:block; margin-top:4px; margin-left:24px;">
+                    <?= $_isThai
+                        ? 'ติ๊กเพื่อให้ทัวร์นี้แสดงในรายการที่ลูกค้าเห็นเมื่อพิมพ์ "ดูทัวร์" ผ่าน LINE OA — ยกเลิกถ้าเป็นรายการที่ไม่ใช่ทัวร์ (เช่น ค่าเข้าหน้าท่า)'
+                        : 'Check to include this row in the customer-facing carousel triggered by "show tours" / "ดูทัวร์". Uncheck for non-tour items (e.g. entrance fees).' ?>
+                </small>
+            </div>
+        </div>
         <div class="form-actions">
             <input type="hidden" name="method" value="<?=$edit_data ? 'E' : 'A'?>">
             <input type="hidden" name="page" value="mo_list">

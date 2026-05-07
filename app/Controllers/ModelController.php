@@ -82,25 +82,31 @@ class ModelController extends BaseController
         $price     = floatval($_REQUEST['price'] ?? 0);
         $des       = $this->inputStr('des', '');
         $companyId = $this->getCompanyId();
+        // v6.6 #135 follow-up — LINE catalog visibility toggle. HTML
+        // unchecked checkboxes don't submit, so absence means "uncheck"
+        // (i.e. hide from carousel). New rows default to visible.
+        $isCustomerBookable = isset($_POST['is_customer_bookable']) ? 1 : 0;
 
         switch ($method) {
             case 'A': // Add
                 $this->model->create([
-                    'company_id' => $companyId,
-                    'type_id'    => $typeId,
-                    'brand_id'   => $brandId,
-                    'model_name' => $modelName,
-                    'des'        => $des,
-                    'price'      => $price,
+                    'company_id'           => $companyId,
+                    'type_id'              => $typeId,
+                    'brand_id'             => $brandId,
+                    'model_name'           => $modelName,
+                    'des'                  => $des,
+                    'price'                => $price,
+                    'is_customer_bookable' => $isCustomerBookable,
                 ]);
                 break;
 
             case 'E': // Edit
                 if ($id > 0) {
                     $data = [
-                        'model_name' => $modelName,
-                        'des'        => $des,
-                        'price'      => $price,
+                        'model_name'           => $modelName,
+                        'des'                  => $des,
+                        'price'                => $price,
+                        'is_customer_bookable' => $isCustomerBookable,
                     ];
                     if ($typeId > 0)  $data['type_id']  = $typeId;
                     if ($brandId > 0) $data['brand_id'] = $brandId;
