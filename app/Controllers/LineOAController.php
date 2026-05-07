@@ -649,6 +649,33 @@ class LineOAController extends BaseController
     }
 
     /**
+     * v6.3 #120 — Update a LINE user's user_type from the Users page dropdown.
+     * Required so admins can promote a user to 'agent' before binding.
+     */
+    public function updateUserType(): void
+    {
+        if ((int)($this->user['level'] ?? 0) < 2) {
+            http_response_code(403);
+            die('Admin access required');
+        }
+        $this->verifyCsrf();
+        $companyId    = (int)$this->user['com_id'];
+        $lineUserDbId = (int)($_POST['line_user_id'] ?? 0);
+        $userType     = $_POST['user_type'] ?? '';
+
+        if ($lineUserDbId <= 0) {
+            $_SESSION['flash_error'] = 'Missing LINE user.';
+        } elseif (!in_array($userType, ['customer', 'agent'], true)) {
+            $_SESSION['flash_error'] = 'Invalid user type.';
+        } elseif ($this->lineModel->updateUserType($companyId, $lineUserDbId, $userType)) {
+            $_SESSION['flash_success'] = 'User type updated.';
+        } else {
+            $_SESSION['flash_error'] = 'Could not update — verify the user belongs to this company.';
+        }
+        $this->redirect('line_users');
+    }
+
+    /**
      * Auto-reply rules management
      */
     public function autoReplies(): void

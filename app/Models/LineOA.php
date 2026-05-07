@@ -243,6 +243,37 @@ class LineOA extends BaseModel
     }
 
     /**
+     * v6.3 #120 — Update a LINE user's user_type ('customer' | 'agent').
+     * Returns false if the row doesn't belong to this tenant or the type is invalid.
+     * If user_type is being changed away from 'agent', any existing binding is also cleared.
+     */
+    public function updateUserType(int $companyId, int $lineUserDbId, string $userType): bool
+    {
+        if (!in_array($userType, ['customer', 'agent'], true)) return false;
+
+        if ($userType === 'agent') {
+            $stmt = $this->conn->prepare(
+                "UPDATE line_users SET user_type = ?
+                 WHERE id = ? AND company_id = ? AND deleted_at IS NULL"
+            );
+            $stmt->bind_param('sii', $userType, $lineUserDbId, $companyId);
+        } else {
+            // Demoting from agent — also clear any existing binding so a stale
+            // linked_user_id can't be reactivated by re-promoting later.
+            $stmt = $this->conn->prepare(
+                "UPDATE line_users
+                 SET user_type = ?, linked_user_id = NULL, linked_at = NULL, linked_by = NULL
+                 WHERE id = ? AND company_id = ? AND deleted_at IS NULL"
+            );
+            $stmt->bind_param('sii', $userType, $lineUserDbId, $companyId);
+        }
+        $ok = $stmt->execute();
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+        return $ok && $affected >= 0;
+    }
+
+    /**
      * v6.3 #120 — Lookup the bound iACC user id for a given LINE userId string.
      * Returns null if the LINE user isn't an agent or isn't bound.
      */
