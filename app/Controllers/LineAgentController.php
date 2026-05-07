@@ -262,6 +262,11 @@ class LineAgentController extends BaseController
         $needle = trim($needle);
         if ($needle === '') return ['status' => 'none', 'tour' => null, 'candidates' => []];
 
+        // CONVERT + COLLATE on each bound parameter pins the LIKE comparison to
+        // utf8mb4_unicode_ci regardless of the server's `collation_connection`.
+        // Without this, MySQL throws "Illegal mix of collations" when the
+        // connection collation (e.g. utf8mb4_bin on staging) differs from the
+        // column collation (utf8mb4_unicode_ci).
         $stmt = $db->conn->prepare(
             "SELECT m.id, m.model_name AS name
              FROM model m
@@ -269,9 +274,9 @@ class LineAgentController extends BaseController
              WHERE m.company_id = ?
                AND m.deleted_at IS NULL
                AND m.is_active = 1
-               AND (m.model_name LIKE CONCAT('%', ?, '%')
-                    OR ? LIKE CONCAT('%', m.model_name, '%')
-                    OR t.name LIKE CONCAT('%', ?, '%'))
+               AND (m.model_name LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%')
+                    OR CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', m.model_name, '%')
+                    OR t.name LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%'))
              ORDER BY CHAR_LENGTH(m.model_name) ASC
              LIMIT 5"
         );
