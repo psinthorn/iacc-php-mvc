@@ -191,38 +191,81 @@ class LineAgentController extends BaseController
         // Past-date warning prefix for the reply (still write the booking)
         $pastDateWarn = $parser::isDatePast($fields['date']);
 
-        // Compose remark — captures the tour name (line item is added later via web UI) +
-        // any agent notes + agent_code provenance
+        // Resolve the bound user's display name for booking_by (was the
+        // customer name+phone before #132 — semantically wrong).
+        $boundUser = $line->getBoundUserDetails($companyId, $lineUserIdStr);
+        $bookingByName = $boundUser['authorize_name']
+            ?? ('LINE bound user #' . $iaccUserId);
+
+        // Compose remark — captures the tour name + any agent notes +
+        // typed agent_code (for audit; auto-resolution to tour_bookings.agent_id
+        // is deferred to #136 once the bind UI supports agent-tenant users).
         $remarkParts = [];
         $remarkParts[] = '[from LINE agent text]';
         $remarkParts[] = 'Tour: ' . ($tour['name'] ?? '');
-        if (!empty($fields['agent_code'])) $remarkParts[] = 'Agent code: ' . $fields['agent_code'];
+        if (!empty($fields['agent_code'])) $remarkParts[] = 'Agent code (typed): ' . $fields['agent_code'];
         if (!empty($fields['notes']))      $remarkParts[] = 'Notes: ' . $fields['notes'];
         $remark = implode("\n", $remarkParts);
 
+        $statusInfo = ['status' => 'draft', 'reason' => 'unresolved'];
         try {
             $tourBookingModel = new \App\Models\TourBooking();
             $bookingNumber = $tourBookingModel->generateBookingNumber($companyId);
+
+            // Allotment-aware status (auto-confirm if seats available)
+            $totalPax = (int)$fields['adults'] + (int)($fields['children'] ?? 0);
+            $statusInfo = $tourBookingModel->resolveBookingStatus(
+                $companyId, $fields['date'], $totalPax
+            );
 
             $bookingData = [
                 'company_id'     => $companyId,
                 'booking_number' => $bookingNumber,
                 'booking_date'   => date('Y-m-d'),
                 'travel_date'    => $fields['date'],
-                'agent_id'       => 0,
+                'agent_id'       => 0, // deferred to #136
                 'sales_rep_id'   => 0,
                 'customer_id'    => 0,
-                'booking_by'     => trim(($fields['customer_name'] ?? '') . ' ' . ($fields['customer_phone'] ?? '')),
+                'booking_by'     => $bookingByName,
                 'pax_adult'      => (int)$fields['adults'],
                 'pax_child'      => (int)($fields['children'] ?? 0),
                 'pax_infant'     => 0,
-                'status'         => 'draft',
+                'pickup_hotel'   => $fields['accommodation'] ?? '',
+                'pickup_room'    => $fields['room'] ?? '',
+                'status'         => $statusInfo['status'],
                 'remark'         => $remark,
-                'created_by'     => $iaccUserId,
+                'created_by'     => $boundUser['authorize_id'] ?? $iaccUserId,
                 'created_via'    => 'line_oa_agent_text',
             ];
 
             $bookingId = $tourBookingModel->createBooking($bookingData);
+
+            // Per-booking customer contact row (proper home for name +
+            // mobile + email + messenger, replacing the "stuff into booking_by"
+            // placeholder from the original #120 PR).
+            if ($bookingId > 0) {
+                $tourBookingModel->saveBookingContact($bookingId, [
+                    'contact_name'       => $fields['customer_name']  ?? '',
+                    'mobile'             => $fields['customer_mobile'] ?? '',
+                    'email'              => $fields['email']          ?? '',
+                    'contact_messengers' => $fields['messenger']      ?? '',
+                ]);
+
+                // Visibility: log a webhook event when status fell to draft
+                // due to allotment so the operator can act on it.
+                if ($statusInfo['status'] === 'draft' && $statusInfo['reason'] !== 'unresolved') {
+                    try {
+                        $line->logWebhookEvent($companyId, 'allotment_blocked', json_encode([
+                            'context'        => 'agent_booking_status_resolved',
+                            'booking_id'     => $bookingId,
+                            'booking_number' => $bookingNumber,
+                            'travel_date'    => $fields['date'],
+                            'pax'            => $totalPax,
+                            'reason'         => $statusInfo['reason'],
+                        ]));
+                    } catch (\Throwable $_) {}
+                }
+            }
         } catch (\Throwable $e) {
             error_log('LineAgentController::ingestText createBooking failed: ' . $e->getMessage());
             // Also persist to line_webhook_events so the same error is visible
@@ -255,7 +298,7 @@ class LineAgentController extends BaseController
             'handled'        => true,
             'reason'         => 'booked',
             'booking_id'     => $bookingId,
-            'reply_messages' => [self::buildSuccessFlex($bookingNumber, $tour, $fields, $lang, $pastDateWarn)],
+            'reply_messages' => [self::buildSuccessFlex($bookingNumber, $tour, $fields, $lang, $pastDateWarn, $statusInfo)],
         ];
     }
 
@@ -310,33 +353,70 @@ class LineAgentController extends BaseController
         return ['type' => 'text', 'text' => $text];
     }
 
-    private static function buildSuccessFlex(string $bookingNumber, array $tour, array $fields, string $lang, bool $pastDateWarn): array
+    private static function buildSuccessFlex(string $bookingNumber, array $tour, array $fields, string $lang, bool $pastDateWarn, array $statusInfo = ['status' => 'confirmed', 'reason' => 'available']): array
     {
         $isThai = ($lang === 'th');
-        $title  = $isThai ? '✅ ยืนยันการจอง' : '✅ Booking Confirmed';
+        $confirmed = ($statusInfo['status'] ?? 'confirmed') === 'confirmed';
+
+        if ($confirmed) {
+            $title = $isThai ? '✅ ยืนยันการจอง' : '✅ Booking Confirmed';
+            $titleColor = '#06C755';
+        } else {
+            $title = $isThai ? '⏳ รอการตรวจสอบ' : '⏳ Booking Pending Review';
+            $titleColor = '#e67e22';
+        }
         if ($pastDateWarn) $title .= $isThai ? ' ⚠️ (วันที่ผ่านมาแล้ว)' : ' ⚠️ (past date)';
+
+        // Sub-line explaining why a confirmed booking went to draft.
+        $subLine = '';
+        if (!$confirmed) {
+            $reasonMap = [
+                'no_allotment' => $isThai ? 'ยังไม่มีการตั้งค่าจำนวนที่นั่งสำหรับวันนี้' : 'No allotment configured for this date',
+                'closed'       => $isThai ? 'วันที่นี้ถูกปิดรับการจอง'                  : 'This date is closed for booking',
+                'overbook'     => $isThai ? 'จำนวนที่นั่งไม่เพียงพอ'                    : 'Not enough seats available',
+            ];
+            $subLine = $reasonMap[$statusInfo['reason'] ?? ''] ?? '';
+        }
 
         $paxLine = ($isThai
             ? sprintf('👥 %d ผู้ใหญ่ + %d เด็ก', (int)$fields['adults'], (int)($fields['children'] ?? 0))
             : sprintf('👥 %d adults + %d children', (int)$fields['adults'], (int)($fields['children'] ?? 0)));
 
+        $rows = [
+            ['type' => 'text', 'text' => $title, 'weight' => 'bold', 'size' => 'lg', 'color' => $titleColor, 'wrap' => true],
+            ['type' => 'text', 'text' => $bookingNumber, 'size' => 'sm', 'color' => '#888888', 'margin' => 'sm'],
+        ];
+        if ($subLine !== '') {
+            $rows[] = ['type' => 'text', 'text' => $subLine, 'size' => 'xs', 'color' => '#888888', 'margin' => 'sm', 'wrap' => true];
+        }
+        $rows[] = ['type' => 'separator', 'margin' => 'md'];
+        $rows[] = ['type' => 'text', 'text' => $tour['name'] ?? '', 'weight' => 'bold', 'size' => 'md', 'wrap' => true, 'margin' => 'md'];
+        $rows[] = ['type' => 'text', 'text' => '📅 ' . $fields['date'], 'size' => 'sm', 'margin' => 'sm'];
+        $rows[] = ['type' => 'text', 'text' => $paxLine, 'size' => 'sm', 'margin' => 'sm'];
+        $rows[] = ['type' => 'text', 'text' => '👤 ' . ($fields['customer_name'] ?? ''), 'size' => 'sm', 'margin' => 'sm', 'wrap' => true];
+        $rows[] = ['type' => 'text', 'text' => '📱 ' . ($fields['customer_mobile'] ?? ''), 'size' => 'sm', 'margin' => 'sm'];
+        if (!empty($fields['email'])) {
+            $rows[] = ['type' => 'text', 'text' => '✉️ ' . $fields['email'], 'size' => 'sm', 'margin' => 'sm', 'wrap' => true];
+        }
+        if (!empty($fields['accommodation'])) {
+            $rows[] = ['type' => 'text', 'text' => '🏨 ' . $fields['accommodation'], 'size' => 'sm', 'margin' => 'sm', 'wrap' => true];
+        }
+        if (!empty($fields['room'])) {
+            $rows[] = ['type' => 'text', 'text' => ($isThai ? '🚪 ห้อง ' : '🚪 Room ') . $fields['room'], 'size' => 'sm', 'margin' => 'sm'];
+        }
+
+        $altPrefix = $confirmed
+            ? ($isThai ? 'ยืนยันการจอง '      : 'Booking confirmed ')
+            : ($isThai ? 'การจองรอตรวจสอบ ' : 'Booking pending review ');
+
         return [
             'type' => 'flex',
-            'altText' => ($isThai ? 'ยืนยันการจอง ' : 'Booking confirmed ') . $bookingNumber,
+            'altText' => $altPrefix . $bookingNumber,
             'contents' => [
                 'type' => 'bubble',
                 'body' => [
                     'type' => 'box', 'layout' => 'vertical',
-                    'contents' => [
-                        ['type' => 'text', 'text' => $title, 'weight' => 'bold', 'size' => 'lg', 'color' => '#06C755', 'wrap' => true],
-                        ['type' => 'text', 'text' => $bookingNumber, 'size' => 'sm', 'color' => '#888888', 'margin' => 'sm'],
-                        ['type' => 'separator', 'margin' => 'md'],
-                        ['type' => 'text', 'text' => $tour['name'] ?? '', 'weight' => 'bold', 'size' => 'md', 'wrap' => true, 'margin' => 'md'],
-                        ['type' => 'text', 'text' => '📅 ' . $fields['date'], 'size' => 'sm', 'margin' => 'sm'],
-                        ['type' => 'text', 'text' => $paxLine, 'size' => 'sm', 'margin' => 'sm'],
-                        ['type' => 'text', 'text' => '👤 ' . ($fields['customer_name'] ?? ''), 'size' => 'sm', 'margin' => 'sm', 'wrap' => true],
-                        ['type' => 'text', 'text' => '📞 ' . ($fields['customer_phone'] ?? ''), 'size' => 'sm', 'margin' => 'sm'],
-                    ],
+                    'contents' => $rows,
                 ],
             ],
         ];
@@ -350,8 +430,8 @@ class LineAgentController extends BaseController
             'date_missing'      => $isThai ? 'วันที่ / date'           : 'date / วันที่',
             'date_invalid'      => $isThai ? 'รูปแบบวันที่ (YYYY-MM-DD)' : 'date format (YYYY-MM-DD)',
             'adults_missing'    => $isThai ? 'ผู้ใหญ่ / adults'         : 'adults / ผู้ใหญ่',
-            'customer_missing'  => $isThai ? 'ลูกค้า ชื่อ + เบอร์'       : 'customer name + phone',
-            'agent_code_missing'=> $isThai ? 'ตัวแทน / agent'         : 'agent / ตัวแทน',
+            'customer_missing'  => $isThai ? 'ลูกค้า / customer name'   : 'customer / ลูกค้า',
+            'mobile_missing'    => $isThai ? 'มือถือ / mobile'         : 'mobile / มือถือ',
             'phone_invalid'     => $isThai ? 'เบอร์โทรไม่ถูกต้อง'        : 'phone number invalid',
             'pax_too_few'       => $isThai ? 'จำนวนผู้เดินทางต้อง ≥ 1'   : 'pax must be ≥ 1',
         ];

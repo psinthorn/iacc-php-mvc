@@ -274,6 +274,35 @@ class LineOA extends BaseModel
     }
 
     /**
+     * v6.3 #132 — Lookup the bound iACC user's authorize record for a given
+     * LINE userId string. Returns ['authorize_id', 'authorize_name', 'email']
+     * or null if the LINE user isn't bound (or isn't user_type='agent').
+     *
+     * Used so the booking write can populate `tour_bookings.booking_by` with
+     * the human-readable identity of the agent who entered the booking,
+     * instead of the customer's name+phone (the placeholder bug from #120).
+     */
+    public function getBoundUserDetails(int $companyId, string $lineUserIdStr): ?array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT a.id AS authorize_id, a.name AS authorize_name, a.email
+             FROM line_users u
+             JOIN authorize a ON a.id = u.linked_user_id AND a.company_id = u.company_id
+             WHERE u.company_id = ?
+               AND u.line_user_id = ?
+               AND u.user_type = 'agent'
+               AND u.linked_user_id IS NOT NULL
+               AND u.deleted_at IS NULL
+             LIMIT 1"
+        );
+        $stmt->bind_param('is', $companyId, $lineUserIdStr);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $row ?: null;
+    }
+
+    /**
      * v6.3 #120 — Lookup the bound iACC user id for a given LINE userId string.
      * Returns null if the LINE user isn't an agent or isn't bound.
      */
