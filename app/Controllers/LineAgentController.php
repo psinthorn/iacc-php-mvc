@@ -238,12 +238,53 @@ class LineAgentController extends BaseController
             if ($aid) $resolvedAgentId = $aid;
         }
 
-        // Compose remark — captures the tour name + any agent notes +
-        // typed agent_code (for audit; auto-resolution to tour_bookings.agent_id
-        // is deferred to #136 once the bind UI supports agent-tenant users).
+        // v6.6 — resolve customer nationality. Priority chain:
+        //   1. Explicit สัญชาติ: / nationality: field (raw value preserved
+        //      for marketing — "USA", "CHN", "Thai" etc.)
+        //   2. Heuristic: Thai script in customer name → "Thai"
+        //   3. Otherwise blank, charged as Foreigner
+        //
+        // The raw value goes to tour_booking_contacts.nationality so
+        // marketing reports can group by country. Pricing decision is
+        // binary (Thai vs Foreigner) — drives qty_thai/qty_foreigner.
+        $nationalityRaw = trim($fields['nationality'] ?? '');
+        $natAutoDetected = false;
+        if ($nationalityRaw === '') {
+            $natAutoDetected = true;
+            if (preg_match('/[\x{0E00}-\x{0E7F}]/u', (string)($fields['customer_name'] ?? ''))) {
+                $nationalityRaw = 'Thai';
+            }
+            // else: leave blank — pricing falls to Foreigner; admin can
+            // fill in actual country later via the booking detail page.
+        }
+        $isThaiPricing = $nationalityRaw !== '' && in_array(
+            mb_strtolower($nationalityRaw),
+            ['thai', 'th', 'ไทย'],
+            true
+        );
+
+        // Compose remark — captures the tour name + description, resolved
+        // nationality + auto-detect flag, any agent notes + typed
+        // agent_code (audit). Description added in v6.6 (folded #147 in)
+        // so admin can ID the tour without opening the model record.
         $remarkParts = [];
         $remarkParts[] = '[from LINE agent text]';
-        $remarkParts[] = 'Tour: ' . ($tour['name'] ?? '');
+        $tourLine = 'Tour: ' . ($tour['name'] ?? '');
+        $modelDes = trim(strip_tags((string)($tour['description'] ?? '')));
+        $modelDes = preg_replace('/\s+/', ' ', $modelDes);
+        if ($modelDes !== '') $tourLine .= ' | ' . $modelDes;
+        $remarkParts[] = $tourLine;
+        // Nationality marker — explicit visibility for the admin who
+        // reviews the booking and may need to correct an auto-detection.
+        $natLine = 'Nationality: ';
+        if ($nationalityRaw === '') {
+            $natLine .= '(not detected — billed as Foreigner; please verify before invoicing)';
+        } elseif ($natAutoDetected) {
+            $natLine .= $nationalityRaw . ' (auto-detected from name script — please verify)';
+        } else {
+            $natLine .= $nationalityRaw . ' (specified by sender)';
+        }
+        $remarkParts[] = $natLine;
         if (!empty($fields['agent_code'])) $remarkParts[] = 'Agent code (typed): ' . $fields['agent_code'];
         if (!empty($fields['notes']))      $remarkParts[] = 'Notes: ' . $fields['notes'];
         $remark = implode("\n", $remarkParts);
@@ -290,15 +331,33 @@ class LineAgentController extends BaseController
             $bookingId = $tourBookingModel->createBooking($bookingData);
 
             // Per-booking customer contact row (proper home for name +
-            // mobile + email + messenger, replacing the "stuff into booking_by"
-            // placeholder from the original #120 PR).
+            // mobile + email + messenger + nationality, replacing the
+            // "stuff into booking_by" placeholder from the original #120 PR).
             if ($bookingId > 0) {
                 $tourBookingModel->saveBookingContact($bookingId, [
                     'contact_name'       => $fields['customer_name']  ?? '',
                     'mobile'             => $fields['customer_mobile'] ?? '',
-                    'email'              => $fields['email']          ?? '',
+                    'email'               => $fields['email']         ?? '',
                     'contact_messengers' => $fields['messenger']      ?? '',
+                    // Raw value preserved for marketing (USA / CHN / Thai
+                    // / etc.). Empty string when heuristic couldn't infer
+                    // — admin fills in later from the customer details.
+                    'nationality'        => $nationalityRaw,
                 ]);
+
+                // v6.6 — auto-seed line items: parent tour + any sub-models
+                // (entrance fees / extras tagged via parent_model_id). qty
+                // and price are split by Thai/Foreigner per the resolved
+                // nationality. Admin can edit prices / split nationalities
+                // / add more items via the existing booking detail UI.
+                self::autoSeedItems(
+                    $tourBookingModel,
+                    $bookingId,
+                    $companyId,
+                    $tour,
+                    $totalPax,
+                    $isThaiPricing
+                );
 
                 // Visibility: log a webhook event when status fell to draft
                 // due to allotment so the operator can act on it.
@@ -357,6 +416,103 @@ class LineAgentController extends BaseController
     // ====================================================================
 
     /**
+     * v6.6 — auto-seed `tour_booking_items` rows from the matched parent
+     * tour and any active sub-models (entrance fees / extras). Updates
+     * the booking's subtotal / total_amount / amount_due to match the
+     * sum so the booking detail page shows the right grand total.
+     *
+     * Pricing strategy:
+     *   - Both `price_thai` and `price_foreigner` default to the model's
+     *     `price`. When admin runs different rates for nationality, they
+     *     edit the relevant column on the booking detail items grid.
+     *   - `qty_thai` / `qty_foreigner` is the full booking pax routed by
+     *     the resolved nationality (binary). Mixed groups handled in the
+     *     web booking form.
+     */
+    private static function autoSeedItems(
+        \App\Models\TourBooking $tbm,
+        int $bookingId,
+        int $companyId,
+        array $tour,
+        int $totalPax,
+        bool $isThaiPricing
+    ): void {
+        if ($totalPax <= 0 || $bookingId <= 0) return;
+
+        $items = [];
+        $items[] = self::buildItemRow($tour, $totalPax, $isThaiPricing, 'tour');
+
+        // Sub-models: entrance fees / extras tagged via parent_model_id.
+        $productModel = new \App\Models\ProductModel();
+        $children = $productModel->getChildModels((int)($tour['id'] ?? 0), $companyId);
+        foreach ($children as $child) {
+            $items[] = self::buildItemRow($child, $totalPax, $isThaiPricing, 'entrance');
+        }
+
+        $tbm->saveBookingItems($bookingId, $items);
+
+        // Recompute booking totals from the items just inserted. The
+        // saveBookingItems helper doesn't touch tour_bookings, so the
+        // grand total stays at 0 unless we update it explicitly.
+        $subtotal = 0.0;
+        foreach ($items as $item) {
+            $subtotal += ($item['qty_thai']      ?? 0) * ($item['price_thai']      ?? 0);
+            $subtotal += ($item['qty_foreigner'] ?? 0) * ($item['price_foreigner'] ?? 0);
+        }
+        self::updateBookingTotals($companyId, $bookingId, $subtotal);
+    }
+
+    /**
+     * v6.6 — Compose one `tour_booking_items` row from a model record.
+     * Accepts both shapes: matchTour result (id/name/description) and
+     * ProductModel::getChildModels result (id/model_name/des).
+     */
+    private static function buildItemRow(array $model, int $qty, bool $isThai, string $itemType): array
+    {
+        $name = (string)($model['name']        ?? $model['model_name'] ?? '');
+        $des  = (string)($model['description'] ?? $model['des']        ?? '');
+        $des  = trim(strip_tags($des));
+        $des  = preg_replace('/\s+/', ' ', $des);
+
+        $description = $name;
+        if ($des !== '') $description .= ' | ' . $des;
+        if (mb_strlen($description) > 400) {
+            $description = mb_substr($description, 0, 397) . '…';
+        }
+
+        $price = floatval($model['price'] ?? 0);
+
+        return [
+            'item_type'       => $itemType,
+            'description'     => $description,
+            'qty_thai'        => $isThai ? $qty : 0,
+            'qty_foreigner'   => $isThai ? 0   : $qty,
+            'price_thai'      => $price,
+            'price_foreigner' => $price,
+            'product_type_id' => intval($model['type_id'] ?? 0),
+            'model_id'        => intval($model['id']      ?? 0),
+            'pax_lines_json'  => '[]',
+        ];
+    }
+
+    /**
+     * v6.6 — Push the auto-seeded subtotal back to the booking row so
+     * the booking detail page shows correct numbers. Tenancy-scoped.
+     */
+    private static function updateBookingTotals(int $companyId, int $bookingId, float $subtotal): void
+    {
+        global $db;
+        $stmt = $db->conn->prepare(
+            "UPDATE tour_bookings
+             SET subtotal = ?, total_amount = ?, amount_due = ?
+             WHERE id = ? AND company_id = ?"
+        );
+        $stmt->bind_param('dddii', $subtotal, $subtotal, $subtotal, $bookingId, $companyId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    /**
      * Fuzzy match a tour name against the company's `model` table
      * (joined with `type` so agents can match by category name too).
      * Returns ['status' => 'none'|'one'|'multiple', 'tour' => array|null, 'candidates' => array]
@@ -372,13 +528,19 @@ class LineAgentController extends BaseController
         // Without this, MySQL throws "Illegal mix of collations" when the
         // connection collation (e.g. utf8mb4_bin on staging) differs from the
         // column collation (utf8mb4_unicode_ci).
+        // v6.6 — also pull description, price, type_id so auto-seed has
+        // everything it needs without a second round-trip. The carousel
+        // and parent-only filter ensure agents/customers can only book
+        // top-level models (parent_model_id IS NULL).
         $stmt = $db->conn->prepare(
-            "SELECT m.id, m.model_name AS name
+            "SELECT m.id, m.model_name AS name, m.des AS description,
+                    m.price, m.type_id
              FROM model m
              LEFT JOIN type t ON m.type_id = t.id
              WHERE m.company_id = ?
                AND m.deleted_at IS NULL
                AND m.is_active = 1
+               AND m.parent_model_id IS NULL
                AND (m.model_name LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%')
                     OR CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', m.model_name, '%')
                     OR t.name LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%'))
@@ -396,12 +558,11 @@ class LineAgentController extends BaseController
     }
 
     // ----- Flex / text reply builders -----
-
-    private static function buildPlainText(string $template, array $vars = []): array
-    {
-        $text = $vars ? vsprintf($template, $vars) : $template;
-        return ['type' => 'text', 'text' => $text];
-    }
+    //
+    // Plain-text replies (tour_not_found, tour_ambiguous, write_failed)
+    // are rendered through LineTemplateRenderer (#133) — no local helper
+    // needed here. Flex builders are kept locally because conditional row
+    // rendering doesn't fit the current renderer (Phase 2 will tackle it).
 
     private static function buildSuccessFlex(string $bookingNumber, array $tour, array $fields, string $lang, bool $pastDateWarn, array $statusInfo = ['status' => 'confirmed', 'reason' => 'available']): array
     {

@@ -168,6 +168,11 @@ class LineTourCatalog
     private static function fetchActiveTours(int $companyId, int $limit): array
     {
         global $db;
+        // The `parent_model_id IS NULL` filter (added in v6.6 sub-model
+        // support) ensures only top-level tours appear in the carousel —
+        // sub-items like entrance fees are children of their parent tour
+        // and get auto-seeded as line items at booking time, never browsed
+        // standalone by customers.
         $stmt = $db->conn->prepare(
             "SELECT m.id, m.model_name, m.des, m.price,
                     t.name AS type_name
@@ -177,6 +182,7 @@ class LineTourCatalog
                AND m.deleted_at IS NULL
                AND m.is_active = 1
                AND m.is_customer_bookable = 1
+               AND m.parent_model_id IS NULL
              ORDER BY t.name ASC, m.model_name ASC
              LIMIT ?"
         );

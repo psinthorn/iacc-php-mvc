@@ -138,7 +138,7 @@ class ProductModel extends BaseModel
             $sql .= " AND brand.company_id = '" . \sql_int($companyId) . "'";
         }
         $sql .= " ORDER BY brand.brand_name";
-        
+
         $result = mysqli_query($this->conn, $sql);
         $items = [];
         if ($result) {
@@ -147,5 +147,57 @@ class ProductModel extends BaseModel
             }
         }
         return $items;
+    }
+
+    /**
+     * v6.6 — list models eligible to be a "parent" in the parent_model_id
+     * dropdown. Two-level hierarchy only: parents are themselves top-level
+     * (parent_model_id IS NULL), so a model never has a chain of ancestors.
+     *
+     * Excludes the current row when editing so a model can't pick itself
+     * as its own parent.
+     */
+    public function getParentOptions(int $excludeId = 0): array
+    {
+        $companyId = intval($_SESSION['com_id'] ?? 0);
+        $excludeId = intval($excludeId);
+        $sql = "SELECT id, model_name FROM model
+                WHERE company_id = " . \sql_int($companyId) . "
+                  AND deleted_at IS NULL
+                  AND parent_model_id IS NULL";
+        if ($excludeId > 0) {
+            $sql .= " AND id != " . \sql_int($excludeId);
+        }
+        $sql .= " ORDER BY model_name";
+        $result = mysqli_query($this->conn, $sql);
+        $rows = [];
+        while ($result && $row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    /**
+     * v6.6 — fetch active sub-models of a parent. Used by
+     * LineAgentController to auto-seed line items when the parent tour
+     * is booked — each child becomes one item_type='entrance' (or
+     * configurable later) row in tour_booking_items.
+     */
+    public function getChildModels(int $parentId, int $companyId): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT id, model_name, des, price, type_id
+             FROM model
+             WHERE company_id = ?
+               AND parent_model_id = ?
+               AND deleted_at IS NULL
+               AND is_active = 1
+             ORDER BY id ASC"
+        );
+        $stmt->bind_param('ii', $companyId, $parentId);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $rows;
     }
 }
