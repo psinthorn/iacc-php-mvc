@@ -190,6 +190,20 @@ function handleMessage(array $event, int $companyId, int $dbUserId, \App\Models\
         // Check for order keywords
         $lowerContent = mb_strtolower($content);
 
+        // v6.6 #135 — Tour catalog browse trigger. Cheaper check than the
+        // booking parser, so run it first. Triggers on bilingual phrases
+        // like "ดูทัวร์" / "show tours" / "tour list". Doesn't overlap with
+        // the booking template's "จองทัวร์" / "book tour" triggers.
+        if (\App\Services\LineTourCatalog::isTriggered($content)) {
+            $lang = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', $content) ? 'th' : 'en';
+            $carousel = \App\Services\LineTourCatalog::buildCarousel($companyId, $lang);
+            $service->replyMessage($replyToken, [$carousel]);
+            $msgType    = $carousel['type'] ?? 'text';
+            $msgContent = $msgType === 'text' ? ($carousel['text'] ?? '') : json_encode($carousel);
+            $model->logMessage($companyId, $dbUserId, 'outbound', $msgType, null, null, '[v6.6 #135 tour catalog] ' . substr($msgContent, 0, 80));
+            return;
+        }
+
         // v6.3 #120 — Agent text-template booking (intercept before legacy commands).
         // ingestText() returns handled=false when no booking trigger, so we fall
         // through to the existing order/book/status/auto-reply chain.
@@ -271,6 +285,30 @@ function handlePostback(array $event, int $companyId, int $dbUserId, \App\Models
         case 'cancel_order':
             $orderRef = $params['ref'] ?? '';
             $service->replyText($replyToken, "Order {$orderRef} has been cancelled. ❌");
+            break;
+
+        case 'prefill_booking':
+            // v6.6 #135 — fired when a user taps "Book this" on a tour
+            // bubble in the catalog carousel. Send back a pre-filled
+            // template scoped to the tenant; defensive against postback
+            // tampering via the tenancy filter in fetchTour().
+            $tourId = intval($params['tour_id'] ?? 0);
+            // Use the LINE user's last inbound message language as a hint
+            // for the reply language; default EN for postbacks (button
+            // taps don't carry text).
+            $lineUser = $model->getLineUserById($dbUserId);
+            $lang = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', (string)($lineUser['display_name'] ?? '')) ? 'th' : 'en';
+            $reply = \App\Services\LineTourCatalog::buildPrefillReply($companyId, $tourId, $lang);
+            if ($reply) {
+                $service->replyMessage($replyToken, [$reply]);
+                $msgContent = $reply['type'] === 'text' ? ($reply['text'] ?? '') : json_encode($reply);
+                $model->logMessage($companyId, $dbUserId, 'outbound', $reply['type'] ?? 'text', null, null, '[v6.6 #135 prefill] ' . substr($msgContent, 0, 80));
+            } else {
+                // Unknown tour id (or tampered postback). Quiet fallback.
+                $service->replyText($replyToken, $lang === 'th'
+                    ? 'ไม่พบทัวร์ที่เลือก กรุณาลองอีกครั้ง'
+                    : 'Tour not found. Please try again.');
+            }
             break;
 
         default:
