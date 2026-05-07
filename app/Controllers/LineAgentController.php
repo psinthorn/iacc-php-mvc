@@ -216,7 +216,7 @@ class LineAgentController extends BaseController
                 'pax_adult'      => (int)$fields['adults'],
                 'pax_child'      => (int)($fields['children'] ?? 0),
                 'pax_infant'     => 0,
-                'status'         => 'pending',
+                'status'         => 'draft',
                 'remark'         => $remark,
                 'created_by'     => $iaccUserId,
                 'created_via'    => 'line_oa_agent_text',
@@ -225,6 +225,17 @@ class LineAgentController extends BaseController
             $bookingId = $tourBookingModel->createBooking($bookingData);
         } catch (\Throwable $e) {
             error_log('LineAgentController::ingestText createBooking failed: ' . $e->getMessage());
+            // Also persist to line_webhook_events so the same error is visible
+            // via SQL on cPanel without having to read PHP error logs.
+            try {
+                $line->logWebhookEvent($companyId, 'error', json_encode([
+                    'context' => 'agent_booking_write',
+                    'error'   => $e->getMessage(),
+                    'fields'  => $fields ?? [],
+                ]));
+            } catch (\Throwable $_) {
+                // logging is best-effort; never let it mask the original error
+            }
             $bookingId = 0;
             $bookingNumber = '';
         }
