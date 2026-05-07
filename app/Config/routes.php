@@ -245,6 +245,7 @@ return [
     'line_order_detail'  => ['LineOAController', 'orderDetail'],
     'line_messages'      => ['LineOAController', 'messages'],
     'line_users'         => ['LineOAController', 'users'],
+    'line_user_type_update' => ['LineOAController', 'updateUserType'],
     'line_auto_replies'  => ['LineOAController', 'autoReplies'],
     'line_webhook_log'   => ['LineOAController', 'webhookLog'],
     'line_send_message'  => ['LineOAController', 'sendMessagePage'],
