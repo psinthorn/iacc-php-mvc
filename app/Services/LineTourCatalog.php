@@ -117,11 +117,36 @@ class LineTourCatalog
         $sampleDate = date('Y-m-d', strtotime('+7 days'));
         $tourName   = $tour['model_name'];
 
+        // Expanded in the v6.6 #135 follow-up to include all parser-supported
+        // optional fields (hotel, room, messenger, notes) so users discover
+        // them rather than missing pickup-relevant info on first send.
         $text = $isThai
-            ? "เริ่มการจองทัวร์ \"{$tourName}\"\nกรุณาส่งข้อความตามรูปแบบด้านล่าง พร้อมกรอกข้อมูลให้ครบ:\n\n"
-              . "จองทัวร์\nทัวร์: {$tourName}\nวันที่: {$sampleDate}\nผู้ใหญ่: <จำนวน>\nเด็ก: 0\nลูกค้า: <ชื่อ>\nมือถือ: <เบอร์>\nอีเมล: <อีเมล (ถ้ามี)>"
-            : "Starting booking for \"{$tourName}\"\nPlease send back the template below with the remaining details filled in:\n\n"
-              . "book tour\ntour: {$tourName}\ndate: {$sampleDate}\nadults: <count>\nchildren: 0\ncustomer: <name>\nmobile: <phone>\nemail: <email (optional)>";
+            ? "เริ่มการจองทัวร์ \"{$tourName}\"\nกรุณาส่งข้อความตามรูปแบบด้านล่าง พร้อมกรอกข้อมูลให้ครบ (ฟิลด์ที่มี * เป็นข้อมูลที่จำเป็น):\n\n"
+              . "จองทัวร์\n"
+              . "ทัวร์: {$tourName}\n"
+              . "วันที่: {$sampleDate} *\n"
+              . "ผู้ใหญ่: <จำนวน> *\n"
+              . "เด็ก: 0\n"
+              . "ลูกค้า: <ชื่อ> *\n"
+              . "มือถือ: <เบอร์> *\n"
+              . "อีเมล: <อีเมล (ถ้ามี)>\n"
+              . "เมสเซนเจอร์: <line:id หรือ @page (ถ้ามี)>\n"
+              . "ที่พัก: <ชื่อโรงแรม/ที่พัก (ถ้ามี)>\n"
+              . "หมายเลขห้อง: <เลขห้อง (ถ้ามี)>\n"
+              . "หมายเหตุ: <รายละเอียดเพิ่มเติม (ถ้ามี)>"
+            : "Starting booking for \"{$tourName}\"\nPlease send back the template below with the remaining details filled in (* = required):\n\n"
+              . "book tour\n"
+              . "tour: {$tourName}\n"
+              . "date: {$sampleDate} *\n"
+              . "adults: <count> *\n"
+              . "children: 0\n"
+              . "customer: <name> *\n"
+              . "mobile: <phone> *\n"
+              . "email: <email (optional)>\n"
+              . "messenger: <line:id or @page (optional)>\n"
+              . "accommodation: <hotel/villa name (optional)>\n"
+              . "room: <room number (optional)>\n"
+              . "notes: <extra details (optional)>";
 
         return ['type' => 'text', 'text' => $text];
     }
@@ -131,8 +156,14 @@ class LineTourCatalog
     // ============================================================
 
     /**
-     * Fetch active tours for the operator. Joins type for the category
-     * label. Tenancy enforced via company_id.
+     * Fetch active, customer-bookable tours for the operator. Joins type
+     * for the category label. Tenancy enforced via company_id.
+     *
+     * The is_customer_bookable filter (added in the v6.6 #135 follow-up)
+     * lets operators hide non-tour rows like entrance fees from the
+     * customer-facing catalog while keeping them otherwise active for
+     * pricing/reporting. Default for new and existing rows is 1
+     * (visible) — operators flip specific rows to 0 to hide them.
      */
     private static function fetchActiveTours(int $companyId, int $limit): array
     {
@@ -145,6 +176,7 @@ class LineTourCatalog
              WHERE m.company_id = ?
                AND m.deleted_at IS NULL
                AND m.is_active = 1
+               AND m.is_customer_bookable = 1
              ORDER BY t.name ASC, m.model_name ASC
              LIMIT ?"
         );
