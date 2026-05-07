@@ -149,19 +149,12 @@ class LineAgentController extends BaseController
 
         $fields = $parsed['fields'];
 
-        // Resolve the bound iACC user
+        // Resolve the bound iACC user (may be null in v6.6 #134 — customers
+        // sending the structured template directly aren't required to be
+        // bound as agents; we just attribute the booking differently below).
         $line = new \App\Models\LineOA();
-        $iaccUserId = $line->getBoundIaccUserId($companyId, $lineUserIdStr);
-        if (!$iaccUserId) {
-            return [
-                'handled'        => true,
-                'reason'         => 'not_bound',
-                'booking_id'     => null,
-                'reply_messages' => [self::buildPlainText($lang === 'th'
-                    ? 'คุณยังไม่ได้รับการผูกบัญชีเป็นตัวแทน กรุณาติดต่อผู้ดูแลระบบ'
-                    : 'Your LINE account is not bound as an agent. Please contact your admin.')],
-            ];
-        }
+        $iaccUserId   = $line->getBoundIaccUserId($companyId, $lineUserIdStr);
+        $isBoundAgent = !empty($iaccUserId);
 
         // Match the tour name within the tenant's tours
         $tourMatch = self::matchTour($companyId, $fields['tour_name']);
@@ -198,14 +191,20 @@ class LineAgentController extends BaseController
         // Past-date warning prefix for the reply (still write the booking)
         $pastDateWarn = $parser::isDatePast($fields['date']);
 
-        // Resolve the bound user's display name for booking_by (was the
-        // customer name+phone before #132 — semantically wrong).
-        // Priority: name → email → bare "User #ID" sentinel. Empty strings
-        // (not just nulls) also fall through, since some authorize rows have
-        // name='' rather than NULL.
-        $boundUser = $line->getBoundUserDetails($companyId, $lineUserIdStr);
+        // Compose booking_by — the human-readable identity of who entered
+        // the booking. Two paths:
+        //
+        //   Bound agent (#132): name → email → "User #ID" sentinel from the
+        //     bound authorize row. Empty strings fall through too.
+        //
+        //   Direct customer (#134): the LINE user's display_name from
+        //     line_users, suffixed with " [LINE customer]" so the operator
+        //     can tell at a glance this booking came in via LINE without an
+        //     agent attribution. Falls back to a bare sentinel if display
+        //     name is missing.
+        $boundUser     = $isBoundAgent ? $line->getBoundUserDetails($companyId, $lineUserIdStr) : null;
         $bookingByName = '';
-        if ($boundUser) {
+        if ($isBoundAgent && $boundUser) {
             if (!empty($boundUser['authorize_name'])) {
                 $bookingByName = $boundUser['authorize_name'];
             } elseif (!empty($boundUser['email'])) {
@@ -213,16 +212,22 @@ class LineAgentController extends BaseController
             }
         }
         if ($bookingByName === '') {
-            $bookingByName = 'User #' . $iaccUserId;
+            if ($isBoundAgent) {
+                $bookingByName = 'User #' . $iaccUserId;
+            } else {
+                $lineUserRow  = $line->getLineUserByLineId($companyId, $lineUserIdStr);
+                $displayName  = trim($lineUserRow['display_name'] ?? '');
+                $bookingByName = $displayName !== ''
+                    ? ($displayName . ' [LINE customer]')
+                    : '[LINE customer]';
+            }
         }
 
-        // #136: auto-resolve agent_id from the bound user. If the bound user
-        // belongs to an agent-partner tenant, this returns the matching
-        // tour_agent_profiles.id and the booking is attributed to that
-        // partner for commission tracking. Operator's own employees return
-        // null (agent_id stays 0 — they're sales reps, not partner agents).
+        // #136: auto-resolve agent_id from the bound user. Only fires when
+        // the user is bound AND lives in an agent-partner tenant — direct
+        // customers never have an agent attribution.
         $resolvedAgentId = 0;
-        if ($boundUser && !empty($boundUser['user_com_id'])) {
+        if ($isBoundAgent && $boundUser && !empty($boundUser['user_com_id'])) {
             $aid = $line->resolveAgentIdFromBoundUser($companyId, (int)$boundUser['user_com_id']);
             if ($aid) $resolvedAgentId = $aid;
         }
@@ -264,8 +269,16 @@ class LineAgentController extends BaseController
                 'pickup_room'    => $fields['room'] ?? '',
                 'status'         => $statusInfo['status'],
                 'remark'         => $remark,
-                'created_by'     => $boundUser['authorize_id'] ?? $iaccUserId,
-                'created_via'    => 'line_oa_agent_text',
+                // Bound agent: attribute to their authorize.id.
+                // Direct customer: created_by stays NULL (no iACC user).
+                'created_by'     => $isBoundAgent
+                    ? ($boundUser['authorize_id'] ?? $iaccUserId)
+                    : null,
+                // Distinguish the two source channels for reporting and
+                // future per-channel automation.
+                'created_via'    => $isBoundAgent
+                    ? 'line_oa_agent_text'
+                    : 'line_oa_customer_text',
             ];
 
             $bookingId = $tourBookingModel->createBooking($bookingData);
