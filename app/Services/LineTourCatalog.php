@@ -81,7 +81,7 @@ class LineTourCatalog
 
         $bubbles = [];
         foreach ($tours as $t) {
-            $bubbles[] = self::buildBubble($t, $isThai);
+            $bubbles[] = self::buildBubble($t, $isThai, $lang);
         }
 
         return [
@@ -225,7 +225,7 @@ class LineTourCatalog
      *   - Body: model_name (bold, larger), description preview, price line
      *   - Footer: "Book this" postback button
      */
-    private static function buildBubble(array $tour, bool $isThai): array
+    private static function buildBubble(array $tour, bool $isThai, string $lang = 'en'): array
     {
         $title       = (string)($tour['model_name'] ?? '');
         $category    = (string)($tour['type_name']  ?? '');
@@ -273,7 +273,12 @@ class LineTourCatalog
                             // displayText shows in the chat as if the user typed
                             // it — gives them a record of which tour they picked.
                             'displayText' => ($isThai ? 'จองทัวร์: ' : 'Book: ') . $title,
-                            'data'  => 'action=prefill_booking&tour_id=' . intval($tour['id']),
+                            // Carry the carousel's language back through
+                            // the postback so the prefill reply matches —
+                            // detecting from display_name is unreliable
+                            // (Thai users with English-spelled names
+                            // would land on the wrong template).
+                            'data'  => 'action=prefill_booking&tour_id=' . intval($tour['id']) . '&lang=' . ($lang === 'th' ? 'th' : 'en'),
                         ],
                     ],
                 ],
