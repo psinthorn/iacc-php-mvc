@@ -9,6 +9,31 @@ class TourBooking extends BaseModel
     // ─── Booking Number ────────────────────────────────────────
 
     /**
+     * Resolve a booking's `status` based on tour_allotments availability.
+     * Centralized so every booking write path (web form, LINE agent text,
+     * LINE customer direct in v6.6, future channels) reaches the same
+     * verdict from the same data.
+     *
+     * Returns ['status' => 'confirmed'|'draft', 'reason' => 'available'|'no_allotment'|'closed'|'overbook'].
+     *
+     * Decision matrix:
+     *   - No allotment configured for the date  → 'draft' / 'no_allotment'
+     *   - Allotment row exists but is_closed=1  → 'draft' / 'closed'
+     *   - requestedPax > available              → 'draft' / 'overbook'
+     *   - Otherwise                             → 'confirmed' / 'available'
+     */
+    public function resolveBookingStatus(int $companyId, string $travelDate, int $requestedPax): array
+    {
+        $allotmentModel = new \App\Models\TourAllotment();
+        $alloc = $allotmentModel->getAllotmentByDate($companyId, $travelDate);
+
+        if (!$alloc)                                   return ['status' => 'draft',     'reason' => 'no_allotment'];
+        if (!empty($alloc['is_closed']))               return ['status' => 'draft',     'reason' => 'closed'];
+        if ($requestedPax > intval($alloc['available'])) return ['status' => 'draft',   'reason' => 'overbook'];
+        return ['status' => 'confirmed', 'reason' => 'available'];
+    }
+
+    /**
      * Generate next booking number: BK-YYMMDD-001
      */
     public function generateBookingNumber(int $comId): string
@@ -272,10 +297,10 @@ class TourBooking extends BaseModel
                  pickup_location_id, pickup_hotel, pickup_room, pickup_time,
                  driver_name, vehicle_no,
                  voucher_number, entrance_fee, subtotal, discount, vat, total_amount, currency,
-                 status, remark, created_by";
+                 status, remark, created_by, created_via";
 
         $vals = sprintf(
-            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
             intval($data['company_id']),
             sql_escape($data['booking_number']),
             sql_escape($data['booking_date'] ?? date('Y-m-d')),
@@ -302,7 +327,8 @@ class TourBooking extends BaseModel
             sql_escape($data['currency'] ?? 'THB'),
             sql_escape($data['status'] ?? 'draft'),
             sql_escape($data['remark'] ?? ''),
-            intval($data['created_by'] ?? 0)
+            intval($data['created_by'] ?? 0),
+            sql_escape($data['created_via'] ?? 'web_form')
         );
 
         $args = [];

@@ -17,6 +17,7 @@ $_navItems = [
     'line_messages'     => ['icon' => 'fa-comments',        'en' => 'Messages',     'th' => 'ข้อความ'],
     'line_users'        => ['icon' => 'fa-users',           'en' => 'Users',        'th' => 'ผู้ใช้'],
     'line_auto_replies' => ['icon' => 'fa-reply-all',       'en' => 'Auto Replies', 'th' => 'ตอบกลับอัตโนมัติ'],
+    'line_agent_bindings' => ['icon' => 'fa-link',          'en' => 'Agent Bindings', 'th' => 'ผูกบัญชีตัวแทน'],
     'line_templates'    => ['icon' => 'fa-clone',           'en' => 'Templates',    'th' => 'เทมเพลต'],
     'line_broadcasts'   => ['icon' => 'fa-bullhorn',        'en' => 'Broadcasts',   'th' => 'ส่งกลุ่ม'],
     'line_send_message' => ['icon' => 'fa-paper-plane',     'en' => 'Send Message', 'th' => 'ส่งข้อความ'],

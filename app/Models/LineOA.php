@@ -158,6 +158,176 @@ class LineOA extends BaseModel
         return $result;
     }
 
+    /**
+     * v6.3 #120 — List LINE users with user_type='agent', joined to bound iACC user (if any).
+     * Used by the agent-bindings admin page.
+     */
+    public function getAgentBindings(int $companyId): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT u.id, u.line_user_id, u.display_name, u.picture_url, u.user_type,
+                    u.linked_user_id, u.linked_at, u.linked_by,
+                    a.email AS linked_email, a.name AS linked_name, a.level AS linked_level
+             FROM line_users u
+             LEFT JOIN authorize a ON a.id = u.linked_user_id AND a.company_id = u.company_id
+             WHERE u.company_id = ? AND u.deleted_at IS NULL
+             ORDER BY (u.user_type = 'agent') DESC, u.display_name ASC"
+        );
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $rows;
+    }
+
+    /**
+     * v6.3 #120 — List iACC users in this company eligible to be bound as agents.
+     */
+    public function getEligibleIaccUsers(int $companyId): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT id, name, email, level FROM authorize
+             WHERE company_id = ? ORDER BY level DESC, name ASC"
+        );
+        $stmt->bind_param('i', $companyId);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $rows;
+    }
+
+    /**
+     * v6.3 #120 — Bind a LINE user (must be user_type='agent') to an iACC user.
+     * Returns true on success, false if either user belongs to a different company
+     * or the LINE user is not an agent.
+     */
+    public function bindAgentToUser(int $companyId, int $lineUserDbId, int $iaccUserId, int $adminId): bool
+    {
+        // Verify both rows belong to this tenant + the LINE user is an agent
+        $check = $this->conn->prepare(
+            "SELECT
+                (SELECT COUNT(*) FROM line_users WHERE id = ? AND company_id = ? AND user_type = 'agent' AND deleted_at IS NULL) AS lu_ok,
+                (SELECT COUNT(*) FROM authorize  WHERE id = ? AND company_id = ?) AS au_ok"
+        );
+        $check->bind_param('iiii', $lineUserDbId, $companyId, $iaccUserId, $companyId);
+        $check->execute();
+        $row = $check->get_result()->fetch_assoc();
+        $check->close();
+        if (!$row || (int)$row['lu_ok'] !== 1 || (int)$row['au_ok'] !== 1) return false;
+
+        $stmt = $this->conn->prepare(
+            "UPDATE line_users
+             SET linked_user_id = ?, linked_at = NOW(), linked_by = ?
+             WHERE id = ? AND company_id = ?"
+        );
+        $stmt->bind_param('iiii', $iaccUserId, $adminId, $lineUserDbId, $companyId);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
+
+    /**
+     * v6.3 #120 — Remove an agent binding.
+     */
+    public function unbindAgent(int $companyId, int $lineUserDbId): bool
+    {
+        $stmt = $this->conn->prepare(
+            "UPDATE line_users
+             SET linked_user_id = NULL, linked_at = NULL, linked_by = NULL
+             WHERE id = ? AND company_id = ?"
+        );
+        $stmt->bind_param('ii', $lineUserDbId, $companyId);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
+
+    /**
+     * v6.3 #120 — Update a LINE user's user_type ('customer' | 'agent').
+     * Returns false if the row doesn't belong to this tenant or the type is invalid.
+     * If user_type is being changed away from 'agent', any existing binding is also cleared.
+     */
+    public function updateUserType(int $companyId, int $lineUserDbId, string $userType): bool
+    {
+        if (!in_array($userType, ['customer', 'agent'], true)) return false;
+
+        if ($userType === 'agent') {
+            $stmt = $this->conn->prepare(
+                "UPDATE line_users SET user_type = ?
+                 WHERE id = ? AND company_id = ? AND deleted_at IS NULL"
+            );
+            $stmt->bind_param('sii', $userType, $lineUserDbId, $companyId);
+        } else {
+            // Demoting from agent — also clear any existing binding so a stale
+            // linked_user_id can't be reactivated by re-promoting later.
+            $stmt = $this->conn->prepare(
+                "UPDATE line_users
+                 SET user_type = ?, linked_user_id = NULL, linked_at = NULL, linked_by = NULL
+                 WHERE id = ? AND company_id = ? AND deleted_at IS NULL"
+            );
+            $stmt->bind_param('sii', $userType, $lineUserDbId, $companyId);
+        }
+        $ok = $stmt->execute();
+        $affected = $stmt->affected_rows;
+        $stmt->close();
+        return $ok && $affected >= 0;
+    }
+
+    /**
+     * v6.3 #132 — Lookup the bound iACC user's authorize record for a given
+     * LINE userId string. Returns ['authorize_id', 'authorize_name', 'email', 'phone']
+     * or null if the LINE user isn't bound (or isn't user_type='agent').
+     *
+     * Used so the booking write can populate `tour_bookings.booking_by` with
+     * the human-readable identity of the agent who entered the booking,
+     * instead of the customer's name+phone (the placeholder bug from #120).
+     *
+     * The JOIN deliberately does NOT constrain `authorize.company_id` —
+     * tenancy is already enforced by `bindAgentToUser` at bind time, and
+     * #136 will extend bindings to agent-tenant users (different com_id).
+     */
+    public function getBoundUserDetails(int $companyId, string $lineUserIdStr): ?array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT a.id AS authorize_id, a.name AS authorize_name, a.email, a.phone
+             FROM line_users u
+             JOIN authorize a ON a.id = u.linked_user_id
+             WHERE u.company_id = ?
+               AND u.line_user_id = ?
+               AND u.user_type = 'agent'
+               AND u.linked_user_id IS NOT NULL
+               AND u.deleted_at IS NULL
+             LIMIT 1"
+        );
+        $stmt->bind_param('is', $companyId, $lineUserIdStr);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $row ?: null;
+    }
+
+    /**
+     * v6.3 #120 — Lookup the bound iACC user id for a given LINE userId string.
+     * Returns null if the LINE user isn't an agent or isn't bound.
+     */
+    public function getBoundIaccUserId(int $companyId, string $lineUserIdStr): ?int
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT linked_user_id FROM line_users
+             WHERE company_id = ?
+               AND line_user_id = ?
+               AND user_type = 'agent'
+               AND linked_user_id IS NOT NULL
+               AND deleted_at IS NULL
+             LIMIT 1"
+        );
+        $stmt->bind_param('is', $companyId, $lineUserIdStr);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $row ? (int)$row['linked_user_id'] : null;
+    }
+
     public function getLineUserByLineId(int $companyId, string $lineUserId): ?array
     {
         $stmt = $this->conn->prepare("SELECT * FROM line_users WHERE company_id = ? AND line_user_id = ? LIMIT 1");

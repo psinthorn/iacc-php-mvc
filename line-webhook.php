@@ -27,6 +27,12 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/inc/sys.configs.php';
 require_once __DIR__ . '/inc/class.dbconn.php';
 require_once __DIR__ . '/inc/class.hard.php';
+// inc/security.php — needed by App\Models\TourBooking::createBooking and other
+// model methods that use sql_escape() / sql_int() / sql_float(). The normal
+// page bootstrap (index.php) loads this; the webhook bootstrap was missing it,
+// which caused a fatal "Call to undefined function sql_escape()" inside
+// agent text-template booking writes.
+require_once __DIR__ . '/inc/security.php';
 
 // Autoloader for App namespace
 spl_autoload_register(function ($class) {
@@ -183,6 +189,25 @@ function handleMessage(array $event, int $companyId, int $dbUserId, \App\Models\
     if ($messageType === 'text' && !empty($content)) {
         // Check for order keywords
         $lowerContent = mb_strtolower($content);
+
+        // v6.3 #120 — Agent text-template booking (intercept before legacy commands).
+        // ingestText() returns handled=false when no booking trigger, so we fall
+        // through to the existing order/book/status/auto-reply chain.
+        $lineUserIdStr = $event['source']['userId'] ?? '';
+        if ($lineUserIdStr !== '') {
+            $agentResult = \App\Controllers\LineAgentController::ingestText($companyId, $content, $lineUserIdStr);
+            if (!empty($agentResult['handled'])) {
+                if (!empty($agentResult['reply_messages'])) {
+                    $service->replyMessage($replyToken, $agentResult['reply_messages']);
+                    foreach ($agentResult['reply_messages'] as $msg) {
+                        $msgType = $msg['type'] ?? 'text';
+                        $msgContent = $msgType === 'text' ? ($msg['text'] ?? '') : json_encode($msg);
+                        $model->logMessage($companyId, $dbUserId, 'outbound', $msgType, null, null, $msgContent);
+                    }
+                }
+                return;
+            }
+        }
 
         // Order command: "order <items>"
         if (preg_match('/^(order|สั่ง|สั่งซื้อ)\s+(.+)/iu', $content, $matches)) {

@@ -22,6 +22,8 @@ $labels = [
         'send_message' => 'Send',
         'no_users' => 'No LINE users found.',
         'joined' => 'Joined',
+        'save' => 'Save',
+        'change_type_hint' => 'Change to "Agent" before binding to an iACC user on the Agent Bindings page.',
     ],
     'th' => [
         'page_title' => 'ผู้ใช้ LINE',
@@ -39,6 +41,8 @@ $labels = [
         'send_message' => 'ส่ง',
         'no_users' => 'ไม่พบผู้ใช้ LINE',
         'joined' => 'เข้าร่วม',
+        'save' => 'บันทึก',
+        'change_type_hint' => 'เปลี่ยนเป็น "ตัวแทน" ก่อนจึงจะผูกบัญชีกับผู้ใช้ iACC ในหน้า Agent Bindings ได้',
     ]
 ];
 $t = $labels[$lang];
@@ -91,7 +95,17 @@ $t = $labels[$lang];
                             <?php endif; ?>
                         </td>
                         <td><?= htmlspecialchars($lu['display_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><span class="label label-<?= $lu['user_type'] === 'agent' ? 'primary' : 'info' ?>"><?= $t[$lu['user_type']] ?? $lu['user_type'] ?></span></td>
+                        <td>
+                            <form method="POST" action="index.php?page=line_user_type_update" style="display:inline-flex; gap:4px; align-items:center; margin:0;">
+                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                                <input type="hidden" name="line_user_id" value="<?= (int)$lu['id'] ?>">
+                                <select name="user_type" class="form-control input-sm" style="max-width:110px;" title="<?= htmlspecialchars($t['change_type_hint'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <option value="customer" <?= ($lu['user_type'] ?? '') === 'customer' ? 'selected' : '' ?>><?= $t['customer'] ?></option>
+                                    <option value="agent" <?= ($lu['user_type'] ?? '') === 'agent' ? 'selected' : '' ?>><?= $t['agent'] ?></option>
+                                </select>
+                                <button type="submit" class="btn btn-xs btn-primary" title="<?= $t['save'] ?>"><i class="fa fa-save"></i></button>
+                            </form>
+                        </td>
                         <td>
                             <?php if ($lu['is_blocked']): ?>
                             <span class="label label-danger"><?= $t['blocked'] ?></span>
