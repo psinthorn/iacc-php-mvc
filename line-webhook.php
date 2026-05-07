@@ -325,9 +325,14 @@ function handleBookingCommand(string $replyToken, int $companyId, int $dbUserId,
     // ones from this entry point.
     $lineUser    = $model->getLineUserById($dbUserId);
     $lang        = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', $bookingText) ? 'th' : 'en';
-    $redirectMsg = $lang === 'th'
-        ? "กรุณาใช้แบบฟอร์มการจองใหม่ — พิมพ์ \"จองทัวร์\" พร้อมรายละเอียด เช่น:\n\nจองทัวร์\nทัวร์: <ชื่อทัวร์>\nวันที่: " . ($_POST['date'] ?? date('Y-m-d', strtotime('+7 days'))) . "\nผู้ใหญ่: <จำนวน>\nลูกค้า: <ชื่อ>\nมือถือ: <เบอร์>"
-        : "Please use the new booking template — start your message with \"book tour\" and include the tour details, e.g.:\n\nbook tour\ntour: <tour name>\ndate: " . date('Y-m-d', strtotime('+7 days')) . "\nadults: <count>\ncustomer: <name>\nmobile: <phone>";
+    // Renderer routes through line_message_templates (#133) so admins can
+    // customize the wording per tenant — falls back to a hardcoded default
+    // when no override exists. {{sample_date}} suggests a realistic future
+    // travel date so the user isn't tempted to copy-paste a stale value.
+    $redirectMsg = \App\Services\LineTemplateRenderer::renderText(
+        $companyId, 'legacy.book_redirect', $lang,
+        ['sample_date' => date('Y-m-d', strtotime('+7 days'))]
+    );
 
     $service->replyText($replyToken, $redirectMsg);
     $model->logMessage($companyId, $dbUserId, 'outbound', 'text', null, null, '[v6.6 #134 redirect: legacy book→template] ' . substr($redirectMsg, 0, 80));

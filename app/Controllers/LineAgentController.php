@@ -156,17 +156,22 @@ class LineAgentController extends BaseController
         $iaccUserId   = $line->getBoundIaccUserId($companyId, $lineUserIdStr);
         $isBoundAgent = !empty($iaccUserId);
 
-        // Match the tour name within the tenant's tours
+        // Match the tour name within the tenant's tours.
+        // The "not found" / "ambiguous" replies go through LineTemplateRenderer
+        // (#133 Phase 1) so admins can customize the wording per tenant via
+        // the existing template-edit.php page. Hardcoded defaults stay as
+        // the fallback when no per-tenant override exists.
         $tourMatch = self::matchTour($companyId, $fields['tour_name']);
         if ($tourMatch['status'] === 'none') {
+            $msg = \App\Services\LineTemplateRenderer::renderText(
+                $companyId, 'agent.tour_not_found', $lang,
+                ['tour_name' => $fields['tour_name']]
+            );
             return [
                 'handled'        => true,
                 'reason'         => 'tour_not_found',
                 'booking_id'     => null,
-                'reply_messages' => [self::buildPlainText(($lang === 'th'
-                    ? 'ไม่พบทัวร์ที่ตรงกับ "%s" ในระบบ'
-                    : 'No tour matching "%s" found in your system.'),
-                    [$fields['tour_name']])],
+                'reply_messages' => [['type' => 'text', 'text' => $msg]],
             ];
         }
         if ($tourMatch['status'] === 'multiple') {
@@ -174,14 +179,15 @@ class LineAgentController extends BaseController
             foreach ($tourMatch['candidates'] as $i => $c) {
                 $list .= ($i + 1) . ') ' . $c['name'] . "\n";
             }
+            $msg = \App\Services\LineTemplateRenderer::renderText(
+                $companyId, 'agent.tour_ambiguous', $lang,
+                ['candidates' => $list]
+            );
             return [
                 'handled'        => true,
                 'reason'         => 'tour_ambiguous',
                 'booking_id'     => null,
-                'reply_messages' => [self::buildPlainText(($lang === 'th'
-                    ? "พบทัวร์หลายรายการที่ตรงกัน:\n%sกรุณาส่งใหม่พร้อมระบุชื่อให้ชัดเจนยิ่งขึ้น"
-                    : "Multiple tours matched:\n%sPlease re-send with a more specific name."),
-                    [$list])],
+                'reply_messages' => [['type' => 'text', 'text' => $msg]],
             ];
         }
 
@@ -327,13 +333,14 @@ class LineAgentController extends BaseController
         }
 
         if ($bookingId <= 0) {
+            $msg = \App\Services\LineTemplateRenderer::renderText(
+                $companyId, 'agent.write_failed', $lang
+            );
             return [
                 'handled'        => true,
                 'reason'         => 'write_failed',
                 'booking_id'     => null,
-                'reply_messages' => [self::buildPlainText($lang === 'th'
-                    ? 'เกิดข้อผิดพลาดในการบันทึก กรุณาติดต่อผู้ดูแลระบบ'
-                    : 'Could not save the booking. Please contact your admin.')],
+                'reply_messages' => [['type' => 'text', 'text' => $msg]],
             ];
         }
 
