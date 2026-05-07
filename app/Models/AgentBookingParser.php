@@ -2,33 +2,45 @@
 namespace App\Models;
 
 /**
- * AgentBookingParser — v6.3 #120
+ * AgentBookingParser — v6.3 #120 / #132
  *
- * Stateless parser that converts an inbound LINE OA text message from a
- * sales agent into a structured booking record (or a list of validation
- * errors).
+ * Stateless parser that converts an inbound LINE OA text message from an
+ * agent (or, after v6.6, a direct customer) into a structured booking
+ * record — or a list of validation errors.
  *
- * Locked schema (PM call 2026-05-06, see issue #120):
+ * Schema (current — updated in #132):
  *
- *   จองทัวร์    OR    book tour
- *   ทัวร์: <tour_name>           |   tour: <tour_name>
- *   วันที่: <YYYY-MM-DD>         |   date: <YYYY-MM-DD>
- *   ผู้ใหญ่: <int>               |   adults: <int>
- *   เด็ก: <int>                  |   children: <int>
- *   ลูกค้า: <name> <phone>       |   customer: <name> <phone>
- *   ตัวแทน: <agent_code>         |   agent: <agent_code>
- *   หมายเหตุ: <free text>         |   notes: <free text>
+ *   จองทัวร์    OR    book tour                          (strong trigger)
+ *   จอง        OR    book                              (weak trigger — only when paired with field anchors)
  *
- * Required: tour, date, adults, customer, agent.
- * Optional: children, notes.
+ *   ทัวร์: <model_name>             |   tour: <model_name>             (required)
+ *   วันที่ (Travel Date): <YYYY-MM-DD>|   date (Travel Date): <YYYY-MM-DD> (required)
+ *   ผู้ใหญ่: <int>                  |   adults: <int>                  (required)
+ *   เด็ก: <int>                     |   children: <int>                (optional)
+ *   ลูกค้า: <name>                  |   customer: <name>               (required)
+ *   มือถือ: <phone>                 |   mobile: <phone>                (required if ลูกค้า: has no trailing digits)
+ *   อีเมล: <email>                  |   email: <email>                 (optional)
+ *   เมสเซนเจอร์: <id>               |   messenger: <id>                (optional, e.g. line:foo or @bar)
+ *   ตัวแทน: <code>                  |   agent: <code>                  (optional — captured into remark for audit; auto-resolution to agent_id is tracked in #136)
+ *   ที่พัก: <name>                   |   accommodation: <name>          (optional → tour_bookings.pickup_hotel)
+ *   หมายเลขห้อง: <id>                |   room: <id>                     (optional → tour_bookings.pickup_room)
+ *   หมายเหตุ: <free text>            |   notes: <free text>             (optional)
+ *
+ * Backward compatibility: if `ลูกค้า:` includes a trailing phone-like token
+ * and `มือถือ:` is NOT provided, the trailing digits are split off as the
+ * mobile number. This preserves the original v6.3 #120 single-line format.
+ *
+ * Customer contact (name, mobile, email, messenger) is persisted to
+ * `tour_booking_contacts` (not `tour_bookings.booking_by`) — the latter is
+ * reserved for the iACC user who entered the booking.
  *
  * Usage:
  *   $result = AgentBookingParser::parse($messageText);
  *   if ($result['ok']) {
- *       $fields = $result['fields'];   // ['tour_name'=>..., 'date'=>..., 'adults'=>4, ...]
+ *       $fields = $result['fields'];   // ['tour_name'=>..., 'customer_mobile'=>..., 'accommodation'=>..., ...]
  *       $lang   = $result['lang'];     // 'th' | 'en'
  *   } else {
- *       $errors = $result['errors'];   // ['date_missing', 'phone_invalid', ...]
+ *       $errors = $result['errors'];   // ['date_missing', 'phone_invalid', 'mobile_missing', ...]
  *       $lang   = $result['lang'];
  *   }
  */
@@ -60,11 +72,19 @@ class AgentBookingParser
         'adults'         => ['ผู้ใหญ่', 'adults'],
         'children'       => ['เด็ก', 'children'],
         'customer'       => ['ลูกค้า', 'customer'],
+        'mobile'         => ['มือถือ', 'mobile'],
+        'email'          => ['อีเมล', 'email'],
+        'messenger'      => ['เมสเซนเจอร์', 'messenger'],
         'agent_code'     => ['ตัวแทน', 'agent'],
+        'accommodation'  => ['ที่พัก', 'accommodation'],
+        'room'           => ['หมายเลขห้อง', 'room'],
         'notes'          => ['หมายเหตุ', 'notes'],
     ];
 
-    private const REQUIRED_FIELDS = ['tour_name', 'date', 'adults', 'customer', 'agent_code'];
+    // agent_code is no longer required — auto-resolution from the LINE binding
+    // is tracked in #136. Customer phone comes from explicit `มือถือ:` /
+    // `mobile:` keyword (preferred) or trailing digits in `ลูกค้า:` (fallback).
+    private const REQUIRED_FIELDS = ['tour_name', 'date', 'adults', 'customer'];
 
     /**
      * Returns:
@@ -196,12 +216,23 @@ class AgentBookingParser
         // Default children=0 if not provided (optional field)
         $fields['children'] = $fields['children'] ?? 0;
 
-        // Customer field is "<name> <phone>" — split on last whitespace before
-        // a phone-like token so names with spaces work.
+        // Customer field handling:
+        // - If `มือถือ:` / `mobile:` is provided, treat `ลูกค้า:` as the name only.
+        // - Otherwise fall back to the legacy split: `ลูกค้า: <name> <phone>`.
+        // Either way, `customer_mobile` becomes the canonical phone for downstream
+        // validation and persistence.
         if (isset($fields['customer'])) {
-            $split = self::splitCustomer($fields['customer']);
-            $fields['customer_name']  = $split['name'];
-            $fields['customer_phone'] = $split['phone'];
+            $explicitMobile = trim($fields['mobile'] ?? '');
+            if ($explicitMobile !== '') {
+                $fields['customer_name']   = trim($fields['customer']);
+                $fields['customer_phone']  = '';
+                $fields['customer_mobile'] = $explicitMobile;
+            } else {
+                $split = self::splitCustomer($fields['customer']);
+                $fields['customer_name']   = $split['name'];
+                $fields['customer_phone']  = $split['phone'];
+                $fields['customer_mobile'] = $split['phone'];
+            }
         }
 
         return $fields;
@@ -258,8 +289,11 @@ class AgentBookingParser
 
         foreach (self::REQUIRED_FIELDS as $req) {
             if ($req === 'customer') {
-                if (empty($f['customer_name']) || empty($f['customer_phone'])) {
+                if (empty($f['customer_name'])) {
                     $errors[] = 'customer_missing';
+                }
+                if (empty($f['customer_mobile'])) {
+                    $errors[] = 'mobile_missing';
                 }
                 continue;
             }
@@ -279,7 +313,7 @@ class AgentBookingParser
             if ($totalPax < 1) $errors[] = 'pax_too_few';
         }
 
-        if (!empty($f['customer_phone']) && !self::isValidPhone($f['customer_phone'])) {
+        if (!empty($f['customer_mobile']) && !self::isValidPhone($f['customer_mobile'])) {
             $errors[] = 'phone_invalid';
         }
 

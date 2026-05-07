@@ -9,6 +9,31 @@ class TourBooking extends BaseModel
     // ─── Booking Number ────────────────────────────────────────
 
     /**
+     * Resolve a booking's `status` based on tour_allotments availability.
+     * Centralized so every booking write path (web form, LINE agent text,
+     * LINE customer direct in v6.6, future channels) reaches the same
+     * verdict from the same data.
+     *
+     * Returns ['status' => 'confirmed'|'draft', 'reason' => 'available'|'no_allotment'|'closed'|'overbook'].
+     *
+     * Decision matrix:
+     *   - No allotment configured for the date  → 'draft' / 'no_allotment'
+     *   - Allotment row exists but is_closed=1  → 'draft' / 'closed'
+     *   - requestedPax > available              → 'draft' / 'overbook'
+     *   - Otherwise                             → 'confirmed' / 'available'
+     */
+    public function resolveBookingStatus(int $companyId, string $travelDate, int $requestedPax): array
+    {
+        $allotmentModel = new \App\Models\TourAllotment();
+        $alloc = $allotmentModel->getAllotmentByDate($companyId, $travelDate);
+
+        if (!$alloc)                                   return ['status' => 'draft',     'reason' => 'no_allotment'];
+        if (!empty($alloc['is_closed']))               return ['status' => 'draft',     'reason' => 'closed'];
+        if ($requestedPax > intval($alloc['available'])) return ['status' => 'draft',   'reason' => 'overbook'];
+        return ['status' => 'confirmed', 'reason' => 'available'];
+    }
+
+    /**
      * Generate next booking number: BK-YYMMDD-001
      */
     public function generateBookingNumber(int $comId): string
