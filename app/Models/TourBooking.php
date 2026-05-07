@@ -162,10 +162,10 @@ class TourBooking extends BaseModel
         $sql = "SELECT b.*,
                        cust.name_en AS customer_name, cust.name_th AS customer_name_th,
                        agt.name_en AS agent_name, agt.name_th AS agent_name_th,
-                       tap.contact_email AS agent_email, tap.contact_mobile AS agent_mobile,
+                       tap.contact_email AS agent_email, tap.contact_phone AS agent_mobile,
                        CONCAT_WS(', ', tap.contact_line, tap.contact_whatsapp) AS agent_messengers,
                        srep.name_en AS sales_rep_name, srep.name_th AS sales_rep_name_th,
-                       srtap.contact_email AS sales_rep_email, srtap.contact_mobile AS sales_rep_mobile,
+                       srtap.contact_email AS sales_rep_email, srtap.contact_phone AS sales_rep_mobile,
                        CONCAT_WS(', ', srtap.contact_line, srtap.contact_whatsapp) AS sales_rep_messengers,
                        loc.name AS pickup_location_name, loc.location_type AS pickup_location_type
                 FROM tour_bookings b
@@ -532,7 +532,7 @@ class TourBooking extends BaseModel
     public function getAgentDropdown(int $comId): array
     {
         $sql = "SELECT c.id, c.name_en, c.name_th,
-                       tap.contact_email, tap.contact_mobile, tap.contact_line, tap.contact_whatsapp,
+                       tap.contact_email, tap.contact_phone AS contact_mobile, tap.contact_line, tap.contact_whatsapp,
                        tap.contact_messengers
                 FROM company c
                 INNER JOIN tour_agent_profiles tap ON c.id = tap.company_ref_id
@@ -663,7 +663,7 @@ class TourBooking extends BaseModel
     {
         $s = sql_escape(trim($term));
         $sql = "SELECT c.id, c.name_en, c.name_th,
-                       tap.contact_email, tap.contact_mobile,
+                       tap.contact_email, tap.contact_phone AS contact_mobile,
                        CONCAT_WS(', ', tap.contact_line, tap.contact_whatsapp) AS contact_messengers
                 FROM tour_agent_profiles tap
                 JOIN company c ON c.id = tap.company_ref_id
@@ -671,7 +671,7 @@ class TourBooking extends BaseModel
                   AND tap.deleted_at IS NULL
                   AND c.deleted_at IS NULL
                   AND (c.name_en LIKE '%$s%' OR c.name_th LIKE '%$s%'
-                       OR tap.contact_email LIKE '%$s%' OR tap.contact_mobile LIKE '%$s%')
+                       OR tap.contact_email LIKE '%$s%' OR tap.contact_phone LIKE '%$s%')
                 ORDER BY c.name_en
                 LIMIT " . intval($limit);
 
