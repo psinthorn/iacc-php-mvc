@@ -22,6 +22,9 @@ $labels = [
         'step2'        => '2. Open the <a href="index.php?page=line_users">Users</a> page and change their <strong>user_type</strong> to <strong>agent</strong>.',
         'step3'        => '3. Return here and bind their LINE account to an iACC user.',
         'unbound'      => '— not bound —',
+        'tab_team'     => 'My Team',
+        'tab_partners' => 'Agent Partners',
+        'no_partners'  => 'No registered agent partners with active contracts for this operator. Set them up from the Tour Agent registration screen first.',
     ],
     'th' => [
         'page_title'   => 'ผูกบัญชีตัวแทน',
@@ -42,11 +45,21 @@ $labels = [
         'step2'        => '2. ไปที่หน้า <a href="index.php?page=line_users">Users</a> แล้วเปลี่ยน <strong>user_type</strong> เป็น <strong>agent</strong>',
         'step3'        => '3. กลับมาที่หน้านี้เพื่อผูกบัญชีกับผู้ใช้ iACC',
         'unbound'      => '— ยังไม่ผูก —',
+        'tab_team'     => 'ทีมของฉัน',
+        'tab_partners' => 'ตัวแทนพันธมิตร',
+        'no_partners'  => 'ยังไม่มีตัวแทนพันธมิตรที่มีสัญญาใช้งานอยู่ กรุณาลงทะเบียนตัวแทนในหน้า Tour Agent ก่อน',
     ],
 ];
 $t = $labels[$lang];
 
 $agents = array_values(array_filter($bindings ?? [], fn($r) => ($r['user_type'] ?? '') === 'agent'));
+
+// #136: scope toggle — "team" (operator's own employees) vs "partners"
+// (employees of B2B partner agents registered with this operator).
+$scope = ($scope ?? 'team') === 'partners' ? 'partners' : 'team';
+$activeUsers = $scope === 'partners'
+    ? ($agentTenantUsers ?? [])
+    : ($iaccUsers ?? []);
 ?>
 <?php $currentNavPage = 'line_agent_bindings'; include __DIR__ . '/_nav.php'; ?>
 
@@ -57,12 +70,27 @@ $agents = array_values(array_filter($bindings ?? [], fn($r) => ($r['user_type'] 
 <div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?></div>
 <?php unset($_SESSION['flash_error']); endif; ?>
 
+<div style="margin-bottom: 15px;">
+    <div class="btn-group" role="tablist">
+        <a href="index.php?page=line_agent_bindings&scope=team" class="btn btn-sm btn-<?= $scope === 'team' ? 'primary' : 'default' ?>">
+            <i class="fa fa-users"></i> <?= $t['tab_team'] ?>
+        </a>
+        <a href="index.php?page=line_agent_bindings&scope=partners" class="btn btn-sm btn-<?= $scope === 'partners' ? 'primary' : 'default' ?>">
+            <i class="fa fa-handshake-o"></i> <?= $t['tab_partners'] ?>
+        </a>
+    </div>
+</div>
+
 <div style="display:flex; gap:20px; flex-wrap:wrap;">
 
 <div style="flex:2; min-width:380px;">
     <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <h4 style="margin-top:0;"><i class="fa fa-link"></i> <?= $t['agent_users'] ?></h4>
         <p style="color:#666;"><?= $t['intro'] ?></p>
+
+        <?php if ($scope === 'partners' && empty($activeUsers)): ?>
+            <div class="alert alert-warning" style="margin:10px 0;"><?= $t['no_partners'] ?></div>
+        <?php endif; ?>
 
         <?php if (empty($agents)): ?>
             <p style="text-align:center; padding:30px 20px; color:#999;"><?= $t['no_agents'] ?></p>
@@ -94,6 +122,17 @@ $agents = array_values(array_filter($bindings ?? [], fn($r) => ($r['user_type'] 
                                     <i class="fa fa-check"></i>
                                     <?= htmlspecialchars($a['linked_name'] ?: $a['linked_email'] ?: ('#' . $a['linked_user_id']), ENT_QUOTES, 'UTF-8') ?>
                                 </span>
+                                <?php
+                                // #136: when the bound user lives in an agent-partner tenant,
+                                // show the partner company name underneath so the admin can
+                                // see at a glance which agent this binding is attributed to.
+                                $partnerLabel = $isThai
+                                    ? ($a['partner_company_th'] ?? $a['partner_company_en'] ?? '')
+                                    : ($a['partner_company_en'] ?? $a['partner_company_th'] ?? '');
+                                ?>
+                                <?php if (!empty($partnerLabel)): ?>
+                                    <small class="text-muted" style="display:block;"><i class="fa fa-handshake-o"></i> <?= htmlspecialchars($partnerLabel, ENT_QUOTES, 'UTF-8') ?></small>
+                                <?php endif; ?>
                                 <?php if (!empty($a['linked_at'])): ?>
                                     <small class="text-muted" style="display:block;"><?= date('M d, Y', strtotime($a['linked_at'])) ?></small>
                                 <?php endif; ?>
@@ -105,11 +144,24 @@ $agents = array_values(array_filter($bindings ?? [], fn($r) => ($r['user_type'] 
                             <form method="POST" action="index.php?page=line_agent_bind_save" style="display:inline-flex; gap:5px; align-items:center;">
                                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
                                 <input type="hidden" name="line_user_id" value="<?= (int)$a['id'] ?>">
-                                <select name="iacc_user_id" class="form-control input-sm" style="max-width:180px;">
+                                <select name="iacc_user_id" class="form-control input-sm" style="max-width:220px;">
                                     <option value=""><?= $t['select_user'] ?></option>
-                                    <?php foreach (($iaccUsers ?? []) as $u): ?>
+                                    <?php foreach (($activeUsers ?? []) as $u): ?>
+                                        <?php
+                                        // For partners scope, label with agent company so admins
+                                        // can disambiguate two reps with the same name from
+                                        // different partner agencies.
+                                        if ($scope === 'partners') {
+                                            $companyLabel = $isThai
+                                                ? ($u['agent_company_th'] ?? $u['agent_company_en'] ?? '')
+                                                : ($u['agent_company_en'] ?? $u['agent_company_th'] ?? '');
+                                            $optionLabel = ($u['name'] ?: $u['email']) . ' — ' . $companyLabel;
+                                        } else {
+                                            $optionLabel = ($u['name'] ?: $u['email']) . ' (lvl ' . (int)$u['level'] . ')';
+                                        }
+                                        ?>
                                         <option value="<?= (int)$u['id'] ?>" <?= ($a['linked_user_id'] ?? 0) == $u['id'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars(($u['name'] ?: $u['email']) . ' (lvl ' . (int)$u['level'] . ')', ENT_QUOTES, 'UTF-8') ?>
+                                            <?= htmlspecialchars($optionLabel, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

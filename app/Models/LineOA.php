@@ -164,12 +164,28 @@ class LineOA extends BaseModel
      */
     public function getAgentBindings(int $companyId): array
     {
+        // #136: relaxed the `a.company_id = u.company_id` constraint so
+        // agent-tenant bindings (where the bound authorize user lives in a
+        // partner agent's tenant) display correctly. The bind action still
+        // enforces the partner-relationship via tour_agent_profiles, so this
+        // JOIN doesn't grant access — it only renders what's already valid.
+        // The agent partner's company name (when applicable) is fetched via
+        // a second LEFT JOIN through the partner registration so the UI can
+        // label which company a binding belongs to.
         $stmt = $this->conn->prepare(
             "SELECT u.id, u.line_user_id, u.display_name, u.picture_url, u.user_type,
                     u.linked_user_id, u.linked_at, u.linked_by,
-                    a.email AS linked_email, a.name AS linked_name, a.level AS linked_level
+                    a.email AS linked_email, a.name AS linked_name, a.level AS linked_level,
+                    a.company_id AS linked_user_com_id,
+                    partner.name_en AS partner_company_en,
+                    partner.name_th AS partner_company_th
              FROM line_users u
-             LEFT JOIN authorize a ON a.id = u.linked_user_id AND a.company_id = u.company_id
+             LEFT JOIN authorize a ON a.id = u.linked_user_id
+             LEFT JOIN tour_agent_profiles tap
+                    ON tap.company_ref_id = a.company_id
+                   AND tap.company_id     = u.company_id
+                   AND tap.deleted_at IS NULL
+             LEFT JOIN company partner ON partner.id = tap.company_ref_id
              WHERE u.company_id = ? AND u.deleted_at IS NULL
              ORDER BY (u.user_type = 'agent') DESC, u.display_name ASC"
         );
@@ -182,6 +198,7 @@ class LineOA extends BaseModel
 
     /**
      * v6.3 #120 — List iACC users in this company eligible to be bound as agents.
+     * "My Team" mode — operator's own employees.
      */
     public function getEligibleIaccUsers(int $companyId): array
     {
@@ -197,19 +214,93 @@ class LineOA extends BaseModel
     }
 
     /**
+     * v6.3 #136 — List authorize users from agent-partner tenants for this
+     * operator. "Agent Partners" mode — employees of B2B partners that are
+     * registered with this operator via tour_agent_profiles.
+     *
+     * Each row includes the agent company's display labels (name_en/name_th)
+     * so the bind UI can label the dropdown clearly. Filters out agents with
+     * an expired contract (contract_end < CURDATE()) so admins don't bind to
+     * relationships that no longer exist.
+     */
+    public function getEligibleAgentTenantUsers(int $operatorCompanyId): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT a.id, a.name, a.email, a.level,
+                    a.company_id   AS user_com_id,
+                    c.name_en      AS agent_company_en,
+                    c.name_th      AS agent_company_th,
+                    tap.id         AS agent_profile_id
+             FROM authorize a
+             JOIN tour_agent_profiles tap
+               ON tap.company_ref_id = a.company_id
+              AND tap.deleted_at IS NULL
+             JOIN company c
+               ON c.id = a.company_id
+             WHERE tap.company_id = ?
+               AND (tap.contract_end IS NULL OR tap.contract_end >= CURDATE())
+             ORDER BY c.name_en ASC, a.level DESC, a.name ASC"
+        );
+        $stmt->bind_param('i', $operatorCompanyId);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $rows;
+    }
+
+    /**
+     * v6.3 #136 — Resolve a tour_agent_profiles.id from the bound iACC user.
+     *
+     * Returns the agent profile id if the user belongs to a partner agent
+     * tenant registered with this operator. Returns null if the user is in
+     * the operator's own tenant (own-team / sales rep — agent_id stays null)
+     * or if no matching profile is found.
+     */
+    public function resolveAgentIdFromBoundUser(int $operatorCompanyId, int $boundUserComId): ?int
+    {
+        if ($boundUserComId === $operatorCompanyId) return null; // own-team — not a partner agent
+        $stmt = $this->conn->prepare(
+            "SELECT id FROM tour_agent_profiles
+             WHERE company_id = ?
+               AND company_ref_id = ?
+               AND deleted_at IS NULL
+             ORDER BY id ASC
+             LIMIT 1"
+        );
+        $stmt->bind_param('ii', $operatorCompanyId, $boundUserComId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $row ? (int)$row['id'] : null;
+    }
+
+    /**
      * v6.3 #120 — Bind a LINE user (must be user_type='agent') to an iACC user.
-     * Returns true on success, false if either user belongs to a different company
-     * or the LINE user is not an agent.
+     *
+     * v6.3 #136 — Auth check expanded: the iACC user must be EITHER
+     *   (a) in the operator's own tenant (operator employee / sales rep), OR
+     *   (b) in a tenant whose company_id appears in tour_agent_profiles.company_ref_id
+     *       for this operator (agent partner employee).
+     *
+     * Returns true on success, false if the line_user isn't in this tenant /
+     * isn't user_type='agent', or the iACC user isn't reachable from this
+     * operator under either rule.
      */
     public function bindAgentToUser(int $companyId, int $lineUserDbId, int $iaccUserId, int $adminId): bool
     {
-        // Verify both rows belong to this tenant + the LINE user is an agent
         $check = $this->conn->prepare(
             "SELECT
-                (SELECT COUNT(*) FROM line_users WHERE id = ? AND company_id = ? AND user_type = 'agent' AND deleted_at IS NULL) AS lu_ok,
-                (SELECT COUNT(*) FROM authorize  WHERE id = ? AND company_id = ?) AS au_ok"
+                (SELECT COUNT(*) FROM line_users
+                 WHERE id = ? AND company_id = ? AND user_type = 'agent' AND deleted_at IS NULL) AS lu_ok,
+                (SELECT COUNT(*) FROM authorize a
+                 WHERE a.id = ?
+                   AND (a.company_id = ?
+                        OR a.company_id IN (
+                            SELECT company_ref_id FROM tour_agent_profiles
+                            WHERE company_id = ? AND deleted_at IS NULL
+                        ))) AS au_ok"
         );
-        $check->bind_param('iiii', $lineUserDbId, $companyId, $iaccUserId, $companyId);
+        $check->bind_param('iiiii', $lineUserDbId, $companyId, $iaccUserId, $companyId, $companyId);
         $check->execute();
         $row = $check->get_result()->fetch_assoc();
         $check->close();
@@ -288,8 +379,13 @@ class LineOA extends BaseModel
      */
     public function getBoundUserDetails(int $companyId, string $lineUserIdStr): ?array
     {
+        // user_com_id is added in #136 so callers can pass it to
+        // resolveAgentIdFromBoundUser() — when the bound user belongs to an
+        // agent tenant (different company_id), we resolve to the operator's
+        // tour_agent_profiles row instead of treating them as an own-team rep.
         $stmt = $this->conn->prepare(
-            "SELECT a.id AS authorize_id, a.name AS authorize_name, a.email, a.phone
+            "SELECT a.id AS authorize_id, a.name AS authorize_name, a.email, a.phone,
+                    a.company_id AS user_com_id
              FROM line_users u
              JOIN authorize a ON a.id = u.linked_user_id
              WHERE u.company_id = ?

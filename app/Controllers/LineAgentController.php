@@ -38,10 +38,17 @@ class LineAgentController extends BaseController
         }
         $companyId = (int)$this->user['com_id'];
         $bindings  = $this->lineModel->getAgentBindings($companyId);
-        $iaccUsers = $this->lineModel->getEligibleIaccUsers($companyId);
+        // #136: two scopes — operator's own team vs registered agent partners.
+        // The view renders both as tabs so admins can pick the right pool of
+        // iACC users when binding a LINE account.
+        $iaccUsers         = $this->lineModel->getEligibleIaccUsers($companyId);
+        $agentTenantUsers  = $this->lineModel->getEligibleAgentTenantUsers($companyId);
+        $scope             = ($_GET['scope'] ?? 'team') === 'partners' ? 'partners' : 'team';
         $this->render('line-oa/agent-bindings', [
-            'bindings'  => $bindings,
-            'iaccUsers' => $iaccUsers,
+            'bindings'         => $bindings,
+            'iaccUsers'        => $iaccUsers,
+            'agentTenantUsers' => $agentTenantUsers,
+            'scope'            => $scope,
         ]);
     }
 
@@ -209,6 +216,17 @@ class LineAgentController extends BaseController
             $bookingByName = 'User #' . $iaccUserId;
         }
 
+        // #136: auto-resolve agent_id from the bound user. If the bound user
+        // belongs to an agent-partner tenant, this returns the matching
+        // tour_agent_profiles.id and the booking is attributed to that
+        // partner for commission tracking. Operator's own employees return
+        // null (agent_id stays 0 — they're sales reps, not partner agents).
+        $resolvedAgentId = 0;
+        if ($boundUser && !empty($boundUser['user_com_id'])) {
+            $aid = $line->resolveAgentIdFromBoundUser($companyId, (int)$boundUser['user_com_id']);
+            if ($aid) $resolvedAgentId = $aid;
+        }
+
         // Compose remark — captures the tour name + any agent notes +
         // typed agent_code (for audit; auto-resolution to tour_bookings.agent_id
         // is deferred to #136 once the bind UI supports agent-tenant users).
@@ -235,7 +253,7 @@ class LineAgentController extends BaseController
                 'booking_number' => $bookingNumber,
                 'booking_date'   => date('Y-m-d'),
                 'travel_date'    => $fields['date'],
-                'agent_id'       => 0, // deferred to #136
+                'agent_id'       => $resolvedAgentId, // #136: auto from binding when partner-tenant
                 'sales_rep_id'   => 0,
                 'customer_id'    => 0,
                 'booking_by'     => $bookingByName,
