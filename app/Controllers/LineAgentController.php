@@ -238,12 +238,25 @@ class LineAgentController extends BaseController
             if ($aid) $resolvedAgentId = $aid;
         }
 
-        // Compose remark — captures the tour name + any agent notes +
-        // typed agent_code (for audit; auto-resolution to tour_bookings.agent_id
-        // is deferred to #136 once the bind UI supports agent-tenant users).
+        // Compose remark — captures the tour name + description + any agent
+        // notes + typed agent_code (for audit; auto-resolution to
+        // tour_bookings.agent_id is deferred to #136 once the bind UI
+        // supports agent-tenant users).
+        //
+        // Description is appended after a `|` separator so the operator can
+        // see at a glance which tour was booked without opening the model
+        // record. Stripped of HTML and collapsed whitespace; passed through
+        // verbatim length so long descriptions stay readable in the booking
+        // view (remark column is TEXT — no truncation pressure).
         $remarkParts = [];
         $remarkParts[] = '[from LINE agent text]';
-        $remarkParts[] = 'Tour: ' . ($tour['name'] ?? '');
+        $tourLine = 'Tour: ' . ($tour['name'] ?? '');
+        $modelDes = trim(strip_tags((string)($tour['description'] ?? '')));
+        $modelDes = preg_replace('/\s+/', ' ', $modelDes);
+        if ($modelDes !== '') {
+            $tourLine .= ' | ' . $modelDes;
+        }
+        $remarkParts[] = $tourLine;
         if (!empty($fields['agent_code'])) $remarkParts[] = 'Agent code (typed): ' . $fields['agent_code'];
         if (!empty($fields['notes']))      $remarkParts[] = 'Notes: ' . $fields['notes'];
         $remark = implode("\n", $remarkParts);
@@ -373,7 +386,7 @@ class LineAgentController extends BaseController
         // connection collation (e.g. utf8mb4_bin on staging) differs from the
         // column collation (utf8mb4_unicode_ci).
         $stmt = $db->conn->prepare(
-            "SELECT m.id, m.model_name AS name
+            "SELECT m.id, m.model_name AS name, m.des AS description
              FROM model m
              LEFT JOIN type t ON m.type_id = t.id
              WHERE m.company_id = ?
