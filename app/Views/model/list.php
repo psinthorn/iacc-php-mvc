@@ -181,6 +181,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
             // carousel triggered by "ดูทัวร์" / "show tours".
             $_isThai = ($_SESSION['lang'] ?? '0') === '1';
             $_isCustomerBookable = (int)($edit_data['is_customer_bookable'] ?? 1);
+            $_parentModelId      = (int)($edit_data['parent_model_id'] ?? 0);
         ?>
         <div class="form-row">
             <div class="form-group" style="width:100%;">
@@ -197,6 +198,27 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                     <?= $_isThai
                         ? 'ติ๊กเพื่อให้ทัวร์นี้แสดงในรายการที่ลูกค้าเห็นเมื่อพิมพ์ "ดูทัวร์" ผ่าน LINE OA — ยกเลิกถ้าเป็นรายการที่ไม่ใช่ทัวร์ (เช่น ค่าเข้าหน้าท่า)'
                         : 'Check to include this row in the customer-facing carousel triggered by "show tours" / "ดูทัวร์". Uncheck for non-tour items (e.g. entrance fees).' ?>
+                </small>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="width:100%;">
+                <label>
+                    <i class="fa fa-sitemap"></i>
+                    <?= $_isThai ? 'เป็นรายการย่อยของทัวร์' : 'Sub-item of tour' ?>
+                </label>
+                <select class="form-control" name="parent_model_id">
+                    <option value="0">— <?= $_isThai ? 'รายการหลัก (ไม่ใช่รายการย่อย)' : 'Top-level (not a sub-item)' ?> —</option>
+                    <?php foreach (($parentOptions ?? []) as $p): ?>
+                        <option value="<?= (int)$p['id'] ?>" <?= $_parentModelId === (int)$p['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($p['model_name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <small class="text-muted" style="display:block; margin-top:4px;">
+                    <?= $_isThai
+                        ? 'เลือกทัวร์หลักหากรายการนี้เป็นค่าธรรมเนียมหรือรายการเสริม (เช่น ค่าเข้าหน้าท่าของทัวร์อ่างทอง) — รายการย่อยจะถูกเพิ่มอัตโนมัติเมื่อมีการจองทัวร์หลักผ่าน LINE'
+                        : 'Pick a parent tour if this row is a fee or add-on (e.g. pier fee for the Ang Thong tour). Sub-items are auto-added as line items when the parent tour is booked via LINE.' ?>
                 </small>
             </div>
         </div>
@@ -233,10 +255,24 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 $row_num++;
                 $isActive = intval($data['is_active'] ?? 1);
             ?>
+            <?php
+                // v6.6 — sub-models render indented under their parent so the
+                // hierarchy is visible at a glance. The list query orders
+                // by id; if you find sub-models drifting away from their
+                // parents in pagination, switch the controller's
+                // getPaginated to ORDER BY COALESCE(parent_model_id, id), parent_model_id.
+                $_isSubModel = !empty($data['parent_model_id']);
+            ?>
             <tr class="<?=$isActive ? '' : 'row-inactive'?>" id="row-mo_list-<?=$data['id']?>">
                 <td class="text-muted"><?=$row_num?></td>
                 <td>
+                    <?php if ($_isSubModel): ?>
+                        <span style="color:#999; margin-right:6px;">└</span>
+                    <?php endif; ?>
                     <span class="item-name"><?=htmlspecialchars($data['model_name'])?></span>
+                    <?php if ($_isSubModel): ?>
+                        <span class="badge" style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:10px; font-size:10px; margin-left:6px;">sub-item</span>
+                    <?php endif; ?>
                     <?php if ($data['des']): ?>
                     <br><small class="item-desc"><?=htmlspecialchars(mb_strimwidth($data['des'], 0, 50, '…'))?></small>
                     <?php endif; ?>

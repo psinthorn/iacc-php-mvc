@@ -76,6 +76,7 @@ class AgentBookingParser
         'email'          => ['อีเมล', 'email'],
         'messenger'      => ['เมสเซนเจอร์', 'messenger'],
         'agent_code'     => ['ตัวแทน', 'agent'],
+        'nationality'    => ['สัญชาติ', 'nationality'],
         'accommodation'  => ['ที่พัก', 'accommodation'],
         'room'           => ['หมายเลขห้อง', 'room'],
         'notes'          => ['หมายเหตุ', 'notes'],

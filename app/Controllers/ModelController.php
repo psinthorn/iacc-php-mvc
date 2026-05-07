@@ -47,22 +47,27 @@ class ModelController extends BaseController
         // Dropdown data
         $types  = $this->model->getTypes();
         $brands = $this->model->getBrands();
+        // v6.6 — parent-model options for the sub-model dropdown.
+        // Excludes the current row when editing so a model can't pick
+        // itself as a parent.
+        $parentOptions = $this->model->getParentOptions($editId);
 
         $this->render('model/list', [
-            'items'        => $result['items'],
-            'total_items'  => $result['total'],
-            'item_count'   => $result['count'],
-            'pagination'   => $result['pagination'],
-            'stats'        => $this->model->getStats(),
-            'search'       => $search,
-            'status'       => $status,
-            'type_id'      => $typeId,
-            'brand_id'     => $brandId,
-            'edit_data'    => $editData,
-            'show_form'    => $showForm,
-            'types'        => $types,
-            'brands'       => $brands,
-            'query_params' => $_GET,
+            'items'         => $result['items'],
+            'total_items'   => $result['total'],
+            'item_count'    => $result['count'],
+            'pagination'    => $result['pagination'],
+            'stats'         => $this->model->getStats(),
+            'search'        => $search,
+            'status'        => $status,
+            'type_id'       => $typeId,
+            'brand_id'      => $brandId,
+            'edit_data'     => $editData,
+            'show_form'     => $showForm,
+            'types'         => $types,
+            'brands'        => $brands,
+            'parentOptions' => $parentOptions,
+            'query_params'  => $_GET,
         ]);
     }
 
@@ -86,6 +91,13 @@ class ModelController extends BaseController
         // unchecked checkboxes don't submit, so absence means "uncheck"
         // (i.e. hide from carousel). New rows default to visible.
         $isCustomerBookable = isset($_POST['is_customer_bookable']) ? 1 : 0;
+        // v6.6 — parent_model_id for sub-model relationships. 0 / empty in
+        // the form means "top-level" → store NULL. Self-reference guarded
+        // at the form level (current row is excluded from the dropdown
+        // options) but we also enforce no self-parent on the server side.
+        $parentModelId = intval($_POST['parent_model_id'] ?? 0);
+        if ($parentModelId === $id) $parentModelId = 0;
+        $parentValue   = $parentModelId > 0 ? $parentModelId : null;
 
         switch ($method) {
             case 'A': // Add
@@ -97,6 +109,7 @@ class ModelController extends BaseController
                     'des'                  => $des,
                     'price'                => $price,
                     'is_customer_bookable' => $isCustomerBookable,
+                    'parent_model_id'      => $parentValue,
                 ]);
                 break;
 
@@ -107,6 +120,7 @@ class ModelController extends BaseController
                         'des'                  => $des,
                         'price'                => $price,
                         'is_customer_bookable' => $isCustomerBookable,
+                        'parent_model_id'      => $parentValue,
                     ];
                     if ($typeId > 0)  $data['type_id']  = $typeId;
                     if ($brandId > 0) $data['brand_id'] = $brandId;
