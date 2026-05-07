@@ -193,9 +193,21 @@ class LineAgentController extends BaseController
 
         // Resolve the bound user's display name for booking_by (was the
         // customer name+phone before #132 — semantically wrong).
+        // Priority: name → email → bare "User #ID" sentinel. Empty strings
+        // (not just nulls) also fall through, since some authorize rows have
+        // name='' rather than NULL.
         $boundUser = $line->getBoundUserDetails($companyId, $lineUserIdStr);
-        $bookingByName = $boundUser['authorize_name']
-            ?? ('LINE bound user #' . $iaccUserId);
+        $bookingByName = '';
+        if ($boundUser) {
+            if (!empty($boundUser['authorize_name'])) {
+                $bookingByName = $boundUser['authorize_name'];
+            } elseif (!empty($boundUser['email'])) {
+                $bookingByName = $boundUser['email'];
+            }
+        }
+        if ($bookingByName === '') {
+            $bookingByName = 'User #' . $iaccUserId;
+        }
 
         // Compose remark — captures the tour name + any agent notes +
         // typed agent_code (for audit; auto-resolution to tour_bookings.agent_id
