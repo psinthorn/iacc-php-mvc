@@ -34,10 +34,23 @@ namespace App\Models;
  */
 class AgentBookingParser
 {
-    // Trigger phrases (any one anywhere in the message activates parsing)
-    private const TRIGGERS = [
+    // Trigger phrases (case-insensitive substring match anywhere in the message).
+    //
+    // Strong triggers always activate the agent intercept — useful so an empty
+    // template still gets the validation Flex listing the missing fields.
+    //
+    // Weak triggers only activate when the message also contains at least one
+    // structured field anchor (ทัวร์:, date:, etc.). Otherwise we let the
+    // legacy "book/จอง <date> <time>" customer handler in line-webhook.php
+    // keep handling them — that flow is for non-agent customers and is
+    // unrelated to agent text-template booking.
+    private const TRIGGERS_STRONG = [
         'th' => ['จองทัวร์'],
         'en' => ['book tour'],
+    ];
+    private const TRIGGERS_WEAK = [
+        'th' => ['จอง'],
+        'en' => ['book'],
     ];
 
     // Field-keyword aliases (TH and EN); first match wins per language
@@ -65,7 +78,10 @@ class AgentBookingParser
         $lang    = self::detectLang($message);
         $trigger = self::detectTrigger($message);
 
-        if ($trigger === null) {
+        // No trigger at all, OR a weak trigger with no field anchor — let
+        // the legacy customer-date handler keep handling the message.
+        if ($trigger === null
+            || (!$trigger['strong'] && !self::hasAnyAnchor($message))) {
             return [
                 'ok'              => false,
                 'fields'          => [],
@@ -83,7 +99,7 @@ class AgentBookingParser
             'fields'          => $fields,
             'errors'          => $errors,
             'lang'            => $lang,
-            'matched_trigger' => $trigger,
+            'matched_trigger' => $trigger['phrase'],
         ];
     }
 
@@ -97,15 +113,46 @@ class AgentBookingParser
         return preg_match('/[\x{0E00}-\x{0E7F}]/u', $message) ? 'th' : 'en';
     }
 
-    private static function detectTrigger(string $message): ?string
+    /**
+     * Returns ['phrase' => string, 'strong' => bool] or null if no trigger
+     * is found. Strong triggers are unconditional; weak triggers must be
+     * paired with a field anchor (see hasAnyAnchor) to count.
+     */
+    private static function detectTrigger(string $message): ?array
     {
         $haystack = mb_strtolower($message);
-        foreach (self::TRIGGERS as $lang => $phrases) {
+        foreach (self::TRIGGERS_STRONG as $lang => $phrases) {
             foreach ($phrases as $p) {
-                if (mb_stripos($haystack, $p) !== false) return $p;
+                if (mb_stripos($haystack, $p) !== false) {
+                    return ['phrase' => $p, 'strong' => true];
+                }
+            }
+        }
+        foreach (self::TRIGGERS_WEAK as $lang => $phrases) {
+            foreach ($phrases as $p) {
+                if (mb_stripos($haystack, $p) !== false) {
+                    return ['phrase' => $p, 'strong' => false];
+                }
             }
         }
         return null;
+    }
+
+    /**
+     * True if the message contains at least one "<field-keyword>:" anchor.
+     * Used to distinguish a structured agent template from a bare legacy
+     * command like "book 2026-04-15 14:00".
+     */
+    private static function hasAnyAnchor(string $message): bool
+    {
+        foreach (self::FIELD_KEYWORDS as $keywords) {
+            foreach ($keywords as $kw) {
+                if (preg_match('/' . preg_quote($kw, '/') . '\s*[:：]/ui', $message)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // ============================================================
