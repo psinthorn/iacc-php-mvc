@@ -252,7 +252,8 @@ class LineAgentController extends BaseController
     // ====================================================================
 
     /**
-     * Fuzzy match a tour name against the company's `tour_products`.
+     * Fuzzy match a tour name against the company's `model` table
+     * (joined with `type` so agents can match by category name too).
      * Returns ['status' => 'none'|'one'|'multiple', 'tour' => array|null, 'candidates' => array]
      */
     private static function matchTour(int $companyId, string $needle): array
@@ -262,16 +263,19 @@ class LineAgentController extends BaseController
         if ($needle === '') return ['status' => 'none', 'tour' => null, 'candidates' => []];
 
         $stmt = $db->conn->prepare(
-            "SELECT id, tour_name AS name
-             FROM tour_products
-             WHERE company_id = ?
-               AND deleted_at IS NULL
-               AND (tour_name LIKE CONCAT('%', ?, '%')
-                    OR ? LIKE CONCAT('%', tour_name, '%'))
-             ORDER BY CHAR_LENGTH(tour_name) ASC
+            "SELECT m.id, m.model_name AS name
+             FROM model m
+             LEFT JOIN type t ON m.type_id = t.id
+             WHERE m.company_id = ?
+               AND m.deleted_at IS NULL
+               AND m.is_active = 1
+               AND (m.model_name LIKE CONCAT('%', ?, '%')
+                    OR ? LIKE CONCAT('%', m.model_name, '%')
+                    OR t.name LIKE CONCAT('%', ?, '%'))
+             ORDER BY CHAR_LENGTH(m.model_name) ASC
              LIMIT 5"
         );
-        $stmt->bind_param('iss', $companyId, $needle, $needle);
+        $stmt->bind_param('isss', $companyId, $needle, $needle, $needle);
         $stmt->execute();
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
