@@ -272,10 +272,10 @@ class TourBooking extends BaseModel
                  pickup_location_id, pickup_hotel, pickup_room, pickup_time,
                  driver_name, vehicle_no,
                  voucher_number, entrance_fee, subtotal, discount, vat, total_amount, currency,
-                 status, remark, created_by";
+                 status, remark, created_by, created_via";
 
         $vals = sprintf(
-            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+            "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'",
             intval($data['company_id']),
             sql_escape($data['booking_number']),
             sql_escape($data['booking_date'] ?? date('Y-m-d')),
@@ -302,7 +302,8 @@ class TourBooking extends BaseModel
             sql_escape($data['currency'] ?? 'THB'),
             sql_escape($data['status'] ?? 'draft'),
             sql_escape($data['remark'] ?? ''),
-            intval($data['created_by'] ?? 0)
+            intval($data['created_by'] ?? 0),
+            sql_escape($data['created_via'] ?? 'web_form')
         );
 
         $args = [];

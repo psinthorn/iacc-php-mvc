@@ -184,6 +184,25 @@ function handleMessage(array $event, int $companyId, int $dbUserId, \App\Models\
         // Check for order keywords
         $lowerContent = mb_strtolower($content);
 
+        // v6.3 #120 — Agent text-template booking (intercept before legacy commands).
+        // ingestText() returns handled=false when no booking trigger, so we fall
+        // through to the existing order/book/status/auto-reply chain.
+        $lineUserIdStr = $event['source']['userId'] ?? '';
+        if ($lineUserIdStr !== '') {
+            $agentResult = \App\Controllers\LineAgentController::ingestText($companyId, $content, $lineUserIdStr);
+            if (!empty($agentResult['handled'])) {
+                if (!empty($agentResult['reply_messages'])) {
+                    $service->replyMessage($replyToken, $agentResult['reply_messages']);
+                    foreach ($agentResult['reply_messages'] as $msg) {
+                        $msgType = $msg['type'] ?? 'text';
+                        $msgContent = $msgType === 'text' ? ($msg['text'] ?? '') : json_encode($msg);
+                        $model->logMessage($companyId, $dbUserId, 'outbound', $msgType, null, null, $msgContent);
+                    }
+                }
+                return;
+            }
+        }
+
         // Order command: "order <items>"
         if (preg_match('/^(order|สั่ง|สั่งซื้อ)\s+(.+)/iu', $content, $matches)) {
             handleOrderCommand($replyToken, $companyId, $dbUserId, $matches[2], $model, $service);
