@@ -27,6 +27,12 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/inc/sys.configs.php';
 require_once __DIR__ . '/inc/class.dbconn.php';
 require_once __DIR__ . '/inc/class.hard.php';
+// inc/security.php — needed by App\Models\TourBooking::createBooking and other
+// model methods that use sql_escape() / sql_int() / sql_float(). The normal
+// page bootstrap (index.php) loads this; the webhook bootstrap was missing it,
+// which caused a fatal "Call to undefined function sql_escape()" inside
+// agent text-template booking writes.
+require_once __DIR__ . '/inc/security.php';
 
 // Autoloader for App namespace
 spl_autoload_register(function ($class) {
