@@ -293,18 +293,25 @@ function handlePostback(array $event, int $companyId, int $dbUserId, \App\Models
             // template scoped to the tenant; defensive against postback
             // tampering via the tenancy filter in fetchTour().
             $tourId = intval($params['tour_id'] ?? 0);
-            // Language is carried in the postback data (set by the
-            // carousel that produced the button), so the prefill reply
-            // matches the user's original message language. Falls back
-            // to the LINE display_name regex only when lang is missing —
-            // unreliable for Thai users with English-spelled names but
-            // a reasonable last resort for legacy carousels.
+            // Language resolution priority:
+            //   1. $params['lang'] from the postback data (set by the
+            //      carousel in v6.6 #150) — authoritative if present.
+            //   2. The user's most recent inbound text message — reliable
+            //      since the carousel-trigger message is always more
+            //      recent than the bubble being tapped. Catches legacy
+            //      carousels rendered before #150.
+            //   3. display_name regex — last resort. Unreliable for Thai
+            //      users with English-spelled names ("Sinthorn") but
+            //      better than nothing for users with no text history.
             $postbackLang = (string)($params['lang'] ?? '');
             if ($postbackLang === 'th' || $postbackLang === 'en') {
                 $lang = $postbackLang;
             } else {
-                $lineUser = $model->getLineUserById($dbUserId);
-                $lang = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', (string)($lineUser['display_name'] ?? '')) ? 'th' : 'en';
+                $lang = $model->getRecentLanguage($companyId, $dbUserId);
+                if ($lang === null) {
+                    $lineUser = $model->getLineUserById($dbUserId);
+                    $lang = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', (string)($lineUser['display_name'] ?? '')) ? 'th' : 'en';
+                }
             }
             $reply = \App\Services\LineTourCatalog::buildPrefillReply($companyId, $tourId, $lang);
             if ($reply) {

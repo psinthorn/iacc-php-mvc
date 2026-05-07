@@ -148,6 +148,39 @@ class LineOA extends BaseModel
         return $result;
     }
 
+    /**
+     * v6.6 — Detect language preference for a LINE user from their most
+     * recent inbound text message. Returns 'th' if Thai script appears,
+     * 'en' if a non-Thai text message exists, or null when the user has
+     * no text history.
+     *
+     * Used by postback handlers (e.g. carousel "Book this") to figure
+     * out which language the user is currently using when the postback
+     * data itself doesn't carry it (legacy carousels rendered before
+     * v6.6 #150). Far more reliable than guessing from display_name,
+     * which fails for Thai users with English-spelled names.
+     */
+    public function getRecentLanguage(int $companyId, int $lineUserDbId): ?string
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT content FROM line_messages
+             WHERE company_id = ?
+               AND line_user_id = ?
+               AND direction = 'inbound'
+               AND message_type = 'text'
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+        $stmt->bind_param('ii', $companyId, $lineUserDbId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if (!$row) return null;
+        $content = (string)($row['content'] ?? '');
+        if ($content === '') return null;
+        return preg_match('/[\x{0E00}-\x{0E7F}]/u', $content) ? 'th' : 'en';
+    }
+
     public function getLineUserById(int $id): ?array
     {
         $stmt = $this->conn->prepare("SELECT * FROM line_users WHERE id = ?");
