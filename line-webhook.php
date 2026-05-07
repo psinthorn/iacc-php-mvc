@@ -314,44 +314,23 @@ function handleOrderCommand(string $replyToken, int $companyId, int $dbUserId, s
 
 function handleBookingCommand(string $replyToken, int $companyId, int $dbUserId, string $bookingText, \App\Models\LineOA $model, \App\Services\LineService $service): void
 {
-    // Parse booking: "2026-04-15 14:00" or "15 Apr 2pm"
-    $bookingDate = null;
-    $bookingTime = null;
+    // v6.6 #134 — deprecated path. The legacy `book/จอง <date> <time>` flow
+    // was useful before tour-context booking shipped, but it can't capture
+    // *which tour* the customer wants — the operator had to follow up
+    // manually. Now that the structured template is open to direct customers
+    // (not just bound agents), redirect users to that flow instead of
+    // writing a vague row to line_orders.
+    //
+    // Existing line_orders rows are preserved; we just stop creating new
+    // ones from this entry point.
+    $lineUser    = $model->getLineUserById($dbUserId);
+    $lang        = (bool)preg_match('/[\x{0E00}-\x{0E7F}]/u', $bookingText) ? 'th' : 'en';
+    $redirectMsg = $lang === 'th'
+        ? "กรุณาใช้แบบฟอร์มการจองใหม่ — พิมพ์ \"จองทัวร์\" พร้อมรายละเอียด เช่น:\n\nจองทัวร์\nทัวร์: <ชื่อทัวร์>\nวันที่: " . ($_POST['date'] ?? date('Y-m-d', strtotime('+7 days'))) . "\nผู้ใหญ่: <จำนวน>\nลูกค้า: <ชื่อ>\nมือถือ: <เบอร์>"
+        : "Please use the new booking template — start your message with \"book tour\" and include the tour details, e.g.:\n\nbook tour\ntour: <tour name>\ndate: " . date('Y-m-d', strtotime('+7 days')) . "\nadults: <count>\ncustomer: <name>\nmobile: <phone>";
 
-    // Try standard format first
-    if (preg_match('/(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})/', $bookingText, $m)) {
-        $bookingDate = $m[1];
-        $bookingTime = $m[2];
-    } else {
-        // Try to parse naturally
-        $ts = strtotime($bookingText);
-        if ($ts && $ts > time()) {
-            $bookingDate = date('Y-m-d', $ts);
-            $bookingTime = date('H:i', $ts);
-        }
-    }
-
-    if (!$bookingDate) {
-        $service->replyText($replyToken, "Please provide a valid date and time.\nFormat: book 2026-04-15 14:00");
-        return;
-    }
-
-    $lineUser = $model->getLineUserById($dbUserId);
-    $orderId = $model->createOrder($companyId, $dbUserId, [
-        'order_type' => 'booking',
-        'guest_name' => $lineUser['display_name'] ?? '',
-        'booking_date' => $bookingDate,
-        'booking_time' => $bookingTime
-    ]);
-
-    $order = $model->getOrder($orderId, $companyId);
-    $orderRef = $order['order_ref'] ?? 'LINE-BOOKING';
-
-    $flex = $service->buildBookingFlex($orderRef, $bookingDate, $bookingTime, $lineUser['display_name'] ?? '');
-    $service->replyMessage($replyToken, [
-        ['type' => 'flex', 'altText' => 'Booking ' . $orderRef, 'contents' => $flex]
-    ]);
-    $model->logMessage($companyId, $dbUserId, 'outbound', 'flex', null, null, 'Booking created: ' . $orderRef);
+    $service->replyText($replyToken, $redirectMsg);
+    $model->logMessage($companyId, $dbUserId, 'outbound', 'text', null, null, '[v6.6 #134 redirect: legacy book→template] ' . substr($redirectMsg, 0, 80));
 }
 
 function handleStatusCommand(string $replyToken, int $companyId, int $dbUserId, string $orderRef, \App\Models\LineOA $model, \App\Services\LineService $service): void
